@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+
+:root {
+  --branding-color : #024;
+}
+
+.body-container {
+  padding-top: 5px;
+  padding-left: 10%;
+  padding-right: 10%;
+  font-family: 'Rubik', sans-serif;
+}
+
+a.nav-link {
+    color: var(--theme-color)!important;
+    font-size: 20px!important;
+}
+
+
+.center-vertically {
+  /* padding-top: 15vh */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+}
+
+.animate__animated {
+  max-width: 30px;
+}
+
+.paragraph-style {
+  font-size: 25px;
+}
+
+.paragraph-style span {
+  font-size: 35px;
+  color: var(--theme-color);
+}
+
+
+/* .container#about-me-section {
+  padding-top: 20vh;
+} */
+
+.about-me-style {
+  font-size: 1.2em;
+}
+
+iconify-icon {
+  color: var(--branding-color);
+}
