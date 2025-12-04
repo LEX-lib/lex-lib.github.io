@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import UnderConstruction from "@/components/UnderConstruction.vue";
+import AboutMe from "@/components/AboutMe.vue";
+import HeroSection from "@/components/HeroSection.vue";
+import AboutMeSection from "@/components/AboutMeSection.vue";
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+     <UnderConstruction />
   </main>
 </template>
+
+<style scoped>
+
+</style>
