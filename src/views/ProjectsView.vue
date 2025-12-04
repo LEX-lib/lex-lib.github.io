@@ -14,7 +14,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/projects/lextrack">LexTrack</RouterLink>
       </li>
       <li>
-        <RouterLink to="/projects/gift-exchange/join">Pista ng Pasko (Gift Exchange)</RouterLink>
+        <RouterLink to="/projects/gift-exchange/join">MonitoX</RouterLink>
       </li>
 <!--      <li>-->
 <!--        <RouterLink to="/projects/another-project">Another Project</RouterLink>-->
