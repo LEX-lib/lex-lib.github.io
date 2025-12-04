@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CustomNavBar from "@/components/CustomNavBar.vue";
 import { Toaster } from "vue-sonner";
+import { SpeedInsights } from '@vercel/speed-insights/vue';
 
 function toggleDarkMode() {
   document.documentElement.classList.toggle('my-app-dark');
@@ -30,6 +31,7 @@ function toggleDarkMode() {
 <!--  <Button label="Toggle Dark Mode" @click="toggleDarkMode()" />-->
 
   <Toaster/>
+  <SpeedInsights />
 </template>
 
 <style scoped>
