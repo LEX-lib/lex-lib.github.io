@@ -2,7 +2,16 @@
 .idea
 node_modules/
 dist/
-.env*
+# Exclude ALL .env files to prevent credential leaks
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+# Allow example/template env files to be committed
+!.env.example
+!.env.template
 *.local
 npm-debug.log*
 yarn-debug.log*

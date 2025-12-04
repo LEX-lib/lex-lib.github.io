@@ -5,27 +5,42 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import Components from 'unplugin-vue-components/vite';
 import {PrimeVueResolver} from '@primevue/auto-import-resolver';
+import fs from 'fs'
+import path from 'path'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig( {
     plugins: [
-        vue(),
+        vue({
+            template : {
+                compilerOptions: {
+                    isCustomElement: (tag) => tag === 'iconify-icon'
+                }
+            }
+            }),
         vueDevTools(),
         Components({
             resolvers: [
                 PrimeVueResolver()
             ]
-        })
+        }),
+        tailwindcss()
     ],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
         },
     },
-    // base: mode === 'production'
-    //     ? '/<your-repo-name>/' // replace with repo name
-    //     : '/',
     build: {
         outDir: 'dist'
-    }
+    },
+    server: {
+        https: {
+            key: fs.readFileSync(path.resolve(__dirname, 'localhost-key.pem')),
+            cert: fs.readFileSync(path.resolve(__dirname, 'localhost.pem'))
+        },
+        host: 'localhost',
+        port: 5173
+    },
 })

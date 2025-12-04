@@ -2,6 +2,27 @@
 
 This template should help get you started developing with Vue 3 in Vite.
 
+## Environment variables
+This project uses Vite's mode-based `.env` files. Variables must be prefixed with `VITE_` to be exposed to client code.
+
+Provided files:
+- `.env` — shared defaults for all modes
+- `.env.development` — overrides used by `npm run dev`
+- `.env.production` — overrides used by `npm run build`
+
+Local (untracked) overrides you can create:
+- `.env.local`
+- `.env.development.local`
+- `.env.production.local`
+
+Example variables you can use in code:
+```ts
+console.log(import.meta.env.VITE_APP_NAME)
+console.log(import.meta.env.VITE_API_BASE_URL)
+```
+
+> Note: Sensitive values should go in the `*.local` files which are gitignored.
+
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
