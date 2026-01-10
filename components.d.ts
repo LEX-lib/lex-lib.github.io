@@ -48,6 +48,7 @@ declare module 'vue' {
     Password: typeof import('primevue/password')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Tag: typeof import('primevue/tag')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']
     UnderConstruction: typeof import('./src/components/UnderConstruction.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']

@@ -51,6 +51,11 @@ const router = createRouter({
       path: '/projects/gift-exchange',
       redirect: '/projects/gift-exchange/join'
     },
+    {
+      path: '/blog',
+      name: 'blog',
+      component: () => import('@/views/BlogView.vue'),
+    },
   ],
 })
 

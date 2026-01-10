@@ -37,7 +37,7 @@ const items = ref([
   {
     label: 'Blogs',
     icon: 'mdi:blog-outline',
-    //command: () => router.push('/')
+    command: () => router.push('/blog')
   },
 ]);
 
