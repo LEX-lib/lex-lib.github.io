@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, defineModel} from "vue";
+import {ref} from "vue";
 import type {AddDsuMeeting} from "@/types/lextrack/dsu_meetings/types";
 import type {AddDsuSupport} from "@/types/lextrack/dsu_supports/types";
 import type {AddDsuTask} from "@/types/lextrack/dsu_tasks/types";
