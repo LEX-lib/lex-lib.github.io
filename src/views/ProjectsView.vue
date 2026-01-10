@@ -71,7 +71,8 @@ const projects = ref([
   @apply h-full flex flex-col;
 }
 :deep(.p-card-body) {
-  @apply flex-1 flex flex-col h-full !p-6;
+  @apply flex-1 flex flex-col h-full;
+  padding: 1.5rem !important;
 }
 :deep(.p-card-content) {
   @apply flex-1;
