@@ -197,6 +197,45 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
+const deleteLobby = async (lobby: any) => {
+  if (!confirm(`Are you sure you want to delete "${lobby.lobby_name}"? This will also delete all participants in this lobby.`)) {
+    return;
+  }
+  
+  loading.value = true;
+  try {
+    // First, delete all participants in this lobby
+    const participantsToDelete = await pb.collection('gift_exchange_participants').getFullList({
+      filter: `lobby="${lobby.id}"`
+    });
+    
+    const deletePromises = participantsToDelete.map(p => 
+      pb.collection('gift_exchange_participants').delete(p.id)
+    );
+    
+    await Promise.all(deletePromises);
+    
+    // Then delete the lobby itself
+    await pb.collection('lobbies').delete(lobby.id);
+    
+    toast.success(`Lobby "${lobby.lobby_name}" deleted successfully`);
+    
+    // Clear selection if deleted lobby was selected
+    if (selectedLobby.value?.id === lobby.id) {
+      selectedLobby.value = null;
+      participants.value = [];
+      participantsCount.value = 0;
+    }
+    
+    // Refresh lobby list
+    await fetchLobbies();
+  } catch (e: any) {
+    toast.error("Error deleting lobby: " + e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
 onMounted(() => {
   if (isSuperUser.value) {
       fetchLobbies();
@@ -258,15 +297,25 @@ onMounted(() => {
                 <!-- Lobby List -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div v-for="lobby in lobbies" :key="lobby.id" 
-                         @click="selectLobby(lobby)"
-                         class="p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md relative"
+                         class="p-4 rounded-lg border-2 transition-all hover:shadow-md relative group"
                          :class="selectedLobby?.id === lobby.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
-                        <div class="font-bold text-gray-800">{{ lobby.lobby_name }}</div>
-                        <div class="text-sm text-gray-500 font-mono mt-1">Code: {{ lobby.lobby_code }}</div>
-                        <div class="text-xs text-gray-400 mt-2">
-                            <span v-if="lobby.drawing_started" class="text-green-600">✓ Drawing Started</span>
-                            <span v-else class="text-yellow-600">⏳ Enrollment Open</span>
+                        <div @click="selectLobby(lobby)" class="cursor-pointer">
+                            <div class="font-bold text-gray-800">{{ lobby.lobby_name }}</div>
+                            <div class="text-sm text-gray-500 font-mono mt-1">Code: {{ lobby.lobby_code }}</div>
+                            <div class="text-xs text-gray-400 mt-2">
+                                <span v-if="lobby.drawing_started" class="text-green-600">✓ Drawing Started</span>
+                                <span v-else class="text-yellow-600">⏳ Enrollment Open</span>
+                            </div>
                         </div>
+                        
+                        <!-- Delete Button -->
+                        <button 
+                            @click.stop="deleteLobby(lobby)"
+                            class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg"
+                            title="Delete lobby">
+                            <i class="pi pi-trash text-xs"></i>
+                        </button>
+                        
                         <div v-if="loading && selectedLobby?.id === lobby.id" class="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-lg">
                             <i class="pi pi-spin pi-spinner text-blue-600 text-2xl"></i>
                         </div>
