@@ -7,7 +7,8 @@ import AboutMeSection from "@/components/AboutMeSection.vue";
 
 <template>
   <main>
-     <UnderConstruction />
+     <HeroSection />
+     <AboutMeSection />
   </main>
 </template>
 
