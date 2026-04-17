@@ -1,200 +1,241 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import axios, { type AxiosError } from 'axios'
-import { ref, computed, onMounted, watch } from 'vue'
-import DOMPurify from 'dompurify'
-import { pb } from '@/lib/pocketbase'
-import { useAuthStore } from '@/stores/auth'
-import { toast } from 'vue-sonner' // Assuming sonner is used based on package.json
+import axios, { type AxiosError } from "axios";
+import { ref, computed, onMounted, watch } from "vue";
+import DOMPurify from "dompurify";
+import { pb } from "@/lib/pocketbase";
+import { useAuthStore } from "@/stores/auth";
+import { toast } from "vue-sonner"; // Assuming sonner is used based on package.json
 
 // --- Types ---
 interface KeyValueRow {
-  id: number
-  enabled: boolean
-  key: string
-  value: string
+  id: number;
+  enabled: boolean;
+  key: string;
+  value: string;
 }
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
-type AuthType = 'none' | 'basic' | 'bearer'
-type ActiveTab = 'params' | 'headers' | 'auth' | 'body'
+type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "PATCH"
+  | "DELETE"
+  | "HEAD"
+  | "OPTIONS";
+type AuthType = "none" | "basic" | "bearer";
+type ActiveTab = "params" | "headers" | "auth" | "body";
 
 // --- State ---
-const url = ref('https://jsonplaceholder.typicode.com/posts/1')
-const method = ref<HttpMethod>('GET')
-const activeTab = ref<ActiveTab>('params')
+const url = ref("https://jsonplaceholder.typicode.com/posts/1");
+const method = ref<HttpMethod>("GET");
+const activeTab = ref<ActiveTab>("params");
 
 // Collections / PocketBase State
-const auth = useAuthStore()
-const collections = ref<any[]>([])
-const isCollectionsLoading = ref(false)
-const showSaveModal = ref(false)
-const requestName = ref('')
-const activeRequestId = ref<string | null>(null)
-const isSaving = ref(false)
-const showSidebar = ref(true)
+const auth = useAuthStore();
+const collections = ref<any[]>([]);
+const isCollectionsLoading = ref(false);
+const showSaveModal = ref(false);
+const requestName = ref("");
+const activeRequestId = ref<string | null>(null);
+const isSaving = ref(false);
+const showSidebar = ref(true);
 
 // Context menu state
-const openMenuId = ref<string | null>(null)
-const showRenameModal = ref(false)
-const renameTarget = ref<{ id: string; name: string } | null>(null)
-const renameValue = ref('')
+const openMenuId = ref<string | null>(null);
+const showRenameModal = ref(false);
+const renameTarget = ref<{ id: string; name: string } | null>(null);
+const renameValue = ref("");
 
-let rowIdCounter = 0
-const createRow = (): KeyValueRow => ({ id: rowIdCounter++, enabled: true, key: '', value: '' })
+let rowIdCounter = 0;
+const createRow = (): KeyValueRow => ({
+  id: rowIdCounter++,
+  enabled: true,
+  key: "",
+  value: "",
+});
 
-const params = ref<KeyValueRow[]>([createRow()])
-const headers = ref<KeyValueRow[]>([createRow()])
+const params = ref<KeyValueRow[]>([createRow()]);
+const headers = ref<KeyValueRow[]>([createRow()]);
 
-const authType = ref<AuthType>('none')
-const authBasicUser = ref('')
-const authBasicPass = ref('')
-const authBearerToken = ref('')
+const authType = ref<AuthType>("none");
+const authBasicUser = ref("");
+const authBasicPass = ref("");
+const authBearerToken = ref("");
 
-const body = ref('')
+const body = ref("");
 
 // Response state
-const isLoading = ref(false)
-const responseStatus = ref<number | null>(null)
-const responseStatusText = ref('')
-const responseTime = ref<number | null>(null)
-const responseData = ref<unknown>(null)
-const responseError = ref<string | null>(null)
-const hasResponse = ref(false)
+const isLoading = ref(false);
+const responseStatus = ref<number | null>(null);
+const responseStatusText = ref("");
+const responseTime = ref<number | null>(null);
+const responseData = ref<unknown>(null);
+const responseError = ref<string | null>(null);
+const hasResponse = ref(false);
 
 // --- Computed ---
-const httpMethods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
+const httpMethods: HttpMethod[] = [
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+  "HEAD",
+  "OPTIONS",
+];
 
 const methodColor = computed(() => {
   const colors: Record<HttpMethod, string> = {
-    GET: '#4ade80',
-    POST: '#facc15',
-    PUT: '#60a5fa',
-    PATCH: '#a78bfa',
-    DELETE: '#f87171',
-    HEAD: '#94a3b8',
-    OPTIONS: '#fb923c',
-  }
-  return colors[method.value]
-})
+    GET: "#4ade80",
+    POST: "#facc15",
+    PUT: "#60a5fa",
+    PATCH: "#a78bfa",
+    DELETE: "#f87171",
+    HEAD: "#94a3b8",
+    OPTIONS: "#fb923c",
+  };
+  return colors[method.value];
+});
 
-const isSuccessStatus = computed(() => responseStatus.value !== null && responseStatus.value < 400)
-const isErrorStatus = computed(() => responseStatus.value !== null && responseStatus.value >= 400)
+const isSuccessStatus = computed(
+  () => responseStatus.value !== null && responseStatus.value < 400,
+);
+const isErrorStatus = computed(
+  () => responseStatus.value !== null && responseStatus.value >= 400,
+);
 
 function getMethodColor(m: string) {
   const colors: any = {
-    GET: '#4ade80',
-    POST: '#facc15',
-    PUT: '#60a5fa',
-    PATCH: '#a78bfa',
-    DELETE: '#f87171',
-    HEAD: '#94a3b8',
-    OPTIONS: '#fb923c',
-  }
-  return colors[m] || '#94a3b8'
+    GET: "#4ade80",
+    POST: "#facc15",
+    PUT: "#60a5fa",
+    PATCH: "#a78bfa",
+    DELETE: "#f87171",
+    HEAD: "#94a3b8",
+    OPTIONS: "#fb923c",
+  };
+  return colors[m] || "#94a3b8";
 }
 
 const formattedResponse = computed(() => {
-  if (responseData.value === null) return ''
-  return JSON.stringify(responseData.value, null, 2)
-})
+  if (responseData.value === null) return "";
+  return JSON.stringify(responseData.value, null, 2);
+});
 
 const displayUrl = computed(() => {
-  if (requestName.value) return requestName.value
-  let dUrl = url.value.replace(/^https?:\/\//, '')
+  if (requestName.value) return requestName.value;
+  let dUrl = url.value.replace(/^https?:\/\//, "");
   if (dUrl.length > 30) {
-    dUrl = dUrl.substring(0, 15) + '...' + dUrl.substring(dUrl.length - 15)
+    dUrl = dUrl.substring(0, 15) + "..." + dUrl.substring(dUrl.length - 15);
   }
-  return dUrl || 'Untitled Request'
-})
+  return dUrl || "Untitled Request";
+});
 
 const highlightedJson = computed(() => {
-  if (!formattedResponse.value) return ''
+  if (!formattedResponse.value) return "";
   const raw = formattedResponse.value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
     .replace(
       /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
       (match) => {
-        let cls = 'json-number'
-        if (/^"/.test(match)) {
-          cls = /:$/.test(match) ? 'json-key' : 'json-string'
+        let cls = "json-number";
+        if (match.startsWith('"')) {
+          cls = match.endsWith(":") ? "json-key" : "json-string";
         } else if (/true|false/.test(match)) {
-          cls = 'json-boolean'
+          cls = "json-boolean";
         } else if (/null/.test(match)) {
-          cls = 'json-null'
+          cls = "json-null";
         }
-        return `<span class="${cls}">${match}</span>`
+        return `<span class="${cls}">${match}</span>`;
       },
-    )
-  return DOMPurify.sanitize(raw, { ALLOWED_TAGS: ['span'], ALLOWED_ATTR: ['class'] })
-})
+    );
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: ["span"],
+    ALLOWED_ATTR: ["class"],
+  });
+});
 
 // --- Methods ---
 function addRow(list: KeyValueRow[]) {
-  list.push(createRow())
+  list.push(createRow());
 }
 
 function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text)
+  navigator.clipboard.writeText(text);
 }
 
 function removeRow(list: KeyValueRow[], id: number) {
-  const idx = list.findIndex((r) => r.id === id)
-  if (idx !== -1) list.splice(idx, 1)
-  if (list.length === 0) list.push(createRow())
+  const idx = list.findIndex((r) => r.id === id);
+  if (idx !== -1) list.splice(idx, 1);
+  if (list.length === 0) list.push(createRow());
 }
 
 async function sendRequest() {
-  isLoading.value = true
-  hasResponse.value = false
-  responseData.value = null
-  responseError.value = null
-  responseStatus.value = null
-  responseStatusText.value = ''
-  responseTime.value = null
+  isLoading.value = true;
+  hasResponse.value = false;
+  responseData.value = null;
+  responseError.value = null;
+  responseStatus.value = null;
+  responseStatusText.value = "";
+  responseTime.value = null;
 
   try {
-    const parsed = new URL(url.value)
-    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error()
+    const parsed = new URL(url.value);
+    if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
   } catch {
-    responseError.value = 'Invalid URL. Only http:// and https:// are supported.'
-    hasResponse.value = true
-    isLoading.value = false
-    return
+    responseError.value =
+      "Invalid URL. Only http:// and https:// are supported.";
+    hasResponse.value = true;
+    isLoading.value = false;
+    return;
   }
 
-  const start = performance.now()
+  const start = performance.now();
 
   try {
     // Build headers
-    const reqHeaders: Record<string, string> = {}
-    headers.value.filter((h) => h.enabled && h.key).forEach((h) => (reqHeaders[h.key] = h.value))
+    const reqHeaders: Record<string, string> = {};
+    headers.value
+      .filter((h) => h.enabled && h.key)
+      .forEach((h) => (reqHeaders[h.key] = h.value));
 
     // Build params
-    const reqParams: Record<string, string> = {}
-    params.value.filter((p) => p.enabled && p.key).forEach((p) => (reqParams[p.key] = p.value))
+    const reqParams: Record<string, string> = {};
+    params.value
+      .filter((p) => p.enabled && p.key)
+      .forEach((p) => (reqParams[p.key] = p.value));
 
     // Build auth config
-    let authConfig: { auth?: { username: string; password: string }; headers?: Record<string, string> } = {}
+    const authConfig: {
+      auth?: { username: string; password: string };
+      headers?: Record<string, string>;
+    } = {};
 
-    if (authType.value === 'basic') {
-      authConfig.auth = { username: authBasicUser.value, password: authBasicPass.value }
-    } else if (authType.value === 'bearer') {
-      reqHeaders['Authorization'] = `Bearer ${authBearerToken.value}`
+    if (authType.value === "basic") {
+      authConfig.auth = {
+        username: authBasicUser.value,
+        password: authBasicPass.value,
+      };
+    } else if (authType.value === "bearer") {
+      reqHeaders["Authorization"] = `Bearer ${authBearerToken.value}`;
     }
 
     // Build body
-    let data: unknown = undefined
-    if (['POST', 'PUT', 'PATCH'].includes(method.value) && body.value.trim()) {
+    let data: unknown = undefined;
+    if (["POST", "PUT", "PATCH"].includes(method.value) && body.value.trim()) {
       try {
-        data = JSON.parse(body.value)
-        reqHeaders['Content-Type'] = reqHeaders['Content-Type'] || 'application/json'
+        data = JSON.parse(body.value);
+        reqHeaders["Content-Type"] =
+          reqHeaders["Content-Type"] || "application/json";
       } catch {
-        responseError.value = 'Invalid JSON body. Please check your body input.'
-        hasResponse.value = true
-        isLoading.value = false
-        return
+        responseError.value =
+          "Invalid JSON body. Please check your body input.";
+        hasResponse.value = true;
+        isLoading.value = false;
+        return;
       }
     }
 
@@ -206,67 +247,67 @@ async function sendRequest() {
       data,
       auth: authConfig.auth,
       validateStatus: () => true, // don't throw on non-2xx
-    })
+    });
 
-    responseTime.value = Math.round(performance.now() - start)
-    responseStatus.value = res.status
-    responseStatusText.value = res.statusText
-    responseData.value = res.data
+    responseTime.value = Math.round(performance.now() - start);
+    responseStatus.value = res.status;
+    responseStatusText.value = res.statusText;
+    responseData.value = res.data;
   } catch (err) {
-    responseTime.value = Math.round(performance.now() - start)
-    const axiosErr = err as AxiosError
-    responseError.value = axiosErr.message || 'An unknown error occurred.'
+    responseTime.value = Math.round(performance.now() - start);
+    const axiosErr = err as AxiosError;
+    responseError.value = axiosErr.message || "An unknown error occurred.";
   } finally {
-    hasResponse.value = true
-    isLoading.value = false
+    hasResponse.value = true;
+    isLoading.value = false;
   }
 }
 
 // --- Collections Methods ---
 async function fetchCollections() {
-  if (!auth.isLoggedIn) return
-  const userId = auth.user?.id
-  if (!userId || !/^[a-z0-9]{15}$/.test(userId)) return
-  isCollectionsLoading.value = true
+  if (!auth.isLoggedIn) return;
+  const userId = auth.user?.id;
+  if (!userId || !/^[a-z0-9]{15}$/.test(userId)) return;
+  isCollectionsLoading.value = true;
   try {
-    const records = await pb.collection('api_requests').getFullList({
-      sort: '-created',
-      filter: `user = "${userId}"`
-    })
-    collections.value = records
+    const records = await pb.collection("api_requests").getFullList({
+      sort: "-created",
+      filter: `user = "${userId}"`,
+    });
+    collections.value = records;
   } catch (err) {
-    console.error('Error fetching collections:', err)
+    console.error("Error fetching collections:", err);
   } finally {
-    isCollectionsLoading.value = false
+    isCollectionsLoading.value = false;
   }
 }
 
 async function handleSave() {
   if (!auth.isLoggedIn) {
-     toast.error('Please login to save requests')
-     return
+    toast.error("Please login to save requests");
+    return;
   }
-  
+
   if (activeRequestId.value) {
     // Update existing
-    await performSave(activeRequestId.value)
+    await performSave(activeRequestId.value);
   } else {
     // Open modal for new name
-    requestName.value = ''
-    showSaveModal.value = true
+    requestName.value = "";
+    showSaveModal.value = true;
   }
 }
 
 async function performSave(id: string | null = null) {
-  isSaving.value = true
+  isSaving.value = true;
   try {
     // For updates: if requestName is blank, preserve the existing name from collections
-    let name = requestName.value.trim()
+    let name = requestName.value.trim();
     if (!name && id) {
-      const existing = collections.value.find(c => c.id === id)
-      name = existing?.name || 'Untitled Request'
+      const existing = collections.value.find((c) => c.id === id);
+      name = existing?.name || "Untitled Request";
     } else if (!name) {
-      name = 'Untitled Request'
+      name = "Untitled Request";
     }
 
     const payload = {
@@ -274,131 +315,145 @@ async function performSave(id: string | null = null) {
       name,
       method: method.value,
       url: url.value,
-      params: params.value.filter(p => p.key),
-      headers: headers.value.filter(h => h.key),
+      params: params.value.filter((p) => p.key),
+      headers: headers.value.filter((h) => h.key),
       authType: authType.value,
       authConfig: {
         basicUser: authBasicUser.value,
-        basicPass: '',
-        bearerToken: ''
+        basicPass: "",
+        bearerToken: "",
       },
-      body: body.value
-    }
+      body: body.value,
+    };
 
     if (id) {
-      await pb.collection('api_requests').update(id, payload)
-      toast.success('Request updated')
+      await pb.collection("api_requests").update(id, payload);
+      toast.success("Request updated");
     } else {
-      const record = await pb.collection('api_requests').create(payload)
-      activeRequestId.value = record.id
-      toast.success('Request saved to collection')
-      showSaveModal.value = false
+      const record = await pb.collection("api_requests").create(payload);
+      activeRequestId.value = record.id;
+      toast.success("Request saved to collection");
+      showSaveModal.value = false;
     }
-    await fetchCollections()
+    await fetchCollections();
   } catch (err) {
-    console.error('Save error:', err)
-    toast.error('Failed to save request')
+    console.error("Save error:", err);
+    toast.error("Failed to save request");
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 function selectRequest(req: any) {
-  activeRequestId.value = req.id
-  requestName.value = req.name  // ← fix bug 1: store name so tab updates
-  method.value = req.method
-  url.value = req.url
-  
+  activeRequestId.value = req.id;
+  requestName.value = req.name; // ← fix bug 1: store name so tab updates
+  method.value = req.method;
+  url.value = req.url;
+
   // Load Params
-  params.value = req.params.length > 0 ? req.params.map((p: any) => ({ ...p, id: rowIdCounter++ })) : [createRow()]
-  
+  params.value =
+    req.params.length > 0
+      ? req.params.map((p: any) => ({ ...p, id: rowIdCounter++ }))
+      : [createRow()];
+
   // Load Headers
-  headers.value = req.headers.length > 0 ? req.headers.map((h: any) => ({ ...h, id: rowIdCounter++ })) : [createRow()]
-  
+  headers.value =
+    req.headers.length > 0
+      ? req.headers.map((h: any) => ({ ...h, id: rowIdCounter++ }))
+      : [createRow()];
+
   // Load Auth
-  authType.value = req.authType
+  authType.value = req.authType;
   if (req.authConfig) {
-    authBasicUser.value = req.authConfig.basicUser || ''
-    authBasicPass.value = req.authConfig.basicPass || ''
-    authBearerToken.value = req.authConfig.bearerToken || ''
+    authBasicUser.value = req.authConfig.basicUser || "";
+    authBasicPass.value = req.authConfig.basicPass || "";
+    authBearerToken.value = req.authConfig.bearerToken || "";
   }
-  
+
   // Load Body
-  body.value = req.body || ''
-  
+  body.value = req.body || "";
+
   // Reset response
-  hasResponse.value = false
-  responseData.value = null
+  hasResponse.value = false;
+  responseData.value = null;
 }
 
 async function deleteRequest(id: string) {
-  openMenuId.value = null
+  openMenuId.value = null;
   try {
-    await pb.collection('api_requests').delete(id)
-    if (activeRequestId.value === id) { activeRequestId.value = null; requestName.value = '' }
-    await fetchCollections()
-    toast.success('Request deleted')
-  } catch (err) {
-    toast.error('Failed to delete request')
+    await pb.collection("api_requests").delete(id);
+    if (activeRequestId.value === id) {
+      activeRequestId.value = null;
+      requestName.value = "";
+    }
+    await fetchCollections();
+    toast.success("Request deleted");
+  } catch {
+    toast.error("Failed to delete request");
   }
 }
 
 function openContextMenu(id: string) {
-  openMenuId.value = openMenuId.value === id ? null : id
+  openMenuId.value = openMenuId.value === id ? null : id;
 }
 
 function openRenameModal(req: any) {
-  openMenuId.value = null
-  renameTarget.value = { id: req.id, name: req.name }
-  renameValue.value = req.name
-  showRenameModal.value = true
+  openMenuId.value = null;
+  renameTarget.value = { id: req.id, name: req.name };
+  renameValue.value = req.name;
+  showRenameModal.value = true;
 }
 
 async function renameRequest() {
-  if (!renameTarget.value || !renameValue.value.trim()) return
+  if (!renameTarget.value || !renameValue.value.trim()) return;
   try {
-    await pb.collection('api_requests').update(renameTarget.value.id, { name: renameValue.value.trim() })
+    await pb
+      .collection("api_requests")
+      .update(renameTarget.value.id, { name: renameValue.value.trim() });
     // Update requestName in UI if renaming the active request
     if (activeRequestId.value === renameTarget.value.id) {
-      requestName.value = renameValue.value.trim()
+      requestName.value = renameValue.value.trim();
     }
-    await fetchCollections()
-    toast.success('Request renamed')
-  } catch (err) {
-    toast.error('Failed to rename request')
+    await fetchCollections();
+    toast.success("Request renamed");
+  } catch {
+    toast.error("Failed to rename request");
   } finally {
-    showRenameModal.value = false
-    renameTarget.value = null
+    showRenameModal.value = false;
+    renameTarget.value = null;
   }
 }
 
 function createNewRequest() {
-  activeRequestId.value = null
-  requestName.value = ''
-  url.value = 'https://jsonplaceholder.typicode.com/posts/1'
-  method.value = 'GET'
-  params.value = [createRow()]
-  headers.value = [createRow()]
-  authType.value = 'none'
-  authBasicUser.value = ''
-  authBasicPass.value = ''
-  authBearerToken.value = ''
-  body.value = ''
-  hasResponse.value = false
-  responseData.value = null
-  responseStatus.value = null
-  responseError.value = null
-  toast.info('New request started')
+  activeRequestId.value = null;
+  requestName.value = "";
+  url.value = "https://jsonplaceholder.typicode.com/posts/1";
+  method.value = "GET";
+  params.value = [createRow()];
+  headers.value = [createRow()];
+  authType.value = "none";
+  authBasicUser.value = "";
+  authBasicPass.value = "";
+  authBearerToken.value = "";
+  body.value = "";
+  hasResponse.value = false;
+  responseData.value = null;
+  responseStatus.value = null;
+  responseError.value = null;
+  toast.info("New request started");
 }
 
 onMounted(() => {
-  if (auth.isLoggedIn) fetchCollections()
-})
+  if (auth.isLoggedIn) fetchCollections();
+});
 
-watch(() => auth.isLoggedIn, (isLoggedIn) => {
-  if (isLoggedIn) fetchCollections()
-  else collections.value = []
-})
+watch(
+  () => auth.isLoggedIn,
+  (isLoggedIn) => {
+    if (isLoggedIn) fetchCollections();
+    else collections.value = [];
+  },
+);
 </script>
 
 <template>
@@ -412,7 +467,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
         </div>
         <div class="pg-header-actions">
           <button class="sidebar-toggle" @click="showSidebar = !showSidebar">
-            <iconify-icon :icon="showSidebar ? 'mdi:chevron-left' : 'mdi:menu'" />
+            <iconify-icon
+              :icon="showSidebar ? 'mdi:chevron-left' : 'mdi:menu'"
+            />
           </button>
         </div>
       </div>
@@ -441,26 +498,40 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
         </div>
 
         <div v-else class="collections-list">
-          <div 
-            v-for="req in collections" 
-            :key="req.id" 
+          <div
+            v-for="req in collections"
+            :key="req.id"
             class="collection-item"
             :class="{ active: activeRequestId === req.id }"
             @click="selectRequest(req)"
           >
-            <span class="item-method" :style="{ color: getMethodColor(req.method) }">{{ req.method }}</span>
+            <span
+              class="item-method"
+              :style="{ color: getMethodColor(req.method) }"
+              >{{ req.method }}</span
+            >
             <span class="item-name">{{ req.name }}</span>
 
             <!-- 3-dot menu -->
             <div class="item-menu-wrap" @click.stop>
-              <button class="item-menu-btn" :class="{ active: openMenuId === req.id }" @click="openContextMenu(req.id)">
+              <button
+                class="item-menu-btn"
+                :class="{ active: openMenuId === req.id }"
+                @click="openContextMenu(req.id)"
+              >
                 <iconify-icon icon="mdi:dots-vertical" />
               </button>
               <div v-if="openMenuId === req.id" class="item-dropdown">
-                <button class="item-dropdown-action" @click="openRenameModal(req)">
+                <button
+                  class="item-dropdown-action"
+                  @click="openRenameModal(req)"
+                >
                   <iconify-icon icon="mdi:pencil-outline" /> Rename
                 </button>
-                <button class="item-dropdown-action danger" @click="deleteRequest(req.id)">
+                <button
+                  class="item-dropdown-action danger"
+                  @click="deleteRequest(req.id)"
+                >
                   <iconify-icon icon="mdi:delete-outline" /> Delete
                 </button>
               </div>
@@ -470,258 +541,387 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
       </aside>
 
       <div class="playground-content">
-
-    <!-- Request Tabs Bar -->
-    <div class="request-tabs-bar">
-      <div class="request-tab active">
-        <span class="tab-method" :style="{ color: methodColor }">{{ method }}</span>
-        <span class="tab-url">{{ displayUrl }}</span>
-        <button class="tab-close" @click="createNewRequest">
-          <iconify-icon icon="mdi:close" />
-        </button>
-      </div>
-      <button class="new-request-tab-btn" title="New Request" @click="createNewRequest">
-        <iconify-icon icon="mdi:plus" />
-      </button>
-    </div>
-
-    <!-- URL Bar -->
-    <div class="url-bar">
-      <select v-model="method" class="method-select" :style="{ color: methodColor }">
-        <option v-for="m in httpMethods" :key="m" :value="m" :style="{ color: methodColor }">{{ m }}</option>
-      </select>
-      <input
-        v-model="url"
-        type="text"
-        class="url-input"
-        placeholder="https://api.example.com/endpoint"
-        @keydown.enter="sendRequest"
-      />
-      
-      <button 
-        v-if="auth.isLoggedIn"
-        class="save-btn" 
-        :class="{ active: activeRequestId }"
-        v-tooltip="'Save Request'"
-        @click="handleSave"
-      >
-        <iconify-icon v-if="isSaving" icon="mdi:loading" class="spin" />
-        <iconify-icon v-else icon="mdi:content-save-outline" />
-      </button>
-
-      <button class="send-btn" :disabled="isLoading" @click="sendRequest">
-        <iconify-icon v-if="isLoading" icon="mdi:loading" class="spin" />
-        <iconify-icon v-else icon="mdi:send" />
-        <span>Send</span>
-      </button>
-    </div>
-
-    <!-- Main Area -->
-    <div class="main-area">
-      <!-- Request Pane -->
-      <div class="request-pane">
-        <div class="tab-bar">
+        <!-- Request Tabs Bar -->
+        <div class="request-tabs-bar">
+          <div class="request-tab active">
+            <span class="tab-method" :style="{ color: methodColor }">{{
+              method
+            }}</span>
+            <span class="tab-url">{{ displayUrl }}</span>
+            <button class="tab-close" @click="createNewRequest">
+              <iconify-icon icon="mdi:close" />
+            </button>
+          </div>
           <button
-            v-for="tab in (['params', 'headers', 'auth', 'body'] as ActiveTab[])"
-            :key="tab"
-            class="tab-btn"
-            :class="{ active: activeTab === tab }"
-            @click="activeTab = tab"
+            class="new-request-tab-btn"
+            title="New Request"
+            @click="createNewRequest"
           >
-            {{ tab.charAt(0).toUpperCase() + tab.slice(1) }}
-            <span
-              v-if="tab === 'params' && params.some(p => p.key)"
-              class="tab-badge"
-            >{{ params.filter(p => p.key).length }}</span>
-            <span
-              v-if="tab === 'headers' && headers.some(h => h.key)"
-              class="tab-badge"
-            >{{ headers.filter(h => h.key).length }}</span>
-            <span v-if="tab === 'auth' && authType !== 'none'" class="tab-badge dot" />
-            <span
-              v-if="tab === 'body' && body.trim()"
-              class="tab-badge dot"
-            />
+            <iconify-icon icon="mdi:plus" />
           </button>
         </div>
 
-        <!-- Params Tab -->
-        <div v-if="activeTab === 'params'" class="tab-content">
-          <div class="kv-table">
-            <div class="kv-head">
-              <span class="kv-col-check"></span>
-              <span class="kv-col-key">Key</span>
-              <span class="kv-col-val">Value</span>
-              <span class="kv-col-action"></span>
-            </div>
-            <div v-for="row in params" :key="row.id" class="kv-row">
-              <input v-model="row.enabled" type="checkbox" class="kv-check" />
-              <input v-model="row.key" type="text" class="kv-input" placeholder="name" @input="row.key && params[params.length-1].key ? addRow(params) : null" />
-              <input v-model="row.value" type="text" class="kv-input" placeholder="value" />
-              <button class="kv-remove" @click="removeRow(params, row.id)">
-                <iconify-icon icon="mdi:close" />
-              </button>
-            </div>
-            <button class="kv-add-btn" @click="addRow(params)">
-              <iconify-icon icon="mdi:plus" /> Add Parameter
-            </button>
-          </div>
-        </div>
-
-        <!-- Headers Tab -->
-        <div v-if="activeTab === 'headers'" class="tab-content">
-          <div class="kv-table">
-            <div class="kv-head">
-              <span class="kv-col-check"></span>
-              <span class="kv-col-key">Key</span>
-              <span class="kv-col-val">Value</span>
-              <span class="kv-col-action"></span>
-            </div>
-            <div v-for="row in headers" :key="row.id" class="kv-row">
-              <input v-model="row.enabled" type="checkbox" class="kv-check" />
-              <input v-model="row.key" type="text" class="kv-input" placeholder="Content-Type" />
-              <input v-model="row.value" type="text" class="kv-input" placeholder="application/json" />
-              <button class="kv-remove" @click="removeRow(headers, row.id)">
-                <iconify-icon icon="mdi:close" />
-              </button>
-            </div>
-            <button class="kv-add-btn" @click="addRow(headers)">
-              <iconify-icon icon="mdi:plus" /> Add Header
-            </button>
-          </div>
-        </div>
-
-        <!-- Auth Tab -->
-        <div v-if="activeTab === 'auth'" class="tab-content">
-          <div class="auth-section">
-            <label class="auth-label">Auth Type</label>
-            <div class="auth-type-group">
-              <button
-                v-for="type in (['none', 'basic', 'bearer'] as AuthType[])"
-                :key="type"
-                class="auth-type-btn"
-                :class="{ active: authType === type }"
-                @click="authType = type"
-              >{{ type === 'none' ? 'None' : type === 'basic' ? 'Basic Auth' : 'Bearer Token' }}</button>
-            </div>
-
-            <div v-if="authType === 'basic'" class="auth-fields">
-              <div class="form-field">
-                <label>Username</label>
-                <input v-model="authBasicUser" type="text" class="pg-input" placeholder="username" />
-              </div>
-              <div class="form-field">
-                <label>Password</label>
-                <input v-model="authBasicPass" type="password" class="pg-input" placeholder="••••••••" />
-              </div>
-              <p class="auth-credentials-notice"><iconify-icon icon="mdi:lock-outline" /> Credentials are not saved with the request.</p>
-            </div>
-
-            <div v-if="authType === 'bearer'" class="auth-fields">
-              <div class="form-field">
-                <label>Token</label>
-                <input v-model="authBearerToken" type="text" class="pg-input" placeholder="eyJhbGciOi..." />
-              </div>
-              <p class="auth-credentials-notice"><iconify-icon icon="mdi:lock-outline" /> Credentials are not saved with the request.</p>
-            </div>
-
-            <div v-if="authType === 'none'" class="auth-empty">
-              <iconify-icon icon="mdi:lock-open-outline" class="auth-empty-icon" />
-              <p>No authentication selected. Select an auth type above to get started.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Body Tab -->
-        <div v-if="activeTab === 'body'" class="tab-content body-tab">
-          <div class="body-header">
-            <span class="body-label">JSON</span>
-            <button v-if="body.trim()" class="body-format-btn" @click="() => { try { body = JSON.stringify(JSON.parse(body), null, 2) } catch {} }">
-              <iconify-icon icon="mdi:code-braces" /> Format
-            </button>
-            <button v-if="body.trim()" class="body-clear-btn" @click="body = ''">
-              <iconify-icon icon="mdi:close" /> Clear
-            </button>
-          </div>
-          <textarea
-            v-model="body"
-            class="body-textarea"
-            placeholder='{\n  "key": "value"\n}'
-            spellcheck="false"
+        <!-- URL Bar -->
+        <div class="url-bar">
+          <select
+            v-model="method"
+            class="method-select"
+            :style="{ color: methodColor }"
+          >
+            <option
+              v-for="m in httpMethods"
+              :key="m"
+              :value="m"
+              :style="{ color: methodColor }"
+            >
+              {{ m }}
+            </option>
+          </select>
+          <input
+            v-model="url"
+            type="text"
+            class="url-input"
+            placeholder="https://api.example.com/endpoint"
+            @keydown.enter="sendRequest"
           />
-        </div>
-      </div>
 
-      <!-- Response Pane -->
-      <div class="response-pane">
-        <!-- Not Sent Yet -->
-        <div v-if="!hasResponse && !isLoading" class="response-empty">
-          <div class="response-empty-inner">
-            <iconify-icon icon="mdi:file-document-outline" class="empty-icon" />
-            <p>Not sent</p>
-            <span>Hit Send to get a response</span>
-          </div>
-        </div>
+          <button
+            v-if="auth.isLoggedIn"
+            class="save-btn"
+            :class="{ active: activeRequestId }"
+            v-tooltip="'Save Request'"
+            @click="handleSave"
+          >
+            <iconify-icon v-if="isSaving" icon="mdi:loading" class="spin" />
+            <iconify-icon v-else icon="mdi:content-save-outline" />
+          </button>
 
-        <!-- Loading -->
-        <div v-if="isLoading" class="response-empty">
-          <div class="response-empty-inner">
-            <iconify-icon icon="mdi:loading" class="empty-icon spin" />
-            <p>Sending request...</p>
-          </div>
+          <button class="send-btn" :disabled="isLoading" @click="sendRequest">
+            <iconify-icon v-if="isLoading" icon="mdi:loading" class="spin" />
+            <iconify-icon v-else icon="mdi:send" />
+            <span>Send</span>
+          </button>
         </div>
 
-        <!-- Response -->
-        <div v-if="hasResponse && !isLoading" class="response-content">
-          <!-- Status Bar -->
-          <div class="response-meta-bar">
-            <div v-if="responseStatus !== null" class="response-status">
-              <span class="status-badge" :class="{ success: isSuccessStatus, error: isErrorStatus }">
-                {{ responseStatus }} {{ responseStatusText }}
-              </span>
-            </div>
-            <div v-if="responseTime !== null" class="response-time">
-              <iconify-icon icon="mdi:clock-outline" />
-              {{ responseTime }}ms
-            </div>
-          </div>
-
-          <!-- Error Display -->
-          <div v-if="responseError" class="response-error">
-            <iconify-icon icon="mdi:alert-circle-outline" />
-            {{ responseError }}
-          </div>
-
-          <!-- JSON Viewer -->
-          <div v-if="responseData !== null && !responseError" class="json-viewer">
-            <div class="json-toolbar">
-              <span class="json-toolbar-label">Response</span>
+        <!-- Main Area -->
+        <div class="main-area">
+          <!-- Request Pane -->
+          <div class="request-pane">
+            <div class="tab-bar">
               <button
-                class="json-copy-btn"
-                @click="copyToClipboard(formattedResponse)"
+                v-for="tab in [
+                  'params',
+                  'headers',
+                  'auth',
+                  'body',
+                ] as ActiveTab[]"
+                :key="tab"
+                class="tab-btn"
+                :class="{ active: activeTab === tab }"
+                @click="activeTab = tab"
               >
-                <iconify-icon icon="mdi:content-copy" /> Copy
+                {{ tab.charAt(0).toUpperCase() + tab.slice(1) }}
+                <span
+                  v-if="tab === 'params' && params.some((p) => p.key)"
+                  class="tab-badge"
+                  >{{ params.filter((p) => p.key).length }}</span
+                >
+                <span
+                  v-if="tab === 'headers' && headers.some((h) => h.key)"
+                  class="tab-badge"
+                  >{{ headers.filter((h) => h.key).length }}</span
+                >
+                <span
+                  v-if="tab === 'auth' && authType !== 'none'"
+                  class="tab-badge dot"
+                />
+                <span
+                  v-if="tab === 'body' && body.trim()"
+                  class="tab-badge dot"
+                />
               </button>
             </div>
-            <pre class="json-pre" v-html="highlightedJson"></pre>
+
+            <!-- Params Tab -->
+            <div v-if="activeTab === 'params'" class="tab-content">
+              <div class="kv-table">
+                <div class="kv-head">
+                  <span class="kv-col-check"></span>
+                  <span class="kv-col-key">Key</span>
+                  <span class="kv-col-val">Value</span>
+                  <span class="kv-col-action"></span>
+                </div>
+                <div v-for="row in params" :key="row.id" class="kv-row">
+                  <input
+                    v-model="row.enabled"
+                    type="checkbox"
+                    class="kv-check"
+                  />
+                  <input
+                    v-model="row.key"
+                    type="text"
+                    class="kv-input"
+                    placeholder="name"
+                    @input="
+                      row.key && params[params.length - 1].key
+                        ? addRow(params)
+                        : null
+                    "
+                  />
+                  <input
+                    v-model="row.value"
+                    type="text"
+                    class="kv-input"
+                    placeholder="value"
+                  />
+                  <button class="kv-remove" @click="removeRow(params, row.id)">
+                    <iconify-icon icon="mdi:close" />
+                  </button>
+                </div>
+                <button class="kv-add-btn" @click="addRow(params)">
+                  <iconify-icon icon="mdi:plus" /> Add Parameter
+                </button>
+              </div>
+            </div>
+
+            <!-- Headers Tab -->
+            <div v-if="activeTab === 'headers'" class="tab-content">
+              <div class="kv-table">
+                <div class="kv-head">
+                  <span class="kv-col-check"></span>
+                  <span class="kv-col-key">Key</span>
+                  <span class="kv-col-val">Value</span>
+                  <span class="kv-col-action"></span>
+                </div>
+                <div v-for="row in headers" :key="row.id" class="kv-row">
+                  <input
+                    v-model="row.enabled"
+                    type="checkbox"
+                    class="kv-check"
+                  />
+                  <input
+                    v-model="row.key"
+                    type="text"
+                    class="kv-input"
+                    placeholder="Content-Type"
+                  />
+                  <input
+                    v-model="row.value"
+                    type="text"
+                    class="kv-input"
+                    placeholder="application/json"
+                  />
+                  <button class="kv-remove" @click="removeRow(headers, row.id)">
+                    <iconify-icon icon="mdi:close" />
+                  </button>
+                </div>
+                <button class="kv-add-btn" @click="addRow(headers)">
+                  <iconify-icon icon="mdi:plus" /> Add Header
+                </button>
+              </div>
+            </div>
+
+            <!-- Auth Tab -->
+            <div v-if="activeTab === 'auth'" class="tab-content">
+              <div class="auth-section">
+                <label class="auth-label">Auth Type</label>
+                <div class="auth-type-group">
+                  <button
+                    v-for="type in ['none', 'basic', 'bearer'] as AuthType[]"
+                    :key="type"
+                    class="auth-type-btn"
+                    :class="{ active: authType === type }"
+                    @click="authType = type"
+                  >
+                    {{
+                      type === "none"
+                        ? "None"
+                        : type === "basic"
+                          ? "Basic Auth"
+                          : "Bearer Token"
+                    }}
+                  </button>
+                </div>
+
+                <div v-if="authType === 'basic'" class="auth-fields">
+                  <div class="form-field">
+                    <label>Username</label>
+                    <input
+                      v-model="authBasicUser"
+                      type="text"
+                      class="pg-input"
+                      placeholder="username"
+                    />
+                  </div>
+                  <div class="form-field">
+                    <label>Password</label>
+                    <input
+                      v-model="authBasicPass"
+                      type="password"
+                      class="pg-input"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <p class="auth-credentials-notice">
+                    <iconify-icon icon="mdi:lock-outline" /> Credentials are not
+                    saved with the request.
+                  </p>
+                </div>
+
+                <div v-if="authType === 'bearer'" class="auth-fields">
+                  <div class="form-field">
+                    <label>Token</label>
+                    <input
+                      v-model="authBearerToken"
+                      type="text"
+                      class="pg-input"
+                      placeholder="eyJhbGciOi..."
+                    />
+                  </div>
+                  <p class="auth-credentials-notice">
+                    <iconify-icon icon="mdi:lock-outline" /> Credentials are not
+                    saved with the request.
+                  </p>
+                </div>
+
+                <div v-if="authType === 'none'" class="auth-empty">
+                  <iconify-icon
+                    icon="mdi:lock-open-outline"
+                    class="auth-empty-icon"
+                  />
+                  <p>
+                    No authentication selected. Select an auth type above to get
+                    started.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Body Tab -->
+            <div v-if="activeTab === 'body'" class="tab-content body-tab">
+              <div class="body-header">
+                <span class="body-label">JSON</span>
+                <button
+                  v-if="body.trim()"
+                  class="body-format-btn"
+                  @click="
+                    () => {
+                      try {
+                        body = JSON.stringify(JSON.parse(body), null, 2);
+                      } catch {}
+                    }
+                  "
+                >
+                  <iconify-icon icon="mdi:code-braces" /> Format
+                </button>
+                <button
+                  v-if="body.trim()"
+                  class="body-clear-btn"
+                  @click="body = ''"
+                >
+                  <iconify-icon icon="mdi:close" /> Clear
+                </button>
+              </div>
+              <textarea
+                v-model="body"
+                class="body-textarea"
+                placeholder='{\n  "key": "value"\n}'
+                spellcheck="false"
+              />
+            </div>
           </div>
 
-          <!-- Non-JSON or empty Response -->
-          <div v-if="responseData !== null && typeof responseData === 'string'" class="json-viewer">
-            <pre class="json-pre">{{ responseData }}</pre>
+          <!-- Response Pane -->
+          <div class="response-pane">
+            <!-- Not Sent Yet -->
+            <div v-if="!hasResponse && !isLoading" class="response-empty">
+              <div class="response-empty-inner">
+                <iconify-icon
+                  icon="mdi:file-document-outline"
+                  class="empty-icon"
+                />
+                <p>Not sent</p>
+                <span>Hit Send to get a response</span>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="isLoading" class="response-empty">
+              <div class="response-empty-inner">
+                <iconify-icon icon="mdi:loading" class="empty-icon spin" />
+                <p>Sending request...</p>
+              </div>
+            </div>
+
+            <!-- Response -->
+            <div v-if="hasResponse && !isLoading" class="response-content">
+              <!-- Status Bar -->
+              <div class="response-meta-bar">
+                <div v-if="responseStatus !== null" class="response-status">
+                  <span
+                    class="status-badge"
+                    :class="{ success: isSuccessStatus, error: isErrorStatus }"
+                  >
+                    {{ responseStatus }} {{ responseStatusText }}
+                  </span>
+                </div>
+                <div v-if="responseTime !== null" class="response-time">
+                  <iconify-icon icon="mdi:clock-outline" />
+                  {{ responseTime }}ms
+                </div>
+              </div>
+
+              <!-- Error Display -->
+              <div v-if="responseError" class="response-error">
+                <iconify-icon icon="mdi:alert-circle-outline" />
+                {{ responseError }}
+              </div>
+
+              <!-- JSON Viewer -->
+              <div
+                v-if="responseData !== null && !responseError"
+                class="json-viewer"
+              >
+                <div class="json-toolbar">
+                  <span class="json-toolbar-label">Response</span>
+                  <button
+                    class="json-copy-btn"
+                    @click="copyToClipboard(formattedResponse)"
+                  >
+                    <iconify-icon icon="mdi:content-copy" /> Copy
+                  </button>
+                </div>
+                <pre class="json-pre" v-html="highlightedJson"></pre>
+              </div>
+
+              <!-- Non-JSON or empty Response -->
+              <div
+                v-if="responseData !== null && typeof responseData === 'string'"
+                class="json-viewer"
+              >
+                <pre class="json-pre">{{ responseData }}</pre>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- main-area -->
       </div>
-    </div> <!-- main-area -->
-    </div> <!-- playground-content -->
-  </div> <!-- playground-layout -->
+      <!-- playground-content -->
+    </div>
+    <!-- playground-layout -->
 
     <!-- Rename Modal -->
-    <div v-if="showRenameModal" class="modal-overlay" @click.self="showRenameModal = false">
+    <div
+      v-if="showRenameModal"
+      class="modal-overlay"
+      @click.self="showRenameModal = false"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <h3>Rename Request</h3>
-          <button @click="showRenameModal = false"><iconify-icon icon="mdi:close" /></button>
+          <button @click="showRenameModal = false">
+            <iconify-icon icon="mdi:close" />
+          </button>
         </div>
         <div class="modal-body">
           <label>New Name</label>
@@ -735,42 +935,54 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
           />
         </div>
         <div class="modal-footer">
-          <button class="modal-cancel" @click="showRenameModal = false">Cancel</button>
+          <button class="modal-cancel" @click="showRenameModal = false">
+            Cancel
+          </button>
           <button
             class="modal-save"
             :disabled="!renameValue.trim()"
             @click="renameRequest"
-          >Rename</button>
+          >
+            Rename
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Save Modal -->
-    <div v-if="showSaveModal" class="modal-overlay" @click.self="showSaveModal = false">
+    <div
+      v-if="showSaveModal"
+      class="modal-overlay"
+      @click.self="showSaveModal = false"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <h3>Save Request</h3>
-          <button @click="showSaveModal = false"><iconify-icon icon="mdi:close" /></button>
+          <button @click="showSaveModal = false">
+            <iconify-icon icon="mdi:close" />
+          </button>
         </div>
         <div class="modal-body">
           <label>Request Name</label>
-          <input 
-            v-model="requestName" 
-            type="text" 
-            class="pg-input" 
+          <input
+            v-model="requestName"
+            type="text"
+            class="pg-input"
             placeholder="e.g. Get User Profile"
             @keydown.enter="performSave()"
             autofocus
           />
         </div>
         <div class="modal-footer">
-          <button class="modal-cancel" @click="showSaveModal = false">Cancel</button>
-          <button 
-            class="modal-save" 
+          <button class="modal-cancel" @click="showSaveModal = false">
+            Cancel
+          </button>
+          <button
+            class="modal-save"
             :disabled="!requestName.trim() || isSaving"
             @click="performSave()"
           >
-            {{ isSaving ? 'Saving...' : 'Save' }}
+            {{ isSaving ? "Saving..." : "Save" }}
           </button>
         </div>
       </div>
@@ -857,7 +1069,8 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   background: rgba(74, 222, 128, 0.1);
 }
 
-.sidebar-empty, .sidebar-loading {
+.sidebar-empty,
+.sidebar-loading {
   padding: 2rem 1rem;
   text-align: center;
   color: #484f58;
@@ -943,8 +1156,14 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   animation: dropdownFade 0.12s ease;
 }
 @keyframes dropdownFade {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .item-dropdown-action {
   display: flex;
@@ -1080,7 +1299,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   min-height: 100vh;
   background: #0d1117;
   color: #e6edf3;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   display: flex;
   flex-direction: column;
 }
@@ -1129,7 +1348,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   border-bottom: none;
   border-radius: 8px 8px 0 0;
   font-size: 0.82rem;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
   color: #8b949e;
   position: relative;
 }
@@ -1139,7 +1358,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   border-color: #30363d;
 }
 .request-tab.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -1226,9 +1445,11 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   padding: 0.55rem 1rem;
   color: #e6edf3;
   font-size: 0.9rem;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 .url-input:focus {
   border-color: #4ade80;
@@ -1250,7 +1471,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    transform 0.1s;
   white-space: nowrap;
 }
 .send-btn:hover:not(:disabled) {
@@ -1305,7 +1528,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
   margin-bottom: -1px;
 }
 .tab-btn:hover {
@@ -1384,7 +1609,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   padding: 0.45rem 0.6rem;
   color: #e6edf3;
   font-size: 0.82rem;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   outline: none;
   width: 100%;
   transition: border-color 0.2s;
@@ -1409,7 +1634,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   justify-content: center;
   justify-self: center;
 }
-.kv-remove:hover { color: #f87171; }
+.kv-remove:hover {
+  color: #f87171;
+}
 
 .kv-add-btn {
   display: flex;
@@ -1423,7 +1650,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   font-size: 0.82rem;
   cursor: pointer;
   margin-top: 0.35rem;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
   width: 100%;
 }
 .kv-add-btn:hover {
@@ -1487,7 +1716,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   padding: 0.55rem 0.75rem;
   color: #e6edf3;
   font-size: 0.85rem;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   outline: none;
   transition: border-color 0.2s;
   width: 100%;
@@ -1510,8 +1739,14 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   text-align: center;
   color: #484f58;
 }
-.auth-empty-icon { font-size: 2rem; }
-.auth-empty p { margin: 0; font-size: 0.85rem; color: #8b949e; }
+.auth-empty-icon {
+  font-size: 2rem;
+}
+.auth-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #8b949e;
+}
 
 .auth-credentials-notice {
   margin: 0.5rem 0 0;
@@ -1544,7 +1779,8 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   color: #484f58;
   flex: 1;
 }
-.body-format-btn, .body-clear-btn {
+.body-format-btn,
+.body-clear-btn {
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -1555,17 +1791,25 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   color: #8b949e;
   font-size: 0.75rem;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
-.body-format-btn:hover { border-color: #4ade80; color: #4ade80; }
-.body-clear-btn:hover { border-color: #f87171; color: #f87171; }
+.body-format-btn:hover {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+.body-clear-btn:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
 
 .body-textarea {
   flex: 1;
   background: #0d1117;
   border: none;
   color: #e6edf3;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
   font-size: 0.85rem;
   line-height: 1.6;
   padding: 1rem;
@@ -1575,7 +1819,9 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   width: 100%;
   box-sizing: border-box;
 }
-.body-textarea::placeholder { color: #484f58; }
+.body-textarea::placeholder {
+  color: #484f58;
+}
 
 /* ---------- Response Pane ---------- */
 .response-pane {
@@ -1636,7 +1882,7 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   border-radius: 5px;
   font-size: 0.82rem;
   font-weight: 700;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
 }
 .status-badge.success {
   background: rgba(74, 222, 128, 0.12);
@@ -1706,16 +1952,21 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   color: #8b949e;
   font-size: 0.75rem;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
-.json-copy-btn:hover { border-color: #4ade80; color: #4ade80; }
+.json-copy-btn:hover {
+  border-color: #4ade80;
+  color: #4ade80;
+}
 
 .json-pre {
   flex: 1;
   overflow: auto;
   padding: 1rem;
   margin: 0;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
   font-size: 0.82rem;
   line-height: 1.7;
   white-space: pre;
@@ -1724,11 +1975,21 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
 }
 
 /* JSON syntax colors */
-:deep(.json-key)     { color: #79c0ff; }
-:deep(.json-string)  { color: #a5d6ff; }
-:deep(.json-number)  { color: #f2cc60; }
-:deep(.json-boolean) { color: #ff7b72; }
-:deep(.json-null)    { color: #8b949e; }
+:deep(.json-key) {
+  color: #79c0ff;
+}
+:deep(.json-string) {
+  color: #a5d6ff;
+}
+:deep(.json-number) {
+  color: #f2cc60;
+}
+:deep(.json-boolean) {
+  color: #ff7b72;
+}
+:deep(.json-null) {
+  color: #8b949e;
+}
 
 /* ---------- Spin Animation ---------- */
 .spin {
@@ -1736,13 +1997,27 @@ watch(() => auth.isLoggedIn, (isLoggedIn) => {
   display: inline-block;
 }
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------- Scrollbars ---------- */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
 </style>
