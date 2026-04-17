@@ -19,7 +19,7 @@ export default defineConfig({
                 }
             }
         }),
-        vueDevTools(),
+        ...(process.env.NODE_ENV !== 'production' ? [vueDevTools()] : []),
         Components({
             resolvers: [
                 PrimeVueResolver()
@@ -33,6 +33,15 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: 'dist'
+        outDir: 'dist',
+        rollupOptions: {
+            output: {
+                manualChunks(id: string) {
+                    if (id.includes('/leaflet')) return 'leaflet'
+                    if (id.includes('/primevue') || id.includes('/@primevue') || id.includes('/@primeuix')) return 'primevue'
+                    if (id.includes('/vue') || id.includes('/pinia') || id.includes('/vue-router') || id.includes('/@vue')) return 'vendor'
+                }
+            }
+        }
     }
 })
