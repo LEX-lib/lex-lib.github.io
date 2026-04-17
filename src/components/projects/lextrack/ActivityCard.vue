@@ -1,40 +1,38 @@
 <script setup lang="ts">
-import {ref} from "vue";
-import type {AddDsuMeeting} from "@/types/lextrack/dsu_meetings/types";
-import type {AddDsuSupport} from "@/types/lextrack/dsu_supports/types";
-import type {AddDsuTask} from "@/types/lextrack/dsu_tasks/types";
+import { ref } from "vue";
+import type { AddDsuMeeting } from "@/types/lextrack/dsu_meetings/types";
+import type { AddDsuSupport } from "@/types/lextrack/dsu_supports/types";
+import type { AddDsuTask } from "@/types/lextrack/dsu_tasks/types";
 
 // define a union type
-type SectionItem = AddDsuMeeting | AddDsuSupport | AddDsuTask
+type SectionItem = AddDsuMeeting | AddDsuSupport | AddDsuTask;
 
-const section = defineModel<SectionItem[]>('section',
-     { required: true }
-)
+const section = defineModel<SectionItem[]>("section", { required: true });
 
 defineProps<{
-  label : string;
+  label: string;
 }>();
 
 const emit = defineEmits<{
-  update: [index : number]
-  remove: [index : number]
-}>()
-
+  update: [index: number];
+  remove: [index: number];
+}>();
 
 const showInputGroup = ref(false);
-const hideInputGroup = (event : Event) => {
+const hideInputGroup = (event: Event) => {
   if (event instanceof KeyboardEvent && event.key === "Escape") {
     showInputGroup.value = false;
   }
   if (event instanceof KeyboardEvent && event.key === "Enter") {
-    section.value.push({ title: (event.target as HTMLInputElement).value } as SectionItem);
+    section.value.push({
+      title: (event.target as HTMLInputElement).value,
+    } as SectionItem);
     (event.target as HTMLInputElement).value = "";
   }
-}
+};
 
-const edit = (index : number) => emit('update', index);
-const remove = (index : number) => emit('remove', index);
-
+const edit = (index: number) => emit("update", index);
+const remove = (index: number) => emit("remove", index);
 </script>
 
 <template>
@@ -45,7 +43,11 @@ const remove = (index : number) => emit('remove', index);
           <span>{{ label }}</span>
           <Button rounded size="small" @click="showInputGroup = true">
             <template #icon>
-              <iconify-icon icon="mdi:add" width="16" height="16"></iconify-icon>
+              <iconify-icon
+                icon="mdi:add"
+                width="16"
+                height="16"
+              ></iconify-icon>
             </template>
           </Button>
         </div>
@@ -57,39 +59,77 @@ const remove = (index : number) => emit('remove', index);
         </div>
         <InputGroup v-if="showInputGroup">
           <InputGroupAddon>
-            <iconify-icon icon="mdi:bookmark-box-outline" width="20" height="20" style="color: #024"></iconify-icon>
+            <iconify-icon
+              icon="mdi:bookmark-box-outline"
+              width="20"
+              height="20"
+              style="color: #024"
+            ></iconify-icon>
           </InputGroupAddon>
-          <InputText placeholder="Title" size="small" inputmode="text" @keydown="hideInputGroup"/>
+          <InputText
+            placeholder="Title"
+            size="small"
+            inputmode="text"
+            @keydown="hideInputGroup"
+          />
         </InputGroup>
 
         <template v-for="(item, index) in section" :key="index">
           <InputGroup class="my-1">
             <InputGroupAddon>
-              <iconify-icon icon="mdi:bookmark" width="20" height="20" style="color: #024"></iconify-icon>
+              <iconify-icon
+                icon="mdi:bookmark"
+                width="20"
+                height="20"
+                style="color: #024"
+              ></iconify-icon>
             </InputGroupAddon>
-            <InputText placeholder="Title" size="small" inputmode="text" readonly :model-value="item.title"/>
+            <InputText
+              placeholder="Title"
+              size="small"
+              inputmode="text"
+              readonly
+              :model-value="item.title"
+            />
             <InputGroupAddon>
-              <Button rounded size="small" variant="text" severity="secondary" @click="edit(index)">
+              <Button
+                rounded
+                size="small"
+                variant="text"
+                severity="secondary"
+                @click="edit(index)"
+              >
                 <template #icon>
-                  <iconify-icon icon="mdi:edit-outline" width="20" height="20"></iconify-icon>
+                  <iconify-icon
+                    icon="mdi:edit-outline"
+                    width="20"
+                    height="20"
+                  ></iconify-icon>
                 </template>
               </Button>
             </InputGroupAddon>
             <InputGroupAddon>
-              <Button rounded size="small" variant="text" severity="secondary" @click="remove(index)">
+              <Button
+                rounded
+                size="small"
+                variant="text"
+                severity="secondary"
+                @click="remove(index)"
+              >
                 <template #icon>
-                  <iconify-icon icon="mdi:delete-circle" width="20" height="20"></iconify-icon>
+                  <iconify-icon
+                    icon="mdi:delete-circle"
+                    width="20"
+                    height="20"
+                  ></iconify-icon>
                 </template>
               </Button>
             </InputGroupAddon>
           </InputGroup>
         </template>
-
       </template>
     </Card>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
