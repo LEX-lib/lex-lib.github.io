@@ -22,6 +22,13 @@ const projects = ref([
     link: '/projects/gift-exchange/join',
     status: 'Active',
     image: null
+  },
+  {
+    title: 'API Playground',
+    description: 'A browser-based API client inspired by Postman and HTTPie. Supports Params, Headers, Auth (Basic & Bearer), and JSON request bodies with a formatted response viewer.',
+    link: '/projects/api-playground',
+    status: 'Active',
+    image: null
   }
 ])
 </script>

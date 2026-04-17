@@ -21,13 +21,12 @@ const login = async ( { valid, values } : FormSubmitEvent) => {
     // Determine safe redirect target
     const redirectRaw = route.query.redirect;
     let target = '/';
-    if (typeof redirectRaw === 'string' && redirectRaw.startsWith('/')) {
+    if (typeof redirectRaw === 'string' && redirectRaw.startsWith('/') && !redirectRaw.startsWith('//')) {
       target = redirectRaw;
     }
 
     // Use replace so login is not kept in history
     await router.replace(target);
-    console.log(auth.user);
   } catch (error) {
     // Handle login error (e.g., show error message)
     console.error('Login failed:', error);

@@ -31,13 +31,11 @@ const viewSupportDialogVisibility = ref(false);
 const updateSupport = (index: number) => {
   support.value = supports.value[index] as AddDsuSupport;
   viewSupportDialogVisibility.value = true;
-  console.log(support.value);
 }
 
 const removeSupport = (index : number) => {
   support.value = supports.value[index] as AddDsuSupport;
   remove(supports.value, (_, i) => i === index);
-  console.log(supports.value);
 }
 
 /** MEETINGS */
@@ -55,13 +53,11 @@ const viewMeetingDialogVisibility = ref(false);
 const updateMeeting = (index: number) => {
   meeting.value = meetings.value[index] as AddDsuMeeting;
   viewMeetingDialogVisibility.value = true;
-  console.log(meeting.value);
 }
 
 const removeMeeting = (index : number) => {
   meeting.value = meetings.value[index] as AddDsuMeeting;
   remove(meetings.value, (_, i) => i === index);
-  console.log(meetings.value);
 }
 
 /** TASKS */
@@ -81,13 +77,11 @@ const updateTask = (index: number) => {
   //console.log(index);
   // task.value = tasks.value[index] as AddDsuTask;
   viewTaskDialogVisibility.value = true;
-  console.log(task.value);
 }
 
 const removeTask = (index : number) => {
   task.value = tasks.value[index] as AddDsuTask;
   remove(tasks.value, (_, i) => i === index);
-  console.log(tasks.value);
 }
 
 const isNoEntry = computed(() => {

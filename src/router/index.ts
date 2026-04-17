@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from "@/views/HomeView.vue";
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -8,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/login',
@@ -50,6 +49,11 @@ const router = createRouter({
     {
       path: '/projects/gift-exchange',
       redirect: '/projects/gift-exchange/join'
+    },
+    {
+      path: '/projects/api-playground',
+      name: 'api-playground',
+      component: () => import('@/components/projects/api-playground/ApiPlaygroundApp.vue'),
     },
     {
       path: '/blog',

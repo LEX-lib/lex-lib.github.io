@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
+import DOMPurify from 'dompurify';
+
+const sanitize = (html: string) => DOMPurify.sanitize(html);
 // import Calendar from 'primevue/calendar';
 // import InputText from 'primevue/inputtext';
 // import InputNumber from 'primevue/inputnumber';
@@ -52,7 +55,6 @@ const editorStyle = {
 // Fetch all data for a given date
 const fetchDataForDate = async (date: Date) => {
   const dateString = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD for querying
-  console.log(`Fetching data for ${dateString}`);
 
   // Replace these with your actual PocketBase API calls
   // Example: tasks.value = await pb.collection('main_tasks').getFullList({ filter: `date = '${dateString}'` });
@@ -61,7 +63,6 @@ const fetchDataForDate = async (date: Date) => {
   tasks.value = [];
   meetings.value = [];
   adminSupports.value = [];
-  console.log('Data cleared. Ready for new entries.');
 };
 
 // Watch for changes in the selected date and refetch data
@@ -90,7 +91,6 @@ const addTask = () => {
     jira_link: newTask.value.jira,
     description: newTask.value.desc,
   };
-  console.log("Submitting Task:", payload);
   // API Call: await pb.collection('main_tasks').create(payload);
 
   tasks.value.push(payload); // Optimistic update
@@ -108,7 +108,6 @@ const addMeeting = () => {
     duration_minutes: newMeeting.value.duration || 0,
     description: newMeeting.value.desc,
   };
-  console.log("Submitting Meeting:", payload);
   // API Call: await pb.collection('meetings').create(payload);
 
   meetings.value.push(payload); // Optimistic update
@@ -125,7 +124,6 @@ const addAdminSupport = () => {
     title: newAdminSupport.value.title,
     description: newAdminSupport.value.desc,
   };
-  console.log("Submitting Admin Support:", payload);
   // API Call: await pb.collection('admin_supports').create(payload);
 
   adminSupports.value.push(payload); // Optimistic update
@@ -184,7 +182,7 @@ const addAdminSupport = () => {
               <div v-for="(task, index) in tasks" :key="`task-${index}`" class="bg-gray-700 p-3 rounded-md">
                 <p class="font-bold text-white">{{ task.task_name }}</p>
                 <a :href="task.jira_link" target="_blank" class="text-sm text-indigo-400 hover:underline truncate">{{ task.jira_link }}</a>
-                <div class="text-sm text-gray-300 mt-2" v-html="task.description"></div>
+                <div class="text-sm text-gray-300 mt-2" v-html="sanitize(task.description)"></div>
               </div>
             </div>
           </div>
@@ -216,7 +214,7 @@ const addAdminSupport = () => {
                   <p class="font-bold text-white">{{ meeting.title }}</p>
                   <span class="text-xs bg-gray-600 text-white px-2 py-1 rounded-full">{{ meeting.duration_minutes }} mins</span>
                 </div>
-                <div class="text-sm text-gray-300 mt-2" v-html="meeting.description"></div>
+                <div class="text-sm text-gray-300 mt-2" v-html="sanitize(meeting.description)"></div>
               </div>
             </div>
           </div>
@@ -242,7 +240,7 @@ const addAdminSupport = () => {
               <div v-if="!adminSupports.length" class="text-gray-400">No support tasks logged for this date.</div>
               <div v-for="(support, index) in adminSupports" :key="`support-${index}`" class="bg-gray-700 p-3 rounded-md">
                 <p class="font-bold text-white">{{ support.title }}</p>
-                <div class="text-sm text-gray-300 mt-2" v-html="support.description"></div>
+                <div class="text-sm text-gray-300 mt-2" v-html="sanitize(support.description)"></div>
               </div>
             </div>
           </div>

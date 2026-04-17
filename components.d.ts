@@ -12,6 +12,7 @@ declare module 'vue' {
     AboutMeSection: typeof import('./src/components/AboutMeSection.vue')['default']
     ActivityCard: typeof import('./src/components/projects/lextrack/ActivityCard.vue')['default']
     AddMeeting: typeof import('./src/components/projects/lextrack/AddMeeting.vue')['default']
+    ApiPlaygroundApp: typeof import('./src/components/projects/api-playground/ApiPlaygroundApp.vue')['default']
     Avatar: typeof import('primevue/avatar')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
@@ -55,5 +56,6 @@ declare module 'vue' {
   }
   export interface GlobalDirectives {
     Ripple: typeof import('primevue/ripple')['default']
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

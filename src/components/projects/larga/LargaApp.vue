@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import * as L from 'leaflet';
-import {Geocoder, geocoder} from 'leaflet-control-geocoder';
-import { onMounted } from 'vue';
-const latitude = ref<number>(0);
-const longitude = ref<number>(0);
-const selectedRoute = ref<string | null>(null);
-const nearbyRoutes = ref<string[]>([]);
+import { ref, onMounted } from 'vue';
+import type * as LeafletType from 'leaflet';
 import { route3, route10 } from "@/constants/routes";
 
 import "leaflet/dist/leaflet.css";
 import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 
-//@import url('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css');
-//@import url('https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css');
+const latitude = ref<number>(0);
+const longitude = ref<number>(0);
+const selectedRoute = ref<string | null>(null);
+const nearbyRoutes = ref<string[]>([]);
+
+// Populated in onMounted via dynamic import
+let L!: typeof LeafletType;
+let geocoderFn!: (typeof import('leaflet-control-geocoder'))['geocoder'];
 
 
 // Example bus routes (array of lat/lng pairs)
@@ -49,7 +49,7 @@ function getDistance(latlng1: [number, number], latlng2: [number, number]) {
   return R * c;
 }
 
-function plotRoute(map: L.Map, route: typeof busRoutes[0]) {
+function plotRoute(map: LeafletType.Map, route: typeof busRoutes[0]) {
   // Remove existing polylines and markers
   map.eachLayer(layer => {
     if (layer instanceof L.Polyline || layer instanceof L.Marker) {
@@ -69,10 +69,17 @@ function plotRoute(map: L.Map, route: typeof busRoutes[0]) {
   // });
 }
 
-let map: L.Map;
-let tileLayer: L.TileLayer;
+let map!: LeafletType.Map;
+let tileLayer!: LeafletType.TileLayer;
 
 onMounted(async () => {
+  const [leafletMod, geocoderMod] = await Promise.all([
+    import('leaflet'),
+    import('leaflet-control-geocoder'),
+  ]);
+  L = leafletMod;
+  geocoderFn = geocoderMod.geocoder;
+
   try {
     //const position = await getCurrentLocation();
     latitude.value = 10.73057393205643;
@@ -123,7 +130,7 @@ onMounted(async () => {
 // Format: minLon,minLat,maxLon,maxLat
     //[10.680799927571027, 122.48585737549358], [10.794222130410443, 122.62574775929035]
     const bbox = "122.48585737549358,10.680799927571027,122.62574775929035,10.794222130410443";
-    geocoder({
+    geocoderFn({
       defaultMarkGeocode: false,
       geocoder: (L.Control as any).Geocoder.nominatim({
         geocodingQueryParams: {
@@ -181,7 +188,6 @@ function handleRouteClick(routeName: string) {
       </div>
     </template>
   </Card>
-<!--  @import url('https://cdn.jsdelivr.net/npm/leaflet-control-geocoder@3.3.0/dist/Control.Geocoder.min.css');-->
 </template>
 
 <style scoped>
