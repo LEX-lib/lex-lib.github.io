@@ -30,23 +30,22 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id: string) {
-          if (id.includes("/leaflet")) return "leaflet";
-          if (
-            id.includes("/primevue") ||
-            id.includes("/@primevue") ||
-            id.includes("/@primeuix")
-          )
-            return "primevue";
-          if (
-            id.includes("/vue") ||
-            id.includes("/pinia") ||
-            id.includes("/vue-router") ||
-            id.includes("/@vue")
-          )
-            return "vendor";
+        codeSplitting: {
+          groups: [
+            { name: "leaflet", test: /\/leaflet/, priority: 30 },
+            {
+              name: "primevue",
+              test: /\/primevue|\/\@primevue|\/\@primeuix/,
+              priority: 20,
+            },
+            {
+              name: "vendor",
+              test: /\/vue|\/pinia|\/vue-router|\/\@vue/,
+              priority: 10,
+            },
+          ],
         },
       },
     },
