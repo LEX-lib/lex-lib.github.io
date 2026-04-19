@@ -37,12 +37,12 @@ export default defineConfig({
             { name: "leaflet", test: /\/leaflet/, priority: 30 },
             {
               name: "primevue",
-              test: /\/primevue|\/\@primevue|\/\@primeuix/,
+              test: /\/primevue|\/@primevue|\/@primeuix/,
               priority: 20,
             },
             {
               name: "vendor",
-              test: /\/vue|\/pinia|\/vue-router|\/\@vue/,
+              test: /\/vue|\/pinia|\/vue-router|\/@vue/,
               priority: 10,
             },
           ],
