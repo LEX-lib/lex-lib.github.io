@@ -15,8 +15,8 @@ const items = ref([
   {
     label: "Projects",
     icon: "mdi:file-document-box",
-    //command: () => router.push('/projects'),
-    items: [
+    command: () => router.push('/projects'),
+    //items: [
       // {
       //   label: 'Larga',
       //   icon: 'mdi:bus-marker',
@@ -27,12 +27,12 @@ const items = ref([
       //   icon: 'mdi:notebook-edit-outline',
       //   command: () => router.push('/projects/lextrack')
       // },
-      {
-        label: "MonitoX",
-        icon: "mdi:gift-open-outline",
-        command: () => router.push("/projects/gift-exchange/join"),
-      },
-    ],
+      // {
+      //   label: "MonitoX",
+      //   icon: "mdi:gift-open-outline",
+      //   command: () => router.push("/projects/gift-exchange/join"),
+      // },
+    //],
   },
   {
     label: "Blogs",
@@ -71,7 +71,7 @@ const profileItems = ref([
       {
         label: "Logout",
         icon: "pi pi-sign-out",
-        shortcut: "⌘+Q",
+        //shortcut: "⌘+Q",
         command: () => logOut(),
       },
     ],
