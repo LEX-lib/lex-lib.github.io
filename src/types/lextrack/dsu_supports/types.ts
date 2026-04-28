@@ -1,4 +1,4 @@
-import type {RecordModel} from "pocketbase/dist/pocketbase.es";
+import type { RecordModel } from 'pocketbase';
 
 export interface DsuSupports extends RecordModel {
     id: string;
@@ -6,6 +6,7 @@ export interface DsuSupports extends RecordModel {
     updated: string;
     date: string;
     title: string;
+    link?: string;
     description?: string;
 }
 
