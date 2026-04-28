@@ -1,4 +1,4 @@
-import type {RecordModel} from "pocketbase";
+import type { RecordModel } from 'pocketbase';
 
 export interface DsuTasks extends RecordModel {
     id: string;
@@ -9,4 +9,5 @@ export interface DsuTasks extends RecordModel {
     jira_link?: string;
     description?: string;
 }
+
 export type AddDsuTask = Omit<DsuTasks, 'id' | 'created' | 'updated'>;
