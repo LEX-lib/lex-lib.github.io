@@ -17,7 +17,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 ### Types & Mappers
 
 - [x] **TYPES-01**: TypeScript types in `src/types/lextrack/dsu_meetings/types.d.ts` reflect the new `duration_unit` field (and helpers if needed)
-- [ ] **TYPES-02**: TypeScript types in `src/types/lextrack/dsu_supports/types.d.ts` include the new optional `link` field
+- [x] **TYPES-02**: TypeScript types in `src/types/lextrack/dsu_supports/types.d.ts` include the new optional `link` field
 - [ ] **TYPES-03**: New types under `src/types/lextrack/dsu_day_status/types.d.ts` for the day-status collection
 - [ ] **TYPES-04**: PocketBase mappers in `src/lib/pocketbase/` cover the new fields and the new collection (read + update + create)
 
@@ -104,7 +104,7 @@ Tracked but deferred.
 | SCHEMA-03 | Phase 1 | Complete (01-03) |
 | SCHEMA-04 | Phase 1 | Complete (01-01) |
 | TYPES-01 | Phase 2 | Complete |
-| TYPES-02 | Phase 2 | Pending |
+| TYPES-02 | Phase 2 | Complete (02-03) |
 | TYPES-03 | Phase 2 | Pending |
 | TYPES-04 | Phase 2 | Pending |
 | UI-MEET-01 | Phase 3 | Pending |
