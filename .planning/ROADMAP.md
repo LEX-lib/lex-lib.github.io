@@ -24,7 +24,11 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
   2. `dsu_supports` has an optional `link` field
   3. A `dsu_day_status` collection exists with `date`, `status`, and a unique constraint on `date`
   4. `.planning/pocketbase-schema.md` contains exact PocketBase admin steps (or migration JSON) to apply each change with zero data loss on existing records
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Write .planning/pocketbase-schema.md migration runbook
+- [ ] 01-02-PLAN.md — Write verify-schema.ts smoke test + npm run verify:schema script
+- [ ] 01-03-PLAN.md — User applies migration manually + runs smoke test (phase gate)
 
 ### Phase 2: Types & Mappers
 **Goal**: TypeScript interfaces and PocketBase mapper functions fully reflect the new schema so components can import correct types without casting or workarounds
@@ -90,7 +94,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema Foundation | 0/TBD | Not started | - |
+| 1. Schema Foundation | 0/3 | Not started | - |
 | 2. Types & Mappers | 0/TBD | Not started | - |
 | 3. Meeting & Admin UI | 0/TBD | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
