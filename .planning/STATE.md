@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 Phase: 1 of 6 (Schema Foundation)
 Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-04-28 — Roadmap created; milestone initialized
+Status: Context gathered — ready to plan
+Last activity: 2026-04-28 — Phase 1 CONTEXT.md captured (migration strategy + access rules locked)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -68,5 +68,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Roadmap and STATE.md created; REQUIREMENTS.md traceability updated; ready to plan Phase 1
-Resume file: None
+Stopped at: Phase 1 context gathered (CONTEXT.md committed)
+Resume file: .planning/phases/01-schema-foundation/01-CONTEXT.md
