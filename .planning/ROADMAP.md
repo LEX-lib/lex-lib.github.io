@@ -6,7 +6,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 
 ## Phases
 
-- [ ] **Phase 1: Schema Foundation** - Apply additive PocketBase schema changes and document migration steps
+- [x] **Phase 1: Schema Foundation** - Apply additive PocketBase schema changes and document migration steps
 - [ ] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
 - [ ] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code
 - [ ] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback
@@ -28,7 +28,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 Plans:
 - [x] 01-01-PLAN.md — Write .planning/pocketbase-schema.md migration runbook
 - [x] 01-02-PLAN.md — Write verify-schema.ts smoke test + npm run verify:schema script
-- [ ] 01-03-PLAN.md — User applies migration manually + runs smoke test (phase gate)
+- [x] 01-03-PLAN.md — User applies migration manually + runs smoke test (phase gate)
 
 ### Phase 2: Types & Mappers
 **Goal**: TypeScript interfaces and PocketBase mapper functions fully reflect the new schema so components can import correct types without casting or workarounds
@@ -94,7 +94,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema Foundation | 2/3 | In progress | - |
+| 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 0/TBD | Not started | - |
 | 3. Meeting & Admin UI | 0/TBD | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
