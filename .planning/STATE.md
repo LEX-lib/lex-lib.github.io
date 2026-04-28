@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 complete — all 3 plans done; schema migration applied and verified (exit 0, all 23 PASS lines); Phase 2 unblocked
-last_updated: "2026-04-28T14:25:08.827Z"
-last_activity: 2026-04-28 -- Phase 2 planning complete
+stopped_at: Phase 2 Plan 1 complete — dsu_meetings type module renamed, duration_unit added, constants.ts created
+last_updated: "2026-04-28T14:33:28.051Z"
+last_activity: 2026-04-28
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 9
-  completed_plans: 3
-  percent: 33
+  completed_plans: 4
+  percent: 44
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Capturing a day's stand-up activity must be fast, complete, and durable.
-**Current focus:** Phase 2 — Types & Mappers (unblocked)
+**Current focus:** Phase 2 — Types & Mappers
 
 ## Current Position
 
-Phase: 1 (Schema Foundation) — COMPLETE
-Plan: 3 of 3 (all complete)
+Phase: 2 (Types & Mappers) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-04-28 -- Phase 2 planning complete
+Last activity: 2026-04-28
 
 Progress: [██████████] 100% (Phase 1)
 
@@ -52,6 +52,7 @@ Progress: [██████████] 100% (Phase 1)
 - Trend: Stable (automated plans fast; human gate as expected)
 
 *Updated after each plan completion*
+| Phase 02 P01 | 2 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Recent decisions affecting current work:
 - 01-02: Dual-path superuser auth (_superusers PB 0.23+ with pb.admins fallback PB <0.23)
 - 01-02: Pin tsx ^4.21.0 in devDependencies for reproducible npm run verify:schema
 - 01-03: DEVIATION — live dsu_day_status.status has 5 values (sl, vl, holiday, bl, others); CONTEXT.md D-11 specified 3. Phase 2 types and Phase 5 UI must handle all 5. See 01-03-SUMMARY.md Deviations section.
+- [Phase ?]: 02-01: DurationUnit derived from as-const tuple; RecordModel normalized to pocketbase; Omit intersection for optional create field
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-28
-Stopped at: Phase 1 complete — all 3 plans done; schema migration applied and verified (exit 0, all 23 PASS lines); Phase 2 unblocked
-Resume file: .planning/phases/02-types-and-mappers/ (Phase 2 not yet planned)
+Last session: 2026-04-28T14:33:28.042Z
+Stopped at: Phase 2 Plan 1 complete — dsu_meetings type module renamed, duration_unit added, constants.ts created
+Resume file: None
