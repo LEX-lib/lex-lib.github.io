@@ -58,7 +58,14 @@ Plans:
   3. Admin form includes a URL input; saved admin entries show a clickable link icon in ActivityCard when a link is set
   4. The activity section previously labeled "Admin Tasks and Support" is now labeled "Admin"
   5. `npm run lint` passes with zero warnings; no `console.log` statements remain in `LexTrackView.vue` or any lextrack component; the commented-out Dialog block is gone
-**Plans**: TBD
+**Plans:** 6 plans
+Plans:
+- [ ] 03-01-PLAN.md — Create useDurationField composable (min↔hr conversion + reactive state)
+- [ ] 03-02-PLAN.md — ActivityCard link icon + inline-add defaults; register vTooltip directive
+- [ ] 03-03-PLAN.md — ManageSupport URL input + strip dark Tailwind overrides
+- [ ] 03-04-PLAN.md — LexTrackView "Admin" label + remove console.logs + remove commented Dialog block
+- [ ] 03-05-PLAN.md — ManageMeeting duration toggle integration + strip dark overrides (Wave 2)
+- [ ] 03-06-PLAN.md — Phase gate: type-check, lint, grep audit, dev-server smoke
 **UI hint**: yes
 
 ### Phase 4: Core Bug Fixes & Save UX
@@ -103,7 +110,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
-| 3. Meeting & Admin UI | 0/TBD | Not started | - |
+| 3. Meeting & Admin UI | 0/6 | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |
