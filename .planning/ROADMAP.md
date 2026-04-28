@@ -27,7 +27,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 **Plans:** 3 plans
 Plans:
 - [x] 01-01-PLAN.md — Write .planning/pocketbase-schema.md migration runbook
-- [ ] 01-02-PLAN.md — Write verify-schema.ts smoke test + npm run verify:schema script
+- [x] 01-02-PLAN.md — Write verify-schema.ts smoke test + npm run verify:schema script
 - [ ] 01-03-PLAN.md — User applies migration manually + runs smoke test (phase gate)
 
 ### Phase 2: Types & Mappers
@@ -94,7 +94,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema Foundation | 1/3 | In progress | - |
+| 1. Schema Foundation | 2/3 | In progress | - |
 | 2. Types & Mappers | 0/TBD | Not started | - |
 | 3. Meeting & Admin UI | 0/TBD | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |

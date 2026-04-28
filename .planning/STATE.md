@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "01-01-PLAN.md complete — pocketbase-schema.md written; ready for 01-02"
-last_updated: "2026-04-28T11:47:00Z"
-last_activity: 2026-04-28 -- Completed 01-01 (pocketbase-schema.md migration runbook)
+stopped_at: "01-02-PLAN.md complete — verify-schema.ts smoke script + verify:schema npm script written; ready for 01-03"
+last_updated: "2026-04-28T11:52:00Z"
+last_activity: 2026-04-28 -- Completed 01-02 (verify-schema.ts smoke-test script and npm run verify:schema)
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -26,30 +26,30 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 1 (Schema Foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase 1
-Last activity: 2026-04-28 -- Completed 01-01 (pocketbase-schema.md migration runbook)
+Last activity: 2026-04-28 -- Completed 01-02 (verify-schema.ts smoke-test script and npm run verify:schema)
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████░░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: 2 min
-- Total execution time: 0.03 hours
+- Total execution time: 0.07 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| Phase 1 | 1 | 2 min | 2 min |
+| Phase 1 | 2 | 4 min | 2 min |
 
 **Recent Trend:**
 
-- Last 5 plans: —
-- Trend: —
+- Last 5 plans: 2 min, 2 min
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - Initialization: `jira_link` stays single field on `dsu_tasks`; extra URLs go in description
 - Initialization: `dsu_day_status` is a new standalone collection (not embedded on existing records)
 - Initialization: Tests are consolidated into a final Phase 6 quality gate (not spread across phases)
+- 01-02: Use process.env (not import.meta.env) — verify-schema.ts runs in Node, not Vite
+- 01-02: Dual-path superuser auth (_superusers PB 0.23+ with pb.admins fallback PB <0.23)
+- 01-02: Pin tsx ^4.21.0 in devDependencies for reproducible npm run verify:schema
 
 ### Pending Todos
 
@@ -86,5 +89,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: 01-01-PLAN.md complete — pocketbase-schema.md written; ready for 01-02
-Resume file: .planning/phases/01-schema-foundation/01-02-PLAN.md
+Stopped at: 01-02-PLAN.md complete — verify-schema.ts smoke script + verify:schema npm script written; ready for 01-03
+Resume file: .planning/phases/01-schema-foundation/01-03-PLAN.md
