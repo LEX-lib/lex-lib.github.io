@@ -13,6 +13,9 @@ dist/
 !.env.example
 !.env.template
 *.local
+local.jsonc
+# Local Claude Code settings (per-user)
+.claude/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
