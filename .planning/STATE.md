@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 Plan 4 complete — meeting/support/task mappers rewritten to full triple (mapToCreate/Update/FromRecord); duration_unit and link carried through all shapes
-last_updated: "2026-04-28T14:48:20Z"
+stopped_at: Phase 2 Plan 5 complete — dsuDayStatusMapper created with mapToCreateDayStatus and mapFromRecordDayStatus only; no mapToUpdateDayStatus per D-11
+last_updated: "2026-04-28T14:55:00Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 9
-  completed_plans: 5
-  percent: 56
+  completed_plans: 6
+  percent: 67
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 2 (Types & Mappers) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-04-28
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100% (Phase 1)
 | Phase 02 P02 | 2 | 3 tasks | 2 files |
 | Phase 02 P03 | 2 | 3 tasks | 2 files |
 | Phase 02 P04 | 2 | 4 tasks | 3 files |
+| Phase 02 P05 | 1 | 2 tasks | 1 file |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting current work:
 - 02-02: DsuDayStatusValue 5-value union (sl, vl, holiday, bl, others) from live PB schema; bl='Birthday Leave', others='Other' (singular label); types.ts uses plain .ts extension per D-04
 - 02-03: link?: string optional on DsuSupports (matches PB URL field required=false); no constants.ts for supports or tasks (no enum-shaped fields per D-05); RecordModel import normalized from pocketbase/dist/pocketbase.es to 'pocketbase'
 - 02-04: mapFromRecordMeeting is the single legacy-default chokepoint for duration_unit ?? 'minutes'; mapToCreateMeeting also defaults to 'minutes' so new rows are pre-normalized; mapFromRecordSupport/Task are pass-through spreads for symmetry (D-12)
+- 02-05: No mapToUpdateDayStatus — day-status semantics are set-status-for-a-date (D-11); Phase 5 decides between fetch-then-replace or delete-then-create; mapFromRecordDayStatus is pass-through spread for future chokepoint (D-12)
 
 ### Pending Todos
 
@@ -97,6 +99,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-28T14:48:20Z
-Stopped at: Phase 2 Plan 4 complete — meeting/support/task mappers rewritten to full triple; duration_unit and link carried through all shapes; stale DsuSupports comment removed from dsuTaskMapper
+Last session: 2026-04-28T14:55:00Z
+Stopped at: Phase 2 Plan 5 complete — dsuDayStatusMapper created with mapToCreateDayStatus and mapFromRecordDayStatus only; no mapToUpdateDayStatus per D-11
 Resume file: None
