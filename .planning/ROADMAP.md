@@ -39,7 +39,14 @@ Plans:
   2. `DsuSupports` type includes `link?: string` and `npm run type-check` passes
   3. New `DsuDayStatus` types exist under `src/types/lextrack/dsu_day_status/types.d.ts`
   4. Mapper functions for all three modified/new entities handle read, create, and update operations without omitting the new fields
-**Plans**: TBD
+**Plans:** 6 plans
+Plans:
+- [ ] 02-01-PLAN.md — Rename dsu_meetings types.d.ts → types.ts, add duration_unit, create constants.ts
+- [ ] 02-02-PLAN.md — Create new dsu_day_status types.ts and constants.ts (5-value status enum)
+- [ ] 02-03-PLAN.md — Rename dsu_supports + dsu_tasks types.d.ts → types.ts, add link?: string to supports
+- [ ] 02-04-PLAN.md — Rewrite meeting/support/task mappers as full triple (mapToCreate/Update/FromRecord)
+- [ ] 02-05-PLAN.md — Create new dsuDayStatusMapper (mapToCreate + mapFromRecord only; no mapToUpdate per D-11)
+- [ ] 02-06-PLAN.md — Phase gate: type-check + lint + grep audit of all 4 ROADMAP success criteria
 
 ### Phase 3: Meeting & Admin UI
 **Goal**: Users can enter meeting durations in hours or minutes, attach URLs to admin entries, and see the correct "Admin" section label — with all dead code removed from the codebase
