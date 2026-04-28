@@ -97,48 +97,46 @@ Tracked but deferred.
 
 ## Traceability
 
-Filled in during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCHEMA-01 | TBD | Pending |
-| SCHEMA-02 | TBD | Pending |
-| SCHEMA-03 | TBD | Pending |
-| SCHEMA-04 | TBD | Pending |
-| TYPES-01 | TBD | Pending |
-| TYPES-02 | TBD | Pending |
-| TYPES-03 | TBD | Pending |
-| TYPES-04 | TBD | Pending |
-| UI-MEET-01 | TBD | Pending |
-| UI-MEET-02 | TBD | Pending |
-| UI-MEET-03 | TBD | Pending |
-| UI-ADMIN-01 | TBD | Pending |
-| UI-ADMIN-02 | TBD | Pending |
-| UI-ADMIN-03 | TBD | Pending |
-| UI-DAY-01 | TBD | Pending |
-| UI-DAY-02 | TBD | Pending |
-| UI-DAY-03 | TBD | Pending |
-| UI-SAVE-01 | TBD | Pending |
-| UI-SAVE-02 | TBD | Pending |
-| UI-SAVE-03 | TBD | Pending |
-| EXPORT-01 | TBD | Pending |
-| EXPORT-02 | TBD | Pending |
-| EXPORT-03 | TBD | Pending |
-| BUG-01 | TBD | Pending |
-| BUG-02 | TBD | Pending |
-| BUG-03 | TBD | Pending |
-| BUG-04 | TBD | Pending |
-| BUG-05 | TBD | Pending |
-| QA-01 | TBD | Pending |
-| QA-02 | TBD | Pending |
-| QA-03 | TBD | Pending |
-| QA-04 | TBD | Pending |
+| SCHEMA-01 | Phase 1 | Pending |
+| SCHEMA-02 | Phase 1 | Pending |
+| SCHEMA-03 | Phase 1 | Pending |
+| SCHEMA-04 | Phase 1 | Pending |
+| TYPES-01 | Phase 2 | Pending |
+| TYPES-02 | Phase 2 | Pending |
+| TYPES-03 | Phase 2 | Pending |
+| TYPES-04 | Phase 2 | Pending |
+| UI-MEET-01 | Phase 3 | Pending |
+| UI-MEET-02 | Phase 3 | Pending |
+| UI-MEET-03 | Phase 3 | Pending |
+| UI-ADMIN-01 | Phase 3 | Pending |
+| UI-ADMIN-02 | Phase 3 | Pending |
+| UI-ADMIN-03 | Phase 3 | Pending |
+| BUG-04 | Phase 3 | Pending |
+| BUG-05 | Phase 3 | Pending |
+| BUG-01 | Phase 4 | Pending |
+| BUG-02 | Phase 4 | Pending |
+| BUG-03 | Phase 4 | Pending |
+| UI-SAVE-01 | Phase 4 | Pending |
+| UI-SAVE-02 | Phase 4 | Pending |
+| UI-SAVE-03 | Phase 4 | Pending |
+| UI-DAY-01 | Phase 5 | Pending |
+| UI-DAY-02 | Phase 5 | Pending |
+| UI-DAY-03 | Phase 5 | Pending |
+| EXPORT-01 | Phase 5 | Pending |
+| EXPORT-02 | Phase 5 | Pending |
+| EXPORT-03 | Phase 5 | Pending |
+| QA-01 | Phase 6 | Pending |
+| QA-02 | Phase 6 | Pending |
+| QA-03 | Phase 6 | Pending |
+| QA-04 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 31 total
-- Mapped to phases: 0 (filled by roadmap)
-- Unmapped: 31 ⚠️ (will resolve in roadmap phase)
+- Mapped to phases: 31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-28 after initial definition*
+*Last updated: 2026-04-28 after roadmap creation*
