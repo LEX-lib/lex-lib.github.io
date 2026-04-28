@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 Plan 3 complete — dsu_supports and dsu_tasks types renamed .d.ts → .ts; link?: string added to DsuSupports; RecordModel import normalized
-last_updated: "2026-04-28T15:00:00Z"
+stopped_at: Phase 2 Plan 4 complete — meeting/support/task mappers rewritten to full triple (mapToCreate/Update/FromRecord); duration_unit and link carried through all shapes
+last_updated: "2026-04-28T14:48:20Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 6
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 2 (Types & Mappers) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-04-28
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100% (Phase 1)
 | Phase 02 P01 | 2 | 3 tasks | 2 files |
 | Phase 02 P02 | 2 | 3 tasks | 2 files |
 | Phase 02 P03 | 2 | 3 tasks | 2 files |
+| Phase 02 P04 | 2 | 4 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 02-01: DurationUnit derived from as-const tuple; RecordModel normalized to pocketbase; Omit intersection for optional create field
 - 02-02: DsuDayStatusValue 5-value union (sl, vl, holiday, bl, others) from live PB schema; bl='Birthday Leave', others='Other' (singular label); types.ts uses plain .ts extension per D-04
 - 02-03: link?: string optional on DsuSupports (matches PB URL field required=false); no constants.ts for supports or tasks (no enum-shaped fields per D-05); RecordModel import normalized from pocketbase/dist/pocketbase.es to 'pocketbase'
+- 02-04: mapFromRecordMeeting is the single legacy-default chokepoint for duration_unit ?? 'minutes'; mapToCreateMeeting also defaults to 'minutes' so new rows are pre-normalized; mapFromRecordSupport/Task are pass-through spreads for symmetry (D-12)
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-28T15:00:00Z
-Stopped at: Phase 2 Plan 3 complete — dsu_supports and dsu_tasks types renamed .d.ts → .ts; link?: string added to DsuSupports; RecordModel import normalized to 'pocketbase'
+Last session: 2026-04-28T14:48:20Z
+Stopped at: Phase 2 Plan 4 complete — meeting/support/task mappers rewritten to full triple; duration_unit and link carried through all shapes; stale DsuSupports comment removed from dsuTaskMapper
 Resume file: None
