@@ -12,7 +12,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 - [ ] **SCHEMA-01**: `dsu_meetings` collection has a `duration_unit` field (`'minutes' | 'hours'`) so the form can accept duration in either unit while persisting minutes
 - [ ] **SCHEMA-02**: `dsu_supports` collection has an optional `link?: string` field for Admin URLs (service desk tickets, MHD, etc.)
 - [ ] **SCHEMA-03**: New `dsu_day_status` collection exists with `{date: string, status: 'sl' | 'vl' | 'holiday'}` and a unique constraint on `date`
-- [ ] **SCHEMA-04**: All schema changes are documented in `.planning/pocketbase-schema.md` with the exact PocketBase admin steps (or migration JSON) needed to apply them
+- [x] **SCHEMA-04**: All schema changes are documented in `.planning/pocketbase-schema.md` with the exact PocketBase admin steps (or migration JSON) needed to apply them
 
 ### Types & Mappers
 
@@ -102,7 +102,7 @@ Tracked but deferred.
 | SCHEMA-01 | Phase 1 | Pending |
 | SCHEMA-02 | Phase 1 | Pending |
 | SCHEMA-03 | Phase 1 | Pending |
-| SCHEMA-04 | Phase 1 | Pending |
+| SCHEMA-04 | Phase 1 | Complete (01-01) |
 | TYPES-01 | Phase 2 | Pending |
 | TYPES-02 | Phase 2 | Pending |
 | TYPES-03 | Phase 2 | Pending |
