@@ -6,7 +6,7 @@
  *
  * Prerequisites:
  *  - `npm install` has been run (script imports the `pocketbase` SDK from node_modules)
- *  - `.env.local` contains:
+ *  - `.env.development` (or whichever env file the npm script targets) contains:
  *      VITE_API_BASE_URL=<your PocketBase URL>
  *      VITE_LOGIN_EMAIL=<superuser email>
  *      VITE_LOGIN_PASSWORD=<superuser password>
@@ -14,8 +14,8 @@
  *
  * Run:
  *   npm run verify:schema
- *   # or directly:
- *   npx tsx --env-file=.env.local .planning/phases/01-schema-foundation/verify-schema.ts
+ *   # or directly (override the env file):
+ *   npx tsx --env-file=.env.development .planning/phases/01-schema-foundation/verify-schema.ts
  *
  * Auth note: pb.collections.getOne() requires SUPERUSER credentials. Regular `users`
  * collection logins return 403. The script attempts the PB 0.23+ `_superusers`
@@ -33,7 +33,7 @@ const PASSWORD = process.env.VITE_LOGIN_PASSWORD;
 
 if (!BASE_URL || !EMAIL || !PASSWORD) {
   console.error('Missing env vars. Required: VITE_API_BASE_URL, VITE_LOGIN_EMAIL, VITE_LOGIN_PASSWORD');
-  console.error('Did you run with --env-file=.env.local? Use `npm run verify:schema`.');
+  console.error('Did you run with --env-file=<path>? Use `npm run verify:schema` (loads .env.development).');
   process.exit(1);
 }
 

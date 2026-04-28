@@ -23,9 +23,12 @@ Before following this runbook, confirm:
 2. You can reach `<VITE_API_BASE_URL>/_/` in a browser and log in to the admin dashboard.
 3. `npm install` has been run in this repo so the `pocketbase` package is available for the
    smoke test script (`npm run verify:schema`).
-4. Your `.env.local` file contains `VITE_API_BASE_URL`, `VITE_LOGIN_EMAIL`, and
+4. Your `.env.development` file contains `VITE_API_BASE_URL`, `VITE_LOGIN_EMAIL`, and
    `VITE_LOGIN_PASSWORD` with the admin/superuser credentials. The smoke script uses these to
-   authenticate against the collections management API.
+   authenticate against the collections management API. (`.env.development` is gitignored —
+   safe for credentials. If you'd rather keep dev-server vars and superuser creds in
+   different files, put the superuser creds in `.env.local` and change the script in
+   `package.json` to point at it.)
 
 ---
 
@@ -250,7 +253,7 @@ npm run verify:schema
 
 The script (`.planning/phases/01-schema-foundation/verify-schema.ts`) does the following:
 
-1. Reads `VITE_API_BASE_URL`, `VITE_LOGIN_EMAIL`, and `VITE_LOGIN_PASSWORD` from `.env.local`.
+1. Reads `VITE_API_BASE_URL`, `VITE_LOGIN_EMAIL`, and `VITE_LOGIN_PASSWORD` from `.env.development` (configured in `package.json`).
 2. Authenticates against PocketBase using the admin/superuser credentials.
 3. Calls `pb.collections.getOne()` for each of the three affected collections.
 4. Asserts every field name, field type, option values, access rule string, and unique index
