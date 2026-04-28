@@ -105,8 +105,8 @@ Tracked but deferred.
 | SCHEMA-04 | Phase 1 | Complete (01-01) |
 | TYPES-01 | Phase 2 | Complete |
 | TYPES-02 | Phase 2 | Complete (02-03) |
-| TYPES-03 | Phase 2 | Pending |
-| TYPES-04 | Phase 2 | Pending |
+| TYPES-03 | Phase 2 | Complete (02-02) |
+| TYPES-04 | Phase 2 | Complete (02-04, 02-05) |
 | UI-MEET-01 | Phase 3 | Pending |
 | UI-MEET-02 | Phase 3 | Pending |
 | UI-MEET-03 | Phase 3 | Pending |

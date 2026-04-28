@@ -7,7 +7,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 ## Phases
 
 - [x] **Phase 1: Schema Foundation** - Apply additive PocketBase schema changes and document migration steps
-- [ ] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
+- [x] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
 - [ ] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code
 - [ ] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback
 - [ ] **Phase 5: Day Status & Export** - Add whole-day status (SL/VL/Holiday) and day export matching quarter-3-logs.txt format
@@ -39,14 +39,14 @@ Plans:
   2. `DsuSupports` type includes `link?: string` and `npm run type-check` passes
   3. New `DsuDayStatus` types exist under `src/types/lextrack/dsu_day_status/types.d.ts`
   4. Mapper functions for all three modified/new entities handle read, create, and update operations without omitting the new fields
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans executed
 Plans:
 - [x] 02-01-PLAN.md — Rename dsu_meetings types.d.ts → types.ts, add duration_unit, create constants.ts
 - [x] 02-02-PLAN.md — Create new dsu_day_status types.ts and constants.ts (5-value status enum)
 - [x] 02-03-PLAN.md — Rename dsu_supports + dsu_tasks types.d.ts → types.ts, add link?: string to supports
 - [x] 02-04-PLAN.md — Rewrite meeting/support/task mappers as full triple (mapToCreate/Update/FromRecord)
 - [x] 02-05-PLAN.md — Create new dsuDayStatusMapper (mapToCreate + mapFromRecord only; no mapToUpdate per D-11)
-- [ ] 02-06-PLAN.md — Phase gate: type-check + lint + grep audit of all 4 ROADMAP success criteria
+- [x] 02-06-PLAN.md — Phase gate: type-check + lint + grep audit of all 4 ROADMAP success criteria
 
 ### Phase 3: Meeting & Admin UI
 **Goal**: Users can enter meeting durations in hours or minutes, attach URLs to admin entries, and see the correct "Admin" section label — with all dead code removed from the codebase
@@ -102,7 +102,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
-| 2. Types & Mappers | 5/6 | In Progress|  |
+| 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
 | 3. Meeting & Admin UI | 0/TBD | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
