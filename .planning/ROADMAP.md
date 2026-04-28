@@ -42,7 +42,7 @@ Plans:
 **Plans:** 1/6 plans executed
 Plans:
 - [x] 02-01-PLAN.md — Rename dsu_meetings types.d.ts → types.ts, add duration_unit, create constants.ts
-- [ ] 02-02-PLAN.md — Create new dsu_day_status types.ts and constants.ts (5-value status enum)
+- [x] 02-02-PLAN.md — Create new dsu_day_status types.ts and constants.ts (5-value status enum)
 - [ ] 02-03-PLAN.md — Rename dsu_supports + dsu_tasks types.d.ts → types.ts, add link?: string to supports
 - [ ] 02-04-PLAN.md — Rewrite meeting/support/task mappers as full triple (mapToCreate/Update/FromRecord)
 - [ ] 02-05-PLAN.md — Create new dsuDayStatusMapper (mapToCreate + mapFromRecord only; no mapToUpdate per D-11)
@@ -102,7 +102,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
-| 2. Types & Mappers | 1/6 | In Progress|  |
+| 2. Types & Mappers | 2/6 | In Progress|  |
 | 3. Meeting & Admin UI | 0/TBD | Not started | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |

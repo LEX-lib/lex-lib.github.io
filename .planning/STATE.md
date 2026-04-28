@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 Plan 1 complete — dsu_meetings type module renamed, duration_unit added, constants.ts created
-last_updated: "2026-04-28T14:33:28.051Z"
+stopped_at: Phase 2 Plan 2 complete — dsu_day_status type module created with 5-value status enum, label map, DsuDayStatus interface, and AddDsuDayStatus type
+last_updated: "2026-04-28T14:37:03Z"
 last_activity: 2026-04-28
 progress:
   total_phases: 6
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 2 (Types & Mappers) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-04-28
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100% (Phase 1)
 
 *Updated after each plan completion*
 | Phase 02 P01 | 2 | 3 tasks | 2 files |
+| Phase 02 P02 | 2 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,7 @@ Recent decisions affecting current work:
 - 01-02: Pin tsx ^4.21.0 in devDependencies for reproducible npm run verify:schema
 - 01-03: DEVIATION — live dsu_day_status.status has 5 values (sl, vl, holiday, bl, others); CONTEXT.md D-11 specified 3. Phase 2 types and Phase 5 UI must handle all 5. See 01-03-SUMMARY.md Deviations section.
 - [Phase ?]: 02-01: DurationUnit derived from as-const tuple; RecordModel normalized to pocketbase; Omit intersection for optional create field
+- 02-02: DsuDayStatusValue 5-value union (sl, vl, holiday, bl, others) from live PB schema; bl='Birthday Leave', others='Other' (singular label); types.ts uses plain .ts extension per D-04
 
 ### Pending Todos
 
@@ -91,6 +93,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-28T14:33:28.042Z
-Stopped at: Phase 2 Plan 1 complete — dsu_meetings type module renamed, duration_unit added, constants.ts created
+Last session: 2026-04-28T14:37:03Z
+Stopped at: Phase 2 Plan 2 complete — dsu_day_status type module created with 5-value status enum, label map, DsuDayStatus interface, and AddDsuDayStatus type
 Resume file: None
