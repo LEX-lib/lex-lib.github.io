@@ -658,27 +658,33 @@ const saveItem = async (collection: CollectionName, item: DsuMeetingItem | DsuTa
 
 **No `[ASSUMED]` claims that meaningfully affect the locked design.** All architectural decisions trace to verified PB SDK / PrimeVue / vue-sonner docs or codebase reads.
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All four open questions have been resolved by the planner during plan 04-04 authoring. Resolutions are recorded inline below as `**RESOLVED: <decision>**` lines beneath each question. The plans implement these decisions.
 
 1. **Per-collection `isSaving` refs vs single shared ref?**
    - What we know: Three Manage* dialogs can each be saving independently (in theory). In practice the user only opens one dialog at a time.
    - What's unclear: Three refs (`isSavingMeeting`, `isSavingTask`, `isSavingSupport`) is more precise but more code; one shared `isSavingDialog` is simpler.
    - Recommendation: **Three refs.** Each dialog binds its own; keeps the binding explicit. Cost is three lines of `ref(false)`.
+   - **RESOLVED: Three per-collection `isSaving` refs (`isSavingMeeting`, `isSavingTask`, `isSavingSupport`).** Implemented in plan 04-04 Task 1 alongside the page-level `isSaving` and the initial-load `isLoading`. Each dialog binds via `:saving="isSavingX"`.
 
 2. **Should we call `mapToCreate*` in `saveItem` create path?**
    - What we know: Existing `save()` doesn't — it sends the `AddDsuX` shape directly. Mapper exists but isn't called.
    - What's unclear: Phase 2 D-12 says `mapFromRecord*` is the chokepoint for legacy normalization. `mapToCreate*` is also defined and would set defaults (e.g. `duration_unit: 'minutes'` for meetings).
    - Recommendation: **Call `mapToCreate*`.** Current code skipping it is a Phase 3 holdover; calling it makes the create path symmetric with update and ensures `duration_unit: 'minutes'` default is applied for inline-added meetings without a unit. Minor diff churn, big consistency win. Planner confirms.
+   - **RESOLVED: Call `mapToCreate*` in `saveItem`'s create path.** Rationale: CONTEXT.md L22 ("Phase 4 calls the existing `mapToCreate*` / `mapToUpdate*`") and L132 ("mapper triple is the only legitimate place to convert") put mapper use squarely in scope; calling `mapToCreateMeeting` applies the `duration_unit: 'minutes'` default per Phase 2 D-12 for inline-added meetings without a unit. Implemented in plan 04-04 Task 2 — `saveItem` create branch threads `{ ...item, date: dateStr }` through the matching `mapToCreate*` before `pb.collection(X).create()`.
 
 3. **Toast title for batch save partial-success?**
    - What we know: D-12 says one toast per error. After loop ends, what toast (if any) summarizes?
    - What's unclear: D-12's "no aggregation" applies to errors. Successes are silent in the existing code.
    - Recommendation: **No success toast on the page-level Save** if `failureCount > 0` (the error toasts are the headline). Show "All items saved!" only when all succeed. Code example #3 above implements this.
+   - **RESOLVED: Silent on partial failure.** Page-level `save()` shows `toast.success('All items saved!')` only when `failureCount === 0`; per-item error toasts are the user-facing signal otherwise. Implemented in plan 04-04 Task 2.
 
 4. **Where should `loadForDate` errors leave `isLoading`?**
    - What we know: `finally { isLoading.value = false }` per the pattern.
    - What's unclear: If the fetch throws AFTER the partial `Promise.all` resolved, do we land in a weird half-state?
    - Recommendation: **`Promise.all` rejects on the first error** — none of `supports`/`tasks`/`meetings` will be assigned. D-19's "don't clear" is preserved (the `.value` assignments happen INSIDE the try after `await`). Local arrays retain their pre-fetch values. Confirmed safe.
+   - **RESOLVED: `finally { isLoading.value = false }` clears `isLoading` regardless of outcome.** The try/catch/finally pattern in `loadForDate` ensures the spinner/dim never gets stuck on an error path. Local arrays retain their pre-fetch values per D-19 (assignments happen only on the success path). Implemented in plan 04-04 Task 1.
 
 ## Environment Availability
 
