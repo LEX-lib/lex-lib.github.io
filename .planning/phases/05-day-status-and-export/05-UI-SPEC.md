@@ -58,12 +58,11 @@ Exceptions:
 
 | Role | Size | Weight | Line Height | Used for |
 |------|------|--------|-------------|----------|
-| Body | 14px (`text-sm`) | 400 (regular) | 1.5 | Labels inside ActivityCard rows, form labels |
-| Label | 14px (`text-sm`) | 500 (medium) | 1.4 | `Selected Date` field label, section header labels |
+| Body | 14px (`text-sm`) | 400 (regular) | 1.5 | Labels inside ActivityCard rows, form labels, `Selected Date` field label, section header labels |
 | Heading | 16px (`text-base`) | 600 (semibold) | 1.3 | Card section titles, ActivityCard card titles |
 | Display | 20px (`text-xl`) | 600 (semibold) | 1.2 | Status banner message (`Sick Leave — 2026-04-29`) |
 
-Font: Rubik (already loaded in `src/assets/main.css`). All sizes are expressed with Tailwind utility classes; no custom CSS required.
+Font: Rubik (already loaded in `src/assets/main.css`). All sizes are expressed with Tailwind utility classes; no custom CSS required. Exactly 2 declared weights: 400 and 600.
 
 > Source: `src/assets/main.css` (Rubik import), `src/assets/base.css` (CSS custom properties), existing ActivityCard + LexTrackView template patterns.
 
@@ -75,13 +74,13 @@ Font: Rubik (already loaded in `src/assets/main.css`). All sizes are expressed w
 |------|-------|-------|
 | Dominant (60%) | `#f5f7fa` (`--color-surface-page`) | Page background, card outer surface |
 | Secondary (30%) | `#ffffff` (`--color-surface-card`) | Card content area, input backgrounds |
-| Accent (10%) | Indigo 600 (`#4f46e5` PrimeVue primary) | Primary CTA buttons, active SelectButton option, Export button |
+| Accent (10%) | Indigo 600 (`#4f46e5` PrimeVue primary) | Primary CTA buttons, active SelectButton option, Export Day button |
 | Destructive | `#c0392b` (`--color-status-error`) | Error toasts, error state text only |
 
 Accent reserved for:
 - Active state of the Day Status `SelectButton` (the currently selected option button)
 - The `Save` button (existing, PrimeVue default primary)
-- The `Export` button (new, same severity as Save — PrimeVue default primary)
+- The `Export Day` button (new, same severity as Save — PrimeVue default primary)
 - Focused/active state of the `DatePicker` control
 
 Accent is NOT used for:
@@ -104,7 +103,7 @@ All components listed here are either already auto-imported by PrimeVue resolver
 | Component | PrimeVue tag | Used in |
 |-----------|-------------|---------|
 | DatePicker | `<DatePicker>` | LexTrackView top row (unchanged) |
-| Button | `<Button>` | Save button (unchanged) + new Export button |
+| Button | `<Button>` | Save button (unchanged) + new Export Day button |
 | Card | `<Card>` | LexTrackView outer wrapper (unchanged) |
 | ActivityCard | `<ActivityCard>` | Three activity columns (unchanged — hidden by v-if) |
 
@@ -124,13 +123,13 @@ All components listed here are either already auto-imported by PrimeVue resolver
 
 > Source: D-01, D-02, D-04, D-05 in `05-CONTEXT.md`; `ManageMeeting.vue` SelectButton reference pattern.
 
-### New component: Export Button
+### New component: Export Day Button
 
 | Property | Value |
 |----------|-------|
 | PrimeVue component | `<Button>` (auto-imported) |
 | Placement | Top row, adjacent to Save button (same flex group, to the left of Save) |
-| `label` | `"Export"` |
+| `label` | `"Export Day"` |
 | `icon` | `pi pi-copy` (PrimeIcons — clipboard copy icon, already loaded) |
 | `iconPos` | `"left"` |
 | `severity` | Default (same as Save — indigo accent) |
@@ -187,6 +186,8 @@ Full status name mapping (used in banner and export):
 6. Pre-existing items re-appear (arrays were never cleared).
 7. Error path: `toast.error("Couldn't clear day status — try again?")` and leave `dayStatus` unchanged (no optimistic rollback needed — UI didn't change yet).
 
+Status clear is immediately reversible (re-select the same option) — no confirmation dialog.
+
 ### Day Status — load on date change
 
 1. `loadForDate(date)` (extended from Phase 4) fires `Promise.all` with four requests including:
@@ -199,18 +200,18 @@ Full status name mapping (used in banner and export):
 
 ### Export — click
 
-1. User clicks the Export button.
+1. User clicks the Export Day button.
 2. `exportDay()` handler builds the export string from current local state (no PB call).
 3. Calls `navigator.clipboard.writeText(exportString)`.
 4. On success: `toast.success('Copied to clipboard!')`.
 5. On failure (clipboard API rejected): `toast.error('Copy failed — check browser permissions.')`.
-6. Export button is NOT disabled during clipboard operation (instantaneous; no loading state needed).
+6. Export Day button is NOT disabled during clipboard operation (instantaneous; no loading state needed).
 7. Export works regardless of `dayStatus` value (D-19): if status is set, produces two-line format; otherwise produces full structured format.
 
 ### Loading state
 
 - `isLoading` dims the activity grid (existing `opacity-50 pointer-events-none` class — unchanged).
-- `SelectButton` and Export button are disabled while `isLoading` is true.
+- `SelectButton` and Export Day button are disabled while `isLoading` is true.
 - Status banner (when visible) is NOT dimmed by `isLoading` — it is a read-only display.
 
 ---
@@ -229,9 +230,9 @@ Phase 5 adds two new groups within this row:
 
 - **DatePicker group** (left, unchanged): `<div>` with label + `<DatePicker>`
 - **Status group** (center-right): `<div class="flex items-end">` containing `<SelectButton>` for day status
-- **Action group** (right): `<div class="flex items-end gap-2">` containing `<Button label="Export">` then `<Button label="Save">`
+- **Action group** (right): `<div class="flex items-end gap-2">` containing `<Button label="Export Day">` then `<Button label="Save">`
 
-The Export button precedes Save in DOM order (left-to-right: Export | Save) to keep Save as the rightmost control — consistent with its role as the primary data-persistence action.
+The Export Day button precedes Save in DOM order (left-to-right: Export Day | Save) to keep Save as the rightmost control — consistent with its role as the primary data-persistence action.
 
 ### Activity grid (modified with v-if)
 
@@ -329,7 +330,7 @@ Returns an array of non-empty text lines, each of which becomes a `* {line}` bul
 | Status SelectButton label: BL | `BL` |
 | Status SelectButton label: Others | `Others` |
 | Status banner format | `{Full Status Name} — {YYYY-MM-DD}` (e.g. `Sick Leave — 2026-04-29`) |
-| Export button label | `Export` |
+| Export button label | `Export Day` |
 | Export success toast | `Copied to clipboard!` |
 | Export failure toast | `Copy failed — check browser permissions.` |
 | Day status save failure toast | `Couldn't set day status — try again?` |
