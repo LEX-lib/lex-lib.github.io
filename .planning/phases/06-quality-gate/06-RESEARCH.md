@@ -822,7 +822,7 @@ All directives extracted from `CLAUDE.md` that apply to Phase 6:
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Extract `buildExportString` / `stripHtml` or test via component exposure?**
    - What we know: Both functions are defined in `LexTrackView.vue`'s `<script setup>`. `wrapper.vm` exposes them in Vue Test Utils.
