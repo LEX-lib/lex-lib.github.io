@@ -1,23 +1,52 @@
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
-import { remove, isEmpty } from 'lodash-es'
-import ActivityCard from "@/components/projects/lextrack/ActivityCard.vue";
-import type {AddDsuTask, DsuTasks} from "@/types/lextrack/dsu_tasks/types";
-import type {AddDsuSupport, DsuSupports} from "@/types/lextrack/dsu_supports/types";
-import type {AddDsuMeeting, DsuMeetings} from "@/types/lextrack/dsu_meetings/types";
-import ManageMeeting from "@/components/projects/lextrack/ManageMeeting.vue";
-import ManageTask from "@/components/projects/lextrack/ManageTask.vue";
-import ManageSupport from "@/components/projects/lextrack/ManageSupport.vue";
-import { pb } from '@/lib/pocketbase';
+import { computed, onMounted, ref, watch } from 'vue';
+import { isEmpty } from 'lodash-es';
+import { useRouter } from 'vue-router';
+import { toast } from 'vue-sonner';
+import { ClientResponseError } from 'pocketbase';
 import type { RecordFullListOptions } from 'pocketbase';
-import dayjs from "dayjs";
-import {mapToUpdateSupport} from "@/lib/pocketbase/dsuSupportMapper.ts";
-import {mapToUpdateMeeting} from "@/lib/pocketbase/dsuMeetingMapper.ts";
-import {mapToUpdateTask} from "@/lib/pocketbase/dsuTaskMapper.ts";
+import dayjs from 'dayjs';
+import ActivityCard from '@/components/projects/lextrack/ActivityCard.vue';
+import ManageMeeting from '@/components/projects/lextrack/ManageMeeting.vue';
+import ManageTask from '@/components/projects/lextrack/ManageTask.vue';
+import ManageSupport from '@/components/projects/lextrack/ManageSupport.vue';
+import { pb } from '@/lib/pocketbase';
+import { useAuthStore } from '@/stores/auth';
+import type { AddDsuTask, DsuTasks } from '@/types/lextrack/dsu_tasks/types';
+import type { AddDsuSupport, DsuSupports } from '@/types/lextrack/dsu_supports/types';
+import type { AddDsuMeeting, DsuMeetings } from '@/types/lextrack/dsu_meetings/types';
+import { mapToUpdateSupport } from '@/lib/pocketbase/dsuSupportMapper';
+import { mapToUpdateMeeting } from '@/lib/pocketbase/dsuMeetingMapper';
+import { mapToUpdateTask } from '@/lib/pocketbase/dsuTaskMapper';
+import { mapToCreateMeeting } from '@/lib/pocketbase/dsuMeetingMapper';
+import { mapToCreateTask } from '@/lib/pocketbase/dsuTaskMapper';
+import { mapToCreateSupport } from '@/lib/pocketbase/dsuSupportMapper';
+
+const router = useRouter();
+const auth = useAuthStore();
+
+const isLoading = ref(false);
+const isSaving = ref(false);
+const isSavingMeeting = ref(false);
+const isSavingTask = ref(false);
+const isSavingSupport = ref(false);
+
+/**
+ * Centralized 401 handler. Clears auth and bounces the user to /login with a redirect-back query.
+ * Returns true if the error was a 401 (caller should NOT also fire its own toast).
+ */
+const handle401 = (err: unknown): boolean => {
+  if (err instanceof ClientResponseError && err.status === 401) {
+    console.warn('[lextrack auth] 401 — clearing session and redirecting to /login');
+    auth.logout();
+    void router.push({ path: '/login', query: { redirect: '/projects/lextrack' } });
+    return true;
+  }
+  return false;
+};
 
 const selectedDate = ref(new Date());
 
-/** SUPPORTS */
 /** SUPPORTS */
 type DsuSupportItem = AddDsuSupport & { id?: string };
 const supports = ref<DsuSupportItem[]>([]);
@@ -33,12 +62,35 @@ const updateSupport = (index: number) => {
   viewSupportDialogVisibility.value = true;
 }
 
-const removeSupport = (index : number) => {
-  support.value = supports.value[index] as AddDsuSupport;
-  remove(supports.value, (_, i) => i === index);
-}
+// Replaces existing removeSupport:
+const removeSupport = async (index: number) => {
+  const item = supports.value[index];
+  // D-07: local-only delete is silent
+  if (!item.id) {
+    supports.value.splice(index, 1);
+    return;
+  }
+  // D-05: optimistic — capture index + item BEFORE splicing (Pitfall #1)
+  const originalIndex = index;
+  const originalItem = item;
+  supports.value.splice(index, 1);
+  try {
+    await pb.collection('dsu_supports').delete(item.id);
+  } catch (err) {
+    // Pitfall #5: 404 means PB already deleted it — user intent met, swallow silently
+    if (err instanceof ClientResponseError && err.status === 404) {
+      console.warn('[lextrack delete support] 404 — already gone, treating as success');
+      return;
+    }
+    if (handle401(err)) return;
+    console.error('[lextrack delete support]', err);
+    toast.error("Couldn't delete your admin item — restored.");
+    // Pitfall #1: clamp the rollback index in case array shifted during the in-flight call
+    const safeIndex = Math.min(originalIndex, supports.value.length);
+    supports.value.splice(safeIndex, 0, originalItem);
+  }
+};
 
-/** MEETINGS */
 /** MEETINGS */
 type DsuMeetingItem = AddDsuMeeting & { id?: string };
 const meetings = ref<DsuMeetingItem[]>([]);
@@ -55,12 +107,31 @@ const updateMeeting = (index: number) => {
   viewMeetingDialogVisibility.value = true;
 }
 
-const removeMeeting = (index : number) => {
-  meeting.value = meetings.value[index] as AddDsuMeeting;
-  remove(meetings.value, (_, i) => i === index);
-}
+// Replaces existing removeMeeting:
+const removeMeeting = async (index: number) => {
+  const item = meetings.value[index];
+  if (!item.id) {
+    meetings.value.splice(index, 1);
+    return;
+  }
+  const originalIndex = index;
+  const originalItem = item;
+  meetings.value.splice(index, 1);
+  try {
+    await pb.collection('dsu_meetings').delete(item.id);
+  } catch (err) {
+    if (err instanceof ClientResponseError && err.status === 404) {
+      console.warn('[lextrack delete meeting] 404 — already gone, treating as success');
+      return;
+    }
+    if (handle401(err)) return;
+    console.error('[lextrack delete meeting]', err);
+    toast.error("Couldn't delete your meeting — restored.");
+    const safeIndex = Math.min(originalIndex, meetings.value.length);
+    meetings.value.splice(safeIndex, 0, originalItem);
+  }
+};
 
-/** TASKS */
 /** TASKS */
 type DsuTaskItem = AddDsuTask & { id?: string };
 const tasks = ref<DsuTaskItem[]>([]);
@@ -74,43 +145,65 @@ const viewTaskDialogVisibility = ref(false);
 
 const updateTask = (index: number) => {
   task.value = tasks.value[index] as AddDsuTask;
-  // task.value = tasks.value[index] as AddDsuTask;
   viewTaskDialogVisibility.value = true;
 }
 
-const removeTask = (index : number) => {
-  task.value = tasks.value[index] as AddDsuTask;
-  remove(tasks.value, (_, i) => i === index);
-}
+// Replaces existing removeTask:
+const removeTask = async (index: number) => {
+  const item = tasks.value[index];
+  if (!item.id) {
+    tasks.value.splice(index, 1);
+    return;
+  }
+  const originalIndex = index;
+  const originalItem = item;
+  tasks.value.splice(index, 1);
+  try {
+    await pb.collection('dsu_tasks').delete(item.id);
+  } catch (err) {
+    if (err instanceof ClientResponseError && err.status === 404) {
+      console.warn('[lextrack delete task] 404 — already gone, treating as success');
+      return;
+    }
+    if (handle401(err)) return;
+    console.error('[lextrack delete task]', err);
+    toast.error("Couldn't delete your task — restored.");
+    const safeIndex = Math.min(originalIndex, tasks.value.length);
+    tasks.value.splice(safeIndex, 0, originalItem);
+  }
+};
 
 const isNoEntry = computed(() => {
   return isEmpty(meetings.value) && isEmpty(tasks.value) && isEmpty(supports.value);
 });
 
-watch(selectedDate, async (newDate : Date) => {
-  // Here you can add logic to fetch or filter activities based on the new date
-
-  const options : RecordFullListOptions = {
-    filter: `date ~ "${dayjs(newDate).format('YYYY-MM-DD')}"`,
-    sort: '-created'
+const loadForDate = async (date: Date): Promise<void> => {
+  isLoading.value = true;
+  try {
+    const options: RecordFullListOptions = {
+      filter: `date ~ "${dayjs(date).format('YYYY-MM-DD')}"`,
+      sort: '-created',
+    };
+    const [supportsList, tasksList, meetingsList] = await Promise.all([
+      pb.collection('dsu_supports').getFullList<DsuSupports>(options),
+      pb.collection('dsu_tasks').getFullList<DsuTasks>(options),
+      pb.collection('dsu_meetings').getFullList<DsuMeetings>(options),
+    ]);
+    supports.value = supportsList;
+    tasks.value = tasksList;
+    meetings.value = meetingsList;
+  } catch (err) {
+    if (handle401(err)) return;
+    console.error('[lextrack load]', err);
+    toast.error("Couldn't load today's items.");
+    // D-19: do NOT clear local arrays on fetch failure
+  } finally {
+    isLoading.value = false;
   }
+};
 
-  // const supportsList = await pb.collection('dsu_supports').getFullList(options);
-  //
-  // const tasksList = await pb.collection('dsu_tasks').getFullList(options);
-  //
-  // const meetingsList = await pb.collection('dsu_meetings').getFullList(options);
-
-  const [supportsList,tasksList,meetingsList] = await Promise.all([
-    pb.collection('dsu_supports').getFullList<DsuSupports>(options),
-    pb.collection('dsu_tasks').getFullList<DsuTasks>(options),
-    pb.collection('dsu_meetings').getFullList<DsuMeetings>(options)
-  ])
-
-  supports.value = supportsList;
-  tasks.value = tasksList;
-  meetings.value = meetingsList;
-});
+onMounted(() => loadForDate(selectedDate.value));
+watch(selectedDate, (newDate: Date) => loadForDate(newDate));
 
 const save = async () => {
 
