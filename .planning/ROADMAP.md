@@ -78,7 +78,13 @@ Plans:
   3. Clicking Save inside a Manage* dialog persists that single item to PocketBase and closes the dialog on success
   4. A failed save, fetch, or delete surfaces an error toast via `vue-sonner`; the UI does not silently discard the failure
   5. The Save button (page-level and dialog-level) is visibly disabled with a loading indicator during any in-flight async call
-**Plans**: TBD
+**Plans:** 5 plans
+Plans:
+- [ ] 04-01-PLAN.md — ManageMeeting refactor (emit save + :saving prop)
+- [ ] 04-02-PLAN.md — ManageTask refactor (emit save + :saving prop)
+- [ ] 04-03-PLAN.md — ManageSupport refactor (emit save + :saving prop + drop self-close)
+- [ ] 04-04-PLAN.md — LexTrackView PB wiring (loadForDate, optimistic delete, saveItem, dialog handlers, batch save, dim wrapper)
+- [ ] 04-05-PLAN.md — Phase gate (type-check + lint + 6-req grep audit + 10-verification human smoke)
 **UI hint**: yes
 
 ### Phase 5: Day Status & Export
@@ -111,6 +117,6 @@ Plans:
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
-| 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
+| 4. Core Bug Fixes & Save UX | 0/5 | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |
