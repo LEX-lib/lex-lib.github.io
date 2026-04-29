@@ -25,6 +25,7 @@ export default defineConfigWithVueTs(
     "**/coverage/**",
     "assets/*.js",
     "assets/*.css",
+    ".claude/**",
   ]),
 
   pluginVue.configs["flat/essential"],

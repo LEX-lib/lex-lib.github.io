@@ -2,19 +2,24 @@ import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import PrimeVue from 'primevue/config';
 import ActivityCard from '@/components/projects/lextrack/ActivityCard.vue';
+import type { AddDsuMeeting } from '@/types/lextrack/dsu_meetings/types';
+import type { AddDsuSupport } from '@/types/lextrack/dsu_supports/types';
+import type { AddDsuTask } from '@/types/lextrack/dsu_tasks/types';
+
+type SectionItem = AddDsuMeeting | AddDsuSupport | AddDsuTask;
 
 const globalConfig = {
   plugins: [PrimeVue],
   stubs: { 'iconify-icon': true },
 };
 
-async function mountWithSection(label: string, section: any[] = []) {
+async function mountWithSection(label: string, section: SectionItem[] = []) {
   const data = { section };
   const wrapper = mount(ActivityCard, {
     props: {
       label,
       section: data.section,
-      'onUpdate:section': (val: any[]) => { data.section = val; wrapper.setProps({ section: val }); },
+      'onUpdate:section': (val: SectionItem[]) => { data.section = val; wrapper.setProps({ section: val }); },
     },
     global: globalConfig,
   });
