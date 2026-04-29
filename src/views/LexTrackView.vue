@@ -510,12 +510,29 @@ const buildExportString = (): string => {
 /**
  * D-15: Copy export string to clipboard; toast success or failure.
  * D-19: Export button visible regardless of dayStatus (status day produces two-line format).
+ * Uses execCommand fallback for browsers that block the Clipboard API on localhost.
  */
 const exportDay = async (): Promise<void> => {
+  const text = buildExportString();
+  if (navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+      return;
+    } catch {
+      // fall through to execCommand fallback
+    }
+  }
   try {
-    const text = buildExportString();
-    await navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) toast.success('Copied to clipboard!');
+    else toast.error('Copy failed — check browser permissions.');
   } catch {
     toast.error('Copy failed — check browser permissions.');
   }
