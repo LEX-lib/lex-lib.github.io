@@ -124,12 +124,43 @@
 
 ---
 
-## Manual Smoke (Task 2 — human checkpoint follows)
+## Manual Smoke Results
 
-See Task 2 of this plan. 10 verifications listed below for the human checkpoint.
+Verified: 2026-04-29
+Tester: user (dev server + real PocketBase backend)
+
+| # | Verification | Result | Notes |
+|---|-------------|--------|-------|
+| V1 | BUG-01 mount-time fetch | PASS | Today's items loaded immediately on mount without touching the date picker |
+| V2 | BUG-01 fail mode (preserve local state) | PASS | Offline → date change → error toast; local arrays preserved |
+| V3 | BUG-02 PB delete + local-only silent | PASS | DELETE fires for persisted items; local-only rows dropped without API call |
+| V4 | BUG-03 delete rollback + 404 swallow | PASS | Row restores on offline delete; 404 swallowed silently |
+| V5 | UI-SAVE-01 dialog Save + close on success | PASS | PATCH/POST fires; dialog closes; success toast shown; persists on reload |
+| V6 | UI-SAVE-01 dialog stays open on save fail | PASS | Spinner shown; dialog stays open on offline failure; retry succeeds |
+| V7 | UI-SAVE-02 page-level batch Save | PASS | POSTs/PATCHes fire for all items; post-loop refetch confirmed; all persist on reload |
+| V8 | UI-SAVE-02 continue-on-error | N/A | No easy way to trigger server-side validation failure in test environment |
+| V9 | UI-SAVE-03 loading indicators visible | PASS | Save button spinner + disabled during in-flight; activity grid dims on fetch |
+| V10 | 401 graceful handling | PASS (code-verified) | Deleting localStorage alone does not trigger 401 — in-memory token remains valid. handle401 is wired in all 13 async paths (loadForDate, 3 deletes, 3 dialog saves, 6 batch-save loops) and verified via grep audit in Task 1. Real 401 path (server-side session revocation) not testable without PocketBase admin access to invalidate the token. |
 
 ---
 
 ## Final Gate Decision
 
-(Filled in after Task 2 human smoke is complete.)
+**Final Gate Decision: PASS**
+
+All 5 ROADMAP Phase 4 success criteria verified:
+1. ✓ Opens LexTrack and sees today's items immediately (V1)
+2. ✓ Trash icon removes from PB; reload confirms (V3)
+3. ✓ Dialog Save persists single item + closes on success (V5)
+4. ✓ Failed save/fetch/delete surfaces error toast (V2, V4, V6)
+5. ✓ Save buttons visibly disabled with loading indicator (V9)
+
+All 6 phase requirement IDs satisfied:
+- BUG-01: V1, V2 PASS
+- BUG-02: V3 PASS
+- BUG-03: V2, V4, V6 PASS
+- UI-SAVE-01: V5, V6 PASS
+- UI-SAVE-02: V7 PASS (V8 N/A — no easy server-side validation failure trigger)
+- UI-SAVE-03: V9 PASS
+
+Phase 4 complete on 2026-04-29.
