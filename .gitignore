@@ -43,7 +43,7 @@ pnpm-lock.yaml
 *.test.js
 *.spec.js
 *.test.ts
-*.spec.ts
+# *.spec.ts — removed: Vitest spec files must be tracked (Phase 6 quality gate)
 # Optional: ignore output from Vite
 vite.svg
 
