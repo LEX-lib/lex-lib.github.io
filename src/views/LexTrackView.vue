@@ -31,13 +31,11 @@ const viewSupportDialogVisibility = ref(false);
 const updateSupport = (index: number) => {
   support.value = supports.value[index] as AddDsuSupport;
   viewSupportDialogVisibility.value = true;
-  console.log(support.value);
 }
 
 const removeSupport = (index : number) => {
   support.value = supports.value[index] as AddDsuSupport;
   remove(supports.value, (_, i) => i === index);
-  console.log(supports.value);
 }
 
 /** MEETINGS */
@@ -55,13 +53,11 @@ const viewMeetingDialogVisibility = ref(false);
 const updateMeeting = (index: number) => {
   meeting.value = meetings.value[index] as AddDsuMeeting;
   viewMeetingDialogVisibility.value = true;
-  console.log(meeting.value);
 }
 
 const removeMeeting = (index : number) => {
   meeting.value = meetings.value[index] as AddDsuMeeting;
   remove(meetings.value, (_, i) => i === index);
-  console.log(meetings.value);
 }
 
 /** TASKS */
@@ -78,16 +74,13 @@ const viewTaskDialogVisibility = ref(false);
 
 const updateTask = (index: number) => {
   task.value = tasks.value[index] as AddDsuTask;
-  //console.log(index);
   // task.value = tasks.value[index] as AddDsuTask;
   viewTaskDialogVisibility.value = true;
-  console.log(task.value);
 }
 
 const removeTask = (index : number) => {
   task.value = tasks.value[index] as AddDsuTask;
   remove(tasks.value, (_, i) => i === index);
-  console.log(tasks.value);
 }
 
 const isNoEntry = computed(() => {
@@ -95,7 +88,6 @@ const isNoEntry = computed(() => {
 });
 
 watch(selectedDate, async (newDate : Date) => {
-  //console.log('Selected date changed:', newDate);
   // Here you can add logic to fetch or filter activities based on the new date
 
   const options : RecordFullListOptions = {
@@ -118,8 +110,6 @@ watch(selectedDate, async (newDate : Date) => {
   supports.value = supportsList;
   tasks.value = tasksList;
   meetings.value = meetingsList;
-
-  //console.log(supportsList);
 });
 
 const save = async () => {
@@ -156,13 +146,10 @@ const save = async () => {
       await pb.collection('dsu_tasks').create(item);
     }
   }
-
-  //console.log(supports.value);
 }
 </script>
 
 <template>
-<!--  <LexTrackApp/>-->
   <Card>
     <template v-slot:content>
       <div class="flex justify-between items-end">
@@ -187,62 +174,11 @@ const save = async () => {
       <div class="grid grid-cols-3 gap-2">
         <ActivityCard v-model:section="meetings" label="Meetings" @update="updateMeeting" @remove="removeMeeting"/>
         <ActivityCard v-model:section="tasks" label="Tasks" @update="updateTask" @remove="removeTask"/>
-        <ActivityCard v-model:section="supports" label="Admin Tasks and Support" @update="updateSupport" @remove="removeSupport"/>
+        <ActivityCard v-model:section="supports" label="Admin" @update="updateSupport" @remove="removeSupport"/>
       </div>
     </template>
 
   </Card>
-
-
-
-<!--  <Button label="Show" @click="visible = true" />-->
-
-<!--  <Dialog v-model:visible="visible" header="Add DSU Update" :style="{ width: '50vw' }">-->
-<!--    <div class="mb-2 max-w-sm mx-auto">-->
-<!--      <label for="date" class="block text-sm font-medium mb-2">Selected Date</label>-->
-<!--      <DatePicker-->
-<!--          v-model="selectedDate"-->
-<!--          showIcon-->
-<!--          inputId="date"-->
-<!--          class="w-full"-->
-<!--      />-->
-<!--    </div>-->
-<!--    <Divider/>-->
-<!--    <div class="mb-2 max-w-sm mx-auto">-->
-<!--      <h4 class="mb-1 font-bold">Meetings</h4>-->
-<!--      <template v-for="(meeting, index) in meetings" :key="index">-->
-<!--        <Chip :label="meeting.title" icon="pi pi-calendar" removable class="mr-2 mb-2" @remove="removeMeeting($event, index)"/>-->
-<!--      </template>-->
-<!--      <Button fluid label="Add" rounded size="small" @click="addMeetingDialogVisibility = true">-->
-<!--        <template #icon>-->
-<!--          <iconify-icon icon="mdi:add" width="24" height="24"></iconify-icon>-->
-<!--        </template>-->
-<!--      </Button>-->
-<!--    </div>-->
-<!--    <Divider/>-->
-<!--    <div class="mb-2 max-w-sm mx-auto">-->
-<!--      <h4 class="mb-1 font-bold">Tasks</h4>-->
-<!--      <Button fluid label="Add" rounded size="small">-->
-<!--        <template #icon>-->
-<!--          <iconify-icon icon="mdi:add" width="24" height="24"></iconify-icon>-->
-<!--        </template>-->
-<!--      </Button>-->
-<!--    </div>-->
-<!--    <Divider/>-->
-<!--    <div class="mb-2 max-w-sm mx-auto">-->
-<!--      <h4 class="mb-1 font-bold">Admin Tasks and Support</h4>-->
-<!--      <Button fluid label="Add" rounded size="small">-->
-<!--        <template #icon>-->
-<!--          <iconify-icon icon="mdi:add" width="24" height="24"></iconify-icon>-->
-<!--        </template>-->
-<!--      </Button>-->
-<!--    </div>-->
-<!--  </Dialog>-->
-
-<!--  <AddMeeting-->
-<!--      v-model:visible="addMeetingDialogVisibility"-->
-<!--      v-model:meetings="meetings"-->
-<!--  />-->
 
   <ManageMeeting
       v-model:visible="viewMeetingDialogVisibility"
