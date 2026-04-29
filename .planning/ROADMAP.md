@@ -60,7 +60,7 @@ Plans:
   5. `npm run lint` passes with zero warnings; no `console.log` statements remain in `LexTrackView.vue` or any lextrack component; the commented-out Dialog block is gone
 **Plans:** 6 plans
 Plans:
-- [ ] 03-01-PLAN.md — Create useDurationField composable (min↔hr conversion + reactive state)
+- [x] 03-01-PLAN.md — Create useDurationField composable (min↔hr conversion + reactive state)
 - [ ] 03-02-PLAN.md — ActivityCard link icon + inline-add defaults; register vTooltip directive
 - [ ] 03-03-PLAN.md — ManageSupport URL input + strip dark Tailwind overrides
 - [ ] 03-04-PLAN.md — LexTrackView "Admin" label + remove console.logs + remove commented Dialog block
@@ -110,7 +110,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
-| 3. Meeting & Admin UI | 0/6 | Not started | - |
+| 3. Meeting & Admin UI | 1/6 | In progress | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |
