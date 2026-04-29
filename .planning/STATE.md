@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_execute
+status: executing
 stopped_at: ""
-last_updated: "2026-04-29T10:00:00.000Z"
-last_activity: 2026-04-29 -- Phase 5 complete (3/3 plans); Day Status & Export fully implemented and human-verified
+last_updated: "2026-04-29T11:00:00.000Z"
+last_activity: 2026-04-29 -- Phase 6 Wave 1 complete (2/7 plans); test infra + export utility extraction done
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 23
-  completed_plans: 23
-  percent: 100
+  total_plans: 30
+  completed_plans: 25
+  percent: 83
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 ## Current Position
 
-Phase: 5 (Day Status & Export) — COMPLETE
-Plan: 3/3 complete
-Status: Ready to execute — Phase 6 next
-Last activity: 2026-04-29 -- Phase 5 Plan 05-02 complete; SelectButton, Export Day button, and status banner wired in LexTrackView.vue template
+Phase: 6 (Quality Gate) — IN PROGRESS
+Plan: 2/7 complete
+Status: Executing — Wave 2 active (06-03 + 06-04)
+Last activity: 2026-04-29 -- Wave 1 complete; 06-01 test infra + 06-02 export utils extracted; Wave 2 spawned (mapper tests + export/ActivityCard tests)
 
 Progress: [████████████████████] Phases 1–4 complete; Phase 5 next
 
