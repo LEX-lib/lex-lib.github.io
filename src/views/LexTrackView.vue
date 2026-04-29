@@ -480,6 +480,17 @@ const exportDay = async (): Promise<void> => {
     toast.error('Copy failed — check browser permissions.');
   }
 };
+
+defineExpose({
+  supports,
+  dayStatus,
+  meetings,
+  tasks,
+  removeSupport,
+  removeMeeting,
+  removeTask,
+  setDayStatus,
+});
 </script>
 
 <template>
