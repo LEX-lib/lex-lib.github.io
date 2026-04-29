@@ -111,11 +111,23 @@ Plans:
 **Depends on**: Phase 5
 **Requirements**: QA-01, QA-02, QA-03, QA-04
 **Success Criteria** (what must be TRUE):
-  1. `npm run test:unit` (or `test:unit:run`) executes in non-watch mode and all tests pass
+  1. `npm run test:unit` executes in non-watch mode and all tests pass
   2. Mapper functions, the duration unit converter, day-status logic, and the exporter each have unit tests
   3. `LexTrackView.vue` component tests cover initial load, date change, save, delete, and day status interactions; `ActivityCard.vue` tests cover add-via-Enter, edit, and remove
   4. `npm run lint` and `npm run type-check` both pass cleanly after all test files are added
-**Plans**: TBD
+**Plans:** 7 plans
+Plans:
+**Wave 1** *(parallel)*
+- [ ] 06-01-PLAN.md — Tooling setup: fix test:unit script to vitest run, install @pinia/testing, create PB __mocks__
+- [ ] 06-02-PLAN.md — Extract buildExportString + stripHtml to src/utils/lextrack/export.ts
+**Wave 2** *(blocked on Wave 1 — parallel with each other)*
+- [ ] 06-03-PLAN.md — Unit tests: all 4 mappers + useDurationField composable + day-status constants
+- [ ] 06-04-PLAN.md — Unit tests: export utils (buildExportString, stripHtml) + ActivityCard component tests
+**Wave 3** *(blocked on Wave 2 — parallel with each other)*
+- [ ] 06-05-PLAN.md — Component tests: ManageMeeting, ManageTask, ManageSupport (save emit)
+- [ ] 06-06-PLAN.md — Component tests: LexTrackView (initial load, delete, day status)
+**Wave 4** *(blocked on Wave 3)*
+- [ ] 06-07-PLAN.md — Phase gate: npm run test:unit + lint + type-check all pass + human verify
 
 ## Progress
 
@@ -126,4 +138,4 @@ Plans:
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
 | 4. Core Bug Fixes & Save UX | 5/5 | Complete | 2026-04-29 |
 | 5. Day Status & Export | 3/3 | Complete | 2026-04-29 |
-| 6. Quality Gate | 0/TBD | Not started | - |
+| 6. Quality Gate | 0/7 | Not started | - |
