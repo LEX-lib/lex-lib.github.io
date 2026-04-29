@@ -118,11 +118,11 @@ Plans:
 **Plans:** 7 plans
 Plans:
 **Wave 1** *(parallel)*
-- [ ] 06-01-PLAN.md — Tooling setup: fix test:unit script to vitest run, install @pinia/testing, create PB __mocks__
-- [ ] 06-02-PLAN.md — Extract buildExportString + stripHtml to src/utils/lextrack/export.ts
+- [x] 06-01-PLAN.md — Tooling setup: fix test:unit script to vitest run, install @pinia/testing, create PB __mocks__
+- [x] 06-02-PLAN.md — Extract buildExportString + stripHtml to src/utils/lextrack/export.ts
 **Wave 2** *(blocked on Wave 1 — parallel with each other)*
-- [ ] 06-03-PLAN.md — Unit tests: all 4 mappers + useDurationField composable + day-status constants
-- [ ] 06-04-PLAN.md — Unit tests: export utils (buildExportString, stripHtml) + ActivityCard component tests
+- [x] 06-03-PLAN.md — Unit tests: all 4 mappers + useDurationField composable + day-status constants
+- [x] 06-04-PLAN.md — Unit tests: export utils (buildExportString, stripHtml) + ActivityCard component tests
 **Wave 3** *(blocked on Wave 2 — parallel with each other)*
 - [ ] 06-05-PLAN.md — Component tests: ManageMeeting, ManageTask, ManageSupport (save emit)
 - [ ] 06-06-PLAN.md — Component tests: LexTrackView (initial load, delete, day status)
