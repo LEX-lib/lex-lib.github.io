@@ -27,7 +27,7 @@ const updateSupport = () => {
   <Dialog
       modal
       v-model:visible="visible"
-      header="Edit Support"
+      header="Edit Admin"
       @close="visible = false"
       :style="{ width: '40vw' }"
       position="right">
