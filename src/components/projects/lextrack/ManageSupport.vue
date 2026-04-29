@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toast } from "vue-sonner";
 import type { AddDsuSupport } from "@/types/lextrack/dsu_supports/types";
 
 const visible = defineModel(
@@ -16,11 +15,13 @@ const support = defineModel<AddDsuSupport>(
       required: true,
     });
 
-const updateSupport = () => {
-  // Phase 3 boundary: persistence lands in Phase 4 (UI-SAVE-01). For now, toast only.
-  toast.success('Support is updated successfully!');
-  visible.value = false;
-};
+const props = defineProps<{ saving?: boolean }>();
+
+const emit = defineEmits<{
+  save: [item: AddDsuSupport & { id?: string }];
+}>();
+
+const onSaveClick = () => emit('save', support.value as AddDsuSupport & { id?: string });
 </script>
 
 <template>
@@ -41,7 +42,7 @@ const updateSupport = () => {
       <div>
         <Editor v-model="support.description" editorStyle="height: 120px" />
       </div>
-      <Button label="Save" @click="updateSupport" class="w-full bg-indigo-600 hover:bg-indigo-700" />
+      <Button label="Save" :loading="props.saving" @click="onSaveClick" class="w-full bg-indigo-600 hover:bg-indigo-700" />
     </div>
   </Dialog>
 </template>
