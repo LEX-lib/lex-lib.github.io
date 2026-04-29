@@ -40,6 +40,7 @@ const isSaving = ref(false);
 const isSavingMeeting = ref(false);
 const isSavingTask = ref(false);
 const isSavingSupport = ref(false);
+const isSavingStatus = ref(false);
 
 /**
  * Centralized 401 handler. Clears auth and bounces the user to /login with a redirect-back query.
@@ -374,31 +375,36 @@ const save = async () => {
 
 /**
  * D-03: Immediately upserts or deletes the day status on PB.
- * value === null means the user deselected the active option (D-04 allowEmpty).
+ * value == null (null or undefined) means the user deselected the active option (D-04 allowEmpty).
  * D-18: stores the full PB record in dayStatus so .id is available for future delete/update.
+ * CR-01: guarded by isSavingStatus to prevent duplicate-record race on rapid double-click.
  */
 const setDayStatus = async (value: string | null): Promise<void> => {
+  if (isSavingStatus.value) return;          // drop concurrent calls
+  isSavingStatus.value = true;
   const dateStr = dayjs(selectedDate.value).format('YYYY-MM-DD');
-  if (value === null) {
-    // Clear path: delete existing record
-    if (!dayStatus.value) return;
+  if (value == null) {
+    // Clear path: delete existing record (WR-02: catches both null and undefined)
+    if (!dayStatus.value) { isSavingStatus.value = false; return; }
     try {
       await pb.collection('dsu_day_status').delete(dayStatus.value.id);
       dayStatus.value = null;
     } catch (err) {
-      if (handle401(err)) return;
+      if (handle401(err)) { isSavingStatus.value = false; return; }
       console.error('[lextrack day status delete]', err);
       toast.error("Couldn't clear day status — try again?");
+    } finally {
+      isSavingStatus.value = false;
     }
     return;
   }
   // Set path: update existing or create new
   try {
     if (dayStatus.value) {
-      // Update existing record
+      // Update existing record — send only status field (WR-01: do not include date in update payload)
       const updated = await pb
         .collection('dsu_day_status')
-        .update<DsuDayStatus>(dayStatus.value.id, mapToCreateDayStatus({ date: dateStr, status: value as DsuDayStatus['status'] }));
+        .update<DsuDayStatus>(dayStatus.value.id, { status: value as DsuDayStatus['status'] });
       dayStatus.value = mapFromRecordDayStatus(updated);
     } else {
       // Create new record
@@ -408,9 +414,11 @@ const setDayStatus = async (value: string | null): Promise<void> => {
       dayStatus.value = mapFromRecordDayStatus(created);
     }
   } catch (err) {
-    if (handle401(err)) return;
+    if (handle401(err)) { isSavingStatus.value = false; return; }
     console.error('[lextrack day status set]', err);
     toast.error("Couldn't set day status — try again?");
+  } finally {
+    isSavingStatus.value = false;
   }
 };
 
@@ -559,7 +567,7 @@ const exportDay = async (): Promise<void> => {
               optionLabel="label"
               optionValue="value"
               :allowEmpty="true"
-              :disabled="isLoading"
+              :disabled="isLoading || isSavingStatus"
               aria-label="Mark day as"
               @change="setDayStatus($event.value)"
           />
