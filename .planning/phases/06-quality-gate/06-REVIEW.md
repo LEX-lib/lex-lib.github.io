@@ -23,9 +23,9 @@ files_reviewed_list:
   - eslint.config.ts
 findings:
   critical: 0
-  warning: 7
-  info: 5
-  total: 12
+  warning: 9
+  info: 6
+  total: 15
 status: issues_found
 ---
 
@@ -39,6 +39,8 @@ status: issues_found
 ## Summary
 
 This wave covers the test infrastructure, export utility, and refactored LexTrackView introduced across phases 06-01 through 06-04. The production source files (LexTrackView.vue, export.ts, mappers, useDurationField composable) are generally well-structured with consistent error handling patterns. The primary concerns centre on: a type-unsafety hole in the update path for meetings with a potentially-undefined `duration_unit`; shared mock state in the PocketBase mock that creates latent test-isolation failures; a `findSaveButton` selector in ManageSupport tests that is too broad; and `AddDsu*` type definitions that inherit RecordModel's internal fields into "create" payloads.
+
+The 06-08 delta (`defineExpose` additions + 2 new test blocks) is structurally correct — the exposed identifiers are real refs/functions, the tests mount and exercise real component code paths — but both new tests carry coverage gaps that leave the behaviour they were added to verify only partially validated. Two additional warnings have been raised (WR-08, WR-09) and one info item (IN-06) to capture these gaps.
 
 ---
 
@@ -74,7 +76,7 @@ Alternatively, ensure `ActivityCard` always seeds `duration_unit: 'minutes'` on 
 
 **File:** `src/views/__tests__/LexTrackView.spec.ts:116` and `src/lib/pocketbase/__mocks__/index.ts:23`
 
-**Issue:** `vi.clearAllMocks()` in `beforeEach` resets call counts but does NOT reset `mockReturnValue` implementations. The `setDayStatus creates` test (line 116) calls `(pb.collection as ...).mockReturnValue(mockCollection)` to override the default mock. That override survives `vi.clearAllMocks()` and affects every subsequent test in the file. The `setDayStatus(null) deletes` test happens to override it again, so those two tests are currently safe — but any test added after them will receive `mockCollection` from test 5 instead of the default `collectionMethods` from the mock file, silently changing the resolved values for `getFullList`, `create`, `update`, `delete`.
+**Issue:** `vi.clearAllMocks()` in `beforeEach` resets call counts but does NOT reset `mockReturnValue` implementations. The `setDayStatus creates` test (line 116) calls `(pb.collection as ...).mockReturnValue(mockCollection)` to override the default mock. That override survives `vi.clearAllMocks()` and affects every subsequent test in the file. The `setDayStatus(null) deletes` test happens to override it again, so those two tests are currently safe — but the new date-change test (line 158) and create-path test (line 176) run after these overrides and depend on them either coincidentally working or being re-set. The date-change test (line 163) calls `vi.clearAllMocks()` but not `mockReturnValue`, so it inherits whatever the previous test left — which happens to be a functioning mock, but this is accidental, not deliberate. Any new test added after line 173 would silently inherit the `mockCollection` from the create-path test.
 
 **Fix:** Use `mockReturnValueOnce` in tests that need per-call overrides, or restore the original implementation at the end of each test using `beforeEach`/`afterEach`:
 ```typescript
@@ -172,6 +174,51 @@ Or alternatively inspect `pb.collection.mock.results` to get the most recent ret
 
 ---
 
+### WR-08: New test "handleMeetingSave with no id" does not assert that `id` is patched back onto the array entry after create
+
+**File:** `src/views/__tests__/LexTrackView.spec.ts:176-196`
+
+**Issue:** The entire purpose of the create path in `handleMeetingSave` (LexTrackView.vue lines 270-272) is to patch the server-assigned `id` back into `meetings.value` so the item transitions from "local-only" to "persisted" state:
+```typescript
+if (idx !== -1 && !item.id) {
+  meetings.value[idx] = { ...item, id: saved.id };
+}
+```
+The new test only asserts that `mockCollection.create` was called with the right payload. It does not assert:
+- `wrapper.vm.meetings[0].id === 'new-meeting-1'` (id was patched)
+- `wrapper.vm.viewMeetingDialogVisibility === false` (dialog closed on success, D-04)
+
+Without these assertions the test would pass even if `handleMeetingSave` deleted the item from the array, never called `saveItem`, or left the dialog open — any of which would be a regression in the D-01/D-04 requirements.
+
+**Fix:** Add the missing assertions after `flushPromises()`:
+```typescript
+expect(wrapper.vm.meetings[0]?.id).toBe('new-meeting-1');
+// dialog must close after a successful save (D-04)
+expect(wrapper.vm.viewMeetingDialogVisibility).toBe(false);
+```
+
+---
+
+### WR-09: New test "changing selectedDate triggers a new loadForDate call" does not verify the loaded data is bound to the new date
+
+**File:** `src/views/__tests__/LexTrackView.spec.ts:158-173`
+
+**Issue:** The test verifies that `pb.collection` is called for all 4 collections after `selectedDate` changes. This confirms the `watch` fires and calls `loadForDate`, but it does not confirm that `loadForDate` was called with the *new* date. A bug where `loadForDate` is called but with `selectedDate.value` captured at the old value (e.g., a closure capturing the stale ref) would pass this test. The filter string sent to PocketBase (`date ~ "2026-02-01"`) is the observable that distinguishes "fetched for correct date" from "fetched for wrong date".
+
+**Fix:** Intercept the `filter` option passed to `getFullList` and assert it contains the new date string:
+```typescript
+wrapper.vm.selectedDate = new Date('2026-02-01');
+await flushPromises();
+const getFullListCalls = mockCollection.getFullList.mock.calls;
+expect(getFullListCalls.length).toBeGreaterThan(0);
+expect(getFullListCalls[0][0]).toEqual(
+  expect.objectContaining({ filter: expect.stringContaining('2026-02-01') }),
+);
+```
+This requires the test to use its own `mockCollection` override (similar to the other tests) rather than relying on the inherited default mock.
+
+---
+
 ## Info
 
 ### IN-01: `ActivityCard.spec.ts` button index assumption is fragile and undocumented
@@ -238,6 +285,16 @@ it('seed() with both args undefined resets to empty minutes state', () => {
   expect(durationMinutes.value).toBeUndefined();
 });
 ```
+
+---
+
+### IN-06: `handleMeetingSave` create-path test re-applies `mockReturnValue` redundantly (lines 184 and 188) — pattern is fragile and should be documented
+
+**File:** `src/views/__tests__/LexTrackView.spec.ts:184`, `188`
+
+**Issue:** `mockReturnValue` is called at line 184 before `makeWrapper()` (which triggers an initial `loadForDate` during mount), then again at line 188 after `vi.clearAllMocks()` wipes the call counts. The comment on line 187 says `vi.clearAllMocks()` but does not explain why the second `mockReturnValue` call is required. Without the re-application at line 188, the call to `handleMeetingSave` (line 191) would invoke `pb.collection` after `clearAllMocks`, which resets call counts but NOT the `mockReturnValue` implementation — meaning the second call is actually only necessary because `vi.clearAllMocks()` was used instead of `vi.clearAllMocks()` + the WR-02 fix. This is a symptom of WR-02 rather than an independent issue.
+
+**Fix:** Address WR-02 to make the mock lifecycle explicit. Once `vi.resetAllMocks()` (or `mockReturnValue` in `beforeEach`) is in place, the redundant re-application at line 188 can be removed.
 
 ---
 
