@@ -516,21 +516,29 @@ const exportDay = async (): Promise<void> => {
       await navigator.clipboard.writeText(text);
       toast.success('Copied to clipboard!');
       return;
-    } catch {
+    } catch (clipErr) {
+      console.warn('[lextrack export] navigator.clipboard rejected, falling back to execCommand', clipErr);
       // fall through to execCommand fallback
     }
   }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    if (ok) toast.success('Copied to clipboard!');
-    else toast.error('Copy failed — check browser permissions.');
-  } catch {
+  // execCommand is deprecated but still widely supported as a clipboard fallback.
+  // Replace with a Clipboard API polyfill or remove if minimum browser targets
+  // guarantee Clipboard API availability (requires HTTPS + user gesture).
+  if (typeof document.execCommand === 'function') {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) toast.success('Copied to clipboard!');
+      else toast.error('Copy failed — check browser permissions.');
+    } catch {
+      toast.error('Copy failed — check browser permissions.');
+    }
+  } else {
     toast.error('Copy failed — check browser permissions.');
   }
 };
