@@ -63,7 +63,7 @@ Plans:
 - [x] 03-01-PLAN.md — Create useDurationField composable (min↔hr conversion + reactive state)
 - [x] 03-02-PLAN.md — ActivityCard link icon + inline-add defaults; register vTooltip directive
 - [x] 03-03-PLAN.md — ManageSupport URL input + strip dark Tailwind overrides
-- [ ] 03-04-PLAN.md — LexTrackView "Admin" label + remove console.logs + remove commented Dialog block
+- [x] 03-04-PLAN.md — LexTrackView "Admin" label + remove console.logs + remove commented Dialog block
 - [ ] 03-05-PLAN.md — ManageMeeting duration toggle integration + strip dark overrides (Wave 2)
 - [ ] 03-06-PLAN.md — Phase gate: type-check, lint, grep audit, dev-server smoke
 **UI hint**: yes
@@ -110,7 +110,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
-| 3. Meeting & Admin UI | 3/6 | In progress | - |
+| 3. Meeting & Admin UI | 4/6 | In progress | - |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |

@@ -31,7 +31,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 - [ ] **UI-ADMIN-01**: Admin/Support form (`ManageSupport.vue` and inline add) has a URL input for the optional `link`
 - [x] **UI-ADMIN-02**: Admin entries in `ActivityCard` show a small link icon when a `link` is set (clickable, opens in new tab)
-- [ ] **UI-ADMIN-03**: The "Admin Tasks and Support" label is shortened to "Admin" to match the requirements doc terminology
+- [x] **UI-ADMIN-03**: The "Admin Tasks and Support" label is shortened to "Admin" to match the requirements doc terminology
 
 ### UI: Day Status
 
@@ -56,8 +56,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 - [ ] **BUG-01**: On page mount, the items for `selectedDate` are fetched from PocketBase (currently only happens on date change)
 - [ ] **BUG-02**: Removing an item via the trash icon calls `pb.collection(...).delete(id)` for items that exist in PocketBase; local-only items are dropped without an API call
 - [ ] **BUG-03**: A failed save / fetch / delete surfaces an error toast via `vue-sonner`; UI rolls back optimistic mutations
-- [ ] **BUG-04**: All `console.log` statements in `src/views/LexTrackView.vue` and `src/components/projects/lextrack/*` are removed
-- [ ] **BUG-05**: The large commented-out Dialog block at the bottom of `LexTrackView.vue`'s template is removed
+- [x] **BUG-04**: All `console.log` statements in `src/views/LexTrackView.vue` and `src/components/projects/lextrack/*` are removed
+- [x] **BUG-05**: The large commented-out Dialog block at the bottom of `LexTrackView.vue`'s template is removed
 
 ### Quality
 
@@ -112,9 +112,9 @@ Tracked but deferred.
 | UI-MEET-03 | Phase 3 | Complete (03-02) |
 | UI-ADMIN-01 | Phase 3 | Pending |
 | UI-ADMIN-02 | Phase 3 | Complete (03-02) |
-| UI-ADMIN-03 | Phase 3 | Pending |
-| BUG-04 | Phase 3 | Pending |
-| BUG-05 | Phase 3 | Pending |
+| UI-ADMIN-03 | Phase 3 | Complete (03-04) |
+| BUG-04 | Phase 3 | Complete (03-04) |
+| BUG-05 | Phase 3 | Complete (03-04) |
 | BUG-01 | Phase 4 | Pending |
 | BUG-02 | Phase 4 | Pending |
 | BUG-03 | Phase 4 | Pending |
