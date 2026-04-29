@@ -10,7 +10,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 - [x] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
 - [x] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code (2026-04-29)
 - [x] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback (2026-04-29)
-- [ ] **Phase 5: Day Status & Export** - Add whole-day status (SL/VL/Holiday) and day export matching quarter-3-logs.txt format
+- [x] **Phase 5: Day Status & Export** - Add whole-day status (SL/VL/Holiday) and day export matching quarter-3-logs.txt format (2026-04-29)
 - [ ] **Phase 6: Quality Gate** - Ship Vitest unit and component tests covering all new and existing LexTrack code
 
 ## Phase Details
@@ -103,7 +103,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 05-02-PLAN.md — LexTrackView template wiring: restructure top row (SelectButton + Export Day button), v-if on activity grid, v-else status banner
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 05-03-PLAN.md — Phase gate: type-check + lint + build + grep audit + human smoke test (5 scenarios)
+- [x] 05-03-PLAN.md — Phase gate: type-check + lint + build + grep audit + human smoke test (5 scenarios)
 **UI hint**: yes
 
 ### Phase 6: Quality Gate
@@ -125,5 +125,5 @@ Plans:
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
 | 4. Core Bug Fixes & Save UX | 5/5 | Complete | 2026-04-29 |
-| 5. Day Status & Export | 2/3 | In progress | - |
+| 5. Day Status & Export | 3/3 | Complete | 2026-04-29 |
 | 6. Quality Gate | 0/TBD | Not started | - |
