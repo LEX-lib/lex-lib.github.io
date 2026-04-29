@@ -25,12 +25,12 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 - [ ] **UI-MEET-01**: Meeting form (`ManageMeeting.vue` and inline add) lets the user enter duration as a number plus a min/hr toggle
 - [ ] **UI-MEET-02**: When the unit is hours, the value is converted to minutes for storage (and back for display)
-- [ ] **UI-MEET-03**: Existing meetings (with only `duration_minutes` set) render correctly with the toggle defaulting to minutes
+- [x] **UI-MEET-03**: Existing meetings (with only `duration_minutes` set) render correctly with the toggle defaulting to minutes
 
 ### UI: Admin
 
 - [ ] **UI-ADMIN-01**: Admin/Support form (`ManageSupport.vue` and inline add) has a URL input for the optional `link`
-- [ ] **UI-ADMIN-02**: Admin entries in `ActivityCard` show a small link icon when a `link` is set (clickable, opens in new tab)
+- [x] **UI-ADMIN-02**: Admin entries in `ActivityCard` show a small link icon when a `link` is set (clickable, opens in new tab)
 - [ ] **UI-ADMIN-03**: The "Admin Tasks and Support" label is shortened to "Admin" to match the requirements doc terminology
 
 ### UI: Day Status
@@ -109,9 +109,9 @@ Tracked but deferred.
 | TYPES-04 | Phase 2 | Complete (02-04, 02-05) |
 | UI-MEET-01 | Phase 3 | Pending |
 | UI-MEET-02 | Phase 3 | Pending |
-| UI-MEET-03 | Phase 3 | Pending |
+| UI-MEET-03 | Phase 3 | Complete (03-02) |
 | UI-ADMIN-01 | Phase 3 | Pending |
-| UI-ADMIN-02 | Phase 3 | Pending |
+| UI-ADMIN-02 | Phase 3 | Complete (03-02) |
 | UI-ADMIN-03 | Phase 3 | Pending |
 | BUG-04 | Phase 3 | Pending |
 | BUG-05 | Phase 3 | Pending |

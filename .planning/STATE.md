@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 Plan 01 complete (1/6) — useDurationField composable shipped; Wave 1 unblocked for 03-02..04
-last_updated: "2026-04-29T00:19:16Z"
-last_activity: 2026-04-29 -- Phase 3 Plan 01 complete (useDurationField composable)
+stopped_at: Phase 3 Plan 02 complete (2/6) — ActivityCard link icon + Tooltip directive shipped; Wave 1 plans 03-03/03-04 ready next
+last_updated: "2026-04-29T00:27:50Z"
+last_activity: 2026-04-29 -- Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults + vTooltip)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
-  percent: 73
+  completed_plans: 12
+  percent: 80
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Capturing a day's stand-up activity must be fast, complete, and durable.
-**Current focus:** Phase 3 — Meeting & Admin UI (unblocked)
+**Current focus:** Phase 3 — Meeting & Admin UI (in progress)
 
 ## Current Position
 
 Phase: 3 (Meeting & Admin UI) — IN PROGRESS
-Plan: 1/6 complete (Wave 1: 03-01 done; 03-02, 03-03, 03-04 unblocked)
+Plan: 2/6 complete (Wave 1: 03-01 + 03-02 done; 03-03, 03-04 unblocked)
 Status: Executing
-Last activity: 2026-04-29 -- Phase 3 Plan 01 complete (useDurationField composable)
+Last activity: 2026-04-29 -- Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults + vTooltip)
 
-Progress: [██████████████░░░░░░] 73% (11/15 plans complete)
+Progress: [████████████████░░░░] 80% (12/15 plans complete)
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [██████████████░░░░░░] 73% (11
 | Phase 02 P05 | 1 | 2 tasks | 1 file |
 | Phase 02 P06 | 0 | 2 tasks | 0 files (verification-only gate) |
 | Phase 03 P01 | 2 | 1 task | 1 file (composable) |
+| Phase 03 P02 | 3 | 2 tasks | 2 files (ActivityCard.vue, main.ts) |
 
 ## Accumulated Context
 
@@ -81,6 +82,7 @@ Recent decisions affecting current work:
 - 02-04: mapFromRecordMeeting is the single legacy-default chokepoint for duration_unit ?? 'minutes'; mapToCreateMeeting also defaults to 'minutes' so new rows are pre-normalized; mapFromRecordSupport/Task are pass-through spreads for symmetry (D-12)
 - 02-05: No mapToUpdateDayStatus — day-status semantics are set-status-for-a-date (D-11); Phase 5 decides between fetch-then-replace or delete-then-create; mapFromRecordDayStatus is pass-through spread for future chokepoint (D-12)
 - 03-01: useDurationField composable owns seed-time round-trip only; consumer (Plan 03-05) owns the runtime watcher that copies durationMinutes/unit back to defineModel ref. savedUnit ?? 'minutes' is defense-in-depth over mapper-layer normalization. Named export, no barrel file (D-07).
+- 03-02: PrimeVue Tooltip is the documented manual `from 'primevue/...'` exception (directives are NOT auto-imported by unplugin-vue-components — only components are). Inline comment in main.ts pins the rationale. ActivityCard uses `'in' item` type guards to read link/jira_link off the existing SectionItem union — no type widening, no changes under src/types/lextrack/. window.open(url, '_blank', 'noopener,noreferrer') chosen over `<a target="_blank" rel="...">` for stronger T-3-01 mitigation. Inline-add Enter handler branches on props.label ('Meetings' | 'Admin' | else) so factory defaults match the destination shape; relies on Plan 03-04's upcoming `label="Admin"` rename to activate the admin branch.
 
 ### Pending Todos
 
@@ -102,6 +104,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-29T00:19:16Z
-Stopped at: Phase 3 Plan 01 complete (useDurationField composable shipped); Wave 1 plans 03-02/03/04 ready to execute; Plan 03-05 unblocked once 03-02 complete
+Last session: 2026-04-29T00:27:50Z
+Stopped at: Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults shipped, vTooltip directive registered); Wave 1 plans 03-03 and 03-04 ready to execute next; Plan 03-05 still unblocked
 Resume file: None
