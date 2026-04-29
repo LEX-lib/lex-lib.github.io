@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 Plan 02 complete (2/6) — ActivityCard link icon + Tooltip directive shipped; Wave 1 plans 03-03/03-04 ready next
-last_updated: "2026-04-29T00:27:50Z"
-last_activity: 2026-04-29 -- Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults + vTooltip)
+stopped_at: Phase 3 Plan 03 complete (3/6) — ManageSupport URL input + dark overrides stripped; Wave 1 plan 03-04 still ready next
+last_updated: "2026-04-29T00:40:21Z"
+last_activity: 2026-04-29 -- Phase 3 Plan 03 complete (ManageSupport URL input + de-darkened dialog)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 15
-  completed_plans: 12
-  percent: 80
+  completed_plans: 13
+  percent: 87
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 3 (Meeting & Admin UI) — IN PROGRESS
-Plan: 2/6 complete (Wave 1: 03-01 + 03-02 done; 03-03, 03-04 unblocked)
+Plan: 3/6 complete (Wave 1: 03-01 + 03-02 + 03-03 done; 03-04 unblocked)
 Status: Executing
-Last activity: 2026-04-29 -- Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults + vTooltip)
+Last activity: 2026-04-29 -- Phase 3 Plan 03 complete (ManageSupport URL input + de-darkened dialog)
 
-Progress: [████████████████░░░░] 80% (12/15 plans complete)
+Progress: [█████████████████░░░] 87% (13/15 plans complete)
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Progress: [████████████████░░░░] 80% (12
 | Phase 02 P06 | 0 | 2 tasks | 0 files (verification-only gate) |
 | Phase 03 P01 | 2 | 1 task | 1 file (composable) |
 | Phase 03 P02 | 3 | 2 tasks | 2 files (ActivityCard.vue, main.ts) |
+| Phase 03 P03 | 8 | 1 task | 1 file (ManageSupport.vue) |
 
 ## Accumulated Context
 
@@ -83,6 +84,7 @@ Recent decisions affecting current work:
 - 02-05: No mapToUpdateDayStatus — day-status semantics are set-status-for-a-date (D-11); Phase 5 decides between fetch-then-replace or delete-then-create; mapFromRecordDayStatus is pass-through spread for future chokepoint (D-12)
 - 03-01: useDurationField composable owns seed-time round-trip only; consumer (Plan 03-05) owns the runtime watcher that copies durationMinutes/unit back to defineModel ref. savedUnit ?? 'minutes' is defense-in-depth over mapper-layer normalization. Named export, no barrel file (D-07).
 - 03-02: PrimeVue Tooltip is the documented manual `from 'primevue/...'` exception (directives are NOT auto-imported by unplugin-vue-components — only components are). Inline comment in main.ts pins the rationale. ActivityCard uses `'in' item` type guards to read link/jira_link off the existing SectionItem union — no type widening, no changes under src/types/lextrack/. window.open(url, '_blank', 'noopener,noreferrer') chosen over `<a target="_blank" rel="...">` for stronger T-3-01 mitigation. Inline-add Enter handler branches on props.label ('Meetings' | 'Admin' | else) so factory defaults match the destination shape; relies on Plan 03-04's upcoming `label="Admin"` rename to activate the admin branch.
+- 03-03: ManageSupport URL input is plain `<InputText type="url">` (no client-side regex) — PB's URL field validates server-side per Phase 1 D-12. Dropped `editorStyle` constant + `:pt` override so Editor renders default Quill styling (D-18); also dropped unused `Toaster` and `ref` imports (oxlint correctness baseline). `updateSupport` body unchanged — Phase 4 (UI-SAVE-01) owns persistence per D-17. Dialog header stays "Edit Support" and filename stays `ManageSupport.vue` per D-13 (only LexTrackView's section label becomes "Admin" in plan 03-04).
 
 ### Pending Todos
 
@@ -104,6 +106,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-29T00:27:50Z
-Stopped at: Phase 3 Plan 02 complete (ActivityCard link icon + inline-add defaults shipped, vTooltip directive registered); Wave 1 plans 03-03 and 03-04 ready to execute next; Plan 03-05 still unblocked
+Last session: 2026-04-29T00:40:21Z
+Stopped at: Phase 3 Plan 03 complete (ManageSupport URL input + de-darkened dialog shipped); Wave 1 plan 03-04 ready to execute next; Plan 03-05 still unblocked
 Resume file: None
