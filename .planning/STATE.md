@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 Plan 04 complete (4/6) — LexTrackView "Admin" label + console.log/dead-code cleanup; Wave 1 done; 03-05 (ManageMeeting duration toggle) ready next
-last_updated: "2026-04-29T00:47:44Z"
-last_activity: 2026-04-29 -- Phase 3 Plan 04 complete (LexTrackView cleanup + Admin label rename)
+stopped_at: Phase 3 Plan 05 complete (5/6) — ManageMeeting wired to useDurationField + SelectButton, dark overrides stripped; only 03-06 phase gate remains
+last_updated: "2026-04-29T00:54:36Z"
+last_activity: 2026-04-29 -- Phase 3 Plan 05 complete (ManageMeeting duration toggle integration)
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 15
-  completed_plans: 14
-  percent: 93
+  total_plans: 16
+  completed_plans: 15
+  percent: 94
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 3 (Meeting & Admin UI) — IN PROGRESS
-Plan: 4/6 complete (Wave 1: 03-01 + 03-02 + 03-03 + 03-04 done; 03-05 unblocked)
+Plan: 5/6 complete (Wave 1: 03-01 + 03-02 + 03-03 + 03-04 done; Wave 2: 03-05 done; 03-06 phase gate pending)
 Status: Executing
-Last activity: 2026-04-29 -- Phase 3 Plan 04 complete (LexTrackView cleanup + Admin label rename)
+Last activity: 2026-04-29 -- Phase 3 Plan 05 complete (ManageMeeting duration toggle integration)
 
-Progress: [██████████████████░░] 93% (14/15 plans complete)
+Progress: [██████████████████░░] 94% (15/16 plans complete)
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████████████████░░] 93% (14
 | Phase 03 P02 | 3 | 2 tasks | 2 files (ActivityCard.vue, main.ts) |
 | Phase 03 P03 | 8 | 1 task | 1 file (ManageSupport.vue) |
 | Phase 03 P04 | 3 | 1 task | 1 file (LexTrackView.vue) |
+| Phase 03 P05 | 2 | 1 task | 1 file (ManageMeeting.vue) |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Recent decisions affecting current work:
 - 03-02: PrimeVue Tooltip is the documented manual `from 'primevue/...'` exception (directives are NOT auto-imported by unplugin-vue-components — only components are). Inline comment in main.ts pins the rationale. ActivityCard uses `'in' item` type guards to read link/jira_link off the existing SectionItem union — no type widening, no changes under src/types/lextrack/. window.open(url, '_blank', 'noopener,noreferrer') chosen over `<a target="_blank" rel="...">` for stronger T-3-01 mitigation. Inline-add Enter handler branches on props.label ('Meetings' | 'Admin' | else) so factory defaults match the destination shape; relies on Plan 03-04's upcoming `label="Admin"` rename to activate the admin branch.
 - 03-03: ManageSupport URL input is plain `<InputText type="url">` (no client-side regex) — PB's URL field validates server-side per Phase 1 D-12. Dropped `editorStyle` constant + `:pt` override so Editor renders default Quill styling (D-18); also dropped unused `Toaster` and `ref` imports (oxlint correctness baseline). `updateSupport` body unchanged — Phase 4 (UI-SAVE-01) owns persistence per D-17. Dialog header stays "Edit Support" and filename stays `ManageSupport.vue` per D-13 (only LexTrackView's section label becomes "Admin" in plan 03-04).
 - 03-04: Section label rename to exactly `"Admin"` (capitalized, no trailing space) is required by Plan 03-02's ActivityCard inline-add Admin branch which keys off `props.label === 'Admin'`. All eight console references stripped from LexTrackView.vue (six active + three commented diagnostics in watcher and save()). Commented-out `<Dialog header="Add DSU Update">`, surrounding `<AddMeeting>`, leading `<LexTrackApp/>`, and `<Button label="Show">` blocks removed wholesale per BUG-05/D-22. `save()` body and `watch(selectedDate)` Promise.all triple are byte-identical aside from the deleted `// console.log` lines — Phase 4 boundary preserved (D-23 surgical scope).
+- 03-05: ManageMeeting consumes `useDurationField` from 03-01 + adds two watchers in the consumer (not the composable) — a reference-identity watcher on `meeting.value` to re-seed enteredValue/unit when parent rebinds, and an output watcher on `[durationMinutes, unit]` to mirror BOTH duration_minutes and duration_unit back to the v-model'd meeting. Reference-identity (not deep) watch chosen to avoid feedback loop with the output writer. SelectButton uses `:allow-empty="false"` to keep `unit` within the DurationUnit union (would otherwise become null when both options deselected). Inline `?? 'minutes'` fallback in the re-seed watcher matches the composable's defense-in-depth on legacy `duration_unit === undefined` rows. Dark overrides stripped (D-18); editorStyle constant + :pt override removed; ref + Toaster dead imports dropped (mirrors 03-03). updateMeeting body still toast-only — Phase 4 (UI-SAVE-01) owns persistence per D-17.
 
 ### Pending Todos
 
@@ -108,6 +110,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-29T00:47:44Z
-Stopped at: Phase 3 Plan 04 complete (LexTrackView cleanup + Admin label rename shipped); Wave 1 finished; Plan 03-05 (ManageMeeting duration toggle) ready to execute next; 03-06 phase gate still pending
+Last session: 2026-04-29T00:54:36Z
+Stopped at: Phase 3 Plan 05 complete (ManageMeeting duration toggle integration shipped — InputNumber + SelectButton wired via useDurationField; dark overrides stripped); Wave 2 done; only 03-06 phase gate remains for Phase 3
 Resume file: None
