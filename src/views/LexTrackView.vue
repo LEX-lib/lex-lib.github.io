@@ -23,17 +23,15 @@ import { mapToCreateTask } from '@/lib/pocketbase/dsuTaskMapper';
 import { mapToCreateSupport } from '@/lib/pocketbase/dsuSupportMapper';
 import type { DsuDayStatus } from '@/types/lextrack/dsu_day_status/types';
 import { mapToCreateDayStatus, mapFromRecordDayStatus } from '@/lib/pocketbase/dsuDayStatusMapper';
+import { DSU_DAY_STATUS_VALUES, DSU_DAY_STATUS_LABELS, DSU_DAY_STATUS_SHORT_LABELS } from '@/types/lextrack/dsu_day_status/constants';
 
 const router = useRouter();
 const auth = useAuthStore();
 
-const DAY_STATUS_OPTIONS = [
-  { label: 'SL', value: 'sl' },
-  { label: 'VL', value: 'vl' },
-  { label: 'Holiday', value: 'holiday' },
-  { label: 'BL', value: 'bl' },
-  { label: 'Others', value: 'others' },
-];
+const DAY_STATUS_OPTIONS = DSU_DAY_STATUS_VALUES.map(v => ({
+  label: DSU_DAY_STATUS_SHORT_LABELS[v],
+  value: v,
+}));
 
 const isLoading = ref(false);
 const isSaving = ref(false);
@@ -429,20 +427,11 @@ const setDayStatus = async (value: string | null): Promise<void> => {
 const selectedStatus = computed(() => dayStatus.value?.status ?? null);
 
 /**
- * Full human-readable names for the status banner and export (D-06, D-12).
- * Note: 'others' maps to 'Others' (plural) per user preference (D-12),
- * not 'Other' from DSU_DAY_STATUS_LABELS (which uses singular for the display label).
+ * Full human-readable name for the status banner and export (D-06, D-12).
+ * Sourced from DSU_DAY_STATUS_LABELS (canonical constant) rather than a local map.
  */
-const STATUS_FULL_NAMES: Record<string, string> = {
-  sl: 'Sick Leave',
-  vl: 'Vacation Leave',
-  holiday: 'Holiday',
-  bl: 'Birthday Leave',
-  others: 'Others',
-};
-
 const statusFullName = computed(() =>
-  dayStatus.value ? (STATUS_FULL_NAMES[dayStatus.value.status] ?? dayStatus.value.status) : ''
+  dayStatus.value ? (DSU_DAY_STATUS_LABELS[dayStatus.value.status] ?? dayStatus.value.status) : ''
 );
 
 /**

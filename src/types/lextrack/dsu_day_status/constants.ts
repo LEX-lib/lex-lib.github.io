@@ -12,5 +12,14 @@ export const DSU_DAY_STATUS_LABELS: Record<DsuDayStatusValue, string> = {
     vl: 'Vacation Leave',
     holiday: 'Holiday',
     bl: 'Birthday Leave',
-    others: 'Other',
+    others: 'Others',
+};
+
+/** Abbreviated labels used in the SelectButton UI (e.g. 'SL', 'VL'). */
+export const DSU_DAY_STATUS_SHORT_LABELS: Record<DsuDayStatusValue, string> = {
+    sl: 'SL',
+    vl: 'VL',
+    holiday: 'Holiday',
+    bl: 'BL',
+    others: 'Others',
 };
