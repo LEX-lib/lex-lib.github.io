@@ -153,4 +153,45 @@ describe('LexTrackView', () => {
     expect(mockCollection.delete).toHaveBeenCalledWith('status-1');
     expect(wrapper.vm.dayStatus).toBeNull();
   });
+
+  // --- Date change triggers loadForDate ---
+  it('changing selectedDate triggers a new loadForDate call', async () => {
+    const { pb } = await import('@/lib/pocketbase');
+    const wrapper = makeWrapper();
+    await flushPromises();
+    // Initial mount calls pb.collection 4 times (supports, tasks, meetings, day_status)
+    vi.clearAllMocks();
+    // Trigger the watch(selectedDate, ...) by assigning a new date
+    wrapper.vm.selectedDate = new Date('2026-02-01');
+    await flushPromises();
+    // loadForDate calls pb.collection once per collection — expect at least 4 new calls
+    const collectionCalls = (pb.collection as ReturnType<typeof vi.fn>).mock.calls.map((c) => c[0] as string);
+    expect(collectionCalls).toContain('dsu_meetings');
+    expect(collectionCalls).toContain('dsu_tasks');
+    expect(collectionCalls).toContain('dsu_supports');
+    expect(collectionCalls).toContain('dsu_day_status');
+  });
+
+  // --- Save interaction: create path ---
+  it('handleMeetingSave with no id calls pb.collection(dsu_meetings).create', async () => {
+    const { pb } = await import('@/lib/pocketbase');
+    const mockCollection = {
+      getFullList: vi.fn().mockResolvedValue([]),
+      create: vi.fn().mockResolvedValue({ id: 'new-meeting-1' }),
+      update: vi.fn().mockResolvedValue({ id: 'new-meeting-1' }),
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+    (pb.collection as ReturnType<typeof vi.fn>).mockReturnValue(mockCollection);
+    const wrapper = makeWrapper();
+    await flushPromises();
+    vi.clearAllMocks();
+    (pb.collection as ReturnType<typeof vi.fn>).mockReturnValue(mockCollection);
+    const item = { title: 'Planning sync', date: '2026-02-01', duration_minutes: 30, duration_unit: 'minutes' as const };
+    wrapper.vm.meetings.push(item);
+    await wrapper.vm.handleMeetingSave(item);
+    await flushPromises();
+    expect(mockCollection.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Planning sync' }),
+    );
+  });
 });

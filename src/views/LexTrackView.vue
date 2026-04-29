@@ -490,6 +490,10 @@ defineExpose({
   removeMeeting,
   removeTask,
   setDayStatus,
+  selectedDate,
+  handleMeetingSave,
+  handleTaskSave,
+  handleSupportSave,
 });
 </script>
 
