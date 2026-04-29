@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import {ref} from "vue";
-import { Toaster,toast } from "vue-sonner";
-import type {AddDsuSupport} from "@/types/lextrack/dsu_supports/types";
+import { toast } from "vue-sonner";
+import type { AddDsuSupport } from "@/types/lextrack/dsu_supports/types";
 
 const visible = defineModel(
     'visible',
@@ -18,13 +17,9 @@ const support = defineModel<AddDsuSupport>(
     });
 
 const updateSupport = () => {
+  // Phase 3 boundary: persistence lands in Phase 4 (UI-SAVE-01). For now, toast only.
   toast.success('Support is updated successfully!');
   visible.value = false;
-};
-
-const editorStyle = {
-  toolbar: { class: 'bg-gray-700 border-gray-600' },
-  content: { class: 'bg-gray-700 border-gray-600 text-white' }
 };
 </script>
 
@@ -36,12 +31,15 @@ const editorStyle = {
       @close="visible = false"
       :style="{ width: '40vw' }"
       position="right">
-    <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
+    <div class="space-y-4 p-4">
       <div>
-        <InputText v-model="support.title" placeholder="Support Title" class="w-full bg-gray-700 text-white" />
+        <InputText v-model="support.title" placeholder="Support Title" class="w-full" />
       </div>
       <div>
-        <Editor v-model="support.description" editorStyle="height: 120px" :pt="editorStyle" />
+        <InputText v-model="support.link" type="url" placeholder="Link (optional)" class="w-full" />
+      </div>
+      <div>
+        <Editor v-model="support.description" editorStyle="height: 120px" />
       </div>
       <Button label="Save" @click="updateSupport" class="w-full bg-indigo-600 hover:bg-indigo-700" />
     </div>
