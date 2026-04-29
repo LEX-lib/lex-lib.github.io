@@ -24,7 +24,7 @@ const meeting = defineModel<AddDsuMeeting>(
     });
 
 // Seed the composable from the current meeting (D-04 round-trip).
-const { enteredValue, unit, durationMinutes, fractionDigits } = useDurationField(
+const { enteredValue, unit, durationMinutes, fractionDigits, seed } = useDurationField(
   meeting.value.duration_minutes,
   meeting.value.duration_unit,
 );
@@ -33,15 +33,7 @@ const { enteredValue, unit, durationMinutes, fractionDigits } = useDurationField
 // Track the meeting reference identity, not deep changes — a deep watcher would fight Edit's writes.
 watch(
   () => meeting.value,
-  (next) => {
-    enteredValue.value =
-      next.duration_minutes === undefined || next.duration_minutes === null
-        ? null
-        : (next.duration_unit ?? 'minutes') === 'hours'
-          ? next.duration_minutes / 60
-          : next.duration_minutes;
-    unit.value = next.duration_unit ?? 'minutes';
-  },
+  (next) => seed(next.duration_minutes, next.duration_unit),
 );
 
 // Mirror UI changes back into the v-model'd meeting (D-03).
