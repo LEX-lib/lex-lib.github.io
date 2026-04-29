@@ -61,10 +61,10 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Quality
 
-- [ ] **QA-01**: Vitest unit tests cover the new mappers, the duration unit converter, the day-status logic, and the exporter
-- [ ] **QA-02**: Vitest component tests cover `LexTrackView.vue` (initial load, date change, save, delete, day status), `ActivityCard.vue` (add via Enter, edit, remove), and the three Manage* dialogs (per-item save)
-- [ ] **QA-03**: `npm run lint` and `npm run type-check` pass cleanly
-- [ ] **QA-04**: `npm run test:unit` runs in CI-friendly fashion (no watch mode by default in scripts; or a documented `test:unit:run` variant)
+- [x] **QA-01**: Vitest unit tests cover the new mappers, the duration unit converter, the day-status logic, and the exporter
+- [x] **QA-02**: Vitest component tests cover `LexTrackView.vue` (initial load, date change, save, delete, day status), `ActivityCard.vue` (add via Enter, edit, remove), and the three Manage* dialogs (per-item save)
+- [x] **QA-03**: `npm run lint` and `npm run type-check` pass cleanly
+- [x] **QA-04**: `npm run test:unit` runs in CI-friendly fashion (no watch mode by default in scripts; or a documented `test:unit:run` variant)
 
 ## v2 Requirements
 
@@ -127,10 +127,10 @@ Tracked but deferred.
 | EXPORT-01 | Phase 5 | Complete (05-01, 05-02, 05-03) |
 | EXPORT-02 | Phase 5 | Complete (05-01, 05-02, 05-03) |
 | EXPORT-03 | Phase 5 | Complete (05-01, 05-02, 05-03) |
-| QA-01 | Phase 6 | Pending |
-| QA-02 | Phase 6 | Pending |
-| QA-03 | Phase 6 | Pending |
-| QA-04 | Phase 6 | Pending |
+| QA-01 | Phase 6 | Complete (06-01 through 06-06) |
+| QA-02 | Phase 6 | Complete (06-03 through 06-06) |
+| QA-03 | Phase 6 | Complete (06-07) |
+| QA-04 | Phase 6 | Complete (06-07) |
 
 **Coverage:**
 - v1 requirements: 31 total
@@ -139,4 +139,4 @@ Tracked but deferred.
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-29 after Phase 4 gate PASS*
+*Last updated: 2026-04-29 after Phase 6 gate PASS (all 31 v1 requirements complete)*
