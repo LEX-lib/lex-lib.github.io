@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 ## Current Position
 
 Phase: 6 (Quality Gate) — IN PROGRESS
-Plan: 4/7 complete
-Status: Executing — Wave 3 starting (06-05 + 06-06)
-Last activity: 2026-04-29 -- Wave 2 complete; 06-03 mapper/composable/constants tests + 06-04 export/ActivityCard tests (8 spec files, 56 tests pass)
+Plan: 6/7 complete
+Status: Executing — Wave 4 starting (06-07 phase gate)
+Last activity: 2026-04-29 -- Wave 3 complete; 06-05 Manage* dialog tests (18 tests) + 06-06 LexTrackView tests (5 tests); 12 spec files, 79 tests pass
 
 Progress: [████████████████████] Phases 1–4 complete; Phase 5 next
 
