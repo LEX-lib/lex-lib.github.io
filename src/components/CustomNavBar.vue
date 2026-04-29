@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import {computed, ref} from "vue";
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const auth = useAuthStore();
 
 const items = ref([
   {
-    label: 'Home',
-    icon: 'mdi:home',
-    command: () => router.push('/')
+    label: "Home",
+    icon: "mdi:home",
+    command: () => router.push("/"),
   },
   {
-    label: 'Projects',
-    icon: 'mdi:file-document-box',
-    //command: () => router.push('/projects'),
-    items : [
+    label: "Projects",
+    icon: "mdi:file-document-box",
+    command: () => router.push('/projects'),
+    //items: [
       // {
       //   label: 'Larga',
       //   icon: 'mdi:bus-marker',
@@ -27,33 +27,36 @@ const items = ref([
       //   icon: 'mdi:notebook-edit-outline',
       //   command: () => router.push('/projects/lextrack')
       // },
-      {
-        label: 'MonitoX',
-        icon: 'mdi:gift-open-outline',
-        command: () => router.push('/projects/gift-exchange/join')
-      }
-    ]
+      // {
+      //   label: "MonitoX",
+      //   icon: "mdi:gift-open-outline",
+      //   command: () => router.push("/projects/gift-exchange/join"),
+      // },
+    //],
   },
   {
-    label: 'Blogs',
-    icon: 'mdi:blog-outline',
-    command: () => router.push('/blog')
+    label: "Blogs",
+    icon: "mdi:blog-outline",
+    command: () => router.push("/blog"),
   },
 ]);
 
 const logOut = () => {
   auth.logout();
-  router.push('/');
-}
+  router.push("/");
+};
 
 const avatarImage = computed(() => {
-  return "https://api.dicebear.com/9.x/identicon/svg?seed=" + encodeURIComponent(auth.user?.name) || "guest";
+  return (
+    "https://api.dicebear.com/9.x/identicon/svg?seed=" +
+      encodeURIComponent(auth.user?.name) || "guest"
+  );
 });
 
 const menu = ref();
 const profileItems = ref([
   {
-    label: 'Profile',
+    label: "Profile",
     items: [
       // {
       //   label: 'Settings',
@@ -66,15 +69,15 @@ const profileItems = ref([
       //   badge: 2
       // },
       {
-        label: 'Logout',
-        icon: 'pi pi-sign-out',
-        shortcut: '⌘+Q',
-        command: () => logOut()
-      }
-    ]
-  }]
-);
-const toggle = (event: any) => {
+        label: "Logout",
+        icon: "pi pi-sign-out",
+        //shortcut: "⌘+Q",
+        command: () => logOut(),
+      },
+    ],
+  },
+]);
+const toggle = (event: Event) => {
   menu.value.toggle(event);
 };
 </script>
@@ -83,10 +86,10 @@ const toggle = (event: any) => {
   <Menubar :model="items">
     <template #start>
       <Button variant="link">
-        <Avatar image="/branding_logo.svg" @click="router.push('/')"/>
+        <Avatar image="/branding_logo.svg" @click="router.push('/')" />
       </Button>
 
-<!--      <img src="@/assets/branding_logo.svg" alt="Logo" class="logo" />-->
+      <!--      <img src="@/assets/branding_logo.svg" alt="Logo" class="logo" />-->
     </template>
 
     <template #itemicon="{ item }">
@@ -99,7 +102,14 @@ const toggle = (event: any) => {
           Log In
         </Button>
 
-        <Button variant="text" v-else type="button" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+        <Button
+          variant="text"
+          v-else
+          type="button"
+          @click="toggle"
+          aria-haspopup="true"
+          aria-controls="overlay_menu"
+        >
           <Avatar :image="avatarImage" shape="circle" />
         </Button>
         <Menu ref="menu" id="overlay_menu" :model="profileItems" :popup="true">
@@ -108,11 +118,20 @@ const toggle = (event: any) => {
           </template> -->
 
           <template #item="{ item, props }">
-            <a v-ripple class="flex items-center" v-bind="props.action" @click="(e) => item.command && item.command({ originalEvent: e, item })">
+            <a
+              v-ripple
+              class="flex items-center"
+              v-bind="props.action"
+              @click="
+                (e) => item.command && item.command({ originalEvent: e, item })
+              "
+            >
               <span :class="item.icon" />
               <span>{{ item.label }}</span>
-              <span v-if="item.shortcut"
-                    class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1">
+              <span
+                v-if="item.shortcut"
+                class="ml-auto border border-surface rounded bg-emphasis text-muted-color text-xs p-1"
+              >
                 {{ item.shortcut }}
               </span>
             </a>
@@ -122,7 +141,7 @@ const toggle = (event: any) => {
     </template>
   </Menubar>
 
-<!--  <iconify-icon icon="mdi:home" width="24" height="24"></iconify-icon>-->
+  <!--  <iconify-icon icon="mdi:home" width="24" height="24"></iconify-icon>-->
 </template>
 
 <style scoped>

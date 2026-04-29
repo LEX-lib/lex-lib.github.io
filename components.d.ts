@@ -8,10 +8,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AboutMe: typeof import('./src/components/AboutMe.vue')['default']
     AboutMeSection: typeof import('./src/components/AboutMeSection.vue')['default']
     ActivityCard: typeof import('./src/components/projects/lextrack/ActivityCard.vue')['default']
     AddMeeting: typeof import('./src/components/projects/lextrack/AddMeeting.vue')['default']
+    ApiPlaygroundApp: typeof import('./src/components/projects/api-playground/ApiPlaygroundApp.vue')['default']
     Avatar: typeof import('primevue/avatar')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
@@ -50,10 +50,10 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Tag: typeof import('primevue/tag')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']
-    UnderConstruction: typeof import('./src/components/UnderConstruction.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }
   export interface GlobalDirectives {
     Ripple: typeof import('primevue/ripple')['default']
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }
