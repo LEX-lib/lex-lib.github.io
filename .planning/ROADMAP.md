@@ -99,7 +99,7 @@ Plans:
 **Plans:** 3 plans
 Plans:
 **Wave 1**
-- [ ] 05-01-PLAN.md — LexTrackView script wiring: dayStatus ref, DAY_STATUS_OPTIONS, extend loadForDate, setDayStatus, selectedStatus, statusFullName, stripHtml, buildExportString, exportDay
+- [x] 05-01-PLAN.md — LexTrackView script wiring: dayStatus ref, DAY_STATUS_OPTIONS, extend loadForDate, setDayStatus, selectedStatus, statusFullName, stripHtml, buildExportString, exportDay
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 05-02-PLAN.md — LexTrackView template wiring: restructure top row (SelectButton + Export Day button), v-if on activity grid, v-else status banner
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -125,5 +125,5 @@ Plans:
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
 | 4. Core Bug Fixes & Save UX | 5/5 | Complete | 2026-04-29 |
-| 5. Day Status & Export | 0/3 | Not started | - |
+| 5. Day Status & Export | 1/3 | In progress | - |
 | 6. Quality Gate | 0/TBD | Not started | - |

@@ -41,9 +41,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### UI: Per-item Save
 
-- [ ] **UI-SAVE-01**: The Save button inside each Manage* dialog persists that single item to PocketBase (create or update) and closes the dialog on success
-- [ ] **UI-SAVE-02**: The page-level Save button still works for batch save of all unsaved local items
-- [ ] **UI-SAVE-03**: The save indicator (loading spinner / disabled button) is visible during the save call
+- [x] **UI-SAVE-01**: The Save button inside each Manage* dialog persists that single item to PocketBase (create or update) and closes the dialog on success
+- [x] **UI-SAVE-02**: The page-level Save button still works for batch save of all unsaved local items
+- [x] **UI-SAVE-03**: The save indicator (loading spinner / disabled button) is visible during the save call
 
 ### UI: Export
 
@@ -53,9 +53,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: On page mount, the items for `selectedDate` are fetched from PocketBase (currently only happens on date change)
-- [ ] **BUG-02**: Removing an item via the trash icon calls `pb.collection(...).delete(id)` for items that exist in PocketBase; local-only items are dropped without an API call
-- [ ] **BUG-03**: A failed save / fetch / delete surfaces an error toast via `vue-sonner`; UI rolls back optimistic mutations
+- [x] **BUG-01**: On page mount, the items for `selectedDate` are fetched from PocketBase (currently only happens on date change)
+- [x] **BUG-02**: Removing an item via the trash icon calls `pb.collection(...).delete(id)` for items that exist in PocketBase; local-only items are dropped without an API call
+- [x] **BUG-03**: A failed save / fetch / delete surfaces an error toast via `vue-sonner`; UI rolls back optimistic mutations
 - [x] **BUG-04**: All `console.log` statements in `src/views/LexTrackView.vue` and `src/components/projects/lextrack/*` are removed
 - [x] **BUG-05**: The large commented-out Dialog block at the bottom of `LexTrackView.vue`'s template is removed
 
@@ -115,18 +115,18 @@ Tracked but deferred.
 | UI-ADMIN-03 | Phase 3 | Complete (03-04) |
 | BUG-04 | Phase 3 | Complete (03-04) |
 | BUG-05 | Phase 3 | Complete (03-04) |
-| BUG-01 | Phase 4 | Pending |
-| BUG-02 | Phase 4 | Pending |
-| BUG-03 | Phase 4 | Pending |
-| UI-SAVE-01 | Phase 4 | Pending |
-| UI-SAVE-02 | Phase 4 | Pending |
-| UI-SAVE-03 | Phase 4 | Pending |
-| UI-DAY-01 | Phase 5 | Pending |
-| UI-DAY-02 | Phase 5 | Pending |
-| UI-DAY-03 | Phase 5 | Pending |
-| EXPORT-01 | Phase 5 | Pending |
-| EXPORT-02 | Phase 5 | Pending |
-| EXPORT-03 | Phase 5 | Pending |
+| BUG-01 | Phase 4 | Complete (04-04) |
+| BUG-02 | Phase 4 | Complete (04-04) |
+| BUG-03 | Phase 4 | Complete (04-04) |
+| UI-SAVE-01 | Phase 4 | Complete (04-01, 04-02, 04-03, 04-04) |
+| UI-SAVE-02 | Phase 4 | Complete (04-04) |
+| UI-SAVE-03 | Phase 4 | Complete (04-01, 04-02, 04-03, 04-04) |
+| UI-DAY-01 | Phase 5 | Partial — script (05-01); template (05-02) |
+| UI-DAY-02 | Phase 5 | Partial — script (05-01); template (05-02) |
+| UI-DAY-03 | Phase 5 | Partial — script (05-01); template (05-02) |
+| EXPORT-01 | Phase 5 | Partial — script (05-01); template (05-02) |
+| EXPORT-02 | Phase 5 | Partial — script (05-01); template (05-02) |
+| EXPORT-03 | Phase 5 | Partial — script (05-01); template (05-02) |
 | QA-01 | Phase 6 | Pending |
 | QA-02 | Phase 6 | Pending |
 | QA-03 | Phase 6 | Pending |
@@ -139,4 +139,4 @@ Tracked but deferred.
 
 ---
 *Requirements defined: 2026-04-28*
-*Last updated: 2026-04-28 after roadmap creation*
+*Last updated: 2026-04-29 after Phase 4 gate PASS*

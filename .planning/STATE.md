@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_execute
+status: executing
 stopped_at: ""
-last_updated: "2026-04-29T09:00:00.000Z"
-last_activity: 2026-04-29 -- Phase 5 planned (3 plans, 3 waves); ready to execute
+last_updated: "2026-04-29T09:48:32.000Z"
+last_activity: 2026-04-29 -- Phase 5 Plan 05-01 complete; day status + export script logic added to LexTrackView.vue
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 23
-  completed_plans: 20
-  percent: 87
+  completed_plans: 21
+  percent: 91
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 ## Current Position
 
-Phase: 5 (Day Status & Export) — PLANNED
-Plan: 0/3 (Wave 1: 05-01, Wave 2: 05-02, Wave 3: 05-03 gate)
-Status: Ready to execute
-Last activity: 2026-04-29 -- Phase 5 planned (3 plans, 3 waves); ready to execute
+Phase: 5 (Day Status & Export) — IN PROGRESS
+Plan: 1/3 complete (05-01 done; Wave 2: 05-02, Wave 3: 05-03 gate)
+Status: Executing — 05-02 next
+Last activity: 2026-04-29 -- Phase 5 Plan 05-01 complete; day status + export script logic added to LexTrackView.vue
 
 Progress: [████████████████████] Phases 1–4 complete; Phase 5 next
 
@@ -96,6 +96,7 @@ Recent decisions affecting current work:
 - 04-03: ManageSupport refactored same shape; ALSO removed self-close visible.value=false from script (D-04 — close belongs to parent on success).
 - 04-04: LexTrackView wired to PB — onMounted+watch via loadForDate (D-16/17), optimistic deletes with index rollback + 404-swallow (D-05/Pitfall #5), saveItem helper (D-03), three dialog handlers with id-patch via full-entry replacement (Pitfall #9), page-level save with continue-on-error + post-loop refetch (D-18/24a). 401 handler routes to /login.
 - 04-05: Phase gate PASS — type-check + lint + 6-requirement grep audit + 10-verification human smoke (V8 N/A; V10 code-verified — deleting localStorage does not trigger 401 since in-memory token stays valid; handle401 wired in all 13 async paths). All 5 ROADMAP success criteria verified.
+- 05-01: setDayStatus uses update-in-place (not delete-then-create) when dayStatus.value exists — preserves id, no race. STATUS_FULL_NAMES['others']='Others' (plural) per D-12, diverging from DSU_DAY_STATUS_LABELS 'Other'. buildExportString is pure local-state read (no PB calls). Blank-line separator between export sections uses lines.length > 1 guard. loadForDate now 4-way Promise.all including dsu_day_status fetch.
 
 ### Pending Todos
 
