@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import {ref} from "vue";
-import type {AddDsuMeeting} from "@/types/lextrack/dsu_meetings/types";
-import { Toaster,toast } from "vue-sonner";
+import { watch } from "vue";
+import { toast } from "vue-sonner";
+import type { AddDsuMeeting } from "@/types/lextrack/dsu_meetings/types";
+import {
+  DSU_MEETING_DURATION_UNIT_VALUES,
+  DSU_MEETING_DURATION_UNIT_LABELS,
+  type DurationUnit,
+} from "@/types/lextrack/dsu_meetings/constants";
+import { useDurationField } from "@/composables/lextrack/useDurationField";
 
 const visible = defineModel(
     'visible',
@@ -17,13 +23,42 @@ const meeting = defineModel<AddDsuMeeting>(
       required: true,
     });
 
-const updateMeeting = () => {
-  toast.success('Meeting is updated successfully!');
-};
+// Seed the composable from the current meeting (D-04 round-trip).
+const { enteredValue, unit, durationMinutes, fractionDigits } = useDurationField(
+  meeting.value.duration_minutes,
+  meeting.value.duration_unit,
+);
 
-const editorStyle = {
-  toolbar: { class: 'bg-gray-700 border-gray-600' },
-  content: { class: 'bg-gray-700 border-gray-600 text-white' }
+// Re-seed when the parent swaps which meeting is bound (e.g. user opens a different row).
+// Track the meeting reference identity, not deep changes — a deep watcher would fight Edit's writes.
+watch(
+  () => meeting.value,
+  (next) => {
+    enteredValue.value =
+      next.duration_minutes === undefined || next.duration_minutes === null
+        ? null
+        : (next.duration_unit ?? 'minutes') === 'hours'
+          ? next.duration_minutes / 60
+          : next.duration_minutes;
+    unit.value = next.duration_unit ?? 'minutes';
+  },
+);
+
+// Mirror UI changes back into the v-model'd meeting (D-03).
+watch([durationMinutes, unit], ([nextMinutes, nextUnit]) => {
+  meeting.value.duration_minutes = nextMinutes;
+  meeting.value.duration_unit = nextUnit;
+});
+
+// Options for the SelectButton (D-06).
+const durationUnitOptions = DSU_MEETING_DURATION_UNIT_VALUES.map((value) => ({
+  value,
+  label: DSU_MEETING_DURATION_UNIT_LABELS[value],
+}));
+
+const updateMeeting = () => {
+  // Phase 3 boundary: persistence lands in Phase 4 (UI-SAVE-01). For now, toast only.
+  toast.success('Meeting is updated successfully!');
 };
 </script>
 
@@ -35,15 +70,28 @@ const editorStyle = {
       @close="visible = false"
       :style="{ width: '40vw' }"
       position="right">
-    <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
+    <div class="space-y-4 p-4">
       <div>
-        <InputText v-model="meeting.title" placeholder="Meeting Title" class="w-full bg-gray-700 text-white" />
+        <InputText v-model="meeting.title" placeholder="Meeting Title" class="w-full" />
+      </div>
+      <div class="flex gap-2 items-center">
+        <InputNumber
+          v-model="enteredValue"
+          placeholder="Duration"
+          class="flex-1"
+          :min="0"
+          :min-fraction-digits="0"
+          :max-fraction-digits="fractionDigits" />
+        <SelectButton
+          v-model="unit"
+          :options="durationUnitOptions"
+          optionLabel="label"
+          optionValue="value"
+          :allow-empty="false"
+          aria-label="Duration unit" />
       </div>
       <div>
-        <InputNumber v-model="meeting.duration_minutes" placeholder="Duration (minutes)" class="w-full" inputClass="bg-gray-700 text-white w-full rounded-md" />
-      </div>
-      <div>
-        <Editor v-model="meeting.description" editorStyle="height: 120px" :pt="editorStyle" />
+        <Editor v-model="meeting.description" editorStyle="height: 120px" />
       </div>
       <Button label="Save Meeting" @click="updateMeeting" class="w-full bg-indigo-600 hover:bg-indigo-700" />
     </div>
