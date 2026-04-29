@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 3 COMPLETE (6/6) — gate PASS after G-3-1 closure (orphan AddMeeting.vue + LexTrackApp.vue deleted); all 5 ROADMAP success criteria verified
-last_updated: "2026-04-29T01:30:00Z"
-last_activity: 2026-04-29 -- Phase 3 gate PASS; Phase 4 unblocked
+status: ready_to_execute
+stopped_at: ""
+last_updated: "2026-04-29T09:00:00.000Z"
+last_activity: 2026-04-29 -- Phase 5 planned (3 plans, 3 waves); ready to execute
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_plans: 23
+  completed_plans: 20
+  percent: 87
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-28)
 
 **Core value:** Capturing a day's stand-up activity must be fast, complete, and durable.
-**Current focus:** Phase 4 — Core Bug Fixes & Save UX (next)
+**Current focus:** Phase 5 — Day Status & Export (next)
 
 ## Current Position
 
-Phase: 3 (Meeting & Admin UI) — COMPLETE
-Plan: 6/6 complete (Wave 1: 03-01–03-04, Wave 2: 03-05, Wave 3: 03-06 gate PASS)
+Phase: 5 (Day Status & Export) — PLANNED
+Plan: 0/3 (Wave 1: 05-01, Wave 2: 05-02, Wave 3: 05-03 gate)
 Status: Ready to execute
-Last activity: 2026-04-29 -- Phase 3 gate PASS; Phase 4 unblocked
+Last activity: 2026-04-29 -- Phase 5 planned (3 plans, 3 waves); ready to execute
 
-Progress: [████████████████████] Phases 1–3 complete; Phase 4 next
+Progress: [████████████████████] Phases 1–4 complete; Phase 5 next
 
 ## Performance Metrics
 
@@ -91,6 +91,11 @@ Recent decisions affecting current work:
 - 03-04: Section label rename to exactly `"Admin"` (capitalized, no trailing space) is required by Plan 03-02's ActivityCard inline-add Admin branch which keys off `props.label === 'Admin'`. All eight console references stripped from LexTrackView.vue (six active + three commented diagnostics in watcher and save()). Commented-out `<Dialog header="Add DSU Update">`, surrounding `<AddMeeting>`, leading `<LexTrackApp/>`, and `<Button label="Show">` blocks removed wholesale per BUG-05/D-22. `save()` body and `watch(selectedDate)` Promise.all triple are byte-identical aside from the deleted `// console.log` lines — Phase 4 boundary preserved (D-23 surgical scope).
 - 03-05: ManageMeeting consumes `useDurationField` from 03-01 + adds two watchers in the consumer (not the composable) — a reference-identity watcher on `meeting.value` to re-seed enteredValue/unit when parent rebinds, and an output watcher on `[durationMinutes, unit]` to mirror BOTH duration_minutes and duration_unit back to the v-model'd meeting. Reference-identity (not deep) watch chosen to avoid feedback loop with the output writer. SelectButton uses `:allow-empty="false"` to keep `unit` within the DurationUnit union (would otherwise become null when both options deselected). Inline `?? 'minutes'` fallback in the re-seed watcher matches the composable's defense-in-depth on legacy `duration_unit === undefined` rows. Dark overrides stripped (D-18); editorStyle constant + :pt override removed; ref + Toaster dead imports dropped (mirrors 03-03). updateMeeting body still toast-only — Phase 4 (UI-SAVE-01) owns persistence per D-17.
 - 03-06: Phase gate ran type-check (PASS), lint (PASS — no NEW Phase 3 failures vs Phase 2 baseline), 5 ROADMAP grep audits, requirement-ID coverage. Initial run flagged G-3-1: 6 `console.log` calls in two orphan lextrack components (`AddMeeting.vue`, `LexTrackApp.vue`) that were not imported anywhere. User chose option 1 — both files deleted in commit `7a21fda`. Re-scan confirmed 0 `console.log` in scope. Final Gate Decision: PASS. Human visual UX checkpoint (Task 2) is pending — user runs `npm run dev` independently per plan's checkpoint:human-verify protocol.
+- 04-01: ManageMeeting refactored to emit save + accept :saving prop; toast/self-close removed; useDurationField wiring preserved.
+- 04-02: ManageTask refactored same shape (saving prop + save emit + onSaveClick); toast removed.
+- 04-03: ManageSupport refactored same shape; ALSO removed self-close visible.value=false from script (D-04 — close belongs to parent on success).
+- 04-04: LexTrackView wired to PB — onMounted+watch via loadForDate (D-16/17), optimistic deletes with index rollback + 404-swallow (D-05/Pitfall #5), saveItem helper (D-03), three dialog handlers with id-patch via full-entry replacement (Pitfall #9), page-level save with continue-on-error + post-loop refetch (D-18/24a). 401 handler routes to /login.
+- 04-05: Phase gate PASS — type-check + lint + 6-requirement grep audit + 10-verification human smoke (V8 N/A; V10 code-verified — deleting localStorage does not trigger 401 since in-memory token stays valid; handle401 wired in all 13 async paths). All 5 ROADMAP success criteria verified.
 
 ### Pending Todos
 
@@ -112,6 +117,6 @@ None — Phase 1 blocker (manual schema migration) resolved. Phase 2 is unblocke
 
 ## Session Continuity
 
-Last session: 2026-04-29T01:30:00Z
-Stopped at: Phase 3 COMPLETE — gate PASS after G-3-1 closure (orphan AddMeeting.vue + LexTrackApp.vue deleted). All 5 ROADMAP success criteria verified. Phase 4 (Core Bug Fixes & Save UX) is unblocked. Human-verify checkpoint (Task 2 of 03-06) is the only outstanding item — user runs `npm run dev` smoke test on their own time.
+Last session: 2026-04-29T08:16:30.464Z
+Stopped at: context exhaustion at 75% (2026-04-29)
 Resume file: None

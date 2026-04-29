@@ -98,8 +98,11 @@ Plans:
   4. Clicking the export action copies the text to the clipboard and a toast confirms the copy succeeded
 **Plans:** 3 plans
 Plans:
+**Wave 1**
 - [ ] 05-01-PLAN.md — LexTrackView script wiring: dayStatus ref, DAY_STATUS_OPTIONS, extend loadForDate, setDayStatus, selectedStatus, statusFullName, stripHtml, buildExportString, exportDay
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 05-02-PLAN.md — LexTrackView template wiring: restructure top row (SelectButton + Export Day button), v-if on activity grid, v-else status banner
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 05-03-PLAN.md — Phase gate: type-check + lint + build + grep audit + human smoke test (5 scenarios)
 **UI hint**: yes
 
