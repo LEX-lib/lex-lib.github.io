@@ -35,9 +35,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### UI: Day Status
 
-- [ ] **UI-DAY-01**: A "Mark day as…" control on `LexTrackView.vue` lets the user set the day's status to SL / VL / Holiday (or clear it)
-- [ ] **UI-DAY-02**: When a day status is set, the three activity sections are hidden and a status banner is shown instead
-- [ ] **UI-DAY-03**: Clearing the day status restores the activity sections (with any pre-existing items intact)
+- [x] **UI-DAY-01**: A "Mark day as…" control on `LexTrackView.vue` lets the user set the day's status to SL / VL / Holiday (or clear it)
+- [x] **UI-DAY-02**: When a day status is set, the three activity sections are hidden and a status banner is shown instead
+- [x] **UI-DAY-03**: Clearing the day status restores the activity sections (with any pre-existing items intact)
 
 ### UI: Per-item Save
 
@@ -47,9 +47,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### UI: Export
 
-- [ ] **EXPORT-01**: An "Export day" button on `LexTrackView.vue` produces text matching the format of `quarter-3-logs.txt`
-- [ ] **EXPORT-02**: The exporter handles SL / VL / Holiday days correctly (single line, no sections)
-- [ ] **EXPORT-03**: The exported text can be copied to clipboard (toast confirms)
+- [x] **EXPORT-01**: An "Export day" button on `LexTrackView.vue` produces text matching the format of `quarter-3-logs.txt`
+- [x] **EXPORT-02**: The exporter handles SL / VL / Holiday days correctly (single line, no sections)
+- [x] **EXPORT-03**: The exported text can be copied to clipboard (toast confirms)
 
 ### Bug Fixes
 
@@ -121,12 +121,12 @@ Tracked but deferred.
 | UI-SAVE-01 | Phase 4 | Complete (04-01, 04-02, 04-03, 04-04) |
 | UI-SAVE-02 | Phase 4 | Complete (04-04) |
 | UI-SAVE-03 | Phase 4 | Complete (04-01, 04-02, 04-03, 04-04) |
-| UI-DAY-01 | Phase 5 | Partial — script (05-01); template (05-02) |
-| UI-DAY-02 | Phase 5 | Partial — script (05-01); template (05-02) |
-| UI-DAY-03 | Phase 5 | Partial — script (05-01); template (05-02) |
-| EXPORT-01 | Phase 5 | Partial — script (05-01); template (05-02) |
-| EXPORT-02 | Phase 5 | Partial — script (05-01); template (05-02) |
-| EXPORT-03 | Phase 5 | Partial — script (05-01); template (05-02) |
+| UI-DAY-01 | Phase 5 | Complete (05-01, 05-02, 05-03) |
+| UI-DAY-02 | Phase 5 | Complete (05-01, 05-02, 05-03) |
+| UI-DAY-03 | Phase 5 | Complete (05-01, 05-02, 05-03) |
+| EXPORT-01 | Phase 5 | Complete (05-01, 05-02, 05-03) |
+| EXPORT-02 | Phase 5 | Complete (05-01, 05-02, 05-03) |
+| EXPORT-03 | Phase 5 | Complete (05-01, 05-02, 05-03) |
 | QA-01 | Phase 6 | Pending |
 | QA-02 | Phase 6 | Pending |
 | QA-03 | Phase 6 | Pending |
