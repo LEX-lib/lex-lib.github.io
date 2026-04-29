@@ -8,7 +8,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 
 - [x] **Phase 1: Schema Foundation** - Apply additive PocketBase schema changes and document migration steps
 - [x] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
-- [ ] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code
+- [x] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code (2026-04-29)
 - [ ] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback
 - [ ] **Phase 5: Day Status & Export** - Add whole-day status (SL/VL/Holiday) and day export matching quarter-3-logs.txt format
 - [ ] **Phase 6: Quality Gate** - Ship Vitest unit and component tests covering all new and existing LexTrack code
@@ -65,7 +65,7 @@ Plans:
 - [x] 03-03-PLAN.md — ManageSupport URL input + strip dark Tailwind overrides
 - [x] 03-04-PLAN.md — LexTrackView "Admin" label + remove console.logs + remove commented Dialog block
 - [x] 03-05-PLAN.md — ManageMeeting duration toggle integration + strip dark overrides (Wave 2)
-- [ ] 03-06-PLAN.md — Phase gate: type-check, lint, grep audit, dev-server smoke
+- [x] 03-06-PLAN.md — Phase gate: type-check, lint, grep audit, dev-server smoke
 **UI hint**: yes
 
 ### Phase 4: Core Bug Fixes & Save UX
@@ -110,7 +110,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
-| 3. Meeting & Admin UI | 5/6 | In progress | - |
+| 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
 | 4. Core Bug Fixes & Save UX | 0/TBD | Not started | - |
 | 5. Day Status & Export | 0/TBD | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |

@@ -29,7 +29,7 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### UI: Admin
 
-- [ ] **UI-ADMIN-01**: Admin/Support form (`ManageSupport.vue` and inline add) has a URL input for the optional `link`
+- [x] **UI-ADMIN-01**: Admin/Support form (`ManageSupport.vue` and inline add) has a URL input for the optional `link`
 - [x] **UI-ADMIN-02**: Admin entries in `ActivityCard` show a small link icon when a `link` is set (clickable, opens in new tab)
 - [x] **UI-ADMIN-03**: The "Admin Tasks and Support" label is shortened to "Admin" to match the requirements doc terminology
 
@@ -110,7 +110,7 @@ Tracked but deferred.
 | UI-MEET-01 | Phase 3 | Complete (03-05) |
 | UI-MEET-02 | Phase 3 | Complete (03-05) |
 | UI-MEET-03 | Phase 3 | Complete (03-02, reaffirmed by 03-05 round-trip) |
-| UI-ADMIN-01 | Phase 3 | Pending |
+| UI-ADMIN-01 | Phase 3 | Complete (03-03) |
 | UI-ADMIN-02 | Phase 3 | Complete (03-02) |
 | UI-ADMIN-03 | Phase 3 | Complete (03-04) |
 | BUG-04 | Phase 3 | Complete (03-04) |
