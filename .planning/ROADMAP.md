@@ -115,7 +115,7 @@ Plans:
   2. Mapper functions, the duration unit converter, day-status logic, and the exporter each have unit tests
   3. `LexTrackView.vue` component tests cover initial load, date change, save, delete, and day status interactions; `ActivityCard.vue` tests cover add-via-Enter, edit, and remove
   4. `npm run lint` and `npm run type-check` both pass cleanly after all test files are added
-**Plans:** 7 plans
+**Plans:** 8 plans
 Plans:
 **Wave 1** *(parallel)*
 - [x] 06-01-PLAN.md — Tooling setup: fix test:unit script to vitest run, install @pinia/testing, create PB __mocks__
@@ -128,6 +128,8 @@ Plans:
 - [x] 06-06-PLAN.md — Component tests: LexTrackView (initial load, delete, day status)
 **Wave 4** *(blocked on Wave 3)*
 - [x] 06-07-PLAN.md — Phase gate: npm run test:unit + lint + type-check all pass + human verify
+**Gap Closure** *(QA-02 gap closure — 2026-04-29)*
+- [x] 06-08-PLAN.md — Close QA-02 gaps: expose selectedDate/save handlers + add date-change and create-path tests
 
 ## Progress
 
@@ -138,4 +140,4 @@ Plans:
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
 | 4. Core Bug Fixes & Save UX | 5/5 | Complete | 2026-04-29 |
 | 5. Day Status & Export | 3/3 | Complete | 2026-04-29 |
-| 6. Quality Gate | 7/7 | Complete | 2026-04-29 |
+| 6. Quality Gate | 8/8 | Complete | 2026-04-29 |
