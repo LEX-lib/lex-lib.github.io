@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AddDsuTask } from "@/types/lextrack/dsu_tasks/types";
-import { toast } from "vue-sonner";
 
 const visible = defineModel(
     'visible',
@@ -16,9 +15,13 @@ const task = defineModel<AddDsuTask>(
       required: true,
     });
 
-const updateTask = () => {
-  toast.success('Task is updated successfully!');
-};
+const props = defineProps<{ saving?: boolean }>();
+
+const emit = defineEmits<{
+  save: [item: AddDsuTask & { id?: string }];
+}>();
+
+const onSaveClick = () => emit('save', task.value as AddDsuTask & { id?: string });
 </script>
 
 <template>
@@ -39,7 +42,7 @@ const updateTask = () => {
       <div>
         <Editor v-model="task.description" editorStyle="height: 120px" />
       </div>
-      <Button label="Save Task" @click="updateTask" class="w-full bg-indigo-600 hover:bg-indigo-700" />
+      <Button label="Save Task" :loading="props.saving" @click="onSaveClick" class="w-full bg-indigo-600 hover:bg-indigo-700" />
     </div>
   </Dialog>
 </template>
