@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch } from "vue";
-import { toast } from "vue-sonner";
 import type { AddDsuMeeting } from "@/types/lextrack/dsu_meetings/types";
 import {
   DSU_MEETING_DURATION_UNIT_VALUES,
@@ -22,6 +21,12 @@ const meeting = defineModel<AddDsuMeeting>(
     {
       required: true,
     });
+
+const props = defineProps<{ saving?: boolean }>();
+
+const emit = defineEmits<{
+  save: [item: AddDsuMeeting & { id?: string }];
+}>();
 
 // Seed the composable from the current meeting (D-04 round-trip).
 const { enteredValue, unit, durationMinutes, fractionDigits, seed } = useDurationField(
@@ -48,10 +53,7 @@ const durationUnitOptions = DSU_MEETING_DURATION_UNIT_VALUES.map((value) => ({
   label: DSU_MEETING_DURATION_UNIT_LABELS[value],
 }));
 
-const updateMeeting = () => {
-  // Phase 3 boundary: persistence lands in Phase 4 (UI-SAVE-01). For now, toast only.
-  toast.success('Meeting is updated successfully!');
-};
+const onSaveClick = () => emit('save', meeting.value as AddDsuMeeting & { id?: string });
 </script>
 
 <template>
@@ -85,7 +87,7 @@ const updateMeeting = () => {
       <div>
         <Editor v-model="meeting.description" editorStyle="height: 120px" />
       </div>
-      <Button label="Save Meeting" @click="updateMeeting" class="w-full bg-indigo-600 hover:bg-indigo-700" />
+      <Button label="Save Meeting" :loading="props.saving" @click="onSaveClick" class="w-full bg-indigo-600 hover:bg-indigo-700" />
     </div>
   </Dialog>
 </template>
