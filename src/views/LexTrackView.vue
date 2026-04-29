@@ -21,9 +21,19 @@ import { mapToUpdateTask } from '@/lib/pocketbase/dsuTaskMapper';
 import { mapToCreateMeeting } from '@/lib/pocketbase/dsuMeetingMapper';
 import { mapToCreateTask } from '@/lib/pocketbase/dsuTaskMapper';
 import { mapToCreateSupport } from '@/lib/pocketbase/dsuSupportMapper';
+import type { DsuDayStatus } from '@/types/lextrack/dsu_day_status/types';
+import { mapToCreateDayStatus, mapFromRecordDayStatus } from '@/lib/pocketbase/dsuDayStatusMapper';
 
 const router = useRouter();
 const auth = useAuthStore();
+
+const DAY_STATUS_OPTIONS = [
+  { label: 'SL', value: 'sl' },
+  { label: 'VL', value: 'vl' },
+  { label: 'Holiday', value: 'holiday' },
+  { label: 'BL', value: 'bl' },
+  { label: 'Others', value: 'others' },
+] as const;
 
 const isLoading = ref(false);
 const isSaving = ref(false);
@@ -46,6 +56,7 @@ const handle401 = (err: unknown): boolean => {
 };
 
 const selectedDate = ref(new Date());
+const dayStatus = ref<DsuDayStatus | null>(null);
 
 /** SUPPORTS */
 type DsuSupportItem = AddDsuSupport & { id?: string };
@@ -180,18 +191,23 @@ const isNoEntry = computed(() => {
 const loadForDate = async (date: Date): Promise<void> => {
   isLoading.value = true;
   try {
+    const dateStr = dayjs(date).format('YYYY-MM-DD');
     const options: RecordFullListOptions = {
-      filter: `date ~ "${dayjs(date).format('YYYY-MM-DD')}"`,
+      filter: `date ~ "${dateStr}"`,
       sort: '-created',
     };
-    const [supportsList, tasksList, meetingsList] = await Promise.all([
+    const [supportsList, tasksList, meetingsList, statusList] = await Promise.all([
       pb.collection('dsu_supports').getFullList<DsuSupports>(options),
       pb.collection('dsu_tasks').getFullList<DsuTasks>(options),
       pb.collection('dsu_meetings').getFullList<DsuMeetings>(options),
+      pb.collection('dsu_day_status').getFullList<DsuDayStatus>({
+        filter: `date = "${dateStr}"`,
+      }),
     ]);
     supports.value = supportsList;
     tasks.value = tasksList;
     meetings.value = meetingsList;
+    dayStatus.value = statusList[0] ?? null;
   } catch (err) {
     if (handle401(err)) return;
     console.error('[lextrack load]', err);
@@ -353,6 +369,155 @@ const save = async () => {
     }
   } finally {
     isSaving.value = false;
+  }
+};
+
+/**
+ * D-03: Immediately upserts or deletes the day status on PB.
+ * value === null means the user deselected the active option (D-04 allowEmpty).
+ * D-18: stores the full PB record in dayStatus so .id is available for future delete/update.
+ */
+const setDayStatus = async (value: string | null): Promise<void> => {
+  const dateStr = dayjs(selectedDate.value).format('YYYY-MM-DD');
+  if (value === null) {
+    // Clear path: delete existing record
+    if (!dayStatus.value) return;
+    try {
+      await pb.collection('dsu_day_status').delete(dayStatus.value.id);
+      dayStatus.value = null;
+    } catch (err) {
+      if (handle401(err)) return;
+      console.error('[lextrack day status delete]', err);
+      toast.error("Couldn't clear day status — try again?");
+    }
+    return;
+  }
+  // Set path: update existing or create new
+  try {
+    if (dayStatus.value) {
+      // Update existing record
+      const updated = await pb
+        .collection('dsu_day_status')
+        .update<DsuDayStatus>(dayStatus.value.id, mapToCreateDayStatus({ date: dateStr, status: value as DsuDayStatus['status'] }));
+      dayStatus.value = mapFromRecordDayStatus(updated);
+    } else {
+      // Create new record
+      const created = await pb
+        .collection('dsu_day_status')
+        .create<DsuDayStatus>(mapToCreateDayStatus({ date: dateStr, status: value as DsuDayStatus['status'] }));
+      dayStatus.value = mapFromRecordDayStatus(created);
+    }
+  } catch (err) {
+    if (handle401(err)) return;
+    console.error('[lextrack day status set]', err);
+    toast.error("Couldn't set day status — try again?");
+  }
+};
+
+/**
+ * Computed for SelectButton v-model binding.
+ * Returns the status string value or null when no status is set.
+ */
+const selectedStatus = computed(() => dayStatus.value?.status ?? null);
+
+/**
+ * Full human-readable names for the status banner and export (D-06, D-12).
+ * Note: 'others' maps to 'Others' (plural) per user preference (D-12),
+ * not 'Other' from DSU_DAY_STATUS_LABELS (which uses singular for the display label).
+ */
+const STATUS_FULL_NAMES: Record<string, string> = {
+  sl: 'Sick Leave',
+  vl: 'Vacation Leave',
+  holiday: 'Holiday',
+  bl: 'Birthday Leave',
+  others: 'Others',
+};
+
+const statusFullName = computed(() =>
+  dayStatus.value ? (STATUS_FULL_NAMES[dayStatus.value.status] ?? dayStatus.value.status) : ''
+);
+
+/**
+ * D-14 / D-17: Strip Quill HTML using DOMParser (browser-native, no new deps).
+ * Returns an array of non-empty text lines, each becomes a "* {line}" bullet in export.
+ */
+const stripHtml = (html: string): string[] => {
+  if (!html) return [];
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return Array.from(doc.body.querySelectorAll('p, li, div'))
+    .map(el => el.textContent?.trim() ?? '')
+    .filter(line => line.length > 0);
+};
+
+/**
+ * D-09: Build the canonical export string from local state (no PB calls).
+ * Follows dsu-format.md FORMAT spec exactly.
+ */
+const buildExportString = (): string => {
+  const dateHeader = `[${dayjs(selectedDate.value).format('MM/DD/YYYY')}]`;
+
+  // D-12: status day — two lines only
+  if (dayStatus.value) {
+    return `${dateHeader}\n${statusFullName.value}`;
+  }
+
+  const lines: string[] = [dateHeader];
+
+  // Meetings section (D-16: skip if empty)
+  if (meetings.value.length > 0) {
+    lines.push('Meetings:');
+    for (const m of meetings.value) {
+      const duration = m.duration_minutes != null ? ` (${m.duration_minutes} mins)` : '';
+      lines.push(`- ${m.title}${duration}`);
+    }
+  }
+
+  // Tasks section (D-16: skip if empty)
+  if (tasks.value.length > 0) {
+    if (lines.length > 1) lines.push('');  // blank line separator
+    lines.push('Tasks:');
+    for (const t of tasks.value) {
+      // D-11: jira_link prefix (no leading dash) or leading dash when absent
+      const taskLine = t.jira_link ? `${t.jira_link} - ${t.title}` : `- ${t.title}`;
+      lines.push(taskLine);
+      if (t.description) {
+        for (const bullet of stripHtml(t.description)) {
+          lines.push(`* ${bullet}`);
+        }
+      }
+    }
+  }
+
+  // Admin section (D-16: skip if empty)
+  if (supports.value.length > 0) {
+    if (lines.length > 1) lines.push('');  // blank line separator
+    lines.push('Admin:');
+    for (const s of supports.value) {
+      // D-11: link prefix or plain title
+      const adminLine = s.link ? `- ${s.link} - ${s.title}` : `- ${s.title}`;
+      lines.push(adminLine);
+      if (s.description) {
+        for (const bullet of stripHtml(s.description)) {
+          lines.push(`* ${bullet}`);
+        }
+      }
+    }
+  }
+
+  return lines.join('\n');
+};
+
+/**
+ * D-15: Copy export string to clipboard; toast success or failure.
+ * D-19: Export button visible regardless of dayStatus (status day produces two-line format).
+ */
+const exportDay = async (): Promise<void> => {
+  try {
+    const text = buildExportString();
+    await navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  } catch {
+    toast.error('Copy failed — check browser permissions.');
   }
 };
 </script>
