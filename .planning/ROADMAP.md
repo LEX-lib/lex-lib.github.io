@@ -9,7 +9,7 @@ Six phases move the LexTrack stand-up tracker from its current state — correct
 - [x] **Phase 1: Schema Foundation** - Apply additive PocketBase schema changes and document migration steps
 - [x] **Phase 2: Types & Mappers** - Bring TypeScript contracts and mapper functions into alignment with new schema
 - [x] **Phase 3: Meeting & Admin UI** - Wire duration unit toggle for meetings, URL field for admin, label rename, and remove dead code (2026-04-29)
-- [ ] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback
+- [x] **Phase 4: Core Bug Fixes & Save UX** - Fix initial-load, delete persistence, per-item dialog save, and surface loading/error feedback (2026-04-29)
 - [ ] **Phase 5: Day Status & Export** - Add whole-day status (SL/VL/Holiday) and day export matching quarter-3-logs.txt format
 - [ ] **Phase 6: Quality Gate** - Ship Vitest unit and component tests covering all new and existing LexTrack code
 
@@ -80,11 +80,11 @@ Plans:
   5. The Save button (page-level and dialog-level) is visibly disabled with a loading indicator during any in-flight async call
 **Plans:** 5 plans
 Plans:
-- [ ] 04-01-PLAN.md — ManageMeeting refactor (emit save + :saving prop)
-- [ ] 04-02-PLAN.md — ManageTask refactor (emit save + :saving prop)
-- [ ] 04-03-PLAN.md — ManageSupport refactor (emit save + :saving prop + drop self-close)
-- [ ] 04-04-PLAN.md — LexTrackView PB wiring (loadForDate, optimistic delete, saveItem, dialog handlers, batch save, dim wrapper)
-- [ ] 04-05-PLAN.md — Phase gate (type-check + lint + 6-req grep audit + 10-verification human smoke)
+- [x] 04-01-PLAN.md — ManageMeeting refactor (emit save + :saving prop)
+- [x] 04-02-PLAN.md — ManageTask refactor (emit save + :saving prop)
+- [x] 04-03-PLAN.md — ManageSupport refactor (emit save + :saving prop + drop self-close)
+- [x] 04-04-PLAN.md — LexTrackView PB wiring (loadForDate, optimistic delete, saveItem, dialog handlers, batch save, dim wrapper)
+- [x] 04-05-PLAN.md — Phase gate (type-check + lint + 6-req grep audit + 10-verification human smoke)
 **UI hint**: yes
 
 ### Phase 5: Day Status & Export
@@ -96,7 +96,11 @@ Plans:
   2. When a day status is set, the three activity sections are replaced by a status banner; clearing the status restores them with any pre-existing items intact
   3. An "Export day" button produces text that matches the format of `quarter-3-logs.txt`, including a single-line representation for SL/VL/Holiday days
   4. Clicking the export action copies the text to the clipboard and a toast confirms the copy succeeded
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — LexTrackView script wiring: dayStatus ref, DAY_STATUS_OPTIONS, extend loadForDate, setDayStatus, selectedStatus, statusFullName, stripHtml, buildExportString, exportDay
+- [ ] 05-02-PLAN.md — LexTrackView template wiring: restructure top row (SelectButton + Export Day button), v-if on activity grid, v-else status banner
+- [ ] 05-03-PLAN.md — Phase gate: type-check + lint + build + grep audit + human smoke test (5 scenarios)
 **UI hint**: yes
 
 ### Phase 6: Quality Gate
@@ -117,6 +121,6 @@ Plans:
 | 1. Schema Foundation | 3/3 | Complete | 2026-04-28 |
 | 2. Types & Mappers | 6/6 | Complete | 2026-04-28 |
 | 3. Meeting & Admin UI | 6/6 | Complete | 2026-04-29 |
-| 4. Core Bug Fixes & Save UX | 0/5 | Not started | - |
-| 5. Day Status & Export | 0/TBD | Not started | - |
+| 4. Core Bug Fixes & Save UX | 5/5 | Complete | 2026-04-29 |
+| 5. Day Status & Export | 0/3 | Not started | - |
 | 6. Quality Gate | 0/TBD | Not started | - |
