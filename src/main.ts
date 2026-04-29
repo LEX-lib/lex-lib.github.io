@@ -1,6 +1,9 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config';
+// PrimeVue directives are NOT covered by unplugin-vue-components auto-import (only components are).
+// Manually register Tooltip so `v-tooltip="..."` works in ActivityCard.vue.
+import Tooltip from 'primevue/tooltip';
 import Aura from '@primeuix/themes/aura';
 import 'iconify-icon';
 import './assets/main.css';
@@ -64,6 +67,7 @@ app.use(PrimeVue, {
         }
     }
 });
+app.directive('tooltip', Tooltip);
 app.use(MotionPlugin)
 
 app.mount('#app')
