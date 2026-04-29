@@ -4,7 +4,6 @@ import type { AddDsuMeeting } from "@/types/lextrack/dsu_meetings/types";
 import {
   DSU_MEETING_DURATION_UNIT_VALUES,
   DSU_MEETING_DURATION_UNIT_LABELS,
-  type DurationUnit,
 } from "@/types/lextrack/dsu_meetings/constants";
 import { useDurationField } from "@/composables/lextrack/useDurationField";
 

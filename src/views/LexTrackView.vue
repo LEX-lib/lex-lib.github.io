@@ -371,7 +371,7 @@ const save = async () => {
           />
         </div>
         <div>
-          <Button label="Save" :disabled="isNoEntry" @click="save"/>
+          <Button label="Save" :loading="isSaving" :disabled="isNoEntry || isLoading" @click="save"/>
         </div>
       </div>
 
@@ -379,7 +379,9 @@ const save = async () => {
 
 
       </div>
-      <div class="grid grid-cols-3 gap-2">
+      <div
+          class="grid grid-cols-3 gap-2 transition-opacity"
+          :class="{ 'opacity-50 pointer-events-none': isLoading }">
         <ActivityCard v-model:section="meetings" label="Meetings" @update="updateMeeting" @remove="removeMeeting"/>
         <ActivityCard v-model:section="tasks" label="Tasks" @update="updateTask" @remove="removeTask"/>
         <ActivityCard v-model:section="supports" label="Admin" @update="updateSupport" @remove="removeSupport"/>
@@ -390,14 +392,21 @@ const save = async () => {
 
   <ManageMeeting
       v-model:visible="viewMeetingDialogVisibility"
-      v-model:meeting="meeting"/>
+      v-model:meeting="meeting"
+      :saving="isSavingMeeting"
+      @save="handleMeetingSave" />
 
-  <ManageTask v-model:visible="viewTaskDialogVisibility"
-              v-model:task="task"/>
+  <ManageTask
+      v-model:visible="viewTaskDialogVisibility"
+      v-model:task="task"
+      :saving="isSavingTask"
+      @save="handleTaskSave" />
 
   <ManageSupport
       v-model:visible="viewSupportDialogVisibility"
-      v-model:support="support" />
+      v-model:support="support"
+      :saving="isSavingSupport"
+      @save="handleSupportSave" />
 </template>
 
 <style scoped>
