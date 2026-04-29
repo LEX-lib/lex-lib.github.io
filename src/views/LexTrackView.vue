@@ -22,6 +22,7 @@ import { mapToCreateMeeting } from '@/lib/pocketbase/dsuMeetingMapper';
 import { mapToCreateTask } from '@/lib/pocketbase/dsuTaskMapper';
 import { mapToCreateSupport } from '@/lib/pocketbase/dsuSupportMapper';
 import type { DsuDayStatus } from '@/types/lextrack/dsu_day_status/types';
+import { buildExportString, type ExportData } from '@/utils/lextrack/export';
 import { mapToCreateDayStatus, mapFromRecordDayStatus } from '@/lib/pocketbase/dsuDayStatusMapper';
 import { DSU_DAY_STATUS_VALUES, DSU_DAY_STATUS_LABELS, DSU_DAY_STATUS_SHORT_LABELS } from '@/types/lextrack/dsu_day_status/constants';
 
@@ -435,82 +436,19 @@ const statusFullName = computed(() =>
 );
 
 /**
- * D-14 / D-17: Strip Quill HTML using DOMParser (browser-native, no new deps).
- * Returns an array of non-empty text lines, each becomes a "* {line}" bullet in export.
- */
-const stripHtml = (html: string): string[] => {
-  if (!html) return [];
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return Array.from(doc.body.querySelectorAll('p, li, div'))
-    .map(el => el.textContent?.trim() ?? '')
-    .filter(line => line.length > 0);
-};
-
-/**
- * D-09: Build the canonical export string from local state (no PB calls).
- * Follows dsu-format.md FORMAT spec exactly.
- */
-const buildExportString = (): string => {
-  const dateHeader = `[${dayjs(selectedDate.value).format('MM/DD/YYYY')}]`;
-
-  // D-12: status day — two lines only
-  if (dayStatus.value) {
-    return `${dateHeader}\n${statusFullName.value}`;
-  }
-
-  const lines: string[] = [dateHeader];
-
-  // Meetings section (D-16: skip if empty)
-  if (meetings.value.length > 0) {
-    lines.push('Meetings:');
-    for (const m of meetings.value) {
-      const duration = m.duration_minutes != null ? ` (${m.duration_minutes} mins)` : '';
-      lines.push(`- ${m.title}${duration}`);
-    }
-  }
-
-  // Tasks section (D-16: skip if empty)
-  if (tasks.value.length > 0) {
-    if (lines.length > 1) lines.push('');  // blank line separator
-    lines.push('Tasks:');
-    for (const t of tasks.value) {
-      // D-11: jira_link prefix (no leading dash) or leading dash when absent
-      const taskLine = t.jira_link ? `${t.jira_link} - ${t.title}` : `- ${t.title}`;
-      lines.push(taskLine);
-      if (t.description) {
-        for (const bullet of stripHtml(t.description)) {
-          lines.push(`* ${bullet}`);
-        }
-      }
-    }
-  }
-
-  // Admin section (D-16: skip if empty)
-  if (supports.value.length > 0) {
-    if (lines.length > 1) lines.push('');  // blank line separator
-    lines.push('Admin:');
-    for (const s of supports.value) {
-      // D-11: link prefix or plain title
-      const adminLine = s.link ? `- ${s.link} - ${s.title}` : `- ${s.title}`;
-      lines.push(adminLine);
-      if (s.description) {
-        for (const bullet of stripHtml(s.description)) {
-          lines.push(`* ${bullet}`);
-        }
-      }
-    }
-  }
-
-  return lines.join('\n');
-};
-
-/**
  * D-15: Copy export string to clipboard; toast success or failure.
  * D-19: Export button visible regardless of dayStatus (status day produces two-line format).
  * Uses execCommand fallback for browsers that block the Clipboard API on localhost.
  */
 const exportDay = async (): Promise<void> => {
-  const text = buildExportString();
+  const text = buildExportString({
+    selectedDate: selectedDate.value,
+    dayStatus: dayStatus.value,
+    statusFullName: statusFullName.value,
+    meetings: meetings.value,
+    tasks: tasks.value,
+    supports: supports.value,
+  } satisfies ExportData);
   if (navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(text);
@@ -542,6 +480,17 @@ const exportDay = async (): Promise<void> => {
     toast.error('Copy failed — check browser permissions.');
   }
 };
+
+defineExpose({
+  supports,
+  dayStatus,
+  meetings,
+  tasks,
+  removeSupport,
+  removeMeeting,
+  removeTask,
+  setDayStatus,
+});
 </script>
 
 <template>
