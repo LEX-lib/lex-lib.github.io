@@ -33,7 +33,7 @@ const DAY_STATUS_OPTIONS = [
   { label: 'Holiday', value: 'holiday' },
   { label: 'BL', value: 'bl' },
   { label: 'Others', value: 'others' },
-] as const;
+];
 
 const isLoading = ref(false);
 const isSaving = ref(false);
@@ -535,7 +535,20 @@ const exportDay = async (): Promise<void> => {
               class="w-full"
           />
         </div>
-        <div>
+        <div class="flex items-end">
+          <SelectButton
+              :modelValue="selectedStatus"
+              :options="DAY_STATUS_OPTIONS"
+              optionLabel="label"
+              optionValue="value"
+              :allowEmpty="true"
+              :disabled="isLoading"
+              aria-label="Mark day as"
+              @change="setDayStatus($event.value)"
+          />
+        </div>
+        <div class="flex items-end gap-2">
+          <Button label="Export Day" icon="pi pi-copy" iconPos="left" :disabled="isLoading" @click="exportDay()"/>
           <Button label="Save" :loading="isSaving" :disabled="isNoEntry || isLoading" @click="save"/>
         </div>
       </div>
@@ -545,11 +558,17 @@ const exportDay = async (): Promise<void> => {
 
       </div>
       <div
+          v-if="!dayStatus"
           class="grid grid-cols-3 gap-2 transition-opacity"
           :class="{ 'opacity-50 pointer-events-none': isLoading }">
         <ActivityCard v-model:section="meetings" label="Meetings" @update="updateMeeting" @remove="removeMeeting"/>
         <ActivityCard v-model:section="tasks" label="Tasks" @update="updateTask" @remove="removeTask"/>
         <ActivityCard v-model:section="supports" label="Admin" @update="updateSupport" @remove="removeSupport"/>
+      </div>
+      <div v-else class="flex items-center justify-center py-16 transition-opacity">
+        <span class="text-xl font-semibold text-(--color-typo-heading)">
+          {{ statusFullName }} — {{ dayjs(selectedDate).format('YYYY-MM-DD') }}
+        </span>
       </div>
     </template>
 
