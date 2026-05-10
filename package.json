@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" -- && cp dist/index.html dist/404.html",
+    "build": "run-p type-check \"build-only {@}\"",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
@@ -16,8 +16,7 @@
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/",
-    "deploy": "npm run build && gh-pages -d dist"
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.3",
@@ -62,7 +61,6 @@
     "eslint": "^9.31.0",
     "eslint-plugin-oxlint": "~1.8.0",
     "eslint-plugin-vue": "~10.3.0",
-    "gh-pages": "^6.3.0",
     "jiti": "^2.4.2",
     "jsdom": "^26.1.0",
     "npm-run-all2": "^8.0.4",
