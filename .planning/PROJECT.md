@@ -117,4 +117,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-10 after initialization (Wallecx milestone, Phase 1 = vaccination records)*
+*Last updated: 2026-05-10 — Phase 0 (Pre-Wallecx Cleanup) complete; CLEAN-01..03 satisfied; dev-login credentials scrubbed from env.d.ts/CLAUDE.md/AGENTS.md, lint:secrets guard added, credentials rotated out-of-band*
