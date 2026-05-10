@@ -149,12 +149,9 @@
 **`unplugin-vue-components` global registration (MEDIUM)**
 - `vite.config.ts:21-25`, `components.d.ts`. Any file using `<DataTable>` adds a `DataTable` global; touching any view template can change `components.d.ts` and produce noisy diffs. Removing a component does not remove its declaration until the file regenerates.
 
-**Legacy GitHub Pages deploy artifacts still in `package.json` (MEDIUM)**
-- The active deploy is **Vercel** via GitHub push integration (no `vercel.json`; auto-detected Vite preset). Three things are now dead weight:
-  - `package.json:11` — `cp dist/index.html dist/404.html` postscript on `npm run build`. Was for GitHub Pages SPA fallback; Vercel handles SPA routing natively. Also POSIX-only `cp` breaks Windows builds outside Git Bash/WSL.
-  - `package.json:20` — `npm run deploy` (`gh-pages -d dist`). No longer the live deploy path.
-  - `package.json:65` — `gh-pages` dev-dependency.
-- Fix: drop the `&& cp ...` postscript, remove the `deploy` script, and uninstall `gh-pages`. Optionally rename the repo (`lex-lib.github.io` is a vestige of the prior hosting).
+**Repo name vestige (LOW)**
+- Repo is named `lex-lib.github.io` — a leftover from the prior GitHub Pages hosting. Active deploy is Vercel via GitHub push integration. The `cp dist/index.html dist/404.html` postscript, the `deploy` script, and the `gh-pages` dependency were dropped in commit `498a893`.
+- Optional follow-up: rename the GitHub repository (and its remote URL) to drop the `.github.io` suffix to avoid confusion.
 
 **PocketBase types narrowed only at usage sites (MEDIUM)**
 - `src/components/projects/gift-exchange/*` use `lobby = ref<any>(null)` and `participants = ref<any[]>([])`. Renaming a field (`drawn_name` -> `assigned_to`) compiles cleanly, then breaks at runtime with no IDE warning.

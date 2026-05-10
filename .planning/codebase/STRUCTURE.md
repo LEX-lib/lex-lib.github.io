@@ -168,7 +168,7 @@ lex-lib.github.io/
 - `vite.config.ts`: Vite plugins (vue, devtools, unplugin-vue-components+PrimeVueResolver, tailwindcss), `@` alias, manual code-splitting groups
 - `tsconfig.app.json`: TS paths (`@/* → ./src/*`)
 - `env.d.ts`: `ImportMetaEnv` shape for `VITE_*` env vars
-- `package.json`: Scripts (`dev`, `build`, `lint`, `format`, `deploy`), engines (node `^20.19.0 || >=22.12.0`)
+- `package.json`: Scripts (`dev`, `build`, `preview`, `test:unit`, `lint`, `format`, `type-check`), engines (node `^20.19.0 || >=22.12.0`)
 - `components.d.ts`: Auto-generated PrimeVue component types (committed)
 
 **Core Logic:**
@@ -182,7 +182,7 @@ lex-lib.github.io/
 - Note: No actual test files exist yet (no `__tests__/` or `*.spec.ts`/`*.test.ts` files found in `src/`)
 
 **Build Output:**
-- `dist/`: Production build (gitignored). Vercel builds + serves this on every push (no `vercel.json` — auto-detected Vite preset). The `index.html` → `404.html` copy in `npm run build` is legacy GitHub Pages SPA fallback and unused by the Vercel deploy.
+- `dist/`: Production build (gitignored). Vercel builds + serves this on every push (no `vercel.json` — auto-detected Vite preset).
 
 ## Naming Conventions
 
@@ -257,7 +257,7 @@ lex-lib.github.io/
 - Purpose: Production build output
 - Generated: Yes (by `npm run build`)
 - Committed: No (gitignored)
-- Note: `index.html` is copied to `404.html` by `npm run build` — legacy GitHub Pages SPA fallback, unused by the active Vercel deploy
+- Note: Built and served by Vercel on push (no `vercel.json` — auto-detected Vite preset)
 
 **`node_modules/`:**
 - Purpose: npm dependencies
