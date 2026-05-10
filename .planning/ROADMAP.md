@@ -69,7 +69,12 @@ Plans:
 4. `npm run build` succeeds with the two new dependencies installed; the produced `package-lock.json` resolves `pdfjs-dist` to a version ≥ 4.2.67.
 5. The collection is queryable by `(user, date_administered DESC)` against the new composite index (verified via PocketBase admin or query plan).
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Create wallecx_vaccinations collection: all 9 fields, card file config, 5 rules, composite index (BACK-01, BACK-02, BACK-03, BACK-04)
+- [ ] 01-02-PLAN.md — Two-user smoke test: verify per-user isolation on list, view, update, delete, and file URL (BACK-05)
+- [ ] 01-03-PLAN.md — Frontend foundation: npm install deps, types module, mapper, lazy route, WallecxApp.vue shell (FRONT-01, FRONT-02, FRONT-03, FRONT-04, FRONT-05)
 
 ---
 
@@ -173,11 +178,11 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
-| 1. Backend + Frontend Foundation | 0/0 | Not started | - |
+| 1. Backend + Frontend Foundation | 0/3 | Not started | - |
 | 2. Read Path | 0/0 | Not started | - |
 | 3. Write Path | 0/0 | Not started | - |
 | 4. Discovery & Polish | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-10 after Phase 0 planning*
+*Last updated: 2026-05-10 after Phase 1 planning*
