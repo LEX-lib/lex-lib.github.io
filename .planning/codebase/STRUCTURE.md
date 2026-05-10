@@ -182,7 +182,7 @@ lex-lib.github.io/
 - Note: No actual test files exist yet (no `__tests__/` or `*.spec.ts`/`*.test.ts` files found in `src/`)
 
 **Build Output:**
-- `dist/`: Production build (gitignored); `index.html` is duplicated to `404.html` for GitHub Pages SPA fallback
+- `dist/`: Production build (gitignored). Vercel builds + serves this on every push (no `vercel.json` — auto-detected Vite preset). The `index.html` → `404.html` copy in `npm run build` is legacy GitHub Pages SPA fallback and unused by the Vercel deploy.
 
 ## Naming Conventions
 
@@ -257,7 +257,7 @@ lex-lib.github.io/
 - Purpose: Production build output
 - Generated: Yes (by `npm run build`)
 - Committed: No (gitignored)
-- Note: `index.html` is copied to `404.html` for GitHub Pages SPA fallback
+- Note: `index.html` is copied to `404.html` by `npm run build` — legacy GitHub Pages SPA fallback, unused by the active Vercel deploy
 
 **`node_modules/`:**
 - Purpose: npm dependencies

@@ -4,7 +4,7 @@
 
 ## Pattern Overview
 
-**Overall:** Vue 3 SPA portfolio hub with feature-based mini-applications, deployed as a static site to GitHub Pages with a PocketBase BaaS backend.
+**Overall:** Vue 3 SPA portfolio hub with feature-based mini-applications, deployed as a static site to Vercel (via GitHub integration, auto-detected Vite preset — no `vercel.json` checked in) with a PocketBase BaaS backend.
 
 **Key Characteristics:**
 - Single-Page Application using Vue 3 Composition API with `<script setup lang="ts">` throughout
@@ -13,7 +13,7 @@
 - Backend-as-a-Service: PocketBase handles auth, collections, persistence; consumed via official `pocketbase` SDK
 - Auto-import of PrimeVue components via `unplugin-vue-components` with `PrimeVueResolver` (no explicit imports needed in templates)
 - Composition over inheritance: setup-style Pinia stores; SFCs compose via `defineModel`/`defineProps`/`defineEmits`
-- Static deployment to GitHub Pages with SPA fallback (`dist/index.html` copied to `dist/404.html` in `npm run build`)
+- Static deployment to Vercel via GitHub push integration (Vercel auto-runs `npm run build` and serves `dist/`, with built-in SPA fallback via its default rewrite). The `cp dist/index.html dist/404.html` step in `npm run build` and the `gh-pages` script are legacy from a prior GitHub Pages setup and no longer load-bearing.
 
 ## Layers
 
@@ -215,7 +215,7 @@
 **Build-time:**
 - Path alias `@` → `src/` configured in both `vite.config.ts` and `tsconfig.app.json`
 - Manual code-splitting groups in `vite.config.ts` separate `leaflet`, `primevue`/`@primeuix`, and core `vendor` (vue, pinia, vue-router) chunks
-- GitHub Pages SPA fallback: `npm run build` copies `dist/index.html` to `dist/404.html`
+- Deployment: Vercel pulls from the GitHub repo on push, auto-detects Vite, runs `npm run build`, and serves `dist/` with native SPA rewrite. The `cp dist/index.html dist/404.html` postscript and the `gh-pages` dev-dependency are legacy and unused by the live deploy
 
 ---
 

@@ -44,7 +44,7 @@
 - `unplugin-vue-components` ^29.0.0 + `@primevue/auto-import-resolver` ^4.3.7 — Auto-imports PrimeVue components (registry generated to `components.d.ts`)
 - `@tailwindcss/vite` ^4.1.12 — Tailwind v4 plugin
 - `vue-tsc` ^3.0.4 — Vue type checking (`npm run type-check`)
-- `gh-pages` ^6.3.0 — Deploys `dist/` to GitHub Pages (`npm run deploy`)
+- `gh-pages` ^6.3.0 — **Legacy.** Predates the Vercel migration; `npm run deploy` is no longer the active deployment path. Candidate for removal.
 
 ## Key Dependencies
 
@@ -93,8 +93,8 @@
 - `components.d.ts` — Auto-generated PrimeVue component type registry (managed by `unplugin-vue-components`)
 
 **Build pipeline:**
-- `npm run build` runs `run-p type-check "build-only {@}"` then `cp dist/index.html dist/404.html` to enable GitHub Pages SPA fallback routing
-- `npm run deploy` builds and deploys via `gh-pages -d dist`
+- `npm run build` runs `run-p type-check "build-only {@}"` then `cp dist/index.html dist/404.html`. The 404 copy is **legacy** GitHub Pages SPA fallback; Vercel doesn't need it (handled via its default rewrite). Safe to drop.
+- `npm run deploy` builds and pushes via `gh-pages -d dist` — **legacy**, not the live path. Vercel auto-deploys on `git push` to the connected branch.
 
 ## Platform Requirements
 
@@ -104,8 +104,8 @@
 - A reachable PocketBase instance (URL via `VITE_API_BASE_URL`)
 
 **Production:**
-- Static hosting on GitHub Pages (deployed from `dist/`)
-- Vercel Speed Insights enabled at runtime (`@vercel/speed-insights/vue`)
+- Static hosting on **Vercel** via GitHub push integration. Vercel auto-detects Vite, builds with `npm run build`, and serves `dist/`. No `vercel.json` is checked in — using the auto-detected Vite preset. Repo name `lex-lib.github.io` is a vestige of the prior GitHub Pages setup; the live URL is the Vercel domain (and/or a configured custom domain on Vercel).
+- `@vercel/speed-insights` reports Real-User Metrics to the Vercel project (`<SpeedInsights />` in `src/App.vue`).
 - Backend hosted separately (PocketBase server reachable from the browser per `connect-src *` CSP)
 
 ---

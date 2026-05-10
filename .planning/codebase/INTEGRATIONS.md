@@ -74,14 +74,15 @@
 ## CI/CD & Deployment
 
 **Hosting:**
-- GitHub Pages — Static deployment of `dist/`
-- SPA fallback: `npm run build` copies `dist/index.html` → `dist/404.html` so GitHub Pages serves the Vue app for unknown paths
+- **Vercel** — Active hosting. Connected to the GitHub repo; auto-deploys on push using the auto-detected Vite preset (no `vercel.json` in the repo). Builds with `npm run build`, serves `dist/`, and applies its default SPA rewrite for unknown paths.
+- `@vercel/speed-insights` (`^1.3.1`) — Wired in `src/App.vue` (`<SpeedInsights />`); reports RUM to the Vercel project.
 
-**Deploy Tool:**
-- `gh-pages` ^6.3.0 — Invoked via `npm run deploy` (`npm run build && gh-pages -d dist`)
+**Legacy (not active):**
+- GitHub Pages — Was the prior host. The `cp dist/index.html dist/404.html` step in `npm run build` and the `gh-pages` script + dependency are leftovers. Repo name `lex-lib.github.io` is also a vestige.
+- `gh-pages` ^6.3.0 — Invoked via `npm run deploy` (`npm run build && gh-pages -d dist`); no longer the live deploy path.
 
 **CI Pipeline:**
-- No GitHub Actions / workflow files detected at project root
+- No GitHub Actions / workflow files detected at project root. Vercel runs the build itself on each push to the connected branch.
 
 ## Environment Configuration
 

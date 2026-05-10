@@ -149,9 +149,12 @@
 **`unplugin-vue-components` global registration (MEDIUM)**
 - `vite.config.ts:21-25`, `components.d.ts`. Any file using `<DataTable>` adds a `DataTable` global; touching any view template can change `components.d.ts` and produce noisy diffs. Removing a component does not remove its declaration until the file regenerates.
 
-**GitHub Pages SPA routing via `cp index.html 404.html` (MEDIUM)**
-- `package.json:11`. Build script uses POSIX `cp` (`run-p type-check "build-only {@}" -- && cp dist/index.html dist/404.html`). On Windows-only contributors running outside Git Bash/WSL, `cp` is unavailable — the build silently produces an SPA without the 404 fallback, breaking every non-root URL on Pages.
-- Fix: replace with a Node-portable copy: `node -e "fs.copyFileSync('dist/index.html', 'dist/404.html')"` or `npx cpy dist/index.html dist/404.html`.
+**Legacy GitHub Pages deploy artifacts still in `package.json` (MEDIUM)**
+- The active deploy is **Vercel** via GitHub push integration (no `vercel.json`; auto-detected Vite preset). Three things are now dead weight:
+  - `package.json:11` — `cp dist/index.html dist/404.html` postscript on `npm run build`. Was for GitHub Pages SPA fallback; Vercel handles SPA routing natively. Also POSIX-only `cp` breaks Windows builds outside Git Bash/WSL.
+  - `package.json:20` — `npm run deploy` (`gh-pages -d dist`). No longer the live deploy path.
+  - `package.json:65` — `gh-pages` dev-dependency.
+- Fix: drop the `&& cp ...` postscript, remove the `deploy` script, and uninstall `gh-pages`. Optionally rename the repo (`lex-lib.github.io` is a vestige of the prior hosting).
 
 **PocketBase types narrowed only at usage sites (MEDIUM)**
 - `src/components/projects/gift-exchange/*` use `lobby = ref<any>(null)` and `participants = ref<any[]>([])`. Renaming a field (`drawn_name` -> `assigned_to`) compiles cleanly, then breaks at runtime with no IDE warning.
@@ -171,9 +174,9 @@
 - All four mini-apps share collections. A spike on MonitoX writes (`generatePairs` with 100 participants -> 100 PUTs in parallel) can saturate write rate-limits.
 - Scaling path: move pair-generation server-side into a PocketBase JS hook; rate-limit `generatePairs`.
 
-**Vercel Speed Insights without environment gating (LOW)**
-- `src/App.vue:4, 11`. `@vercel/speed-insights` reports on every render. If the site isn't on Vercel hosting, this only beacons to Vercel API.
-- Fix: gate behind `import.meta.env.PROD` or remove.
+**Vercel Speed Insights fires in dev (LOW)**
+- `src/App.vue:4, 11`. `@vercel/speed-insights` is wired correctly for the active Vercel deploy, but `<SpeedInsights />` reports on every render including `npm run dev`, which beacons noisy metrics to the Vercel project.
+- Fix: gate behind `import.meta.env.PROD` (e.g. `<SpeedInsights v-if="import.meta.env.PROD" />`).
 
 ## Dependencies at Risk
 
