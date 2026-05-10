@@ -12,7 +12,7 @@ Requirements for the Wallecx Phase-1 launch (vaccination records). Each maps to 
 Hardening that must land before sensitive Wallecx data exists. Surfaced by `.planning/research/PITFALLS.md` (Pitfall 13) and `.planning/codebase/CONCERNS.md`.
 
 - [x] **CLEAN-01**: `VITE_LOGIN_EMAIL` and `VITE_LOGIN_PASSWORD` declarations are removed from `env.d.ts` and from every `import.meta.env.VITE_LOGIN_*` reference under `src/`
-- [ ] **CLEAN-02**: Any credentials that ever lived in `local.jsonc` or `.env*` files at the repo root are rotated out-of-band (separate from the codebase change)
+- [x] **CLEAN-02**: Any credentials that ever lived in `local.jsonc` or `.env*` files at the repo root are rotated out-of-band (separate from the codebase change)
 - [x] **CLEAN-03**: A repo-level grep guard fails if `VITE_LOGIN_` reappears under `src/` (CI script, pre-commit hook, or `npm run lint:secrets` — pick one)
 
 ### Backend Foundation (PocketBase)
@@ -126,7 +126,7 @@ Which phase covers which requirement.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLEAN-01 | Phase 0 | Complete |
-| CLEAN-02 | Phase 0 | Pending |
+| CLEAN-02 | Phase 0 | Complete |
 | CLEAN-03 | Phase 0 | Complete |
 | BACK-01 | Phase 1 | Pending |
 | BACK-02 | Phase 1 | Pending |

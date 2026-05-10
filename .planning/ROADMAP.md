@@ -11,7 +11,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 ## Phases
 
-- [ ] **Phase 0: Pre-Wallecx Cleanup** — Strip dev-login credentials and rotate before sensitive health data exists
+- [x] **Phase 0: Pre-Wallecx Cleanup** — Strip dev-login credentials and rotate before sensitive health data exists
 - [ ] **Phase 1: Backend + Frontend Foundation** — PocketBase collection + rules + types + mapper + route shell, with cross-user isolation verified
 - [ ] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP
 - [ ] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test
@@ -40,7 +40,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 Plans:
 - [x] 00-01-PLAN.md — Remove VITE_LOGIN_ declarations from env.d.ts and add lint:secrets npm script (CLEAN-01, CLEAN-03)
-- [ ] 00-02-PLAN.md — Human confirmation of out-of-band credential rotation (CLEAN-02)
+- [x] 00-02-PLAN.md — Human confirmation of out-of-band credential rotation (CLEAN-02)
 
 ---
 
@@ -172,7 +172,7 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Pre-Wallecx Cleanup | 1/2 | In Progress|  |
+| 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
 | 1. Backend + Frontend Foundation | 0/0 | Not started | - |
 | 2. Read Path | 0/0 | Not started | - |
 | 3. Write Path | 0/0 | Not started | - |

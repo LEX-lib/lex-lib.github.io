@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-10T14:32:00.985Z"
+last_updated: "2026-05-10T14:36:22Z"
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-10 (Phase 0 planned)
+**Last updated:** 2026-05-10 (Phase 0 complete)
 
 ## Project Reference
 
@@ -26,22 +26,22 @@ progress:
 ## Current Position
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
-**Phase:** Phase 0 — Pre-Wallecx Cleanup
-**Plan:** 1 of 2 complete (00-01-PLAN.md done, 00-02-PLAN.md pending)
-**Status:** Executing Phase 0 — Plan 01 complete
-**Progress:** [█████░░░░░] 50%
+**Phase:** Phase 0 — Pre-Wallecx Cleanup (COMPLETE)
+**Plan:** 2 of 2 complete (00-01-PLAN.md done, 00-02-PLAN.md done)
+**Status:** Phase 0 complete — ready for Phase 1
+**Progress:** [██████████] 100% (Phase 0)
 
 ```
-[█░░░░░░░░░░░░░░░░░░░] 10%
+[██░░░░░░░░░░░░░░░░░░] 10%
 Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
-(Phase 0: 1/2 plans)
+(Phase 0: 2/2 plans complete)
 ```
 
 ## Roadmap Snapshot
 
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
-| 0 | Pre-Wallecx Cleanup | Ready to execute | 3 (CLEAN-01..03) |
+| 0 | Pre-Wallecx Cleanup | Complete | 3 (CLEAN-01..03) |
 | 1 | Backend + Frontend Foundation | Not started | 10 (BACK-01..05, FRONT-01..05) |
 | 2 | Read Path (List + Detail + Preview) | Not started | 7 (READ-01..07) |
 | 3 | Write Path (Create / Edit / Delete) | Not started | 9 (WRITE-01..09) |
@@ -51,9 +51,9 @@ Coverage: 34 / 34 v1 requirements mapped. No orphans.
 
 ## Performance Metrics
 
-- Phases shipped: 0
-- Plans shipped: 1 (00-01 — 2 min, 3 tasks, 3 files)
-- Requirements verified: 2 / 34 (CLEAN-01, CLEAN-03)
+- Phases shipped: 1 (Phase 0 — Pre-Wallecx Cleanup)
+- Plans shipped: 2 (00-01 — 2 min, 3 tasks, 3 files; 00-02 — human-action checkpoint, 0 files)
+- Requirements verified: 3 / 34 (CLEAN-01, CLEAN-02, CLEAN-03)
 - Tests in repo: 0 (will become 1 in Phase 3, 2 in Phase 4 — first tests ever)
 
 ## Accumulated Context
@@ -81,8 +81,8 @@ Coverage: 34 / 34 v1 requirements mapped. No orphans.
 ### Open Todos
 
 - ~~Execute Phase 0 Plan 01: `00-01-PLAN.md`~~ — DONE (fe93bde, e5430dd, a7e0492)
-- Execute Phase 0 Plan 02: `00-02-PLAN.md` — human credential rotation checkpoint (CLEAN-02).
-- Confirm with user that `local.jsonc` credentials have been rotated out-of-band before Phase 0 work merges (CLEAN-02).
+- ~~Execute Phase 0 Plan 02: `00-02-PLAN.md` — human credential rotation checkpoint (CLEAN-02).~~ — DONE (developer confirmed: "credentials rotated")
+- ~~Confirm with user that `local.jsonc` credentials have been rotated out-of-band before Phase 0 work merges (CLEAN-02).~~ — DONE
 - Track whether the chosen CSP-narrow update for Phase 2 needs a Vite recipe research pass per `research/SUMMARY.md` "Research Flags."
 - Track whether the EXIF + `browser-image-compression` ordering needs a research pass before Phase 3 planning per `research/SUMMARY.md` "Research Flags."
 
@@ -103,15 +103,17 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-10 — Executed 00-01-PLAN.md. Removed VITE_LOGIN_ from env.d.ts and CLAUDE.md; added lint:secrets to package.json. 3 tasks, 3 commits (fe93bde, e5430dd, a7e0492). TypeScript passes, lint:secrets clean.
+**Last session:** 2026-05-10 — Executed 00-02-PLAN.md. Developer confirmed credential rotation ("credentials rotated"). Phase 0 fully complete. All 3 CLEAN requirements satisfied.
 
-**Next session entry point:** Execute `00-02-PLAN.md` (CLEAN-02 — credential rotation human checkpoint).
+**Next session entry point:** Plan Phase 1 (`01-backend-frontend-foundation`) — PocketBase collection setup, types, mapper, route shell.
 
 **Files of interest for the next session:**
 
-- `.planning/phases/00-pre-wallecx-cleanup/00-02-PLAN.md` — human credential rotation checkpoint (next plan)
-- `.planning/phases/00-pre-wallecx-cleanup/00-01-SUMMARY.md` — completed plan summary
-- `.planning/ROADMAP.md` — phase structure and success criteria
+- `.planning/ROADMAP.md` — Phase 1 requirements (BACK-01..05, FRONT-01..05) and success criteria
+- `.planning/REQUIREMENTS.md` — Phase 1 requirement definitions
+- `.planning/phases/00-pre-wallecx-cleanup/00-02-SUMMARY.md` — Phase 0 completion summary
+- `src/router/index.ts` — where FRONT-04 lazy route will be added
+- `src/types/` — where FRONT-02 types module will be created
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
