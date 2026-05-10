@@ -121,50 +121,50 @@ Explicitly excluded for v1. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phase covers which requirement. Filled by the roadmapper.
+Which phase covers which requirement.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLEAN-01 | TBD | Pending |
-| CLEAN-02 | TBD | Pending |
-| CLEAN-03 | TBD | Pending |
-| BACK-01 | TBD | Pending |
-| BACK-02 | TBD | Pending |
-| BACK-03 | TBD | Pending |
-| BACK-04 | TBD | Pending |
-| BACK-05 | TBD | Pending |
-| FRONT-01 | TBD | Pending |
-| FRONT-02 | TBD | Pending |
-| FRONT-03 | TBD | Pending |
-| FRONT-04 | TBD | Pending |
-| FRONT-05 | TBD | Pending |
-| READ-01 | TBD | Pending |
-| READ-02 | TBD | Pending |
-| READ-03 | TBD | Pending |
-| READ-04 | TBD | Pending |
-| READ-05 | TBD | Pending |
-| READ-06 | TBD | Pending |
-| READ-07 | TBD | Pending |
-| WRITE-01 | TBD | Pending |
-| WRITE-02 | TBD | Pending |
-| WRITE-03 | TBD | Pending |
-| WRITE-04 | TBD | Pending |
-| WRITE-05 | TBD | Pending |
-| WRITE-06 | TBD | Pending |
-| WRITE-07 | TBD | Pending |
-| WRITE-08 | TBD | Pending |
-| WRITE-09 | TBD | Pending |
-| POLISH-01 | TBD | Pending |
-| POLISH-02 | TBD | Pending |
-| POLISH-03 | TBD | Pending |
-| POLISH-04 | TBD | Pending |
-| POLISH-05 | TBD | Pending |
+| CLEAN-01 | Phase 0 | Pending |
+| CLEAN-02 | Phase 0 | Pending |
+| CLEAN-03 | Phase 0 | Pending |
+| BACK-01 | Phase 1 | Pending |
+| BACK-02 | Phase 1 | Pending |
+| BACK-03 | Phase 1 | Pending |
+| BACK-04 | Phase 1 | Pending |
+| BACK-05 | Phase 1 | Pending |
+| FRONT-01 | Phase 1 | Pending |
+| FRONT-02 | Phase 1 | Pending |
+| FRONT-03 | Phase 1 | Pending |
+| FRONT-04 | Phase 1 | Pending |
+| FRONT-05 | Phase 1 | Pending |
+| READ-01 | Phase 2 | Pending |
+| READ-02 | Phase 2 | Pending |
+| READ-03 | Phase 2 | Pending |
+| READ-04 | Phase 2 | Pending |
+| READ-05 | Phase 2 | Pending |
+| READ-06 | Phase 2 | Pending |
+| READ-07 | Phase 2 | Pending |
+| WRITE-01 | Phase 3 | Pending |
+| WRITE-02 | Phase 3 | Pending |
+| WRITE-03 | Phase 3 | Pending |
+| WRITE-04 | Phase 3 | Pending |
+| WRITE-05 | Phase 3 | Pending |
+| WRITE-06 | Phase 3 | Pending |
+| WRITE-07 | Phase 3 | Pending |
+| WRITE-08 | Phase 3 | Pending |
+| WRITE-09 | Phase 3 | Pending |
+| POLISH-01 | Phase 4 | Pending |
+| POLISH-02 | Phase 4 | Pending |
+| POLISH-03 | Phase 4 | Pending |
+| POLISH-04 | Phase 4 | Pending |
+| POLISH-05 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 34 total
-- Mapped to phases: 0
-- Unmapped: 34 ⚠️ (filled by roadmapper)
+- Mapped to phases: 34
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-10*
-*Last updated: 2026-05-10 after initial definition*
+*Last updated: 2026-05-10 after roadmap traceability fill*
