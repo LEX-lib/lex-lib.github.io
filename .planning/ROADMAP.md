@@ -39,7 +39,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 **Plans**: 2 plans
 
 Plans:
-- [ ] 00-01-PLAN.md — Remove VITE_LOGIN_ declarations from env.d.ts and add lint:secrets npm script (CLEAN-01, CLEAN-03)
+- [x] 00-01-PLAN.md — Remove VITE_LOGIN_ declarations from env.d.ts and add lint:secrets npm script (CLEAN-01, CLEAN-03)
 - [ ] 00-02-PLAN.md — Human confirmation of out-of-band credential rotation (CLEAN-02)
 
 ---
@@ -172,7 +172,7 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 0. Pre-Wallecx Cleanup | 0/2 | Not started | - |
+| 0. Pre-Wallecx Cleanup | 1/2 | In Progress|  |
 | 1. Backend + Frontend Foundation | 0/0 | Not started | - |
 | 2. Read Path | 0/0 | Not started | - |
 | 3. Write Path | 0/0 | Not started | - |
