@@ -51,7 +51,6 @@ Defined in `env.d.ts` under `ImportMetaEnv`. Files loaded by Vite per mode: `.en
 Key variables:
 - `VITE_APP_NAME` — app title
 - `VITE_API_BASE_URL` — backend base URL
-- `VITE_LOGIN_EMAIL` / `VITE_LOGIN_PASSWORD` — dev login shortcuts
 
 ### Key Conventions
 
