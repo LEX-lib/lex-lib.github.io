@@ -45,7 +45,6 @@ All `.env*` files are **gitignored** — recreate locally. Required files:
 | `.env.development` | `VITE_API_BASE_URL=https://lexarium-backend.fly.dev`              |
 | `.env.production`  | `VITE_API_BASE_URL=https://lexarium-backend.fly.dev`              |
 
-Dev-only shortcuts: `VITE_LOGIN_EMAIL` / `VITE_LOGIN_PASSWORD` (pre-fill login form).  
 `VITE_API_BASE_URL` drives the PocketBase client (`src/lib/pocketbase/index.ts`).
 
 ## Architecture
