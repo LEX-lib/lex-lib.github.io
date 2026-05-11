@@ -57,13 +57,13 @@ Font family: Rubik, sans-serif — inherited from Phase 2. No new font sizes or 
 
 | Role | Size | Weight | Line Height | Token / Class | Used For |
 |------|------|--------|-------------|---------------|----------|
-| Body | 14px | 400 (Regular) | 1.5 | `text-sm` | Form field labels (`<label class="text-sm font-medium">`), field values in read states, action button labels, toast messages, ConfirmDialog message text, FileUpload label text, EXIF toast message |
+| Body | 14px | 400 (Regular) | 1.5 | `text-sm` | Form field labels, field values in read states, action button labels, toast messages, ConfirmDialog message text, FileUpload label text, EXIF toast message |
 | Heading | 24px | 700 (Bold) | 1.2 | `text-2xl font-bold` | WallecxApp page title "Wallecx" — unchanged from Phase 2 |
 | Dialog Header | 14–16px | 400 (Regular) | 1.2 | PrimeVue Aura default | "Add Vaccination" / "Edit Vaccination" dialog header — PrimeVue renders at Aura preset default; no override |
-| Label (form) | 14px | 500 (Medium) | 1.5 | `text-sm font-medium` | Field labels inside ManageVaccination.vue form; visually heavier than field values to distinguish label from input |
 
 Notes:
-- `font-medium` (weight 500) is introduced for form field labels only — this is the only new weight beyond Phase 2's 400/700 pair. Rubik supports weight 500 natively (no interpolation). It is strictly limited to `<label>` elements inside ManageVaccination.vue.
+- Two weights only: 400 (Regular) for all body text including form field labels, and 700 (Bold) for the page heading. No weight 500 is used in this phase.
+- Form field labels (`<label>`) use `text-sm` (14px, weight 400) — same as body text. Visual distinction from field values is provided by color (`var(--color-typo-heading)` on labels vs `var(--color-typo-body)` on values) rather than weight.
 - Error message text (Zod validation): rendered via PrimeVue `<Message severity="error" size="small" variant="simple">` — PrimeVue controls the exact size; no custom override.
 - ConfirmDialog message: 14px regular body, rendered by PrimeVue Aura preset — no override.
 - All user-supplied field values displayed in read states (DataTable rows, VaccinationDetail) remain at 14px weight 400 as per Phase 2 contract.
@@ -308,7 +308,7 @@ All 7 fields stacked one per row, full width. Field order (D-06 discretion, logi
 Each field follows this pattern:
 ```html
 <div class="flex flex-col gap-1">
-  <label class="text-sm font-medium" style="color: var(--color-typo-heading)">
+  <label class="text-sm" style="color: var(--color-typo-heading)">
     {Field Label} {* if required}
   </label>
   {PrimeVue input component with name="{field}" fluid :disabled="isSaving"}
@@ -334,7 +334,7 @@ Each field follows this pattern:
 
 ```html
 <div class="flex flex-col gap-1">
-  <label class="text-sm font-medium" style="color: var(--color-typo-heading)">
+  <label class="text-sm" style="color: var(--color-typo-heading)">
     Card (image or PDF)
   </label>
   <FileUpload
@@ -406,7 +406,7 @@ confirm.require({
   message: `Delete "${record.vaccine_name}"? This cannot be undone.`,
   header: "Confirm Delete",
   icon: "pi pi-exclamation-triangle",
-  rejectProps: { label: "Cancel", severity: "secondary", outlined: true },
+  rejectProps: { label: "Keep Record", severity: "secondary", outlined: true },
   acceptProps: { label: "Delete", severity: "danger" },
   accept: () => deleteRecord(record),
 })
@@ -415,7 +415,7 @@ confirm.require({
 **Visual appearance:**
 - PrimeVue Aura preset renders ConfirmDialog as a centered overlay dialog.
 - "Delete" button uses `severity="danger"` — maps to `--color-status-error` (#c0392b).
-- "Cancel" button uses `severity="secondary" outlined` — neutral grey outlined style.
+- "Keep Record" button uses `severity="secondary" outlined` — neutral grey outlined style.
 - Exclamation triangle icon (`pi pi-exclamation-triangle`) left of the message — PrimeVue handles positioning.
 - Message text is plain string interpolation into `message` prop — never `v-html` (D-09).
 
@@ -489,7 +489,7 @@ Inherits all Phase 2 copywriting. Phase 3 additions and modifications:
 | Delete confirm header | "Confirm Delete" | ConfirmDialog `header` prop |
 | Delete confirm message | `Delete "{vaccine_name}"? This cannot be undone.` | ConfirmDialog `message` prop — interpolated plain text, never v-html (D-09) |
 | Delete confirm accept | "Delete" | ConfirmDialog `acceptProps.label` — danger severity button |
-| Delete confirm cancel | "Cancel" | ConfirmDialog `rejectProps.label` — secondary outlined button |
+| Delete confirm reject | "Keep Record" | ConfirmDialog `rejectProps.label` — secondary outlined button; paired with "Delete" to provide semantic contrast |
 | Delete success toast | "Vaccination deleted." | `toast.success()` on successful delete |
 | Delete failure toast | "Failed to delete. Please try again." | `toast.error()` on API error — no splice |
 | Empty state message (unchanged) | "No vaccination records yet." | Phase 2 copy — retained |
@@ -543,7 +543,7 @@ Inherits all Phase 2 copywriting. Phase 3 additions and modifications:
 5. User clicks "Delete": `accept()` → `deleteRecord(record)` called.
 6. On success: `records.value.splice(idx, 1)` → `toast.success("Vaccination deleted.")`. ConfirmDialog closes.
 7. On failure: `toast.error("Failed to delete. Please try again.")` — no splice. ConfirmDialog closes (PrimeVue always closes after accept/reject).
-8. User clicks "Cancel": ConfirmDialog closes. No changes.
+8. User clicks "Keep Record": ConfirmDialog closes. No changes.
 9. Escape or click-outside: PrimeVue ConfirmDialog default dismiss behavior — treated as reject (no delete).
 
 ### Toast Notifications — Phase 3 Summary
