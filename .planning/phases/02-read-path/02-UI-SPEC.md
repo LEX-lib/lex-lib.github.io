@@ -1,7 +1,8 @@
 ---
 phase: 2
 slug: read-path
-status: draft
+status: approved
+reviewed_at: "2026-05-11"
 shadcn_initialized: false
 preset: none
 created: 2026-05-11
@@ -22,7 +23,7 @@ created: 2026-05-11
 | Preset | MyPreset — Aura base, navy primary scale (#002244 at 500), amber highlight (#e89820) — configured in `src/main.ts` |
 | Component library | PrimeVue 4 (auto-imported via `PrimeVueResolver`) |
 | Icon library | `iconify-icon` web component, `mdi:*` icon set |
-| Font | Rubik (Google Fonts) — weights 300, 400, 500, 700 |
+| Font | Rubik (Google Fonts) — weights 400, 700 |
 
 **shadcn gate result:** Not applicable. Project uses PrimeVue 4 + Tailwind CSS 4. No `components.json`. Registry safety gate is not required.
 
@@ -55,15 +56,18 @@ Font family: Rubik, sans-serif (loaded via `main.css`, available throughout).
 
 | Role | Size | Weight | Line Height | Token / Class | Used For |
 |------|------|--------|-------------|---------------|----------|
-| Body | 14px | 400 (Regular) | 1.5 | `text-sm` | DataTable cell text, field values in detail, toast messages |
-| Label | 14px | 600 (Semibold) | 1.4 | `text-sm font-semibold` | DataTable column headers, field label prefixes in detail (`Vaccine:`, `Date:`, etc.) |
+| Body | 14px | 400 (Regular) | 1.5 | `text-sm` | DataTable cell text, field values in detail, field labels in detail, column headers, toast messages, dialog header (PrimeVue default) |
 | Heading | 24px | 700 (Bold) | 1.2 | `text-2xl font-bold` | WallecxApp page title "Wallecx" — existing, unchanged |
-| Dialog Header | 18px | 600 (Semibold) | 1.3 | PrimeVue Dialog `header` prop default | Detail dialog title "Vaccination Record" |
 
 Notes:
+- Column headers and field labels are distinguished from body values by **color contrast only**: labels/headers use `var(--color-typo-heading)` (#0d1117, near-black); values use `var(--color-typo-body)` (#3d4a5c, mid-grey). No weight difference between them.
+- PrimeVue Dialog header ("Vaccination Record") renders at PrimeVue Aura default size — no custom weight override needed; it falls within the body weight (Regular 400).
+- Semibold (600) is not used. Rubik's standard weight set is 300, 400, 500, 700, 900 — 600 is not a native weight and was dropped to remove interpolation inconsistency.
 - Empty-state message ("No vaccination records yet."): `text-sm` (14px), weight 400, `var(--color-typo-heading)` — centered.
 - Dose number "—" placeholder for absent values: same body style as surrounding cell.
 - All field values in VaccinationDetail.vue use `{{ }}` mustache interpolation at `text-sm` / 14px body weight.
+
+**Primary focal point:** DataTable — eye enters at the heading (Wallecx, 24px Bold), then scans down to the DataTable rows.
 
 ---
 
@@ -73,9 +77,9 @@ Notes:
 |------|-------|-------|-----------------|
 | Dominant (60%) | `#f5f7fa` | `--color-surface-page` | Page background behind the Card wrapper |
 | Secondary (30%) | `#ffffff` | `--color-surface-card` | WallecxApp `<Card>` surface; Dialog modal surface |
-| Accent (10%) | `#002244` | `--color-brand-primary` | Page title color, empty-state placeholder icon, "View" Button primary fill (PrimeVue primary maps to navy) |
+| Accent (10%) | `#002244` | `--color-brand-primary` | Page title color, empty-state placeholder icon, "View Record" Button primary fill (PrimeVue primary maps to navy) |
 | Accent warm | `#e89820` | `--color-brand-accent` | No new Phase 2 usages — reserved for Phase 4 tile treatment; present in MyPreset highlight |
-| Text heading | `#0d1117` | `--color-typo-heading` | Page title "Wallecx", empty-state message, detail field labels |
+| Text heading | `#0d1117` | `--color-typo-heading` | Page title "Wallecx", empty-state message, detail field labels, DataTable column headers |
 | Text body | `#3d4a5c` | `--color-typo-body` | Detail field values, DataTable row text |
 | Text muted | `#6b7280` | `--color-typo-muted` | "No attachment." message in AttachmentPreview, "Download attachment" link secondary text |
 | Divider | `#e8ecf2` | `--color-surface-divider` | DataTable row borders (PrimeVue Aura default handles this) |
@@ -219,7 +223,7 @@ No CTA button in empty state (D-06, Phase 2 is read-only).
 | Vaccine | "Vaccine" | `field="vaccine_name"` | Rendered directly via `field` prop |
 | Date | "Date" | `style="width: 8rem"` | `{{ dayjs(data.date_administered).format('DD MMM YYYY') }}` |
 | Dose | "Dose" | `style="width: 5rem"` | `{{ data.dose_number ?? '—' }}` |
-| Actions | "" | `style="width: 10rem"` | View + Edit (disabled) + Remove (disabled) buttons |
+| Actions | "" | `style="width: 10rem"` | View Record + Edit (disabled) + Remove (disabled) buttons |
 
 **Thumbnail img tag:**
 ```html
@@ -240,7 +244,7 @@ Dimensions: 48x48px rendered (Tailwind `w-12 h-12`), served from PocketBase `?th
 **Action buttons in data rows:**
 ```html
 <div class="flex gap-1">
-  <Button size="small" label="View" @click="emit('view', data)" />
+  <Button size="small" label="View Record" @click="emit('view', data)" />
   <Button size="small" severity="secondary" label="Edit"
     :disabled="true" @click="emit('edit', data)" />
   <Button size="small" severity="danger" label="Remove"
@@ -277,36 +281,36 @@ defineProps<{
   <!-- Field group: primary fields -->
   <div class="grid grid-cols-2 gap-4">
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Vaccine</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Vaccine</p>
       <p class="text-sm" style="color: var(--color-typo-body)">{{ record.vaccine_name }}</p>
     </div>
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Date Administered</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Date Administered</p>
       <p class="text-sm" style="color: var(--color-typo-body)">
         {{ dayjs(record.date_administered).format('DD MMMM YYYY') }}
       </p>
     </div>
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Dose Number</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Dose Number</p>
       <p class="text-sm" style="color: var(--color-typo-body)">{{ record.dose_number ?? '—' }}</p>
     </div>
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Lot Number</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Lot Number</p>
       <p class="text-sm" style="color: var(--color-typo-body)">{{ record.lot_number || '—' }}</p>
     </div>
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Manufacturer</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</p>
       <p class="text-sm" style="color: var(--color-typo-body)">{{ record.manufacturer || '—' }}</p>
     </div>
     <div>
-      <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Location</p>
+      <p class="text-sm" style="color: var(--color-typo-heading)">Location</p>
       <p class="text-sm" style="color: var(--color-typo-body)">{{ record.location || '—' }}</p>
     </div>
   </div>
 
   <!-- Notes: full-width, mustache only — never v-html -->
   <div v-if="record.notes">
-    <p class="text-sm font-semibold" style="color: var(--color-typo-heading)">Notes</p>
+    <p class="text-sm" style="color: var(--color-typo-heading)">Notes</p>
     <p class="text-sm whitespace-pre-wrap" style="color: var(--color-typo-body)">{{ record.notes }}</p>
   </div>
 
@@ -323,6 +327,7 @@ defineProps<{
 - `lot_number`, `manufacturer`, `location`: `record.x || '—'` (empty string or em-dash)
 - `notes`: only rendered if truthy; `whitespace-pre-wrap` preserves line breaks; `{{ }}` only, never `v-html`
 - Date format: `DD MMMM YYYY` in detail (more verbose than list) — e.g. "15 January 2025"
+- Field labels use `var(--color-typo-heading)` (#0d1117); field values use `var(--color-typo-body)` (#3d4a5c). Both are `text-sm` / weight 400. Color contrast is the sole visual distinguisher.
 
 **Layout:**
 - Two-column grid (`grid-cols-2 gap-4`) for compact field pairs
@@ -478,9 +483,9 @@ Only `worker-src 'self' blob:` is appended. `script-src` is not touched.
 
 PrimeVue DataTable provides built-in row hover highlighting using the Aura preset's surface tokens. No custom hover CSS required. Row hover background: PrimeVue `surface-hover` token (light gray).
 
-### "View" Button — Click
+### "View Record" Button — Click
 
-1. User clicks "View" button in DataTable row.
+1. User clicks "View Record" button in DataTable row.
 2. `emit('view', record)` fires immediately.
 3. `WallecxApp.openDetail(record)` is called synchronously setting `selectedRecord`.
 4. `pb.files.getToken()` is awaited (network call, ~200–400ms).
@@ -490,7 +495,7 @@ PrimeVue DataTable provides built-in row hover highlighting using the Aura prese
 8. If PDF branch: `<Suspense>` fallback Skeleton renders while `vue-pdf-embed` async chunk loads.
 
 **Token generation failure (network error during openDetail):**
-- `toast.error("Failed to load attachment.")` fires.
+- `toast.error("Failed to load attachment. Refresh to try again.")` fires.
 - `showDetail.value = true` still executes — dialog opens showing all text fields.
 - AttachmentPreview renders with empty `token` prop → `getURL` returns URL without token → browser 403 → image broken / PDF fails → fallback download link shown.
 - This is acceptable degradation: user can still read all text fields.
@@ -540,7 +545,7 @@ All toasts rendered by `<Toaster />` in App.vue. No Phase 2 changes to Toaster m
 | Dialog title | "Vaccination Record" | PrimeVue Dialog `header` prop |
 | Empty state message | "No vaccination records yet." | Shown when `records.length === 0` after successful fetch |
 | Loading placeholder | _(Skeleton rows — no text label)_ | 3 skeleton rows in DataTable during fetch |
-| List row — View action | "View" | Button label in DataTable actions column |
+| List row — View action | "View Record" | Button label in DataTable actions column |
 | List row — Edit action (disabled) | "Edit" | Button label, disabled in Phase 2 |
 | List row — Remove action (disabled) | "Remove" | Button label, disabled in Phase 2 |
 | Detail — no dose | "—" | `record.dose_number ?? '—'` — em-dash for absent optional number |
@@ -552,8 +557,8 @@ All toasts rendered by `<Toaster />` in App.vue. No Phase 2 changes to Toaster m
 | PDF download link | "Download PDF" | `<a download>` in PDF error branch |
 | Unknown MIME message | "Preview not available for this file type." | `mimeCategory === 'unknown'` branch |
 | Unknown MIME download | "Download attachment" | `<a download>` in unknown-MIME branch |
-| Toast — list fetch failure | "Failed to load vaccination records." | `toast.error()` in WallecxApp onMounted catch |
-| Toast — token fetch failure | "Failed to load attachment." | `toast.error()` in openDetail catch |
+| Toast — list fetch failure | "Failed to load vaccination records. Refresh to try again." | `toast.error()` in WallecxApp onMounted catch |
+| Toast — token fetch failure | "Failed to load attachment. Refresh to try again." | `toast.error()` in openDetail catch |
 | Thumbnail alt text | `"{vaccine_name} vaccination card thumbnail"` | `<img :alt>` in DataTable thumbnail column |
 | Detail image alt text | `"{vaccine_name} vaccination card"` | `<img :alt>` in AttachmentPreview image branch |
 
