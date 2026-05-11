@@ -2,8 +2,13 @@
 import { defineAsyncComponent, computed, ref } from "vue";
 import { pb } from "@/lib/pocketbase";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-const VuePdfEmbed = defineAsyncComponent(() => import("vue-pdf-embed"));
+const VuePdfEmbed = defineAsyncComponent(async () => {
+  const { GlobalWorkerOptions } = await import("pdfjs-dist");
+  GlobalWorkerOptions.workerSrc = workerUrl;
+  return import("vue-pdf-embed");
+});
 
 const props = defineProps<{
   record: Vaccinations;
