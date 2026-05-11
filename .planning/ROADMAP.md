@@ -100,9 +100,13 @@ Plans:
 4. A simulated network error surfaces a `vue-sonner` error toast and leaves the list in a consistent state (no half-rendered UI).
 5. `git grep "v-html" src/components/projects/wallecx` returns zero hits, and the CSP in `index.html` adds only `worker-src 'self' blob:` (script-src is unchanged).
 
-**Plans**: TBD
+**Plans**: 4 plans
 
-**UI hint**: yes
+Plans:
+- [ ] 02-01-PLAN.md — AttachmentPreview.vue (MIME-branched file preview, defineAsyncComponent VuePdfEmbed, Suspense) + index.html CSP (worker-src 'self' blob:) (READ-03, READ-06)
+- [ ] 02-02-PLAN.md — VaccinationList.vue (DataTable with skeleton/empty/data states, striped-rows, thumbnail + placeholder icon, view/edit/remove emits) (READ-01, READ-04, READ-05)
+- [ ] 02-03-PLAN.md — VaccinationDetail.vue (read-only field grid, DD MMMM YYYY date, notes mustache-only, Divider, embedded AttachmentPreview) (READ-02)
+- [ ] 02-04-PLAN.md — WallecxApp.vue wiring (listToken + fileToken refs, openDetail function, VaccinationList + Dialog + VaccinationDetail in template, graceful token failure) (READ-04, READ-05, READ-07)
 
 ---
 
@@ -179,10 +183,10 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 |-------|----------------|--------|-----------|
 | 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
-| 2. Read Path | 0/0 | Not started | - |
+| 2. Read Path | 0/4 | Planned | - |
 | 3. Write Path | 0/0 | Not started | - |
 | 4. Discovery & Polish | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-11 after Phase 1 execution complete*
+*Last updated: 2026-05-11 — Phase 2 planned (4 plans, 3 waves)*
