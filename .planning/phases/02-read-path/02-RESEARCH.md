@@ -625,21 +625,21 @@ const VuePdfEmbed = defineAsyncComponent(() => import("vue-pdf-embed"));
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **List thumbnails and token generation**
+1. **RESOLVED: List thumbnails and token generation**
    - What we know: `card` field is `protected: true`; tokens expire in ~2 minutes; READ-07 says token at view time not list time
    - What's unclear: Whether the intent of READ-07 is (a) never generate a token until the dialog opens, or (b) don't embed a stale token in list HTML — a fresh token on page load satisfies both
-   - **Recommendation:** Generate a single `listToken` in `onMounted` alongside `getFullList`. Use a separate `detailToken` generated in `openDetail`. This satisfies READ-07's spirit (no stale embedded tokens) while showing thumbnails in the list. Both tokens refresh on page navigation.
+   - **Resolution:** Generate a single `listToken` in `onMounted` alongside `getFullList`. Use a separate `detailToken` (`fileToken`) generated in `openDetail`. This satisfies READ-07's spirit (no stale embedded tokens) while showing thumbnails in the list. Both tokens refresh on page navigation. Implemented in `02-04-PLAN.md` WallecxApp.vue wiring task.
 
 2. ~~**Exact  parameter name in ** — RESOLVED during research~~ 
    - The SDK  implementation serializes the entire options object as query params.  becomes  in the URL. [VERIFIED: pocketbase/dist/pocketbase.es.mjs source inspection]
    - No open question remains here.
 
-3. **vue-pdf-embed `@loading-failed` event and error handling in Phase 2**
+3. **RESOLVED: vue-pdf-embed `@loading-failed` event and error handling in Phase 2**
    - What we know: The component emits `loading-failed: (value: Error) => any` (from type definitions)
    - What's unclear: Whether the plan should show a fallback download link when PDF rendering fails (e.g., malformed PDF), or whether READ-04 "error states" covers this
-   - **Recommendation:** Handle `@loading-failed` in `AttachmentPreview.vue` to show a download link fallback: "Preview unavailable — [Download PDF]". This matches the UX guidance in PITFALLS.md.
+   - **Resolution:** Handle `@loading-failed` in `AttachmentPreview.vue` via a `showPdfFallback` ref that switches to a download link: "Preview unavailable — Download PDF". This satisfies READ-04's error-state requirement. Implemented in `02-01-PLAN.md` AttachmentPreview.vue task.
 
 ---
 

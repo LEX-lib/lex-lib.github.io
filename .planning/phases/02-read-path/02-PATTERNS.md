@@ -105,7 +105,8 @@ async function openDetail(record: Vaccinations): Promise<void> {
       <Dialog
         v-model:visible="showDetail"
         modal
-        :style="{ width: '40vw' }"
+        :style="{ width: '40rem' }"
+        :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
         header="Vaccination Record"
         @hide="selectedRecord = null"
       >
