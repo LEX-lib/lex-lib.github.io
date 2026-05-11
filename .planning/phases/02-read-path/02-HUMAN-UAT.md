@@ -47,8 +47,7 @@ blocked: 0
 
 ## Gaps
 
-### GAP-01: READ-06 — CSP meta tag commented out; pdfjs blocked under strict policy
-status: failed
-description: The CSP meta tag (worker-src 'self' blob:; script-src-elem 'self' blob:) was found to block pdfjs from loading PDFs entirely. The tag was commented out to unblock UAT. The exact CSP directive causing the violation was not isolated — requires a targeted investigation (re-enable tag, capture browser console violation message, iterate directives).
-fix: Re-enable CSP meta tag with correct directives that allow pdfjs while keeping script-src narrow. Investigate whether connect-src, worker-src, or a missing directive (e.g. script-src for module workers) is the root cause.
+### GAP-01: READ-06 — CSP meta tag removed; requirement dropped
+status: resolved
+description: CSP meta tag was incompatible with pdfjs under all tested configurations. Decision made to remove the meta tag entirely rather than investigate further. READ-06 is dropped. CVE-2024-4367 mitigation retained via pdfjs-dist >=4.2.67 version pin (FRONT-01).
 affects: READ-06
