@@ -14,27 +14,27 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-11 (Phase 1 complete — all 3 plans done; proceeding to Phase 2)
+**Last updated:** 2026-05-11 (Phase 2 context gathered — ready for planning)
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx milestone (Phase 1: Vaccination Records)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 1 (Backend + Frontend Foundation) — PocketBase collection setup, per-user rules, types, mapper, route shell.
+**Current focus:** Phase 2 (Read Path) — context gathered, ready for planning.
 
 ## Current Position
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
-**Phase:** Phase 1 — Backend + Frontend Foundation (COMPLETE) → Phase 2 next
-**Plan:** 3 of 3 complete (01-01 ✓, 01-02 ✓, 01-03 ✓)
-**Status:** Phase 1 complete — all BACK-01..05 and FRONT-01..05 satisfied
-**Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1)
+**Phase:** Phase 2 — Read Path (List + Detail + Preview) — context captured, planning next
+**Plan:** 0 of TBD
+**Status:** Phase 2 context gathered (02-CONTEXT.md written); ready for `/gsd-plan-phase 2`
+**Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██░░░░░░░░] 20% (Phase 2)
 
 ```
-[████████░░░░░░░░░░░░] 40%
+[████████████░░░░░░░░] 60%
 Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
-(Phase 0: 2/2 ✓, Phase 1: 2/3 in progress)
+(Phase 0: 2/2 ✓, Phase 1: 3/3 ✓, Phase 2: context ✓ / plans pending)
 ```
 
 ## Roadmap Snapshot
@@ -42,8 +42,8 @@ Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
 | 0 | Pre-Wallecx Cleanup | Complete | 3 (CLEAN-01..03) |
-| 1 | Backend + Frontend Foundation | Ready to execute (3 plans) | 10 (BACK-01..05, FRONT-01..05) |
-| 2 | Read Path (List + Detail + Preview) | Not started | 7 (READ-01..07) |
+| 1 | Backend + Frontend Foundation | Complete | 10 (BACK-01..05, FRONT-01..05) |
+| 2 | Read Path (List + Detail + Preview) | Context captured | 7 (READ-01..07) |
 | 3 | Write Path (Create / Edit / Delete) | Not started | 9 (WRITE-01..09) |
 | 4 | Discovery & Polish | Not started | 5 (POLISH-01..05) |
 
@@ -103,16 +103,14 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-10 — Planned Phase 1. Research complete (01-RESEARCH.md). 3 plans created and verified (01-01, 01-02, 01-03). All 10 BACK/FRONT requirements mapped.
+**Last session:** 2026-05-11 — Phase 2 discuss-phase complete. Context captured (02-CONTEXT.md). Key decisions: DataTable list, Dialog detail view (read-only in Phase 2), Skeleton loading state, icon+message empty state.
 
-**Next session entry point:** Execute Phase 1 (`01-backend-frontend-foundation`) — start with 01-01 (PocketBase Admin UI walkthrough), then 01-02 (two-user smoke test), then 01-03 (automated frontend skeleton).
+**Next session entry point:** Plan Phase 2 (`02-read-path`) — `/gsd-plan-phase 2`.
 
 **Files of interest for the next session:**
 
-- `.planning/phases/01-backend-frontend-foundation/01-01-PLAN.md` — PocketBase collection setup checklist (human-action)
-- `.planning/phases/01-backend-frontend-foundation/01-02-PLAN.md` — Two-user smoke test checkpoint (human-action)
-- `.planning/phases/01-backend-frontend-foundation/01-03-PLAN.md` — Frontend foundation (automated: npm install, types, mapper, route, shell)
-- `.planning/phases/01-backend-frontend-foundation/01-RESEARCH.md` — Technical research (PocketBase rule strings, exact file content)
+- `.planning/phases/02-read-path/02-CONTEXT.md` — Phase 2 implementation decisions (read before planning)
+- `.planning/ROADMAP.md` §Phase 2 — READ-01..07 requirements and success criteria
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
