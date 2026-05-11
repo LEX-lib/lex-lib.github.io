@@ -3,38 +3,38 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-10T14:36:22Z"
+last_updated: "2026-05-11T00:00:00Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 4
+  percent: 40
 ---
 
 # Project State
 
-**Last updated:** 2026-05-10 (Phase 0 complete)
+**Last updated:** 2026-05-11 (Phase 1 Wave 2 complete — 01-01 and 01-02 done, 01-03 pending)
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx milestone (Phase 1: Vaccination Records)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 0 (Pre-Wallecx Cleanup) — strip `VITE_LOGIN_*` plumbing and add a regression guard before introducing sensitive health-data surface.
+**Current focus:** Phase 1 (Backend + Frontend Foundation) — PocketBase collection setup, per-user rules, types, mapper, route shell.
 
 ## Current Position
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
-**Phase:** Phase 0 — Pre-Wallecx Cleanup (COMPLETE)
-**Plan:** 2 of 2 complete (00-01-PLAN.md done, 00-02-PLAN.md done)
-**Status:** Phase 0 complete — ready for Phase 1
-**Progress:** [██████████] 100% (Phase 0)
+**Phase:** Phase 1 — Backend + Frontend Foundation (READY TO EXECUTE)
+**Plan:** 2 of 3 complete (01-01 ✓, 01-02 ✓, 01-03 pending)
+**Status:** Phase 1 executing — Wave 2 done, Wave 3 (01-03 frontend skeleton) remaining
+**Progress:** [██████████] 100% (Phase 0) | [██████░░░░] 67% (Phase 1)
 
 ```
-[██░░░░░░░░░░░░░░░░░░] 10%
+[████████░░░░░░░░░░░░] 40%
 Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
-(Phase 0: 2/2 plans complete)
+(Phase 0: 2/2 ✓, Phase 1: 2/3 in progress)
 ```
 
 ## Roadmap Snapshot
@@ -42,7 +42,7 @@ Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
 | 0 | Pre-Wallecx Cleanup | Complete | 3 (CLEAN-01..03) |
-| 1 | Backend + Frontend Foundation | Not started | 10 (BACK-01..05, FRONT-01..05) |
+| 1 | Backend + Frontend Foundation | Ready to execute (3 plans) | 10 (BACK-01..05, FRONT-01..05) |
 | 2 | Read Path (List + Detail + Preview) | Not started | 7 (READ-01..07) |
 | 3 | Write Path (Create / Edit / Delete) | Not started | 9 (WRITE-01..09) |
 | 4 | Discovery & Polish | Not started | 5 (POLISH-01..05) |
@@ -103,17 +103,16 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-10 — Executed 00-02-PLAN.md. Developer confirmed credential rotation ("credentials rotated"). Phase 0 fully complete. All 3 CLEAN requirements satisfied.
+**Last session:** 2026-05-10 — Planned Phase 1. Research complete (01-RESEARCH.md). 3 plans created and verified (01-01, 01-02, 01-03). All 10 BACK/FRONT requirements mapped.
 
-**Next session entry point:** Plan Phase 1 (`01-backend-frontend-foundation`) — PocketBase collection setup, types, mapper, route shell.
+**Next session entry point:** Execute Phase 1 (`01-backend-frontend-foundation`) — start with 01-01 (PocketBase Admin UI walkthrough), then 01-02 (two-user smoke test), then 01-03 (automated frontend skeleton).
 
 **Files of interest for the next session:**
 
-- `.planning/ROADMAP.md` — Phase 1 requirements (BACK-01..05, FRONT-01..05) and success criteria
-- `.planning/REQUIREMENTS.md` — Phase 1 requirement definitions
-- `.planning/phases/00-pre-wallecx-cleanup/00-02-SUMMARY.md` — Phase 0 completion summary
-- `src/router/index.ts` — where FRONT-04 lazy route will be added
-- `src/types/` — where FRONT-02 types module will be created
+- `.planning/phases/01-backend-frontend-foundation/01-01-PLAN.md` — PocketBase collection setup checklist (human-action)
+- `.planning/phases/01-backend-frontend-foundation/01-02-PLAN.md` — Two-user smoke test checkpoint (human-action)
+- `.planning/phases/01-backend-frontend-foundation/01-03-PLAN.md` — Frontend foundation (automated: npm install, types, mapper, route, shell)
+- `.planning/phases/01-backend-frontend-foundation/01-RESEARCH.md` — Technical research (PocketBase rule strings, exact file content)
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
