@@ -60,6 +60,13 @@ const router = createRouter({
         import("@/components/projects/api-playground/ApiPlaygroundApp.vue"),
     },
     {
+      path: "/projects/wallecx",
+      name: "wallecx",
+      component: () =>
+        import("@/components/projects/wallecx/WallecxApp.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/blog",
       name: "blog",
       component: () => import("@/views/BlogView.vue"),
