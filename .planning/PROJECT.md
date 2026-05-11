@@ -26,15 +26,18 @@ If everything else fails, this single capability must work.
 - ✓ API Playground mini-app (`/projects/api-playground`) — existing
 - ✓ Vercel deployment via GitHub push integration — existing
 
+### Validated in Phase 1 (2026-05-11)
+
+- ✓ New mini-app **Wallecx** mounted at `/projects/wallecx` — `WallecxApp.vue` shell registered as lazy route
+- ✓ Route is auth-gated (`meta.requiresAuth: true`), reusing the existing `useAuthStore` + router guard — router guard redirects to `/login?redirect=/projects/wallecx`
+- ✓ PocketBase `wallecx_vaccinations` collection with **per-user access rules** enforced server-side — two-user smoke test confirmed cross-user isolation
+- ✓ Standard vaccination fields: `vaccine_name`, `date_administered`, `dose_number`, `lot_number`, `location`, `manufacturer`, `notes`, `user` — all locked and indexed
+- ✓ `card` file field for vaccination card attachment (image or PDF) — `protected: true`, 10 MB cap, MIME allowlist, thumbs configured
+
 ### Active
 
-<!-- Wallecx Phase 1 (vaccination records). Hypotheses until shipped. -->
+<!-- Wallecx Phases 2–4 (read path, write path, polish). Hypotheses until shipped. -->
 
-- [ ] New mini-app **Wallecx** mounted at `/projects/wallecx`, following the existing `<App>App.vue` mini-app convention
-- [ ] Route is auth-gated (`meta.requiresAuth: true`), reusing the existing `useAuthStore` + router guard
-- [ ] PocketBase collection for vaccination records with **per-user access rules** (`@request.auth.id != "" && @request.auth.id = user.id` on list/view/create/update/delete)
-- [ ] Standard vaccination fields: vaccine name, date administered, dose number, lot/batch number, location/clinic
-- [ ] Optional file attachment per record (image **or** PDF of the vaccination card / certificate) using PocketBase file fields
 - [ ] List view of the user's vaccination records, sorted by date administered (most recent first)
 - [ ] Detail view (click a row) showing all fields plus the attached card image/PDF
 - [ ] Create / edit / delete a vaccination record (basic CRUD) with PrimeVue dialogs, matching LexTrack patterns
@@ -90,14 +93,14 @@ If everything else fails, this single capability must work.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build Wallecx as a Lexarium mini-app rather than a separate deployment | Fits the existing portfolio pattern; reuses auth, design system, and PocketBase. Lower friction. | — Pending |
-| Vaccination records are Phase 1 of a broader personal records vault | User explicitly framed it this way; affects naming (Wallecx, not "vax-tracker") but NOT v1 schema generality | — Pending |
-| Multi-user from day 1 (vs. single-user for the owner only) | Reuses existing PocketBase auth; per-user rules avoid a future migration | — Pending |
-| File attachments included in v1 (vs. text fields only) | Real-world utility; the photo of the card *is* the record for most people | — Pending |
-| Standard field set (name, date, dose, lot, location) — not Minimal, not Comprehensive | "Comprehensive" pulls in clinical fields the user doesn't need; "Minimal" loses the lot # which is genuinely useful for recalls | — Pending |
-| List + detail view (vs. list-only or calendar) | Matches the LexTrack pattern; calendar adds build cost without earning its keep for a small dataset | — Pending |
-| Defer all other vault record types to future phases | "I just plainly want to save my vaccination records" — narrow first slice. Schema *allows* future generalization without pre-building it | — Pending |
-| Re-use Lexarium design system (navy/amber + Rubik) | No reason to introduce a new visual identity for one mini-app | — Pending |
+| Build Wallecx as a Lexarium mini-app rather than a separate deployment | Fits the existing portfolio pattern; reuses auth, design system, and PocketBase. Lower friction. | Validated Phase 1 |
+| Vaccination records are Phase 1 of a broader personal records vault | User explicitly framed it this way; affects naming (Wallecx, not "vax-tracker") but NOT v1 schema generality | Validated Phase 1 |
+| Multi-user from day 1 (vs. single-user for the owner only) | Reuses existing PocketBase auth; per-user rules avoid a future migration | Validated Phase 1 |
+| File attachments included in v1 (vs. text fields only) | Real-world utility; the photo of the card *is* the record for most people | Validated Phase 1 |
+| Standard field set (name, date, dose, lot, location) — not Minimal, not Comprehensive | "Comprehensive" pulls in clinical fields the user doesn't need; "Minimal" loses the lot # which is genuinely useful for recalls | Validated Phase 1 |
+| List + detail view (vs. list-only or calendar) | Matches the LexTrack pattern; calendar adds build cost without earning its keep for a small dataset | — Pending Phase 2 |
+| Defer all other vault record types to future phases | "I just plainly want to save my vaccination records" — narrow first slice. Schema *allows* future generalization without pre-building it | Validated Phase 1 |
+| Re-use Lexarium design system (navy/amber + Rubik) | No reason to introduce a new visual identity for one mini-app | — Pending Phase 4 |
 
 ## Evolution
 
@@ -117,4 +120,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-10 — Phase 0 (Pre-Wallecx Cleanup) complete; CLEAN-01..03 satisfied; dev-login credentials scrubbed from env.d.ts/CLAUDE.md/AGENTS.md, lint:secrets guard added, credentials rotated out-of-band*
+*Last updated: 2026-05-11 — Phase 1 (Backend + Frontend Foundation) complete; BACK-01..05 + FRONT-01..05 satisfied; wallecx_vaccinations collection live with per-user isolation, WallecxApp.vue shell reachable at /projects/wallecx*
