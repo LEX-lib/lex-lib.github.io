@@ -13,7 +13,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 - [x] **Phase 0: Pre-Wallecx Cleanup** — Strip dev-login credentials and rotate before sensitive health data exists
 - [x] **Phase 1: Backend + Frontend Foundation** — PocketBase collection + rules + types + mapper + route shell, with cross-user isolation verified
-- [ ] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP
+- [x] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP — completed 2026-05-11
 - [ ] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test
 - [ ] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off
 
@@ -103,10 +103,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — AttachmentPreview.vue (MIME-branched file preview, defineAsyncComponent VuePdfEmbed, Suspense) + index.html CSP (worker-src 'self' blob:) (READ-03, READ-06)
-- [ ] 02-02-PLAN.md — VaccinationList.vue (DataTable with skeleton/empty/data states, striped-rows, thumbnail + placeholder icon, view/edit/remove emits) (READ-01, READ-04, READ-05)
-- [ ] 02-03-PLAN.md — VaccinationDetail.vue (read-only field grid, DD MMMM YYYY date, notes mustache-only, Divider, embedded AttachmentPreview) (READ-02)
-- [ ] 02-04-PLAN.md — WallecxApp.vue wiring (listToken + fileToken refs, openDetail function, VaccinationList + Dialog + VaccinationDetail in template, graceful token failure) (READ-04, READ-05, READ-07)
+- [x] 02-01-PLAN.md — AttachmentPreview.vue (MIME-branched file preview, defineAsyncComponent VuePdfEmbed, Suspense) + index.html CSP (READ-03) — READ-06 dropped (CSP incompatible with pdfjs)
+- [x] 02-02-PLAN.md — VaccinationList.vue (DataTable with skeleton/empty/data states, striped-rows, thumbnail + placeholder icon, view/edit/remove emits) (READ-01, READ-04, READ-05)
+- [x] 02-03-PLAN.md — VaccinationDetail.vue (read-only field grid, DD MMMM YYYY date, notes mustache-only, Divider, embedded AttachmentPreview) (READ-02)
+- [x] 02-04-PLAN.md — WallecxApp.vue wiring (listToken + fileToken refs, openDetail function, VaccinationList + Dialog + VaccinationDetail in template, graceful token failure) (READ-04, READ-05, READ-07)
 
 ---
 
@@ -183,10 +183,10 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 |-------|----------------|--------|-----------|
 | 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
-| 2. Read Path | 0/4 | Planned | - |
+| 2. Read Path | 4/4 | Complete | 2026-05-11 |
 | 3. Write Path | 0/0 | Not started | - |
 | 4. Discovery & Polish | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-11 — Phase 2 planned (4 plans, 3 waves)*
+*Last updated: 2026-05-11 — Phase 2 complete (4/4 plans, READ-06 dropped)*
