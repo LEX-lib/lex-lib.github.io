@@ -20,6 +20,7 @@ const emit = defineEmits<{
 const skeletonRows = Array.from({ length: 3 }, (_, i) => ({ id: String(i) }));
 
 function thumbUrl(record: Vaccinations): string {
+  if (!record.card) return ""; // WR-02: guard against empty-string card field
   return pb.files.getURL(record, record.card, { thumb: "100x100", token: props.listToken });
 }
 

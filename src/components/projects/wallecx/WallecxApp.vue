@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { useConfirm } from "primevue/useconfirm";
 import { pb } from "@/lib/pocketbase";
@@ -17,6 +18,10 @@ const showManage = ref<boolean>(false);
 const manageRecord = ref<Vaccinations | null>(null);
 const confirm = useConfirm();
 
+// WR-01: refresh listToken before PocketBase's 5-min TTL expires
+const LIST_TOKEN_TTL_MS = 4 * 60 * 1000;
+let listTokenTimer: ReturnType<typeof setInterval> | null = null;
+
 // --- LOGIC ---
 onMounted(async () => {
   isLoading.value = true;
@@ -25,12 +30,23 @@ onMounted(async () => {
       .collection("wallecx_vaccinations")
       .getFullList<Vaccinations>({ sort: "-date_administered" });
     listToken.value = await pb.files.getToken();
+    listTokenTimer = setInterval(async () => {
+      try {
+        listToken.value = await pb.files.getToken();
+      } catch (e) {
+        console.warn("WallecxApp: listToken refresh failed", e);
+      }
+    }, LIST_TOKEN_TTL_MS);
   } catch (e: unknown) {
     toast.error("Failed to load vaccination records.");
     console.error("WallecxApp: getFullList failed", e);
   } finally {
     isLoading.value = false;
   }
+});
+
+onUnmounted(() => {
+  if (listTokenTimer) clearInterval(listTokenTimer);
 });
 
 async function openDetail(record: Vaccinations): Promise<void> {
@@ -41,6 +57,8 @@ async function openDetail(record: Vaccinations): Promise<void> {
     } catch (e: unknown) {
       toast.error("Failed to load attachment. Refresh to try again.");
       console.error("WallecxApp: getToken failed", e);
+      selectedRecord.value = null;
+      return; // WR-03: abort — do not open dialog in a token-less state
     }
   }
   showDetail.value = true;
@@ -52,8 +70,11 @@ function openManage(record: Vaccinations | null): void {
 }
 
 function onCreated(created: Vaccinations): void {
-  // unshift = newest first, matching sort: '-date_administered' (UI-SPEC onCreated contract)
-  records.value.unshift(created);
+  records.value.push(created);
+  // MEDIUM-03: maintain date-administered descending sort (matches getFullList sort: '-date_administered')
+  records.value.sort((a, b) =>
+    dayjs(b.date_administered).diff(dayjs(a.date_administered))
+  );
 }
 
 function onUpdated(updatedRecord: Vaccinations): void {

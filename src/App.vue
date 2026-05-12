@@ -8,5 +8,5 @@ import { SpeedInsights } from "@vercel/speed-insights/vue";
   <CustomNavBar class="mb-1" />
   <RouterView />
   <Toaster />
-  <SpeedInsights />
+  <SpeedInsights v-if="import.meta.env.PROD" />
 </template>
