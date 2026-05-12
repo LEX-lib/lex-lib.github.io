@@ -8,8 +8,8 @@ progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 17
-  completed_plans: 13
-  percent: 76
+  completed_plans: 14
+  percent: 82
 ---
 
 # Project State
@@ -27,7 +27,7 @@ progress:
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
 **Phase:** Phase 4 — Discovery & Polish — IN PROGRESS
-**Plan:** 1 of 4
+**Plan:** 2 of 4
 **Status:** Phase 4 planned (4 plans, 2 waves); executing
 **Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██████████] 100% (Phase 2) | [██████████] 100% (Phase 3)
 
@@ -103,7 +103,7 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 
 ### Active Blockers
 
-None.
+- **BUILD-01 (04-02):** `npm run build` fails — Vue template compiler (rolldown) rejects `import.meta.env.PROD` in `v-if` attribute expression in `src/App.vue:11`. Fix: move to `const isProd = import.meta.env.PROD` in script and use `v-if="isProd"` in template. Must be resolved in 04-04-PLAN before deploy.
 
 ### Risk Register (carried into planning)
 
@@ -118,9 +118,9 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12T10:25:00.000Z — Phase 4 Plan 01 complete: HIGH-01/02, WR-01/02/03, MEDIUM-03, SpeedInsights gate — 2 commits (1fdf25e, 2bcb5df)
+**Last session:** 2026-05-12T10:26:00.000Z — Phase 4 Plan 02 complete: Wallecx tile in ProjectsView.vue, POLISH-02 design token audit PASS, 04-CHECKLIST.md created (19 items) — 2 commits (9d6ad96, 4684305). Build broken: import.meta.env.PROD in App.vue v-if causes rolldown compiler error; fix required in 04-04-PLAN.
 
-**Next session entry point:** Execute Phase 4 Plan 02 — Wallecx tile + design token audit (POLISH-01, POLISH-02)
+**Next session entry point:** Execute Phase 4 Plan 03 — JSON export button (POLISH-03)
 
 **Files of interest for the next session:**
 
