@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-12T01:20:51.000Z"
+last_updated: "2026-05-12T09:30:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -14,7 +14,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-12 (Phase 3 Plan 04 complete — full CRUD wired, Phase 3 complete)
+**Last updated:** 2026-05-12 (Phase 3 fully verified — WRITE-01..09 all PASS, code review WARN, regression 10/10)
 
 ## Project Reference
 
@@ -78,6 +78,14 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 - **Server-first delete pattern confirmed** — deleteRecord awaits pb.delete() before splice; on failure no splice (row stays visible). Implements Pitfall 4 / WRITE-06 correctly.
 - **addFirst CTA via emit** — empty-state "Add your first vaccination" button emits addFirst; WallecxApp wires it to openManage(null). No prop drilling needed.
 
+### Phase 3 Review Findings (03-REVIEW.md — WARN)
+
+- **HIGH-01:** `pb.authStore.record!.id` non-null assertion in ManageVaccination.vue:147 — crashes if session expires at submit time. Fix: explicit null guard that re-routes to login.
+- **HIGH-02:** `pendingFile` cleared only in `@hide` (onHide); rely on Dialog emit decoupling could persist stale file into next open. Fix: explicit `pendingFile.value = null` in success branch before `visible.value = false`.
+- **MEDIUM-01:** Wrong comment at ManageVaccination.vue:151 — says `onCreated` calls `Object.assign` but it calls `unshift`.
+- **MEDIUM-02:** `void mapToUpdateVaccination(...)` is a dead import; either use the return value as the PATCH body or remove the call.
+- **MEDIUM-03:** `unshift` in `onCreated` places new records at top regardless of `date_administered` — breaks visual sort until reload.
+
 ### Decisions Pending
 
 - Phase folder naming convention (decided at planning time, not now).
@@ -110,16 +118,14 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12T01:20:51.000Z — Completed 03-04-PLAN.md (WallecxApp wiring + VaccinationList enable + delete flow, commits b9691c2, cf8cfd5)
+**Last session:** 2026-05-12T09:30:00.000Z — Phase 3 fully closed: review (WARN, 2 HIGH advisories), regression 10/10, verification PASS 9/9
 
-**Next session entry point:** Execute Phase 4 — Discovery & Polish — `04-*.PLAN.md` files
+**Next session entry point:** Plan + Execute Phase 4 — Discovery & Polish — `/gsd-plan-phase 4`
 
 **Files of interest for the next session:**
 
-- `.planning/phases/03-write-path/03-01-PLAN.md` — DONE (76b56f6)
-- `.planning/phases/03-write-path/03-02-PLAN.md` — DONE (14db449)
-- `.planning/phases/03-write-path/03-03-PLAN.md` — DONE (bcd557f)
-- `.planning/phases/03-write-path/03-04-PLAN.md` — DONE (b9691c2, cf8cfd5)
+- `.planning/phases/03-write-path/03-REVIEW.md` — WARN: HIGH-01 (auth null assertion), HIGH-02 (pendingFile stale); consider `/gsd-code-review-fix 3` early in Phase 4
+- `.planning/phases/03-write-path/03-VERIFICATION.md` — PASS 9/9 (Phase 3 requirements fully verified)
 - `.planning/phases/02-read-path/02-REVIEW.md` — 3 warnings (WR-01 stale token, WR-02 thumbUrl guard, WR-03 dialog token-less) still open; consider `/gsd-code-review-fix 2` before or during Phase 4
 
 ---
