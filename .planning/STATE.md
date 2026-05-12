@@ -8,8 +8,8 @@ progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 17
-  completed_plans: 14
-  percent: 82
+  completed_plans: 15
+  percent: 88
 ---
 
 # Project State
@@ -27,7 +27,7 @@ progress:
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
 **Phase:** Phase 4 — Discovery & Polish — IN PROGRESS
-**Plan:** 2 of 4
+**Plan:** 3 of 4
 **Status:** Phase 4 planned (4 plans, 2 waves); executing
 **Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██████████] 100% (Phase 2) | [██████████] 100% (Phase 3)
 
@@ -52,7 +52,7 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 ## Performance Metrics
 
 - Phases shipped: 4 (Phase 0, Phase 1, Phase 2, Phase 3)
-- Plans shipped: 12 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04)
+- Plans shipped: 15 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03)
 - Requirements verified: 28 / 34 (CLEAN-01..03, BACK-01..05, FRONT-01..05, READ-01..05, READ-07, WRITE-01..09; READ-06 dropped)
 - Tests in repo: 10 (vaccinationMapper.spec.ts — first unit test, shipped in Phase 3 Plan 01)
 
@@ -118,9 +118,9 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12T10:26:00.000Z — Phase 4 Plan 02 complete: Wallecx tile in ProjectsView.vue, POLISH-02 design token audit PASS, 04-CHECKLIST.md created (19 items) — 2 commits (9d6ad96, 4684305). Build broken: import.meta.env.PROD in App.vue v-if causes rolldown compiler error; fix required in 04-04-PLAN.
+**Last session:** 2026-05-12T02:30:00.000Z — Phase 4 Plan 03 complete: exportJson() + isExporting guard + Download records Button in WallecxApp.vue (POLISH-03) — 1 commit (916a4c8). All 10 unit tests pass.
 
-**Next session entry point:** Execute Phase 4 Plan 03 — JSON export button (POLISH-03)
+**Next session entry point:** Execute Phase 4 Plan 04 — Route guard Vitest spec + POLISH-05 checklist final sign-off (POLISH-04, POLISH-05)
 
 **Files of interest for the next session:**
 
