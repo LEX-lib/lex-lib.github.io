@@ -15,7 +15,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 - [x] **Phase 1: Backend + Frontend Foundation** — PocketBase collection + rules + types + mapper + route shell, with cross-user isolation verified
 - [x] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP — completed 2026-05-11
 - [x] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test — completed 2026-05-12
-- [ ] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off
+- [x] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off — completed 2026-05-12
 
 ## Phase Details
 
@@ -172,7 +172,7 @@ Plans:
 - [x] 04-01-PLAN.md — Code review fixes: HIGH-01/02 (ManageVaccination.vue null assertion + stale pendingFile), WR-01/02/03 (WallecxApp.vue listToken interval, VaccinationList.vue thumbUrl guard, openDetail abort), MEDIUM-03 (date-sorted onCreated), SpeedInsights gate (code quality fixes supporting POLISH-02 and POLISH-05)
 - [x] 04-02-PLAN.md — Wallecx tile in ProjectsView.vue + design token audit + 04-CHECKLIST.md foundation (POLISH-01, POLISH-02)
 - [x] 04-03-PLAN.md — JSON export button in WallecxApp.vue: exportJson() + isExporting guard + Download records Button (POLISH-03)
-- [ ] 04-04-PLAN.md — Route guard Vitest spec + POLISH-05 checklist final sign-off (POLISH-04, POLISH-05)
+- [x] 04-04-PLAN.md — Route guard Vitest spec + POLISH-05 checklist final sign-off (POLISH-04, POLISH-05)
 
 **UI hint**: yes
 
@@ -199,7 +199,7 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
-| 4. Discovery & Polish | 3/4 | In Progress | - |
+| 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
 
 ---
 *Roadmap created: 2026-05-10*

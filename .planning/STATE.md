@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-05-12T10:25:00.000Z"
+status: complete
+last_updated: "2026-05-12T10:40:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 17
-  completed_plans: 15
-  percent: 88
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -27,14 +27,14 @@ progress:
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
 **Phase:** Phase 4 — Discovery & Polish — IN PROGRESS
-**Plan:** 3 of 4
-**Status:** Phase 4 planned (4 plans, 2 waves); executing
+**Plan:** 4 of 4 (complete)
+**Status:** Phase 4 complete; all 5 phases done; Wallecx milestone complete
 **Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██████████] 100% (Phase 2) | [██████████] 100% (Phase 3)
 
 ```
-[████████████████████] 92% (plans 0–4 done, phase 4 remaining)
+[████████████████████] 100% (all plans complete — Wallecx milestone done)
 Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
-(Phase 0: 2/2 ✓, Phase 1: 3/3 ✓, Phase 2: 4/4 ✓, Phase 3: 4/4 ✓)
+(Phase 0: 2/2 ✓, Phase 1: 3/3 ✓, Phase 2: 4/4 ✓, Phase 3: 4/4 ✓, Phase 4: 4/4 ✓)
 ```
 
 ## Roadmap Snapshot
@@ -52,9 +52,9 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 ## Performance Metrics
 
 - Phases shipped: 4 (Phase 0, Phase 1, Phase 2, Phase 3)
-- Plans shipped: 15 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03)
-- Requirements verified: 28 / 34 (CLEAN-01..03, BACK-01..05, FRONT-01..05, READ-01..05, READ-07, WRITE-01..09; READ-06 dropped)
-- Tests in repo: 10 (vaccinationMapper.spec.ts — first unit test, shipped in Phase 3 Plan 01)
+- Plans shipped: 17 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03, 04-04)
+- Requirements verified: 33 / 34 (CLEAN-01..03, BACK-01..05, FRONT-01..05, READ-01..05, READ-07, WRITE-01..09, POLISH-01..05; READ-06 dropped)
+- Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests — shipped Phase 3 Plan 01 + Phase 4 Plan 04)
 
 ## Accumulated Context
 
@@ -103,7 +103,7 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 
 ### Active Blockers
 
-- **BUILD-01 (04-02):** `npm run build` fails — Vue template compiler (rolldown) rejects `import.meta.env.PROD` in `v-if` attribute expression in `src/App.vue:11`. Fix: move to `const isProd = import.meta.env.PROD` in script and use `v-if="isProd"` in template. Must be resolved in 04-04-PLAN before deploy.
+None — BUILD-01 resolved in 04-04-PLAN Task 1: `const isProd = import.meta.env.PROD` in script setup, `v-if="isProd"` in template. `npm run build` exits 0.
 
 ### Risk Register (carried into planning)
 
@@ -118,15 +118,15 @@ Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12T02:30:00.000Z — Phase 4 Plan 03 complete: exportJson() + isExporting guard + Download records Button in WallecxApp.vue (POLISH-03) — 1 commit (916a4c8). All 10 unit tests pass.
+**Last session:** 2026-05-12T10:40:00.000Z — Phase 4 Plan 04 complete: App.vue build blocker fixed (isProd const), guard.spec.ts created (3 tests, createMemoryHistory), 04-CHECKLIST.md all 19 items SIGNED OFF (POLISH-04, POLISH-05) — 2 commits (c575d29, f4f7db5). All 13 unit tests pass. npm run build exits 0. Wallecx milestone complete.
 
-**Next session entry point:** Execute Phase 4 Plan 04 — Route guard Vitest spec + POLISH-05 checklist final sign-off (POLISH-04, POLISH-05)
+**Next session entry point:** Milestone complete — no further phases planned. Consider deploy via `npm run deploy` or open a PR to merge feat/wallecx into master.
 
-**Files of interest for the next session:**
+**Files of interest:**
 
-- `.planning/phases/03-write-path/03-REVIEW.md` — WARN: HIGH-01 (auth null assertion), HIGH-02 (pendingFile stale); consider `/gsd-code-review-fix 3` early in Phase 4
-- `.planning/phases/03-write-path/03-VERIFICATION.md` — PASS 9/9 (Phase 3 requirements fully verified)
-- `.planning/phases/02-read-path/02-REVIEW.md` — 3 warnings (WR-01 stale token, WR-02 thumbUrl guard, WR-03 dialog token-less) still open; consider `/gsd-code-review-fix 2` before or during Phase 4
+- `src/router/__tests__/guard.spec.ts` — new route guard spec (3 tests)
+- `.planning/phases/04-discovery-polish/04-CHECKLIST.md` — all 19 items SIGNED OFF
+- `.planning/phases/04-discovery-polish/04-04-SUMMARY.md` — final plan summary
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
