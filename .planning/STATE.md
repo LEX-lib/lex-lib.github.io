@@ -2,34 +2,34 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Vaccine Grouping
-status: complete
+status: in_progress
 last_updated: "2026-05-12T00:00:00.000Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-12 — Phase 6 complete: GROUP-04/05/06/07 verified. Milestone v1.1 (Vaccine Grouping) complete.
+**Last updated:** 2026-05-12 — Milestone v1.2 started: Search, Sort & View Toggle. Defining requirements and roadmap.
 
 ## Project Reference
 
-**Project:** Lexarium — Wallecx milestone v1.1 (Vaccine Grouping)
+**Project:** Lexarium — Wallecx milestone v1.2 (Search, Sort & View Toggle)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
 **Current focus:** Phase 6 — Grouped Card View & Group Detail Panel (GROUP-04, GROUP-05, GROUP-06, GROUP-07).
 
 ## Current Position
 
-**Milestone:** v1.1 — Vaccine Grouping (COMPLETE)
-**Phase:** Phase 6 — Grouped Card View & Group Detail Panel (COMPLETE)
-**Plan:** All 2 plans executed and verified
-**Status:** Milestone v1.1 complete — all 7 GROUP requirements shipped
-**Last activity:** 2026-05-12 — Phase 6 executed and verified (GROUP-04/05/06/07 all passed human + automated checks)
+**Milestone:** v1.2 — Search, Sort & View Toggle
+**Phase:** Not started (defining roadmap)
+**Plan:** —
+**Status:** Defining requirements and roadmap
+**Last activity:** 2026-05-12 — Milestone v1.2 started (SEARCH-01/02, SORT-01, VIEW-01/02)
 
 ## Roadmap Snapshot
 

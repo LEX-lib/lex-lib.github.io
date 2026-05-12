@@ -1,6 +1,6 @@
 # Lexarium
 
-## Current Milestone: v1.1 Vaccine Grouping — COMPLETE (2026-05-12)
+## Previous Milestone: v1.1 Vaccine Grouping — COMPLETE (2026-05-12)
 
 **Goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
 
@@ -130,5 +130,23 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
+## Current Milestone: v1.2 Search, Sort & View Toggle
+
+**Goal:** Add a persistent toolbar above the Wallecx grouped card view so users can filter groups by vaccine name/type, sort them by name or type, and switch between a 2-column card grid and a compact single-column list.
+
+**Target features:**
+- Search input filtering group cards by vaccine name or vaccine type (case-insensitive, matches any record in the group)
+- Sort control: Vaccine type A–Z/Z–A or Vaccine name A–Z/Z–A (Uncategorized always pinned last)
+- View toggle: 2-column card grid ↔ compact single-column list (same VaccinationGroupCard, layout class only)
+- Toolbar above the card grid — all controls in one row, no new PocketBase queries
+
+### Active (v1.2)
+
+- [ ] SEARCH-01: Search input filters visible group cards by vaccine_type or vaccine_name (case-insensitive, real-time)
+- [ ] SEARCH-02: "No results" empty state when search yields no matching groups
+- [ ] SORT-01: Sort control with 4 options — Type A–Z (default), Type Z–A, Name A–Z, Name Z–A; Uncategorized pinned last always
+- [ ] VIEW-01: View toggle switches between 2-column grid and compact single-column list; persists for browser session
+- [ ] VIEW-02: Compact list reuses VaccinationGroupCard unchanged — grid-cols-1 only
+
 ---
-*Last updated: 2026-05-12 — Milestone v1.0 (Wallecx vaccination records) complete; all 5 phases shipped. Milestone v1.1 (Vaccine Grouping) started — vaccine_type field, grouped card view, group detail panel.*
+*Last updated: 2026-05-12 — Milestone v1.1 (Vaccine Grouping) complete. Milestone v1.2 (Search, Sort & View Toggle) started.*

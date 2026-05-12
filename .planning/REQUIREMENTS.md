@@ -85,6 +85,26 @@ Requirements for the Vaccine Grouping milestone. Phases continue numbering from 
 
 ---
 
+## v1.2 Requirements
+
+Requirements for the Search, Sort & View Toggle milestone. Phases continue numbering from v1.1 (last was Phase 6, so v1.2 starts at Phase 7).
+
+### Search
+
+- [ ] **SEARCH-01**: Typing in the search input filters visible group cards in real-time — a group is shown if its `vaccine_type` contains the query (case-insensitive) OR any record in the group has a `vaccine_name` containing the query; empty query shows all groups
+- [ ] **SEARCH-02**: When search yields no matching groups, a distinct "no results" empty state is shown (separate from the zero-records empty state shown when the user has no vaccination records at all)
+
+### Sort
+
+- [ ] **SORT-01**: A sort control offers 4 options — "Type A–Z" (default, matching current behaviour), "Type Z–A", "Name A–Z", "Name Z–A" — where Name sorts groups by their latest record's `vaccine_name`; Uncategorized card is always pinned last regardless of sort direction
+
+### View Toggle
+
+- [ ] **VIEW-01**: A view toggle button switches the card area between a 2-column grid (default) and a compact single-column list; the selected view persists for the browser session (localStorage or sessionStorage)
+- [ ] **VIEW-02**: The compact list view reuses `VaccinationGroupCard` without modification — only the grid layout class changes (`grid-cols-1` replaces `grid-cols-1 sm:grid-cols-2`)
+
+---
+
 ## v2 Requirements
 
 Deferred to future Wallecx phases. Tracked but not in this roadmap.
