@@ -1,14 +1,15 @@
 # Lexarium
 
-## Current Milestone: v1.1 Vaccine Grouping
+## Current Milestone: v1.1 Vaccine Grouping — COMPLETE (2026-05-12)
 
 **Goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
 
-**Target features:**
-- New `vaccine_type` free-text field (required on create/edit) added to PocketBase collection and the create/edit form
-- Grouped card view replacing the flat DataTable — one card per vaccine type showing type name, dose count, last administered date, and thumbnail of latest card scan
-- Group detail panel — clicking a card lists all records for that type; each row opens the existing full-detail dialog
-- "Uncategorized" catch-all group for existing records without a `vaccine_type`
+**Delivered:**
+- ✓ `vaccine_type` free-text field (required on create/edit) added to PocketBase collection and the create/edit form
+- ✓ Grouped card view replacing the flat DataTable — one card per vaccine type showing type name, record count, last administered date, and thumbnail of latest card scan
+- ✓ Group detail Drawer — clicking a card opens a 4-column DataTable panel (Vaccine, Date, Dose, Lot) from the right
+- ✓ "Uncategorized" catch-all group for existing records without a `vaccine_type`, pinned last alphabetically
+- ✓ Each record row in the group panel opens the existing `VaccinationDetail.vue` dialog on top of the open Drawer
 
 ---
 
@@ -46,15 +47,13 @@ If everything else fails, this single capability must work.
 - ✓ Standard vaccination fields: `vaccine_name`, `date_administered`, `dose_number`, `lot_number`, `location`, `manufacturer`, `notes`, `user` — all locked and indexed
 - ✓ `card` file field for vaccination card attachment (image or PDF) — `protected: true`, 10 MB cap, MIME allowlist, thumbs configured
 
-### Active (v1.1)
+### Validated in v1.1 (2026-05-12)
 
-<!-- Vaccine Grouping milestone — hypotheses until shipped. -->
-
-- [ ] `vaccine_type` free-text field added to `wallecx_vaccinations` collection and the create/edit form (required on new/edited records)
-- [ ] Wallecx home view groups records by vaccine type — one card per type showing name, dose count, last date, thumbnail
-- [ ] Records with no `vaccine_type` surface in an "Uncategorized" group card
-- [ ] Clicking a group card opens a detail panel listing all records in that group
-- [ ] Each record row in the group panel opens the existing full-detail dialog
+- ✓ `vaccine_type` free-text field added to `wallecx_vaccinations` collection and the create/edit form (required on new/edited records)
+- ✓ Wallecx home view groups records by vaccine type — one card per type showing name, record count, last date, thumbnail
+- ✓ Records with no `vaccine_type` surface in an "Uncategorized" group card, pinned last
+- ✓ Clicking a group card opens a Drawer detail panel listing all records in that group (4-column DataTable)
+- ✓ Each record row in the group panel opens the existing full-detail dialog on top of the still-open Drawer
 
 ### Out of Scope
 
