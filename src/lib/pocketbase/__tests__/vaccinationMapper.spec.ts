@@ -9,6 +9,7 @@ const makeVaccinations = (overrides: Partial<Vaccinations> = {}): Vaccinations =
   collectionId: "abc",
   collectionName: "wallecx_vaccinations",
   user: "user-id-456",
+  vaccine_type: "Flu",
   vaccine_name: "Influenza",
   date_administered: "2026-01-01",
   dose_number: 1,

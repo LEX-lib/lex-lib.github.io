@@ -5,6 +5,7 @@ export interface Vaccinations extends RecordModel {
   created: string;
   updated: string;
   user: string;
+  vaccine_type: string;        // GROUP-02
   vaccine_name: string;
   date_administered: string;
   dose_number?: number;
