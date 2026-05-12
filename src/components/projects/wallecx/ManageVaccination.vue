@@ -25,7 +25,7 @@ const isEditMode = computed(() => record.value !== null);
 const dialogHeader = computed(() => isEditMode.value ? "Edit Vaccination" : "Add Vaccination");
 
 const initialValues = computed(() => {
-  if (!record.value) return { vaccine_type: "" };
+  if (!record.value) return { vaccine_type: "", vaccine_name: "" };
   return {
     vaccine_type: record.value.vaccine_type ?? "",
     vaccine_name: record.value.vaccine_name,
