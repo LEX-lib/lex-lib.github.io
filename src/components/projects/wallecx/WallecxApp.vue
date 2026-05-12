@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { useConfirm } from "primevue/useconfirm";
 import { pb } from "@/lib/pocketbase";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
 import ManageVaccination from "./ManageVaccination.vue";
+import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 
 // --- STATE ---
 const records = ref<Vaccinations[]>([]);
@@ -18,6 +19,40 @@ const showManage = ref<boolean>(false);
 const manageRecord = ref<Vaccinations | null>(null);
 const confirm = useConfirm();
 const isExporting = ref(false);
+const showGroupPanel = ref(false);
+const selectedGroup = ref<VaccineGroup | null>(null);
+
+// --- GROUPING ---
+interface VaccineGroup {
+  vaccineType: string;         // "COVID-19", "Flu", ..., "Uncategorized"
+  records: Vaccinations[];     // order preserved from records ref (sorted -date_administered)
+  latestRecord: Vaccinations;  // records[0] — most recent by date_administered
+}
+
+const groupedVaccinations = computed<VaccineGroup[]>(() => {
+  const map = new Map<string, Vaccinations[]>();
+  for (const record of records.value) {
+    const key = record.vaccine_type?.trim() || "";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(record);
+  }
+  const named: VaccineGroup[] = [];
+  const uncategorized: VaccineGroup[] = [];
+  for (const [key, recs] of map.entries()) {
+    const group: VaccineGroup = {
+      vaccineType: key === "" ? "Uncategorized" : key,
+      records: recs,
+      latestRecord: recs[0], // records already sorted -date_administered; [0] is most recent
+    };
+    if (key === "") uncategorized.push(group);
+    else named.push(group);
+  }
+  // D-05: case-insensitive alphabetical sort; D-06: Uncategorized pinned last
+  named.sort((a, b) =>
+    a.vaccineType.localeCompare(b.vaccineType, undefined, { sensitivity: "base" })
+  );
+  return [...named, ...uncategorized];
+});
 
 // WR-01: refresh listToken before PocketBase's 5-min TTL expires
 const LIST_TOKEN_TTL_MS = 4 * 60 * 1000;
@@ -68,6 +103,11 @@ async function openDetail(record: Vaccinations): Promise<void> {
 function openManage(record: Vaccinations | null): void {
   manageRecord.value = record;
   showManage.value = true;
+}
+
+function openGroupPanel(group: VaccineGroup): void {
+  selectedGroup.value = group;
+  showGroupPanel.value = true;
 }
 
 async function exportJson(): Promise<void> {
@@ -188,15 +228,46 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         </div>
       </div>
 
-      <VaccinationList
-        :records="records"
-        :is-loading="isLoading"
-        :list-token="listToken"
-        @view="openDetail"
-        @edit="openManage"
-        @remove="openDelete"
-        @add-first="openManage(null)"
-      />
+      <!-- Loading state: skeleton card grid -->
+      <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card v-for="i in 3" :key="i">
+          <template #content>
+            <Skeleton height="6rem" />
+          </template>
+        </Card>
+      </div>
+
+      <!-- Empty state (GROUP-05 edge case: zero records total) -->
+      <div v-else-if="records.length === 0" class="flex flex-col items-center py-12 gap-3">
+        <iconify-icon
+          icon="mdi:needle-off"
+          width="48"
+          height="48"
+          style="color: var(--color-brand-primary)"
+        ></iconify-icon>
+        <p class="text-sm" style="color: var(--color-typo-heading)">No vaccination records yet.</p>
+        <Button
+          label="Add your first vaccination"
+          icon="pi pi-plus"
+          size="small"
+          @click="openManage(null)"
+        />
+      </div>
+
+      <!-- Grouped card grid (GROUP-04, GROUP-05, D-03) -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <VaccinationGroupCard
+          v-for="group in groupedVaccinations"
+          :key="group.vaccineType"
+          :vaccine-type="group.vaccineType"
+          :records="group.records"
+          :latest-record="group.latestRecord"
+          :list-token="listToken"
+          @click="openGroupPanel(group)"
+        />
+      </div>
+
+      <!-- Drawer placeholder — wired in Plan 2 (06-02-PLAN.md) -->
 
       <!-- D-08: single ConfirmDialog instance for delete confirmation -->
       <ConfirmDialog />
