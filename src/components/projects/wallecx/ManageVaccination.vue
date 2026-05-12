@@ -47,7 +47,7 @@ const schema = z.object({
   ]).refine((v) => v !== null && v !== undefined && v !== "", {
     message: "Date administered is required.",
   }),
-  dose_number: z.number().int().min(1, { message: "Dose number must be between 1 and 20." }).max(20, { message: "Dose number must be between 1 and 20." }).optional().nullable(),
+  dose_number: z.number().int().min(0, { message: "Dose number must be between 0 and 20." }).max(20, { message: "Dose number must be between 0 and 20." }).optional().nullable(),
   lot_number: z.string().optional(),
   manufacturer: z.string().optional(),
   location: z.string().optional(),
@@ -239,7 +239,7 @@ function onHide(): void {
       <!-- dose_number (optional, InputNumber per discretion decision in RESEARCH.md) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Dose Number</label>
-        <InputNumber name="dose_number" fluid :min="1" :max="20" :show-buttons="false" :disabled="isSaving" />
+        <InputNumber name="dose_number" fluid :min="0" :max="20" :show-buttons="false" :disabled="isSaving" />
         <Message v-if="$form.dose_number?.invalid" severity="error" size="small" variant="simple">
           {{ $form.dose_number.error?.message }}
         </Message>
