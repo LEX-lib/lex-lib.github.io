@@ -234,7 +234,11 @@ Plans:
 4. User clicks a record row in the group panel and the existing `VaccinationDetail.vue` dialog opens showing the full record — all fields and the attachment preview — without any changes to that dialog's own behavior.
 5. An empty state is visible (no group cards shown, or a friendly message) when the user has no vaccination records at all.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — VaccinationGroupCard.vue + groupedVaccinations computed + card grid in WallecxApp.vue (GROUP-04, GROUP-05)
+- [ ] 06-02-PLAN.md — VaccinationGroupPanel.vue + Drawer wiring in WallecxApp.vue (GROUP-06, GROUP-07)
 
 **UI hint**: yes
 
@@ -275,8 +279,8 @@ All 7 v1.1 requirements are mapped to exactly one phase. No orphans.
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
-| 6. Grouped Card View & Group Detail Panel | 0/TBD | Not started | - |
+| 6. Grouped Card View & Group Detail Panel | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Phase 5 complete (GROUP-01, GROUP-02, GROUP-03 verified)*
+*Last updated: 2026-05-12 — Phase 6 planned (2 plans: 06-01, 06-02)*
