@@ -138,8 +138,8 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Vitest vaccinationMapper.spec.ts: field-strip + id-refresh contract tests (first repo test) (WRITE-09)
-- [ ] 03-02-PLAN.md — ManageVaccination.vue shell: Dialog, Form + zodResolver, all 7 fields, FileUpload MIME/size validation, isSaving guard (WRITE-01, WRITE-02, WRITE-07)
-- [ ] 03-03-PLAN.md — ManageVaccination.vue EXIF strip pipeline + onSubmit: canvas re-encode, imageCompression, create Object.assign, update with mapper (WRITE-03, WRITE-04, WRITE-05)
+- [x] 03-02-PLAN.md — ManageVaccination.vue shell: Dialog, Form + zodResolver, all 7 fields, FileUpload MIME/size validation, isSaving guard (WRITE-01, WRITE-02, WRITE-07)
+- [x] 03-03-PLAN.md — ManageVaccination.vue EXIF strip pipeline + onSubmit: canvas re-encode, imageCompression, create Object.assign, update with mapper (WRITE-03, WRITE-04, WRITE-05)
 - [ ] 03-04-PLAN.md — WallecxApp.vue wiring + VaccinationList.vue enable: header button, empty-state CTA, edit/remove handlers, ConfirmDialog delete flow (WRITE-06, WRITE-07, WRITE-08)
 
 **UI hint**: yes
@@ -190,7 +190,7 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
-| 3. Write Path | 1/4 | In progress | - |
+| 3. Write Path | 3/4 | In progress | - |
 | 4. Discovery & Polish | 0/0 | Not started | - |
 
 ---
