@@ -3,38 +3,38 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-11T06:00:00.000Z"
+last_updated: "2026-05-12T00:00:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 13
+  total_plans: 17
   completed_plans: 9
   percent: 60
 ---
 
 # Project State
 
-**Last updated:** 2026-05-11 (Phase 2 complete — human UAT passed 6/6, READ-06 dropped)
+**Last updated:** 2026-05-12 (Phase 3 planned — 4 plans created, ready to execute)
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx milestone (Phase 1: Vaccination Records)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 3 (Write Path) — ready to discuss/plan.
+**Current focus:** Phase 3 (Write Path) — ready to execute.
 
 ## Current Position
 
 **Milestone:** Wallecx (Phase 1 of the broader personal records vault)
-**Phase:** Phase 3 — Write Path (Create / Edit / Delete) — not started
-**Plan:** 0 of TBD
-**Status:** Phase 2 complete — `/gsd-discuss-phase 3` to begin next phase
-**Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██████████] 100% (Phase 2)
+**Phase:** Phase 3 — Write Path (Create / Edit / Delete) — Ready to execute
+**Plan:** 0 of 4
+**Status:** Phase 3 planned (4 plans, 3 waves) — `/gsd-execute-phase 3` to begin
+**Progress:** [██████████] 100% (Phase 0) | [██████████] 100% (Phase 1) | [██████████] 100% (Phase 2) | [░░░░░░░░░░] 0% (Phase 3)
 
 ```
 [████████████████░░░░] 60% (plans 0–2 done, phases 3–4 pending)
 Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
-(Phase 0: 2/2 ✓, Phase 1: 3/3 ✓, Phase 2: 4/4 ✓)
+(Phase 0: 2/2 ✓, Phase 1: 3/3 ✓, Phase 2: 4/4 ✓, Phase 3: 0/4)
 ```
 
 ## Roadmap Snapshot
@@ -44,7 +44,7 @@ Phase 0  Phase 1  Phase 2  Phase 3  Phase 4
 | 0 | Pre-Wallecx Cleanup | Complete | 3 (CLEAN-01..03) |
 | 1 | Backend + Frontend Foundation | Complete | 10 (BACK-01..05, FRONT-01..05) |
 | 2 | Read Path (List + Detail + Preview) | Complete | 6 (READ-01..05, READ-07; READ-06 dropped) |
-| 3 | Write Path (Create / Edit / Delete) | Not started | 9 (WRITE-01..09) |
+| 3 | Write Path (Create / Edit / Delete) | Ready to execute | 9 (WRITE-01..09) |
 | 4 | Discovery & Polish | Not started | 5 (POLISH-01..05) |
 
 Coverage: 33 / 34 v1 requirements mapped (READ-06 dropped). No orphans.
@@ -103,13 +103,16 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-11T06:00:00.000Z
+**Last session:** 2026-05-12T00:00:00.000Z
 
-**Next session entry point:** Plan Phase 3 — `/gsd-discuss-phase 3`
+**Next session entry point:** Execute Phase 3 — `/gsd-execute-phase 3`
 
 **Files of interest for the next session:**
 
-- `.planning/ROADMAP.md` — Phase 3 requirements (WRITE-01..09)
+- `.planning/phases/03-write-path/03-01-PLAN.md` — Mapper spec (Wave 1, parallel)
+- `.planning/phases/03-write-path/03-02-PLAN.md` — ManageVaccination shell (Wave 1, parallel)
+- `.planning/phases/03-write-path/03-03-PLAN.md` — EXIF pipeline + submit (Wave 2)
+- `.planning/phases/03-write-path/03-04-PLAN.md` — WallecxApp wiring + delete flow (Wave 3, human checkpoint)
 - `.planning/phases/02-read-path/02-REVIEW.md` — 3 warnings (WR-01 stale token, WR-02 thumbUrl guard, WR-03 dialog token-less) still open; consider `/gsd-code-review-fix 2` before or during Phase 3
 
 ---
