@@ -37,10 +37,7 @@ pnpm-lock.yaml
 # Optional: ignore build cache
 .cache/
 # Optional: ignore test output
-*.test.js
-*.spec.js
-*.test.ts
-*.spec.ts
+# Note: *.spec.ts and *.test.ts intentionally NOT ignored — test files must be tracked in git
 # Optional: ignore output from Vite
 vite.svg
 
