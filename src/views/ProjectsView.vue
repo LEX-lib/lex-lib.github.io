@@ -47,6 +47,15 @@ const projects = ref<Project[]>([
     icon: "mdi:api",
     tags: ["Vue 3", "Fetch API"],
   },
+  {
+    title: "Wallecx",
+    description:
+      "A personal health records vault. Securely store and retrieve your vaccination records — including card scans — with per-user privacy enforced server-side.",
+    link: "/projects/wallecx",
+    status: "WIP",
+    icon: "mdi:shield-check",
+    tags: ["Vue 3", "PocketBase", "Auth", "Privacy"],
+  },
 ]);
 </script>
 
