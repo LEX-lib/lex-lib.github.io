@@ -7,6 +7,7 @@ import { pb } from "@/lib/pocketbase";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
 import ManageVaccination from "./ManageVaccination.vue";
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
+import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 
 // --- STATE ---
 const records = ref<Vaccinations[]>([]);
@@ -267,7 +268,22 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         />
       </div>
 
-      <!-- Drawer placeholder — wired in Plan 2 (06-02-PLAN.md) -->
+      <!-- Drawer for group detail panel (GROUP-06, D-01: slides from right) -->
+      <Drawer
+        v-model:visible="showGroupPanel"
+        position="right"
+        :header="selectedGroup?.vaccineType ?? ''"
+        :style="{ width: '30rem' }"
+        :breakpoints="{ '641px': '92vw' }"
+        @hide="selectedGroup = null"
+      >
+        <VaccinationGroupPanel
+          v-if="selectedGroup"
+          :records="selectedGroup.records"
+          :list-token="listToken"
+          @view="openDetail"
+        />
+      </Drawer>
 
       <!-- D-08: single ConfirmDialog instance for delete confirmation -->
       <ConfirmDialog />
