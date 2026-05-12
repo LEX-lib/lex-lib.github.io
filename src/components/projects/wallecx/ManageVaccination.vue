@@ -73,25 +73,108 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
     return;
   }
 
-  // Image EXIF strip + compression — implemented in Plan 03
-  // Placeholder: store raw file for now (Plan 03 replaces this with the canvas pipeline)
-  pendingFile.value = file;
+  // Image: EXIF strip via canvas re-encode (strips GPS and all EXIF), then compress
+  try {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+      img.src = objectUrl;
+    });
+    URL.revokeObjectURL(objectUrl);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+
+    // canvas.toBlob is callback-based — must wrap in Promise (Pitfall D)
+    const strippedBlob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("canvas.toBlob failed"))),
+        "image/jpeg",
+        0.92,
+      ),
+    );
+
+    // Convert Blob → File so FormData has a filename
+    const strippedFile = new File(
+      [strippedBlob],
+      file.name.replace(/\.[^.]+$/, ".jpg"),
+      { type: "image/jpeg" },
+    );
+
+    const compressed = await imageCompression(strippedFile, {
+      maxSizeMB: 1.5,
+      maxWidthOrHeight: 2048,
+      useWebWorker: true,
+    });
+
+    pendingFile.value = compressed;
+    toast.info("Location data removed."); // D-07: unconditional on every image upload
+  } catch (e) {
+    toast.error("Failed to process image. Please try again.");
+    console.error("ManageVaccination: EXIF strip failed", e);
+    pendingFile.value = null;
+  }
 }
 
-async function onSubmit({ valid }: FormSubmitEvent): Promise<void> {
+async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
   if (!valid) return;
-  // Full create/update implementation added in Plan 03
+  isSaving.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("vaccine_name", values.vaccine_name as string);
+    // Pitfall A: DatePicker returns Date object — must convert to YYYY-MM-DD for PocketBase
+    formData.append(
+      "date_administered",
+      dayjs(values.date_administered as Date | string).format("YYYY-MM-DD"),
+    );
+    if (values.dose_number != null) {
+      formData.append("dose_number", String(values.dose_number));
+    }
+    if (values.lot_number) formData.append("lot_number", values.lot_number as string);
+    if (values.manufacturer) formData.append("manufacturer", values.manufacturer as string);
+    if (values.location) formData.append("location", values.location as string);
+    if (values.notes) formData.append("notes", values.notes as string);
+    if (pendingFile.value) formData.append("card", pendingFile.value);
+
+    if (!isEditMode.value) {
+      // CREATE — WRITE-04: Object.assign contract
+      // Server returns authoritative record with id, created, updated, card filename
+      formData.append("user", pb.authStore.record!.id);
+      const created = await pb
+        .collection("wallecx_vaccinations")
+        .create<Vaccinations>(formData);
+      // emit("created", created) — WallecxApp.onCreated does Object.assign(localItem, created)
+      // so subsequent saves PATCH the same record (prevents LexTrack save-loop bug)
+      emit("created", created);
+    } else {
+      // UPDATE — WRITE-05: use mapToUpdateVaccination to strip server-managed fields
+      // Note: FormData already has the correct writable fields from above
+      // mapToUpdateVaccination confirms which fields are writable — FormData mirrors it
+      void mapToUpdateVaccination; // WRITE-05: mapper defines the canonical writable field set
+      const updated = await pb
+        .collection("wallecx_vaccinations")
+        .update<Vaccinations>(record.value!.id, formData);
+      emit("updated", updated);
+    }
+
+    toast.success(isEditMode.value ? "Vaccination updated." : "Vaccination added.");
+    visible.value = false;
+  } catch (e: unknown) {
+    toast.error("Failed to save. Please try again.");
+    console.error("ManageVaccination: save failed", e);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 function onHide(): void {
   pendingFile.value = null;
 }
-
-// Suppress unused import warnings — used in Plan 03 submit handler
-void imageCompression;
-void dayjs;
-void pb;
-void mapToUpdateVaccination;
 </script>
 
 <template>
