@@ -17,6 +17,17 @@ Each authenticated user can save and retrieve their own vaccination records — 
 - [x] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test — completed 2026-05-12
 - [x] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off — completed 2026-05-12
 
+---
+
+## Milestone v1.1 — Vaccine Grouping
+
+**Milestone goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
+
+- [ ] **Phase 5: Schema, Types & Form Field** — Add vaccine_type to the PocketBase collection, TypeScript interface, and the create/edit form
+- [ ] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing full-detail dialog
+
+---
+
 ## Phase Details
 
 ### Phase 0: Pre-Wallecx Cleanup
@@ -178,7 +189,56 @@ Plans:
 
 ---
 
+### Phase 5: Schema, Types & Form Field
+
+**Goal**: The vaccination record carries a vaccine_type field end-to-end — from PocketBase collection through the TypeScript interface to the create/edit form — so every new and edited record has a categorizable type before the grouped view is built.
+
+**Depends on**: Phase 4
+
+**Requirements**:
+- GROUP-01 — `wallecx_vaccinations` PocketBase collection gains a `vaccine_type` text field (optional in schema; existing records keep empty string — no data loss)
+- GROUP-02 — `Vaccinations` TypeScript interface in `src/types/wallecx/vaccinations/types.d.ts` gains `vaccine_type: string`
+- GROUP-03 — User can enter `vaccine_type` (free text) when creating or editing a vaccination record; the field is required — the form blocks submit if empty
+
+**Success Criteria** (what must be TRUE):
+1. The `wallecx_vaccinations` PocketBase collection has a `vaccine_type` text field visible in the admin UI; existing records show an empty string and are not deleted or corrupted.
+2. `npm run type-check` passes with `vaccine_type: string` on the `Vaccinations` interface; the `AddVaccination` type includes the field as required.
+3. User opens the create dialog and sees a "Vaccine Type" text input; submitting the form without filling it in surfaces a validation error and blocks submission.
+4. User fills in all fields including Vaccine Type, saves, and the new record appears with the entered `vaccine_type` value retrievable from PocketBase.
+5. User edits an existing record, changes the `vaccine_type` value, saves, and the updated value is persisted to PocketBase without touching other fields.
+
+**Plans**: TBD
+
+---
+
+### Phase 6: Grouped Card View & Group Detail Panel
+
+**Goal**: Users see their vaccination records organized as one card per vaccine type — with dose count, last administered date, and thumbnail — and can click into a group to see individual records, then open the existing detail dialog for any record.
+
+**Depends on**: Phase 5
+
+**Requirements**:
+- GROUP-04 — Wallecx home view displays one card per `vaccine_type` group showing: type name, number of records in the group, most recent `date_administered`, and a thumbnail of the latest card scan (if present)
+- GROUP-05 — Records with an empty `vaccine_type` are grouped under a single "Uncategorized" card
+- GROUP-06 — User can click a vaccine group card to open a detail panel listing all records in that group (vaccine brand/name, date administered, dose number, lot number)
+- GROUP-07 — User can click a record row inside the group detail panel to open the existing full-detail dialog (`VaccinationDetail.vue`)
+
+**Success Criteria** (what must be TRUE):
+1. User navigates to `/projects/wallecx` and sees group cards instead of the flat DataTable; each card shows the vaccine type name, number of records, the most recent administration date, and a thumbnail of the latest card scan if one exists.
+2. A user whose records include entries with no `vaccine_type` sees a single "Uncategorized" card grouping all those records alongside their typed group cards.
+3. User clicks any group card and a panel opens listing every record in that group with vaccine name, date administered, dose number, and lot number visible per row.
+4. User clicks a record row in the group panel and the existing `VaccinationDetail.vue` dialog opens showing the full record — all fields and the attachment preview — without any changes to that dialog's own behavior.
+5. An empty state is visible (no group cards shown, or a friendly message) when the user has no vaccination records at all.
+
+**Plans**: TBD
+
+**UI hint**: yes
+
+---
+
 ## Coverage
+
+### v1.0 Coverage
 
 All 34 v1 requirements are mapped to exactly one phase. No orphans.
 
@@ -191,6 +251,16 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | Phase 4 | POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05 | 5 |
 | **Total** | | **34 / 34** |
 
+### v1.1 Coverage
+
+All 7 v1.1 requirements are mapped to exactly one phase. No orphans.
+
+| Phase | Requirements | Count |
+|-------|--------------|-------|
+| Phase 5 | GROUP-01, GROUP-02, GROUP-03 | 3 |
+| Phase 6 | GROUP-04, GROUP-05, GROUP-06, GROUP-07 | 4 |
+| **Total** | | **7 / 7** |
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -200,7 +270,9 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
+| 5. Schema, Types & Form Field | 0/TBD | Not started | - |
+| 6. Grouped Card View & Group Detail Panel | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Phase 4 planned (4 plans, 2 waves)*
+*Last updated: 2026-05-12 — v1.1 (Vaccine Grouping) roadmap appended: Phase 5 and Phase 6 added*

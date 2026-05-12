@@ -63,6 +63,28 @@ Hardening that must land before sensitive Wallecx data exists. Surfaced by `.pla
 - [ ] **POLISH-04**: A Vitest route-guard test `src/router/__tests__/guard.spec.ts` covers the `requiresAuth` redirect behavior on `/projects/wallecx` (unauthenticated → `/login?redirect=/projects/wallecx`)
 - [ ] **POLISH-05**: The "Looks Done But Isn't" checklist from `.planning/research/PITFALLS.md` is run through and every item is signed off (cross-user isolation, file-orphan check, save-loop verification, etc.)
 
+## v1.1 Requirements
+
+Requirements for the Vaccine Grouping milestone. Phases continue numbering from v1.0 (last was Phase 4, so v1.1 starts at Phase 5).
+
+### Schema & Types
+
+- [ ] **GROUP-01**: The `wallecx_vaccinations` PocketBase collection gains a `vaccine_type` text field (optional in schema; existing records keep empty string — no data loss)
+- [ ] **GROUP-02**: The `Vaccinations` TypeScript interface in `src/types/wallecx/vaccinations/types.d.ts` gains `vaccine_type: string`
+
+### Create / Edit Form
+
+- [ ] **GROUP-03**: User can enter `vaccine_type` (free text) when creating or editing a vaccination record; the field is required — the form blocks submit if empty
+
+### Grouped Card View
+
+- [ ] **GROUP-04**: The Wallecx home view displays one card per `vaccine_type` group showing: type name, number of records in the group, most recent `date_administered`, and a thumbnail of the latest card scan (if present)
+- [ ] **GROUP-05**: Records with an empty `vaccine_type` are grouped under a single "Uncategorized" card
+- [ ] **GROUP-06**: User can click a vaccine group card to open a detail panel listing all records in that group (vaccine brand/name, date administered, dose number, lot number)
+- [ ] **GROUP-07**: User can click a record row inside the group detail panel to open the existing full-detail dialog (`VaccinationDetail.vue`)
+
+---
+
 ## v2 Requirements
 
 Deferred to future Wallecx phases. Tracked but not in this roadmap.
@@ -159,12 +181,23 @@ Which phase covers which requirement.
 | POLISH-03 | Phase 4 | Pending |
 | POLISH-04 | Phase 4 | Pending |
 | POLISH-05 | Phase 4 | Pending |
+| GROUP-01 | Phase 5 | Pending |
+| GROUP-02 | Phase 5 | Pending |
+| GROUP-03 | Phase 5 | Pending |
+| GROUP-04 | Phase 6 | Pending |
+| GROUP-05 | Phase 6 | Pending |
+| GROUP-06 | Phase 6 | Pending |
+| GROUP-07 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 34 total
+- v1.0 requirements: 34 total
 - Mapped to phases: 34
+- Unmapped: 0 ✓
+
+- v1.1 requirements: 7 total
+- Mapped to phases: 7
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-10*
-*Last updated: 2026-05-10 after roadmap traceability fill*
+*Last updated: 2026-05-12 — v1.1 traceability added (GROUP-01..07 mapped to Phase 5 and Phase 6)*

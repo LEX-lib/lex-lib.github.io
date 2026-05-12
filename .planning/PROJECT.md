@@ -1,5 +1,17 @@
 # Lexarium
 
+## Current Milestone: v1.1 Vaccine Grouping
+
+**Goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
+
+**Target features:**
+- New `vaccine_type` free-text field (required on create/edit) added to PocketBase collection and the create/edit form
+- Grouped card view replacing the flat DataTable — one card per vaccine type showing type name, dose count, last administered date, and thumbnail of latest card scan
+- Group detail panel — clicking a card lists all records for that type; each row opens the existing full-detail dialog
+- "Uncategorized" catch-all group for existing records without a `vaccine_type`
+
+---
+
 ## What This Is
 
 Lexarium is a personal Vue 3 SPA portfolio hub deployed on Vercel that hosts multiple mini-apps under `/projects/`. It currently bundles four apps (LexTrack, Larga, Gift Exchange / MonitoX, API Playground) and is now adding **Wallecx** — a personal records vault. The first slice of Wallecx is a vaccination records tracker so the owner (and other authenticated users) can save and view their vaccination history anytime.
@@ -34,15 +46,15 @@ If everything else fails, this single capability must work.
 - ✓ Standard vaccination fields: `vaccine_name`, `date_administered`, `dose_number`, `lot_number`, `location`, `manufacturer`, `notes`, `user` — all locked and indexed
 - ✓ `card` file field for vaccination card attachment (image or PDF) — `protected: true`, 10 MB cap, MIME allowlist, thumbs configured
 
-### Active
+### Active (v1.1)
 
-<!-- Wallecx Phases 2–4 (read path, write path, polish). Hypotheses until shipped. -->
+<!-- Vaccine Grouping milestone — hypotheses until shipped. -->
 
-- [ ] List view of the user's vaccination records, sorted by date administered (most recent first)
-- [ ] Detail view (click a row) showing all fields plus the attached card image/PDF
-- [ ] Create / edit / delete a vaccination record (basic CRUD) with PrimeVue dialogs, matching LexTrack patterns
-- [ ] Wallecx surfaces in the existing projects directory page (`src/views/ProjectsView.vue`) alongside the other mini-apps
-- [ ] Visual identity matches the existing Lexarium navy/amber + Rubik design system; no bespoke palette
+- [ ] `vaccine_type` free-text field added to `wallecx_vaccinations` collection and the create/edit form (required on new/edited records)
+- [ ] Wallecx home view groups records by vaccine type — one card per type showing name, dose count, last date, thumbnail
+- [ ] Records with no `vaccine_type` surface in an "Uncategorized" group card
+- [ ] Clicking a group card opens a detail panel listing all records in that group
+- [ ] Each record row in the group panel opens the existing full-detail dialog
 
 ### Out of Scope
 
@@ -120,4 +132,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-11 — Phase 1 (Backend + Frontend Foundation) complete; BACK-01..05 + FRONT-01..05 satisfied; wallecx_vaccinations collection live with per-user isolation, WallecxApp.vue shell reachable at /projects/wallecx*
+*Last updated: 2026-05-12 — Milestone v1.0 (Wallecx vaccination records) complete; all 5 phases shipped. Milestone v1.1 (Vaccine Grouping) started — vaccine_type field, grouped card view, group detail panel.*
