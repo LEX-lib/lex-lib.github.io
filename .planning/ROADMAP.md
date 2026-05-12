@@ -24,7 +24,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 **Milestone goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
 
 - [x] **Phase 5: Schema, Types & Form Field** — Add vaccine_type to the PocketBase collection, TypeScript interface, and the create/edit form — completed 2026-05-12
-- [ ] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing full-detail dialog
+- [x] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing full-detail dialog — completed 2026-05-12
 
 ---
 

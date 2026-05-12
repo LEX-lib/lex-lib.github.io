@@ -78,10 +78,10 @@ Requirements for the Vaccine Grouping milestone. Phases continue numbering from 
 
 ### Grouped Card View
 
-- [ ] **GROUP-04**: The Wallecx home view displays one card per `vaccine_type` group showing: type name, number of records in the group, most recent `date_administered`, and a thumbnail of the latest card scan (if present)
-- [ ] **GROUP-05**: Records with an empty `vaccine_type` are grouped under a single "Uncategorized" card
-- [ ] **GROUP-06**: User can click a vaccine group card to open a detail panel listing all records in that group (vaccine brand/name, date administered, dose number, lot number)
-- [ ] **GROUP-07**: User can click a record row inside the group detail panel to open the existing full-detail dialog (`VaccinationDetail.vue`)
+- [x] **GROUP-04**: The Wallecx home view displays one card per `vaccine_type` group showing: type name, number of records in the group, most recent `date_administered`, and a thumbnail of the latest card scan (if present) — Validated in Phase 6: Grouped Card View & Group Detail Panel
+- [x] **GROUP-05**: Records with an empty `vaccine_type` are grouped under a single "Uncategorized" card — Validated in Phase 6: Grouped Card View & Group Detail Panel
+- [x] **GROUP-06**: User can click a vaccine group card to open a detail panel listing all records in that group (vaccine brand/name, date administered, dose number, lot number) — Validated in Phase 6: Grouped Card View & Group Detail Panel
+- [x] **GROUP-07**: User can click a record row inside the group detail panel to open the existing full-detail dialog (`VaccinationDetail.vue`) — Validated in Phase 6: Grouped Card View & Group Detail Panel
 
 ---
 
