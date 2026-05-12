@@ -166,9 +166,17 @@ Plans:
 4. `npm run test:unit` runs `guard.spec.ts` covering the `/projects/wallecx` redirect on unauthenticated access; the test passes alongside the Phase 3 mapper test.
 5. Every item in `research/PITFALLS.md`'s "Looks Done But Isn't" checklist (cross-user isolation, file-orphan check, save-loop verification, EXIF strip, PDF.js version pin, no `v-html`, no template-literal filters, save-button disable, `VITE_LOGIN_*` absence, route guard, mapper test, etc.) is signed off in writing.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Code review fixes: HIGH-01/02 (ManageVaccination.vue null assertion + stale pendingFile), WR-01/02/03 (WallecxApp.vue listToken interval, VaccinationList.vue thumbUrl guard, openDetail abort), MEDIUM-03 (date-sorted onCreated), SpeedInsights gate (code quality fixes supporting POLISH-02 and POLISH-05)
+- [ ] 04-02-PLAN.md — Wallecx tile in ProjectsView.vue + design token audit + 04-CHECKLIST.md foundation (POLISH-01, POLISH-02)
+- [ ] 04-03-PLAN.md — JSON export button in WallecxApp.vue: exportJson() + isExporting guard + Download records Button (POLISH-03)
+- [ ] 04-04-PLAN.md — Route guard Vitest spec + POLISH-05 checklist final sign-off (POLISH-04, POLISH-05)
 
 **UI hint**: yes
+
+---
 
 ## Coverage
 
@@ -191,8 +199,8 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
-| 4. Discovery & Polish | 0/0 | Not started | - |
+| 4. Discovery & Polish | 0/4 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Phase 3 complete (4/4 plans, WRITE-01..09 all implemented)*
+*Last updated: 2026-05-12 — Phase 4 planned (4 plans, 2 waves)*
