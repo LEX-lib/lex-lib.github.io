@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Vaccine Grouping
+milestone: v1.2
+milestone_name: Search, Sort & View Toggle
 status: in_progress
 last_updated: "2026-05-12T00:00:00.000Z"
 progress:
-  total_phases: 0
-  completed_phases: 0
+  total_phases: 9
+  completed_phases: 7
   total_plans: 0
   completed_plans: 0
   percent: 0
@@ -14,22 +14,22 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-12 — Milestone v1.2 started: Search, Sort & View Toggle. Defining requirements and roadmap.
+**Last updated:** 2026-05-12 — Milestone v1.2 roadmap created: Phase 7 (Toolbar — Search & Sort) and Phase 8 (View Toggle).
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx milestone v1.2 (Search, Sort & View Toggle)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 6 — Grouped Card View & Group Detail Panel (GROUP-04, GROUP-05, GROUP-06, GROUP-07).
+**Current focus:** Phase 6 — Grouped Card View & Group Detail Panel (GROUP-04, GROUP-05, GROUP-06, GROUP-07). Phases 7 and 8 are queued for v1.2.
 
 ## Current Position
 
 **Milestone:** v1.2 — Search, Sort & View Toggle
-**Phase:** Not started (defining roadmap)
+**Phase:** Phase 6 (in progress — plans not yet executed)
 **Plan:** —
-**Status:** Defining requirements and roadmap
-**Last activity:** 2026-05-12 — Milestone v1.2 started (SEARCH-01/02, SORT-01, VIEW-01/02)
+**Status:** Phase 6 planned; Phases 7 and 8 roadmapped
+**Last activity:** 2026-05-12 — v1.2 roadmap created (SEARCH-01/02, SORT-01, VIEW-01/02 mapped to Phase 7 and Phase 8)
 
 ## Roadmap Snapshot
 
@@ -41,16 +41,19 @@ progress:
 | 3 | Write Path (Create / Edit / Delete) | Complete | 9 (WRITE-01..09) |
 | 4 | Discovery & Polish | Complete | 5 (POLISH-01..05) |
 | 5 | Schema, Types & Form Field | Complete | 3 (GROUP-01, GROUP-02, GROUP-03) |
-| 6 | Grouped Card View & Group Detail Panel | Complete | 4 (GROUP-04, GROUP-05, GROUP-06, GROUP-07) |
+| 6 | Grouped Card View & Group Detail Panel | Not started | 4 (GROUP-04, GROUP-05, GROUP-06, GROUP-07) |
+| 7 | Toolbar — Search & Sort | Not started | 3 (SEARCH-01, SEARCH-02, SORT-01) |
+| 8 | View Toggle | Not started | 2 (VIEW-01, VIEW-02) |
 
 v1.0 Coverage: 34 / 34 requirements mapped. No orphans.
 v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
+v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 
 ## Performance Metrics
 
 - Phases shipped: 7 (Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5, Phase 6)
 - Plans shipped: 19 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03, 04-04, 06-01, 06-02)
-- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1
+- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 0 / 5 v1.2
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
 
 ## Accumulated Context
@@ -72,6 +75,14 @@ v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
 - **Phase numbering continues from v1.0.** v1.0 ended at Phase 4; v1.1 starts at Phase 5.
 - **Phase 6 is UI-heavy.** Grouped card view replaces the flat DataTable; GROUP-07 deliberately reuses the existing `VaccinationDetail.vue` dialog without modification.
 
+### Key Decisions (v1.2 roadmap)
+
+- **2 phases for v1.2.** SEARCH-01/02 and SORT-01 land in Phase 7 (toolbar component + computed filter/sort logic — query-like operations that compose together); VIEW-01/02 land in Phase 8 (presentation-layer layout toggle + session persistence — a separable concern with a clean delivery boundary).
+- **No new PocketBase queries.** All v1.2 requirements are pure client-side computed/ref changes over the existing `groupedVaccinations` computed in `WallecxApp.vue`. No new runtime deps required.
+- **VaccinationGroupCard reused unchanged.** VIEW-02 explicitly prohibits modifying the card component — only the grid layout class on the container changes.
+- **View persistence via sessionStorage.** VIEW-01 specifies browser session persistence; sessionStorage is the natural fit (resets on new tab/window, survives in-tab navigation).
+- **Phase numbering continues from v1.1.** v1.1 ended at Phase 6; v1.2 starts at Phase 7.
+
 ### Decisions from 00-01 Execution
 
 - **lint:secrets uses grep exit codes.** Exit 0 = match found = alert (VITE_LOGIN_ reintroduced); exit 1 = no match = clean. npm run treats exit 1 as failure, which is the intended alerting behavior. No wrapper script needed.
@@ -92,8 +103,8 @@ v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
 
 ### Decisions Pending
 
-- Exact plan count for Phase 5 (TBD — determined at planning time).
-- Exact plan count for Phase 6 (TBD — determined at planning time; likely 2 plans: grouped card component + group detail panel wiring).
+- Exact plan count for Phase 7 (TBD — determined at planning time; likely 2 plans: toolbar component + computed extensions).
+- Exact plan count for Phase 8 (TBD — determined at planning time; likely 1 plan: view toggle button + sessionStorage persistence).
 
 ### Open Todos
 
@@ -103,13 +114,14 @@ v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
 - ~~Execute Phase 3 Plan 04: `03-04-PLAN.md`~~ — DONE (b9691c2, cf8cfd5)
 - Track whether the chosen CSP-narrow update for Phase 2 needs a Vite recipe research pass per `research/SUMMARY.md` "Research Flags."
 - ~~`.planning/phases/02-read-path/02-REVIEW.md` — 3 warnings (WR-01 stale token, WR-02 thumbUrl guard, WR-03 dialog token-less) still open~~ — DONE (all three fixed inline during Phase 4 execution; 02-REVIEW.md marked resolved 2026-05-12)
-- Plan Phase 5: Schema, Types & Form Field (GROUP-01, GROUP-02, GROUP-03) — next action.
+- Execute Phase 6 plans: `06-01-PLAN.md` (VaccinationGroupCard.vue + groupedVaccinations), `06-02-PLAN.md` (VaccinationGroupPanel.vue + Drawer wiring) — next action.
+- Plan Phase 7 via `/gsd-plan-phase 7` after Phase 6 is complete.
 
 ### Active Blockers
 
 None.
 
-### Risk Register (carried into v1.1 planning)
+### Risk Register (carried into v1.2 planning)
 
 - **Pitfall 1 (CRITICAL):** per-user isolation only client-side — gated by Phase 1 BACK-03 + BACK-05 smoke test. RESOLVED.
 - **Pitfall 2 (HIGH):** filter-string injection — addressed in Phase 3 WRITE-08 and reinforced in mapper conventions. RESOLVED.
@@ -120,20 +132,21 @@ None.
 - **Pitfall 7 (HIGH privacy):** EXIF GPS leak — addressed in Phase 3 WRITE-03. RESOLVED.
 - **Pitfall 13 (CRITICAL operational):** dev creds in production bundle — addressed in Phase 0 (CLEAN-01..03). RESOLVED.
 - **v1.1 NEW — schema migration with no data loss:** vaccine_type added as optional in PocketBase; existing records default to empty string. Verify no records deleted or corrupted after field addition.
+- **v1.2 NEW — Uncategorized pinning under all sort modes:** SORT-01 requires Uncategorized always pinned last. The computed sort logic must handle this as a post-sort fixup, not inline, to avoid coupling with the sort direction.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12 — Phase 5 complete. GROUP-01 (PocketBase field), GROUP-02 (TypeScript interface), GROUP-03 (form field + Zod validation) all verified. 3 out-of-scope form bugs fixed during UAT (initialValues undefined, dose number 0).
+**Last session:** 2026-05-12 — v1.2 roadmap created. Phase 7 (Toolbar — Search & Sort) and Phase 8 (View Toggle) appended to ROADMAP.md. All 5 v1.2 requirements mapped with no orphans.
 
-**Next session entry point:** Plan Phase 6 via `/gsd-discuss-phase 6` or `/gsd-plan-phase 6` — covers GROUP-04 (grouped card view), GROUP-05 (Uncategorized card), GROUP-06 (group detail panel), GROUP-07 (row → VaccinationDetail.vue).
+**Next session entry point:** Execute Phase 6 plans (`06-01-PLAN.md`, `06-02-PLAN.md`) — VaccinationGroupCard.vue, groupedVaccinations computed, Drawer panel. Then plan Phase 7 via `/gsd-plan-phase 7`.
 
 **Files of interest:**
 
-- `.planning/ROADMAP.md` — v1.1 phases appended (Phase 5, Phase 6)
-- `.planning/REQUIREMENTS.md` — traceability table updated with GROUP-01..07
-- `src/types/wallecx/vaccinations/types.d.ts` — target for GROUP-02 (add vaccine_type: string)
-- `src/components/projects/wallecx/ManageVaccination.vue` — target for GROUP-03 (new form field)
+- `.planning/ROADMAP.md` — v1.2 phases appended (Phase 7, Phase 8)
+- `.planning/REQUIREMENTS.md` — traceability table updated with SEARCH-01/02, SORT-01, VIEW-01/02
+- `.planning/STATE.md` — this file; updated with v1.2 roadmap context
+- `src/components/projects/wallecx/WallecxApp.vue` — target for Phase 7 (computed filter/sort extensions) and Phase 8 (view toggle ref + layout class binding)
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-12 — v1.1 roadmap created (Phase 5 and Phase 6)*
+*Last updated: 2026-05-12 — v1.2 roadmap created (Phase 7: Toolbar — Search & Sort, Phase 8: View Toggle)*

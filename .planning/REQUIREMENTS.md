@@ -208,6 +208,11 @@ Which phase covers which requirement.
 | GROUP-05 | Phase 6 | Pending |
 | GROUP-06 | Phase 6 | Pending |
 | GROUP-07 | Phase 6 | Pending |
+| SEARCH-01 | Phase 7 | Pending |
+| SEARCH-02 | Phase 7 | Pending |
+| SORT-01 | Phase 7 | Pending |
+| VIEW-01 | Phase 8 | Pending |
+| VIEW-02 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 34 total
@@ -218,6 +223,10 @@ Which phase covers which requirement.
 - Mapped to phases: 7
 - Unmapped: 0 ✓
 
+- v1.2 requirements: 5 total
+- Mapped to phases: 5
+- Unmapped: 0 ✓
+
 ---
 *Requirements defined: 2026-05-10*
-*Last updated: 2026-05-12 — v1.1 traceability added (GROUP-01..07 mapped to Phase 5 and Phase 6)*
+*Last updated: 2026-05-12 — v1.2 traceability added (SEARCH-01/02 → Phase 7, SORT-01 → Phase 7, VIEW-01/02 → Phase 8)*

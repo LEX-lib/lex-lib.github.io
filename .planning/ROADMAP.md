@@ -24,7 +24,16 @@ Each authenticated user can save and retrieve their own vaccination records — 
 **Milestone goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
 
 - [x] **Phase 5: Schema, Types & Form Field** — Add vaccine_type to the PocketBase collection, TypeScript interface, and the create/edit form — completed 2026-05-12
-- [x] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing full-detail dialog — completed 2026-05-12
+- [x] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing detail dialog — completed 2026-05-12
+
+---
+
+## Milestone v1.2 — Search, Sort & View Toggle
+
+**Milestone goal:** Add a persistent toolbar above the Wallecx grouped card view so users can filter groups by vaccine name/type, sort them, and switch between grid and list layouts — all via pure client-side computed/ref changes with no new PocketBase queries.
+
+- [ ] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state
+- [ ] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session
 
 ---
 
@@ -244,6 +253,50 @@ Plans:
 
 ---
 
+### Phase 7: Toolbar — Search & Sort
+
+**Goal**: Users can instantly narrow and re-order the grouped card view by typing a search query or choosing a sort option — all filtered and sorted in real-time via computed refs with no additional PocketBase queries.
+
+**Depends on**: Phase 6
+
+**Requirements**:
+- SEARCH-01 — Typing in the search input filters visible group cards in real-time (case-insensitive); a group is shown if its `vaccine_type` contains the query OR any record in the group has a `vaccine_name` containing the query; empty query shows all groups
+- SEARCH-02 — When search yields no matching groups, a distinct "no results" empty state is shown (separate from the zero-records empty state)
+- SORT-01 — Sort control offers 4 options — "Type A–Z" (default), "Type Z–A", "Name A–Z", "Name Z–A"; Uncategorized card is always pinned last regardless of sort direction
+
+**Success Criteria** (what must be TRUE):
+1. User types a partial vaccine name (e.g. "flu") into the search input and the card grid updates in real-time to show only groups where the `vaccine_type` matches or at least one record's `vaccine_name` matches — the search is case-insensitive.
+2. User clears the search input and all groups reappear immediately with no page reload or PocketBase re-fetch.
+3. User searches for a string that matches no group and sees a distinct empty state message (visually different from the zero-records state shown on a fresh account).
+4. User selects "Name A–Z" from the sort control and groups are re-ordered by their latest record's `vaccine_name` alphabetically; selecting "Type Z–A" reverses the type-name order. The "Uncategorized" group remains pinned last in all four sort modes.
+5. Search and sort compose correctly: filtering while a non-default sort is active produces a filtered-and-sorted result, not a reset to default order.
+
+**Plans**: TBD
+**UI hint**: yes
+
+---
+
+### Phase 8: View Toggle
+
+**Goal**: Users can switch the grouped card view between a 2-column grid and a compact single-column list, and that preference is remembered for the remainder of their browser session without any additional data fetching or component changes.
+
+**Depends on**: Phase 7
+
+**Requirements**:
+- VIEW-01 — A view toggle button switches the card area between a 2-column grid (default) and a compact single-column list; the selected view persists for the browser session (localStorage or sessionStorage)
+- VIEW-02 — The compact list view reuses `VaccinationGroupCard` without modification — only the grid layout class changes (`grid-cols-1` replaces `grid-cols-1 sm:grid-cols-2`)
+
+**Success Criteria** (what must be TRUE):
+1. User clicks the view toggle and the card area switches from the 2-column grid to a single-column list; clicking again switches back — `VaccinationGroupCard` renders identically in both layouts with no visual regressions.
+2. User switches to list view, navigates away to another route, and returns to `/projects/wallecx` — the list view is still active (preference persisted via sessionStorage).
+3. A fresh session (new tab or after closing and reopening the browser) always opens in the default 2-column grid view.
+4. Switching view mode while a search filter or non-default sort is active preserves both the filter and the sort — only the layout class changes.
+
+**Plans**: TBD
+**UI hint**: yes
+
+---
+
 ## Coverage
 
 ### v1.0 Coverage
@@ -269,6 +322,16 @@ All 7 v1.1 requirements are mapped to exactly one phase. No orphans.
 | Phase 6 | GROUP-04, GROUP-05, GROUP-06, GROUP-07 | 4 |
 | **Total** | | **7 / 7** |
 
+### v1.2 Coverage
+
+All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
+
+| Phase | Requirements | Count |
+|-------|--------------|-------|
+| Phase 7 | SEARCH-01, SEARCH-02, SORT-01 | 3 |
+| Phase 8 | VIEW-01, VIEW-02 | 2 |
+| **Total** | | **5 / 5** |
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -280,7 +343,9 @@ All 7 v1.1 requirements are mapped to exactly one phase. No orphans.
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
 | 6. Grouped Card View & Group Detail Panel | 0/2 | Not started | - |
+| 7. Toolbar — Search & Sort | 0/? | Not started | - |
+| 8. View Toggle | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Phase 6 planned (2 plans: 06-01, 06-02)*
+*Last updated: 2026-05-12 — Milestone v1.2 phases appended (Phase 7: Search & Sort, Phase 8: View Toggle)*
