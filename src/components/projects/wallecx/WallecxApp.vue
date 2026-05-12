@@ -174,6 +174,10 @@ function onCreated(created: Vaccinations): void {
 function onUpdated(updatedRecord: Vaccinations): void {
   const idx = records.value.findIndex((r) => r.id === updatedRecord.id);
   if (idx !== -1) records.value[idx] = updatedRecord;
+  // Re-sort to keep date_administered descending, so latestRecord (recs[0]) stays accurate
+  records.value.sort((a, b) =>
+    dayjs(b.date_administered).diff(dayjs(a.date_administered))
+  );
 }
 
 function openDelete(record: Vaccinations): void {
