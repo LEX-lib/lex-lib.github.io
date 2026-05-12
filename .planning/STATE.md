@@ -6,30 +6,30 @@ status: in_progress
 last_updated: "2026-05-12T00:00:00.000Z"
 progress:
   total_phases: 2
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-12 — Milestone v1.1 (Vaccine Grouping) roadmap created; Phase 5 and Phase 6 defined.
+**Last updated:** 2026-05-12 — Phase 5 complete: GROUP-01/02/03 verified. Ready for Phase 6.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx milestone v1.1 (Vaccine Grouping)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 5 — Schema, Types & Form Field (GROUP-01, GROUP-02, GROUP-03).
+**Current focus:** Phase 6 — Grouped Card View & Group Detail Panel (GROUP-04, GROUP-05, GROUP-06, GROUP-07).
 
 ## Current Position
 
 **Milestone:** v1.1 — Vaccine Grouping
-**Phase:** Phase 5 — Schema, Types & Form Field
-**Plan:** Not started
-**Status:** Ready to plan Phase 5
-**Last activity:** 2026-05-12 — v1.1 roadmap created (Phase 5 and Phase 6)
+**Phase:** Phase 6 — Grouped Card View & Group Detail Panel
+**Plan:** Not yet planned
+**Status:** Phase 5 complete — ready to plan Phase 6
+**Last activity:** 2026-05-12 — Phase 5 complete (GROUP-01/02/03 verified; 2/2 plans done)
 
 ## Roadmap Snapshot
 
@@ -40,7 +40,7 @@ progress:
 | 2 | Read Path (List + Detail + Preview) | Complete | 6 (READ-01..05, READ-07; READ-06 dropped) |
 | 3 | Write Path (Create / Edit / Delete) | Complete | 9 (WRITE-01..09) |
 | 4 | Discovery & Polish | Complete | 5 (POLISH-01..05) |
-| 5 | Schema, Types & Form Field | Not started | 3 (GROUP-01, GROUP-02, GROUP-03) |
+| 5 | Schema, Types & Form Field | Complete | 3 (GROUP-01, GROUP-02, GROUP-03) |
 | 6 | Grouped Card View & Group Detail Panel | Not started | 4 (GROUP-04, GROUP-05, GROUP-06, GROUP-07) |
 
 v1.0 Coverage: 34 / 34 requirements mapped. No orphans.
@@ -123,9 +123,9 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12 — v1.1 roadmap created. Phase 5 (Schema, Types & Form Field) and Phase 6 (Grouped Card View & Group Detail Panel) defined. 7 / 7 v1.1 requirements mapped.
+**Last session:** 2026-05-12 — Phase 5 complete. GROUP-01 (PocketBase field), GROUP-02 (TypeScript interface), GROUP-03 (form field + Zod validation) all verified. 3 out-of-scope form bugs fixed during UAT (initialValues undefined, dose number 0).
 
-**Next session entry point:** Plan Phase 5 via `/gsd-plan-phase 5` — covers GROUP-01 (PocketBase field), GROUP-02 (TypeScript interface), GROUP-03 (form field + Zod validation).
+**Next session entry point:** Plan Phase 6 via `/gsd-discuss-phase 6` or `/gsd-plan-phase 6` — covers GROUP-04 (grouped card view), GROUP-05 (Uncategorized card), GROUP-06 (group detail panel), GROUP-07 (row → VaccinationDetail.vue).
 
 **Files of interest:**
 

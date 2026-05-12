@@ -181,9 +181,9 @@ Which phase covers which requirement.
 | POLISH-03 | Phase 4 | Pending |
 | POLISH-04 | Phase 4 | Pending |
 | POLISH-05 | Phase 4 | Pending |
-| GROUP-01 | Phase 5 | Pending |
-| GROUP-02 | Phase 5 | Pending |
-| GROUP-03 | Phase 5 | Pending |
+| GROUP-01 | Phase 5 | Complete |
+| GROUP-02 | Phase 5 | Complete |
+| GROUP-03 | Phase 5 | Complete |
 | GROUP-04 | Phase 6 | Pending |
 | GROUP-05 | Phase 6 | Pending |
 | GROUP-06 | Phase 6 | Pending |

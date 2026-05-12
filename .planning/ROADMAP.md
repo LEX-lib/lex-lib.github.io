@@ -23,7 +23,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 **Milestone goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
 
-- [ ] **Phase 5: Schema, Types & Form Field** — Add vaccine_type to the PocketBase collection, TypeScript interface, and the create/edit form
+- [x] **Phase 5: Schema, Types & Form Field** — Add vaccine_type to the PocketBase collection, TypeScript interface, and the create/edit form — completed 2026-05-12
 - [ ] **Phase 6: Grouped Card View & Group Detail Panel** — Replace the flat list with grouped cards and a drilldown panel that opens the existing full-detail dialog
 
 ---
@@ -210,8 +210,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — TypeScript interface + ManageVaccination.vue form field (GROUP-02, GROUP-03)
-- [ ] 05-02-PLAN.md — PocketBase schema step + end-to-end verification (GROUP-01)
+- [x] 05-01-PLAN.md — TypeScript interface + ManageVaccination.vue form field (GROUP-02, GROUP-03)
+- [x] 05-02-PLAN.md — PocketBase schema step + end-to-end verification (GROUP-01)
 
 ---
 
@@ -274,9 +274,9 @@ All 7 v1.1 requirements are mapped to exactly one phase. No orphans.
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
-| 5. Schema, Types & Form Field | 0/TBD | Not started | - |
+| 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
 | 6. Grouped Card View & Group Detail Panel | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — v1.1 (Vaccine Grouping) roadmap appended: Phase 5 and Phase 6 added*
+*Last updated: 2026-05-12 — Phase 5 complete (GROUP-01, GROUP-02, GROUP-03 verified)*
