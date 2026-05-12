@@ -207,7 +207,11 @@ Plans:
 4. User fills in all fields including Vaccine Type, saves, and the new record appears with the entered `vaccine_type` value retrievable from PocketBase.
 5. User edits an existing record, changes the `vaccine_type` value, saves, and the updated value is persisted to PocketBase without touching other fields.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — TypeScript interface + ManageVaccination.vue form field (GROUP-02, GROUP-03)
+- [ ] 05-02-PLAN.md — PocketBase schema step + end-to-end verification (GROUP-01)
 
 ---
 
