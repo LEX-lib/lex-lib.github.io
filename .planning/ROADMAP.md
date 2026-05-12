@@ -14,7 +14,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 - [x] **Phase 0: Pre-Wallecx Cleanup** — Strip dev-login credentials and rotate before sensitive health data exists
 - [x] **Phase 1: Backend + Frontend Foundation** — PocketBase collection + rules + types + mapper + route shell, with cross-user isolation verified
 - [x] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP — completed 2026-05-11
-- [ ] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test
+- [x] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test — completed 2026-05-12
 - [ ] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off
 
 ## Phase Details
@@ -140,7 +140,7 @@ Plans:
 - [x] 03-01-PLAN.md — Vitest vaccinationMapper.spec.ts: field-strip + id-refresh contract tests (first repo test) (WRITE-09)
 - [x] 03-02-PLAN.md — ManageVaccination.vue shell: Dialog, Form + zodResolver, all 7 fields, FileUpload MIME/size validation, isSaving guard (WRITE-01, WRITE-02, WRITE-07)
 - [x] 03-03-PLAN.md — ManageVaccination.vue EXIF strip pipeline + onSubmit: canvas re-encode, imageCompression, create Object.assign, update with mapper (WRITE-03, WRITE-04, WRITE-05)
-- [ ] 03-04-PLAN.md — WallecxApp.vue wiring + VaccinationList.vue enable: header button, empty-state CTA, edit/remove handlers, ConfirmDialog delete flow (WRITE-06, WRITE-07, WRITE-08)
+- [x] 03-04-PLAN.md — WallecxApp.vue wiring + VaccinationList.vue enable: header button, empty-state CTA, edit/remove handlers, ConfirmDialog delete flow (WRITE-06, WRITE-07, WRITE-08)
 
 **UI hint**: yes
 
@@ -190,9 +190,9 @@ All 34 v1 requirements are mapped to exactly one phase. No orphans.
 | 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
 | 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
 | 2. Read Path | 4/4 | Complete | 2026-05-11 |
-| 3. Write Path | 3/4 | In progress | - |
+| 3. Write Path | 4/4 | Complete | 2026-05-12 |
 | 4. Discovery & Polish | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Phase 3 planned (4 plans, WRITE-01..09)*
+*Last updated: 2026-05-12 — Phase 3 complete (4/4 plans, WRITE-01..09 all implemented)*
