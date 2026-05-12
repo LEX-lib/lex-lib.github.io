@@ -144,12 +144,17 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
     if (!isEditMode.value) {
       // CREATE — WRITE-04: Object.assign contract
       // Server returns authoritative record with id, created, updated, card filename
-      formData.append("user", pb.authStore.record!.id);
+      const userId = pb.authStore.record?.id;
+      if (!userId) {
+        toast.error("Session expired. Please log in again.");
+        isSaving.value = false;
+        return;
+      }
+      formData.append("user", userId);
       const created = await pb
         .collection("wallecx_vaccinations")
         .create<Vaccinations>(formData);
-      // emit("created", created) — WallecxApp.onCreated does Object.assign(localItem, created)
-      // so subsequent saves PATCH the same record (prevents LexTrack save-loop bug)
+      // emit created record to parent; parent inserts it into the local list date-sorted.
       emit("created", created);
     } else {
       // UPDATE — WRITE-05: use mapToUpdateVaccination to strip server-managed fields
@@ -163,6 +168,7 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
     }
 
     toast.success(isEditMode.value ? "Vaccination updated." : "Vaccination added.");
+    pendingFile.value = null; // HIGH-02: explicit reset — do not rely solely on @hide timing
     visible.value = false;
   } catch (e: unknown) {
     toast.error("Failed to save. Please try again.");
