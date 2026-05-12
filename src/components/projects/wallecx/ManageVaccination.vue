@@ -27,6 +27,7 @@ const dialogHeader = computed(() => isEditMode.value ? "Edit Vaccination" : "Add
 const initialValues = computed(() => {
   if (!record.value) return {};
   return {
+    vaccine_type: record.value.vaccine_type ?? "",
     vaccine_name: record.value.vaccine_name,
     date_administered: new Date(record.value.date_administered),
     dose_number: record.value.dose_number ?? null,
@@ -38,6 +39,7 @@ const initialValues = computed(() => {
 });
 
 const schema = z.object({
+  vaccine_type: z.string().min(1, { message: "Vaccine type is required." }),
   vaccine_name: z.string().min(1, { message: "Vaccine name is required." }),
   date_administered: z.union([
     z.date(),
@@ -126,6 +128,7 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
   isSaving.value = true;
   try {
     const formData = new FormData();
+    formData.append("vaccine_type", values.vaccine_type as string);
     formData.append("vaccine_name", values.vaccine_name as string);
     // Pitfall A: DatePicker returns Date object — must convert to YYYY-MM-DD for PocketBase
     formData.append(
@@ -201,6 +204,20 @@ function onHide(): void {
       validate-on-submit
       class="space-y-4"
     >
+      <!-- vaccine_type (required — D-01: first field, D-02: placeholder) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Type *</label>
+        <InputText
+          name="vaccine_type"
+          fluid
+          :disabled="isSaving"
+          placeholder="e.g., Flu, COVID-19, Pneumonia PCV23"
+        />
+        <Message v-if="$form.vaccine_type?.invalid" severity="error" size="small" variant="simple">
+          {{ $form.vaccine_type.error?.message }}
+        </Message>
+      </div>
+
       <!-- vaccine_name (required) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Name *</label>
