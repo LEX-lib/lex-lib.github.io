@@ -1,8 +1,8 @@
 # Phase 4: Discovery & Polish — "Looks Done But Isn't" Checklist
 
-**Run by:** Claude executor (04-02-PLAN.md Task 2)
+**Run by:** Claude executor (04-02-PLAN.md Task 2; finalized in 04-04-PLAN.md Task 2)
 **Date:** 2026-05-12
-**Status:** PARTIAL — Items 9, 10 verified PASS; Item 13 deferred (build error blocks dist grep); Items 15, 16 open pending 04-03/04-04
+**Status:** PASS — all 19 items signed off
 
 ---
 
@@ -69,44 +69,24 @@ src/components/projects/wallecx/WallecxApp.vue:118:        <h1 class="text-2xl f
 | 6 | EXIF stripped: exiftool shows no GPS after upload | SIGNED OFF | WRITE-03 canvas re-encode; confirmed in Phase 3 UAT |
 | 7 | pdfjs-dist ≥ 4.2.67 in package.json | SIGNED OFF | FRONT-01; `grep "pdfjs-dist" package.json` shows version |
 | 8 | CSP not regressed: only worker-src added, script-src unchanged | SIGNED OFF | 02-01-PLAN; index.html CSP verified |
-| 9 | No v-html in Wallecx: git grep returns nothing | SIGNED OFF | `grep -rn "v-html" src/components/projects/wallecx/` — only match is a comment (`// D-09: plain text interpolation — NEVER v-html`); no v-html directive in any template |
-| 10 | No template-literal filters: git grep returns nothing | SIGNED OFF | `grep -rn "\`.*filter\|\.filter\b" src/components/projects/wallecx/ --include="*.vue"` — exit 1 (no matches); no template-literal filter strings |
+| 9 | No v-html in Wallecx: git grep returns nothing | SIGNED OFF | `grep -rn "v-html" src/components/projects/wallecx/` — only match is a comment (`// D-09: plain text interpolation — NEVER v-html`) in WallecxApp.vue:140; no v-html directive in any template |
+| 10 | No template-literal filters: git grep returns nothing | SIGNED OFF | `grep -rn "\`\${" src/components/projects/wallecx/ --include="*.vue"` — 2 matches: AttachmentPreview.vue:57 and VaccinationList.vue:78, both are `:alt` attribute strings (image alt text), NOT PocketBase filter strings; no filter injection vectors present |
 | 11 | Watcher fires on mount: no empty-state flash | SIGNED OFF | onMounted fetch in WallecxApp.vue; READ-05 implemented |
 | 12 | Save button disables during save: double-click → one record | SIGNED OFF | WRITE-07 isSaving; both form and button disabled during in-flight request |
-| 13 | Auth token not in production bundle | DEFERRED — build error | `npm run build` fails: Vue compiler rejects `import.meta.env.PROD` in `v-if` template expression in App.vue (rolldown/compiler-core compatibility issue). Dist grep cannot run until build is fixed. Track for 04-04-PLAN. Phase 0 CLEAN-01..03 implemented; expect CLEAN when build restored. |
+| 13 | Auth token not in production bundle | SIGNED OFF | `grep -r "VITE_LOGIN_" dist/` returns no matches — CLEAN. Build fixed in 04-04-PLAN (App.vue import.meta.env.PROD moved to const isProd). Phase 0 CLEAN-01..03 confirmed effective. |
 | 14 | Mapper test: vaccinationMapper.spec.ts passes | SIGNED OFF | `npm run test:unit` exits 0; 10 tests passing |
-| 15 | Route guard test: guard.spec.ts covers wallecx redirect | OPEN — 04-04-PLAN | To be implemented in Wave 2 |
-| 16 | Data-export feature works | OPEN — 04-03-PLAN | To be implemented in Wave 1 |
+| 15 | Route guard test: guard.spec.ts covers wallecx redirect | SIGNED OFF | `src/router/__tests__/guard.spec.ts` created in 04-04-PLAN Task 1; 3 test cases pass: unauthenticated redirect → /login?redirect=/projects/wallecx, authenticated → stays on /projects/wallecx, public route → no redirect; npm run test:unit exits 0 (13 tests total) |
+| 16 | Data-export feature works | SIGNED OFF | `exportJson()` added to WallecxApp.vue in 04-03-PLAN; "Download records" Button in header; getFullList fetches user's records; card_url uses pb.files.getURL with NO token; Blob/URL.createObjectURL triggers browser download; isExporting guard prevents double-click |
 | 17 | Subcomponent names: no Wallecx component collides with PrimeVue | SIGNED OFF | components.d.ts confirmed: WallecxApp, ManageVaccination, VaccinationList, VaccinationDetail, AttachmentPreview — all distinct from PrimeVue component names |
 | 18 | Vercel/GitHub Pages deploy: /projects/wallecx hard-refresh resolves | SIGNED OFF | dist/404.html SPA rewrite; build script `cp dist/index.html dist/404.html` confirmed |
-| 19 | Speed Insights gated: v-if PROD | SIGNED OFF — but build blocked | Fixed in 04-01-PLAN Task 2: `<SpeedInsights v-if="import.meta.env.PROD" />` in App.vue line 11. NOTE: This exact expression causes a build-time Vue compiler error (see Item 13). The gate is logically correct but the build fails — 04-04-PLAN must resolve this before deploy. |
-
----
-
-## Build Issue: import.meta.env.PROD in Template (Tracked)
-
-**Found during:** Task 2 (npm run build for VITE_LOGIN_ dist check)
-**Error:** `RolldownError: Error parsing JavaScript expression: import.meta may appear only with 'sourceType: "module"'`
-**File:** `src/App.vue:11` — `<SpeedInsights v-if="import.meta.env.PROD" />`
-**Root cause:** Vue's template compiler (via rolldown) does not support `import.meta` in attribute expressions. The expression must be replaced with a script-side computed or a constant.
-**Fix needed in 04-04-PLAN:**
-```typescript
-// script setup:
-const isProd = import.meta.env.PROD;
-// template:
-// <SpeedInsights v-if="isProd" />
-```
-**Impact:** `npm run type-check` passes; `npm run build` fails; deploy blocked until fixed.
+| 19 | Speed Insights gated: v-if PROD | SIGNED OFF | Fixed in 04-04-PLAN Task 1: `const isProd = import.meta.env.PROD` in script setup; `<SpeedInsights v-if="isProd" />` in template. Build blocker resolved — `npm run build` exits 0. |
 
 ---
 
 ## Open Items Before Final Sign-Off
 
-- Item 13 (Auth token dist check): blocked by build error — resolve in 04-04-PLAN alongside the import.meta fix
-- Item 15 (Route guard test): implemented in 04-04-PLAN — update this checklist after 04-04 executes
-- Item 16 (JSON export): implemented in 04-03-PLAN — update this checklist after 04-03 executes
-- Build fix (App.vue import.meta): must be resolved in 04-04-PLAN before deploy
+No open items. Checklist complete.
 
 ---
 
-*Checklist finalized when all 19 items show SIGNED OFF and build passes.*
+*Checklist finalized 2026-05-12 — all 19 items signed off. Wallecx milestone POLISH-05 complete.*
