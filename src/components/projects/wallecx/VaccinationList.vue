@@ -13,6 +13,7 @@ const emit = defineEmits<{
   view: [record: Vaccinations];
   edit: [record: Vaccinations];
   remove: [record: Vaccinations];
+  addFirst: [];
 }>();
 
 // Skeleton placeholder array — must have length > 0 or DataTable renders no body rows (Pitfall 6)
@@ -49,7 +50,7 @@ function displayDate(iso: string): string {
     </Column>
   </DataTable>
 
-  <!-- Empty state: centered icon + message (not inside DataTable) -->
+  <!-- Empty state: centered icon + message + CTA (D-02) -->
   <div v-else-if="records.length === 0" class="flex flex-col items-center py-12 gap-3">
     <iconify-icon
       icon="mdi:needle-off"
@@ -58,6 +59,12 @@ function displayDate(iso: string): string {
       style="color: var(--color-brand-primary)"
     ></iconify-icon>
     <p class="text-sm" style="color: var(--color-typo-heading)">No vaccination records yet.</p>
+    <Button
+      label="Add your first vaccination"
+      icon="pi pi-plus"
+      size="small"
+      @click="emit('addFirst')"
+    />
   </div>
 
   <!-- Data state: striped DataTable with real records -->
@@ -94,14 +101,12 @@ function displayDate(iso: string): string {
             size="small"
             severity="secondary"
             label="Edit"
-            :disabled="true"
             @click="emit('edit', data)"
           />
           <Button
             size="small"
             severity="danger"
             label="Remove"
-            :disabled="true"
             @click="emit('remove', data)"
           />
         </div>
