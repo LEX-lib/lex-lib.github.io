@@ -27,9 +27,9 @@ progress:
 
 **Milestone:** v1.1 — Vaccine Grouping
 **Phase:** Phase 6 — Grouped Card View & Group Detail Panel
-**Plan:** Not yet planned
-**Status:** Phase 5 complete — ready to plan Phase 6
-**Last activity:** 2026-05-12 — Phase 5 complete (GROUP-01/02/03 verified; 2/2 plans done)
+**Plan:** Ready to execute (2 plans, 2 waves)
+**Status:** Planning complete — ready to execute Phase 6
+**Last activity:** 2026-05-12 — Phase 6 planned (06-01-PLAN.md, 06-02-PLAN.md created; verification passed)
 
 ## Roadmap Snapshot
 
