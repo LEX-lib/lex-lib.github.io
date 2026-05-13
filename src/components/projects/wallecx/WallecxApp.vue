@@ -398,6 +398,8 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
           :records="selectedGroup.records"
           :list-token="listToken"
           @view="openDetail"
+          @edit="openManage"
+          @delete="openDelete"
         />
       </Drawer>
 
