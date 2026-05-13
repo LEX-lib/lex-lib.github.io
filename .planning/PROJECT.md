@@ -1,5 +1,17 @@
 # Lexarium
 
+## Phase 9: Restore Edit & Delete in Grouped View — COMPLETE (2026-05-13)
+
+**Goal:** Restore CRUD actions (Edit and Delete) to each record row inside the group detail drawer, lost when Phase 6 replaced the flat DataTable with grouped cards.
+
+**Delivered:**
+- ✓ `VaccinationGroupPanel.vue` extended with `edit` and `delete` emits; actions column now shows View / Edit / Delete buttons in a flex row (14rem wide)
+- ✓ `WallecxApp.vue` Drawer wires `@edit="openManage"` and `@delete="openDelete"` — no new handler logic, just reconnected emits
+- ✓ Stale-Drawer fix (WR-01/WR-02): after a delete or edit, `selectedGroup` is re-derived from the freshly recomputed `groupedVaccinations`; if the last record in a group is deleted, the Drawer closes automatically
+- ✓ Slot typing fix (WR-03): `#body` slot destructure annotated as `{ data }: { data: Vaccinations }` for genuine type safety on emit calls
+
+---
+
 ## Previous Milestone: v1.1 Vaccine Grouping — COMPLETE (2026-05-12)
 
 **Goal:** Reorganize the Wallecx view from a flat date-sorted list into vaccine-type group cards so users can instantly find all records for a specific vaccine category.
@@ -63,6 +75,12 @@ If everything else fails, this single capability must work.
 - ✓ View toggle Button in the toolbar switches grouped-card layout between 2-column grid and single-column list
 - ✓ Selected view persists for the browser session via sessionStorage (reset on tab close)
 - ✓ `VaccinationGroupCard.vue` reused unchanged across both layouts — only the container grid class swaps
+
+### Validated in Phase 9 (2026-05-13)
+
+- ✓ Edit and Delete buttons present on each record row in the group detail drawer (CRUD-01)
+- ✓ Edit opens `ManageVaccination.vue` pre-filled with the selected record; Delete triggers the existing `openDelete` confirm flow (CRUD-02)
+- ✓ `selectedGroup` re-derived from `groupedVaccinations` after each edit/delete — Drawer stays live without requiring close/reopen; auto-closes if the last record in a group is deleted
 
 ### Out of Scope
 
