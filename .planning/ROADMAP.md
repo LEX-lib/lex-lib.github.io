@@ -429,7 +429,13 @@ Plans:
 4. A card with an invalid barcode value (e.g. wrong length for EAN-13) shows the `card_number` as large plain text instead of crashing; a card with neither `barcode_value` nor `card_number` shows a "No barcode" placeholder — no uncaught runtime errors in either case.
 5. User with no membership cards sees a friendly empty state in the Membership Cards tab; a simulated fetch error shows a `vue-sonner` error toast without leaving the UI in a broken state.
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — BarcodeDisplay.vue: four-branch render (qr/linear/fallback/empty), JsBarcode try/catch, useTemplateRef, BARCODE_FOREGROUND/BACKGROUND constants (SCAN-01, SCAN-02, SCAN-04)
+- [ ] 12-02-PLAN.md — MembershipCard.vue (coloured tile, expiry warning) + AttachmentPreview.vue refactor to generic props + VaccinationDetail call site update (MREAD-01, MREAD-04)
+- [ ] 12-03-PLAN.md — MembershipDetail.vue: field grid, BarcodeDisplay embed, scan overlay (Teleport + wake lock + Escape handler), AttachmentPreview card_image (MREAD-03, MREAD-04, SCAN-03)
+- [ ] 12-04-PLAN.md — MembershipsTab.vue: replace stub with three-state tab, getFullList, openDetail WR-03, MembershipDetail Dialog, human verification checkpoint (MREAD-02, MREAD-03)
 
 **UI hint**: yes
 
