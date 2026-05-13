@@ -34,6 +34,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 - [x] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state — completed 2026-05-13
 - [x] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session — completed 2026-05-13
+- [ ] **Phase 9: Restore Edit & Delete in Grouped View** — Wire edit/delete actions back into VaccinationGroupPanel.vue rows; existing WallecxApp.vue handlers reconnected via emits
 
 ---
 
@@ -307,6 +308,30 @@ Plans:
 
 ---
 
+### Phase 9: Restore Edit & Delete in Grouped View
+
+**Goal**: Users can edit or delete an individual vaccination record directly from the group detail drawer, restoring the CRUD capability that was present in Phase 3 but lost when Phase 6 replaced the flat list with grouped cards.
+
+**Depends on**: Phase 8
+
+**Requirements**:
+- CRUD-01 — Each record row in `VaccinationGroupPanel.vue` has Edit and Delete action buttons; clicking Edit opens `ManageVaccination.vue` pre-populated with that record; clicking Delete triggers the existing `openDelete` confirm flow
+- CRUD-02 — `WallecxApp.vue`'s existing `openManage(record)` and `openDelete(record)` handlers are wired up via emits through `VaccinationGroupPanel.vue` — no new backend logic
+
+**Success Criteria** (what must be TRUE):
+1. User opens a vaccine group drawer, clicks Edit on a record row, and the ManageVaccination dialog opens pre-filled with that record's data — saving it updates the record in place.
+2. User opens a vaccine group drawer, clicks Delete on a record row, sees the confirmation dialog, confirms, and the record is removed from both the panel and the card grid.
+3. No regression: the "Add vaccination" button, search, sort, and view toggle all continue to work normally.
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] (not yet planned)
+
+**UI hint**: yes
+
+---
+
 ## Coverage
 
 ### v1.0 Coverage
@@ -355,6 +380,7 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
 | 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | 2/2 | Complete | 2026-05-13 |
+| 9. Restore Edit & Delete in Grouped View | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*

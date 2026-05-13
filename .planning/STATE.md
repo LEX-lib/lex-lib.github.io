@@ -57,6 +57,10 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 - Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 5 / 5 v1.2
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
 
+## Roadmap Evolution
+
+- Phase 9 added: Restore Edit & Delete in Grouped View (wired back through VaccinationGroupPanel.vue)
+
 ## Accumulated Context
 
 ### Key Decisions (locked at planning time)
