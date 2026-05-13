@@ -1,5 +1,17 @@
 # Lexarium
 
+## Phase 10: Tabs Shell & VaccinationsTab Extraction — COMPLETE (2026-05-13)
+
+**Goal:** WallecxApp.vue becomes a thin PrimeVue Tabs shell; all vaccination logic moves into a self-contained VaccinationsTab.vue.
+
+**Delivered:**
+- ✓ `VaccinationsTab.vue` — verbatim extraction of all vaccination state, computeds, lifecycle hooks, and template from WallecxApp.vue; no props/emits; onUnmounted timer cleanup preserved; useConfirm explicitly imported; no ConfirmDialog inside the tab
+- ✓ `MembershipsTab.vue` — pure-template stub (no script block) with iconify icon, brand tokens, "Coming in the next release." copy
+- ✓ `WallecxApp.vue` — reduced from 452 lines to a 35-line PrimeVue Tabs shell: 3 imports, `activeTab = ref<string>("vaccinations")`, Card > h1 > Tabs > TabList (2 icon tabs) > VaccinationsTab + MembershipsTab > ConfirmDialog
+- ✓ `npm run type-check` and `npm run build` both pass; 13/13 unit tests pass; XTAB-01 + XTAB-02 verified
+
+---
+
 ## Phase 9: Restore Edit & Delete in Grouped View — COMPLETE (2026-05-13)
 
 **Goal:** Restore CRUD actions (Edit and Delete) to each record row inside the group detail drawer, lost when Phase 6 replaced the flat DataTable with grouped cards.
@@ -170,9 +182,15 @@ This document evolves at phase transitions and milestone boundaries.
 - Full CRUD with same Zod + PrimeVue dialog + mapper pattern
 - Wallecx tab navigation switching between Vaccinations and Memberships
 
+### Validated in Phase 10 (2026-05-13)
+
+- ✓ `VaccinationsTab.vue` extraction — all vaccination logic self-contained, no regression (XTAB-01, XTAB-02)
+- ✓ `WallecxApp.vue` is now the thin PrimeVue Tabs shell; `MembershipsTab.vue` stub in place
+- ✓ Tab navigation wired: string-typed `activeTab`, `v-model:value` on `<Tabs>`, `ConfirmDialog` at shell level
+
 ### Active (v2.0)
 
-*(Requirements defined — see REQUIREMENTS.md)*
+*(Phase 10 complete. Phase 11 next — see REQUIREMENTS.md for MBACK-01..03, MFRONT-01..03)*
 
 ## Shipped Milestones
 
@@ -183,4 +201,4 @@ This document evolves at phase transitions and milestone boundaries.
 | v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 
 ---
-*Last updated: 2026-05-13 — v2.0 Membership Cards milestone started.*
+*Last updated: 2026-05-13 — Phase 10 complete: VaccinationsTab.vue extracted, WallecxApp.vue is now the Tabs shell.*
