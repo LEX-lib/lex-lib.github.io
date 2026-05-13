@@ -8,6 +8,7 @@
 - ✅ **v1.0 MVP** — Phases 0–4 (shipped 2026-05-12) — [archive](.planning/milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Vaccine Grouping** — Phases 5–6 (shipped 2026-05-12)
 - ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
+- 🚧 **v2.0 Membership Cards** — Phases 10–13 (in progress)
 
 ## Phases
 
@@ -42,6 +43,17 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 - [x] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state — completed 2026-05-13
 - [x] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session — completed 2026-05-13
 - [x] **Phase 9: Restore Edit & Delete in Grouped View** — Wire edit/delete actions back into VaccinationGroupPanel.vue rows; existing WallecxApp.vue handlers reconnected via emits — completed 2026-05-13
+
+---
+
+## Milestone v2.0 — Membership Cards
+
+**Milestone goal:** Add a second Wallecx vault record type — membership/loyalty/insurance/ID cards — with barcode and QR code rendering, a full-screen scan overlay for counter use, a coloured card grid, and full CRUD. Wallecx becomes a tabbed shell switching between Vaccinations and Membership Cards.
+
+- [ ] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression
+- [ ] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test
+- [ ] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay
+- [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
 
 ---
 
@@ -339,6 +351,108 @@ Plans:
 
 ---
 
+### Phase 10: Tabs Shell — VaccinationsTab Extraction
+
+**Goal**: WallecxApp.vue becomes a thin PrimeVue Tabs shell with "Vaccinations" and "Membership Cards" tabs — all existing vaccination functionality moves into VaccinationsTab.vue with zero regression — so that the membership cards UI can be built in an isolated component without doubling WallecxApp.vue's state surface.
+
+**Depends on**: Phase 9
+
+**Requirements**:
+- XTAB-01 — Vaccination logic extracted into `VaccinationsTab.vue`; `WallecxApp.vue` becomes a `<Tabs>` shell with "Vaccinations" and "Membership Cards" tabs — both tabs visible and navigable
+- XTAB-02 — All existing vaccination features (group card view, search/sort, view toggle, edit/delete in drawer) work identically after the extraction — no regression
+
+**Success Criteria** (what must be TRUE):
+1. User navigates to `/projects/wallecx` and sees two tabs — "Vaccinations" and "Membership Cards" — rendered using PrimeVue Tabs in the Aura preset; clicking each tab switches the active panel.
+2. Every vaccination feature that worked before the extraction works identically after it: group card grid, search, sort, view toggle, group detail drawer, and edit/delete actions from within the drawer all function without any change in behaviour.
+3. The Membership Cards tab is visible and clickable; its panel may be a stub with an empty state or "coming soon" message — it must not throw a runtime error.
+4. `npm run build` and `npm run type-check` both pass after the extraction with no new TypeScript errors.
+
+**Plans**: TBD
+
+**UI hint**: yes
+
+---
+
+### Phase 11: Backend + Frontend Foundation
+
+**Goal**: The `wallecx_memberships` PocketBase collection exists with server-enforced per-user isolation across all five access types, the TypeScript type module and mapper are in place, and the two new barcode libraries are installed — so that membership UI can be built on a provably isolated, type-safe foundation before any component work begins.
+
+**Depends on**: Phase 10
+
+**Requirements**:
+- MBACK-01 — A `wallecx_memberships` PocketBase collection exists with all required fields: `user` (relation, required), `card_name` (text, required), `issuer`, `barcode_value`, `barcode_type`, `card_number`, `expiry_date`, `notes`, `card_color` (hex without `#`), `card_image` (file, optional, single)
+- MBACK-02 — All 5 collection rules enforce per-user access (same pattern as `wallecx_vaccinations`): list/view/update/delete → `@request.auth.id != "" && user = @request.auth.id`; create → `@request.auth.id != "" && @request.body.user = @request.auth.id`
+- MBACK-03 — Two-user smoke test confirms user A's membership cards are inaccessible to user B across all five access types (list/view/update/delete/file)
+- MFRONT-01 — Type module `src/types/wallecx/memberships/types.d.ts` exports `interface Memberships extends RecordModel` and `type AddMembership = Omit<Memberships, 'id' | 'created' | 'updated'>`
+- MFRONT-02 — Mapper module `src/lib/pocketbase/membershipMapper.ts` exports `mapToUpdateMembership(record: Memberships)` returning a writable subset (strips `id`, `created`, `updated`, `user`, `card_image`)
+- MFRONT-03 — `qrcode.vue@^3.9.1` and `jsbarcode@^3.12.3` installed and committed to `package.json`; `npm run build` passes
+
+**Success Criteria** (what must be TRUE):
+1. User A's membership cards are not visible to user B across list, view, update, delete, and direct file URL — verified by a documented two-user smoke test (all five operations return 403/404 for the non-owning user).
+2. `npm run build` completes successfully with `qrcode.vue` and `jsbarcode` in `package.json`; `npm run type-check` passes with the new `Memberships` interface and `AddMembership` type.
+3. `mapToUpdateMembership` strips `id`, `created`, `updated`, `user`, and `card_image` from the record — verifiable by inspecting the returned object in a unit test or browser console.
+4. The `wallecx_memberships` collection is visible in the PocketBase admin UI with all fields and all five access rules correctly configured.
+
+**Plans**: TBD
+
+---
+
+### Phase 12: Read Path — Card Grid, Barcode Display & Detail
+
+**Goal**: Users can see their membership cards in a coloured grid, tap a card to view its details including a rendered barcode or QR code, and tap the barcode to open a full-screen white overlay optimised for counter scanning — with graceful fallbacks when barcode data is missing or invalid.
+
+**Depends on**: Phase 11
+
+**Requirements**:
+- SCAN-01 — `BarcodeDisplay.vue` renders QR codes via `qrcode.vue` on a white background panel when `barcode_type === 'qr'`; uses SVG render mode
+- SCAN-02 — `BarcodeDisplay.vue` renders linear barcodes (code128, ean13, code39) via `jsbarcode` on SVG; entire render call is wrapped in `try/catch` with a plain-number fallback displayed on invalid input
+- SCAN-03 — Tapping the barcode opens a full-screen scan overlay: white background, `filter: brightness(1.4)`, screen wake lock via `navigator.wakeLock.request('screen')` (feature-detected + `try/catch` graceful degrade); `position: fixed; inset: 0; z-index: 9999` overlay; close button always visible
+- SCAN-04 — When `barcode_value` is absent, `BarcodeDisplay.vue` shows `card_number` in large text as fallback; when both are absent, shows a "No barcode" placeholder message
+- MREAD-01 — `MembershipCard.vue` tile displays: card name, issuer, barcode type badge, and expiry date; background colour uses `card_color` (CSS binding always prepends `#`; defaults to navy `#002244` when absent); expiry warning badge shown if expiry is ≤ 30 days away or already past
+- MREAD-02 — `MembershipsTab.vue` renders the membership cards as a grid with skeleton loading / empty state / error state (same three-state pattern as vaccinations)
+- MREAD-03 — Tapping a `MembershipCard.vue` tile opens `MembershipDetail.vue` with all fields displayed and `BarcodeDisplay.vue` embedded; tapping the barcode within the detail view opens the full-screen scan overlay (SCAN-03)
+- MREAD-04 — `card_image` photo preview in `MembershipDetail.vue` reuses the `AttachmentPreview.vue` component pattern (image → `<img>` with thumb URL; unknown MIME → download link)
+
+**Success Criteria** (what must be TRUE):
+1. User opens the Membership Cards tab and sees a coloured card grid; each tile shows the card name, issuer, barcode type badge, and expiry date; the tile background uses the stored `card_color` hex value (defaulting to navy when absent); cards expiring within 30 days or already expired show a visible warning badge.
+2. User taps a membership card tile and a detail view opens showing all card fields, a rendered barcode or QR code (on a white background panel), and — if a card photo was uploaded — an inline image preview.
+3. User taps the barcode or QR code in the detail view and a full-screen white overlay appears centring the barcode; the screen does not dim during the overlay (wake lock active where supported); a close button is always visible and dismisses the overlay.
+4. A card with an invalid barcode value (e.g. wrong length for EAN-13) shows the `card_number` as large plain text instead of crashing; a card with neither `barcode_value` nor `card_number` shows a "No barcode" placeholder — no uncaught runtime errors in either case.
+5. User with no membership cards sees a friendly empty state in the Membership Cards tab; a simulated fetch error shows a `vue-sonner` error toast without leaving the UI in a broken state.
+
+**Plans**: TBD
+
+**UI hint**: yes
+
+---
+
+### Phase 13: Write Path — ManageMembership CRUD
+
+**Goal**: Users can create, edit, and delete membership cards through a validated dialog — including colour picking, barcode type selection, and optional card photo upload — without producing duplicate records, double-submits, or save-loop bugs. The mapper contract is locked by a Vitest spec.
+
+**Depends on**: Phase 12
+
+**Requirements**:
+- MWRITE-01 — `ManageMembership.vue` PrimeVue Dialog form for both create and edit, validated by Zod schema via direct `v-model` refs (not `@primevue/forms` controlled system — workaround for PrimeVue ColorPicker issue #8135); `card_name` is required; all other fields optional
+- MWRITE-02 — Form includes: `barcode_type` dropdown (QR / Code128 / EAN-13 / Code39 / Number only), `barcode_value` text input (shown when barcode type is not "Number only"), `card_number` text input (plain fallback always available)
+- MWRITE-03 — `card_color` field uses PrimeVue `ColorPicker`; value stored and passed as hex without `#` (matching ColorPicker's emit format); CSS background bindings in all display components always prepend `#`
+- MWRITE-04 — Optional `card_image` file upload via `<FileUpload mode="basic" :auto="false">` with MIME allowlist `image/jpeg,image/png,image/webp` and 10 MB cap (mirrors vaccination card upload pattern)
+- MWRITE-05 — Create flow returns server record and `Object.assign`s into local item (avoids save-loop bug); update flow uses `mapToUpdateMembership`; delete flow: confirm dialog → `pb.delete()` → splice → success toast; on failure no splice + error toast; all flows gated by `isSaving` ref
+- MWRITE-06 — Vitest `membershipMapper.spec.ts` covers `mapToUpdateMembership` field-strip and the create-then-update id-refresh contract (mirrors `vaccinationMapper.spec.ts` pattern)
+
+**Success Criteria** (what must be TRUE):
+1. User opens the "Add card" dialog, fills in the card name, picks a colour, selects a barcode type, enters a barcode value, and saves — a coloured card tile appears in the grid immediately; the stored record is retrievable from PocketBase with all fields intact.
+2. User edits an existing card, changes the barcode value and colour, saves, and re-opens the detail view — the updated barcode renders correctly and the tile colour reflects the change; exactly one record exists on the server (no duplicate from a stale id).
+3. User deletes a membership card, confirms, and the tile is removed from the grid; the previously-attached card image URL returns 404 within a reasonable time. On a simulated API failure, the tile remains visible and an error toast appears.
+4. Submitting the form during a slow network fires only one create/update request even on double-click — the form and submit button are disabled by `isSaving` while the request is in-flight.
+5. `npm run test:unit` runs `membershipMapper.spec.ts` and passes — covering field-stripping behaviour and the create-then-update id-refresh sequence with a mocked `pb`.
+
+**Plans**: TBD
+
+**UI hint**: yes
+
+---
+
 ## Coverage
 
 ### v1.0 Coverage
@@ -374,6 +488,18 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | Phase 8 | VIEW-01, VIEW-02 | 2 |
 | **Total** | | **5 / 5** |
 
+### v2.0 Coverage
+
+All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
+
+| Phase | Requirements | Count |
+|-------|--------------|-------|
+| Phase 10 | XTAB-01, XTAB-02 | 2 |
+| Phase 11 | MBACK-01, MBACK-02, MBACK-03, MFRONT-01, MFRONT-02, MFRONT-03 | 6 |
+| Phase 12 | SCAN-01, SCAN-02, SCAN-03, SCAN-04, MREAD-01, MREAD-02, MREAD-03, MREAD-04 | 8 |
+| Phase 13 | MWRITE-01, MWRITE-02, MWRITE-03, MWRITE-04, MWRITE-05, MWRITE-06 | 6 |
+| **Total** | | **22 / 22** |
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -388,7 +514,11 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 7. Toolbar — Search & Sort | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
+| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 0/TBD | Not started | - |
+| 11. Backend + Frontend Foundation | v2.0 | 0/TBD | Not started | - |
+| 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
+| 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 9 complete: CRUD-01, CRUD-02 verified; stale-Drawer WR-01/WR-02 fixed*
+*Last updated: 2026-05-13 — v2.0 Membership Cards roadmap appended: Phases 10–13 (22 requirements, 4 phases)*

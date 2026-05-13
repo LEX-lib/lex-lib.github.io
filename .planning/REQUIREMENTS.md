@@ -86,37 +86,36 @@ Tracked but not in this milestone.
 
 ## Traceability
 
-*(Filled by roadmapper)*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| XTAB-01 | — | Pending |
-| XTAB-02 | — | Pending |
-| MBACK-01 | — | Pending |
-| MBACK-02 | — | Pending |
-| MBACK-03 | — | Pending |
-| MFRONT-01 | — | Pending |
-| MFRONT-02 | — | Pending |
-| MFRONT-03 | — | Pending |
-| SCAN-01 | — | Pending |
-| SCAN-02 | — | Pending |
-| SCAN-03 | — | Pending |
-| SCAN-04 | — | Pending |
-| MREAD-01 | — | Pending |
-| MREAD-02 | — | Pending |
-| MREAD-03 | — | Pending |
-| MREAD-04 | — | Pending |
-| MWRITE-01 | — | Pending |
-| MWRITE-02 | — | Pending |
-| MWRITE-03 | — | Pending |
-| MWRITE-04 | — | Pending |
-| MWRITE-05 | — | Pending |
-| MWRITE-06 | — | Pending |
+| XTAB-01 | Phase 10 | Pending |
+| XTAB-02 | Phase 10 | Pending |
+| MBACK-01 | Phase 11 | Pending |
+| MBACK-02 | Phase 11 | Pending |
+| MBACK-03 | Phase 11 | Pending |
+| MFRONT-01 | Phase 11 | Pending |
+| MFRONT-02 | Phase 11 | Pending |
+| MFRONT-03 | Phase 11 | Pending |
+| SCAN-01 | Phase 12 | Pending |
+| SCAN-02 | Phase 12 | Pending |
+| SCAN-03 | Phase 12 | Pending |
+| SCAN-04 | Phase 12 | Pending |
+| MREAD-01 | Phase 12 | Pending |
+| MREAD-02 | Phase 12 | Pending |
+| MREAD-03 | Phase 12 | Pending |
+| MREAD-04 | Phase 12 | Pending |
+| MWRITE-01 | Phase 13 | Pending |
+| MWRITE-02 | Phase 13 | Pending |
+| MWRITE-03 | Phase 13 | Pending |
+| MWRITE-04 | Phase 13 | Pending |
+| MWRITE-05 | Phase 13 | Pending |
+| MWRITE-06 | Phase 13 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 22
+- Mapped to phases: 22 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-13*
+*Traceability filled: 2026-05-13 — all 22 requirements mapped across Phases 10–13*

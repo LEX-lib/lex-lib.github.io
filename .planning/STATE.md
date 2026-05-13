@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: Defining requirements and roadmap
+status: Roadmap defined — ready to plan Phase 10
 last_updated: "2026-05-13T12:00:00.000Z"
-last_activity: 2026-05-13 — Milestone v2.0 started; membership cards feature scoped
+last_activity: 2026-05-13 — v2.0 roadmap created; Phases 10–13 defined; 22 requirements mapped
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -15,51 +15,63 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-13 — Milestone v2.0 Membership Cards started. Adding second Wallecx vault record type: loyalty/membership/insurance/ID cards with barcode/QR display and full-screen scan mode.
+**Last updated:** 2026-05-13 — v2.0 Membership Cards roadmap created. Four phases defined (10–13), all 22 requirements mapped. Phase 10 is the critical-path blocker: VaccinationsTab.vue extraction must land before any membership UI begins.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx v2.0 Membership Cards
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own records — vaccination records and now membership/loyalty cards — without ever losing access to them.
-**Current focus:** Defining requirements and roadmap for v2.0.
+**Current focus:** Phase 10 — Tabs Shell & VaccinationsTab Extraction (next action: `/gsd-plan-phase 10`)
 
 ## Current Position
 
-**Milestone:** Phase 9 complete (final planned phase)
-**Phase:** Phase 9 complete
-**Plan:** All plans complete (09-01)
-**Status:** 09-01 complete (adaae31, 719ae2a, bd2c3eb); Phase 9 done. All roadmap phases complete.
-**Last activity:** 2026-05-13 — Phase 9 executed: Edit/Delete restored in grouped drawer; stale-state WR-01/WR-02 fixed
+**Milestone:** v2.0 — Membership Cards
+**Phase:** Phase 10 (not started)
+**Plan:** None started
+**Status:** Roadmap defined. All 22 v2.0 requirements mapped across Phases 10–13. Ready to plan.
+**Last activity:** 2026-05-13 — v2.0 roadmap created by roadmapper
 
 ## Roadmap Snapshot
 
+### v2.0 Phases
+
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
-| 0 | Pre-Wallecx Cleanup | Complete | 3 (CLEAN-01..03) |
-| 1 | Backend + Frontend Foundation | Complete | 10 (BACK-01..05, FRONT-01..05) |
-| 2 | Read Path (List + Detail + Preview) | Complete | 6 (READ-01..05, READ-07; READ-06 dropped) |
-| 3 | Write Path (Create / Edit / Delete) | Complete | 9 (WRITE-01..09) |
-| 4 | Discovery & Polish | Complete | 5 (POLISH-01..05) |
-| 5 | Schema, Types & Form Field | Complete | 3 (GROUP-01, GROUP-02, GROUP-03) |
-| 6 | Grouped Card View & Group Detail Panel | Not started | 4 (GROUP-04, GROUP-05, GROUP-06, GROUP-07) |
-| 7 | Toolbar — Search & Sort | Not started | 3 (SEARCH-01, SEARCH-02, SORT-01) |
-| 8 | View Toggle | Complete | 2 (VIEW-01, VIEW-02) |
+| 10 | Tabs Shell — VaccinationsTab Extraction | Not started | 2 (XTAB-01, XTAB-02) |
+| 11 | Backend + Frontend Foundation | Not started | 6 (MBACK-01..03, MFRONT-01..03) |
+| 12 | Read Path — Card Grid, Barcode Display & Detail | Not started | 8 (SCAN-01..04, MREAD-01..04) |
+| 13 | Write Path — ManageMembership CRUD | Not started | 6 (MWRITE-01..06) |
 
-v1.0 Coverage: 34 / 34 requirements mapped. No orphans.
-v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
-v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
+v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
+
+### Previous Milestones (Complete)
+
+| # | Phase | Milestone | Status |
+|---|-------|-----------|--------|
+| 0 | Pre-Wallecx Cleanup | v1.0 | Complete |
+| 1 | Backend + Frontend Foundation | v1.0 | Complete |
+| 2 | Read Path (List + Detail + Preview) | v1.0 | Complete |
+| 3 | Write Path (Create / Edit / Delete) | v1.0 | Complete |
+| 4 | Discovery & Polish | v1.0 | Complete |
+| 5 | Schema, Types & Form Field | v1.1 | Complete |
+| 6 | Grouped Card View & Group Detail Panel | v1.1 | Complete |
+| 7 | Toolbar — Search & Sort | v1.2 | Complete |
+| 8 | View Toggle | v1.2 | Complete |
+| 9 | Restore Edit & Delete in Grouped View | v1.2 | Complete |
 
 ## Performance Metrics
 
-- Phases shipped: 9 (Phase 0–9)
-- Plans shipped: 26 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02, 09-01)
-- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 5 / 5 v1.2; 2 / 2 Phase 9 (CRUD-01, CRUD-02)
+- Phases shipped (lifetime): 10 (Phase 0–9, all complete)
+- Plans shipped (lifetime): 26 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02, 09-01)
+- Requirements verified: 33/34 v1.0 (READ-06 dropped); 7/7 v1.1; 5/5 v1.2; 2/2 Phase 9
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
+- v2.0 phases planned: 4 | v2.0 phases complete: 0
 
 ## Roadmap Evolution
 
 - Phase 9 added: Restore Edit & Delete in Grouped View (wired back through VaccinationGroupPanel.vue)
+- v2.0 roadmap added: Phases 10–13 (2026-05-13)
 
 ## Accumulated Context
 
@@ -88,6 +100,20 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 - **View persistence via sessionStorage.** VIEW-01 specifies browser session persistence; sessionStorage is the natural fit (resets on new tab/window, survives in-tab navigation).
 - **Phase numbering continues from v1.1.** v1.1 ended at Phase 6; v1.2 starts at Phase 7.
 
+### Key Decisions (v2.0 roadmap)
+
+- **4 phases for v2.0 (coarse granularity).** Phase 10: extraction blocker; Phase 11: backend + foundation (server-side rules gate all UI); Phase 12: complete read path including barcode rendering + full-screen scan; Phase 13: complete write path + mapper test.
+- **VaccinationsTab.vue extraction is a critical-path blocker (Phase 10).** WallecxApp.vue must become a thin tab shell before any membership component work begins — adding memberships to the current WallecxApp.vue would double its state surface.
+- **PrimeVue Tabs, not sub-routes.** Sub-routes rejected: require non-trivial router restructure, break existing `/projects/wallecx` bookmarks, and no other Lexarium mini-app uses child routes for tab switching.
+- **Each tab owns its own state.** VaccinationsTab.vue and MembershipsTab.vue each own independent local refs. WallecxApp.vue holds only the active tab index. No new Pinia store needed.
+- **BarcodeDisplay.vue is purely presentational.** No PocketBase calls; built early in Phase 12 so both MembershipCard.vue and MembershipDetail.vue can embed it.
+- **ManageMembership.vue uses direct v-model refs, not `@primevue/forms` controlled system.** PrimeVue issue #8135 (unfixed): ColorPicker inside a PrimeVue Form always starts showing red and ignores initial values. Use the same direct v-model pattern as ManageVaccination.vue.
+- **card_color stored WITHOUT hash prefix.** Matches ColorPicker emit format. All CSS background bindings prepend `#` via a `toCSS(hex)` utility. Zod validates `[0-9a-fA-F]{6}`.
+- **iOS fullscreen: viewport overlay, not Fullscreen API.** `requestFullscreen()` unsupported on non-video elements on iOS < 26. Use `position: fixed; inset: 0; z-index: 9999` overlay — works on all devices.
+- **Two new runtime deps: qrcode.vue@^3.9.1 + jsbarcode@^3.12.3.** @vueuse/core useFullscreen is already on disk (hoisted by @vueuse/motion) — no install needed.
+- **Every JsBarcode() call wrapped in try/catch.** JsBarcode has no soft-fail mode — invalid input throws synchronously. On catch, render card_number as large plain text with "Barcode unavailable" caption.
+- **Phase numbering continues from v1.2.** v1.2 ended at Phase 9; v2.0 starts at Phase 10.
+
 ### Decisions from 00-01 Execution
 
 - **lint:secrets uses grep exit codes.** Exit 0 = match found = alert (VITE_LOGIN_ reintroduced); exit 1 = no match = clean. npm run treats exit 1 as failure, which is the intended alerting behavior. No wrapper script needed.
@@ -106,38 +132,24 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 - **MEDIUM-02:** `void mapToUpdateVaccination(...)` is a dead import; either use the return value as the PATCH body or remove the call.
 - **MEDIUM-03:** `unshift` in `onCreated` places new records at top regardless of `date_administered` — breaks visual sort until reload.
 
-### Decisions Pending
-
-- Exact plan count for Phase 7 (TBD — determined at planning time; likely 2 plans: toolbar component + computed extensions).
-- Exact plan count for Phase 8 (TBD — determined at planning time; likely 1 plan: view toggle button + sessionStorage persistence).
-
 ### Open Todos
 
-- ~~Execute Phase 0 Plan 01: `00-01-PLAN.md`~~ — DONE (fe93bde, e5430dd, a7e0492)
-- ~~Execute Phase 0 Plan 02: `00-02-PLAN.md` — human credential rotation checkpoint (CLEAN-02).~~ — DONE (developer confirmed: "credentials rotated")
-- ~~Confirm with user that `local.jsonc` credentials have been rotated out-of-band before Phase 0 work merges (CLEAN-02).~~ — DONE
-- ~~Execute Phase 3 Plan 04: `03-04-PLAN.md`~~ — DONE (b9691c2, cf8cfd5)
-- Track whether the chosen CSP-narrow update for Phase 2 needs a Vite recipe research pass per `research/SUMMARY.md` "Research Flags."
-- ~~`.planning/phases/02-read-path/02-REVIEW.md` — 3 warnings (WR-01 stale token, WR-02 thumbUrl guard, WR-03 dialog token-less) still open~~ — DONE (all three fixed inline during Phase 4 execution; 02-REVIEW.md marked resolved 2026-05-12)
-- Execute Phase 6 plans: `06-01-PLAN.md` (VaccinationGroupCard.vue + groupedVaccinations), `06-02-PLAN.md` (VaccinationGroupPanel.vue + Drawer wiring) — next action.
-- Plan Phase 7 via `/gsd-plan-phase 7` after Phase 6 is complete.
+- Plan Phase 10 via `/gsd-plan-phase 10` — next action.
 
 ### Active Blockers
 
 None.
 
-### Risk Register (carried into v1.2 planning)
+### Risk Register (v2.0)
 
-- **Pitfall 1 (CRITICAL):** per-user isolation only client-side — gated by Phase 1 BACK-03 + BACK-05 smoke test. RESOLVED.
-- **Pitfall 2 (HIGH):** filter-string injection — addressed in Phase 3 WRITE-08 and reinforced in mapper conventions. RESOLVED.
-- **Pitfall 3 (HIGH):** save loop never refreshes IDs — addressed in Phase 3 WRITE-04 + WRITE-09 test. RESOLVED.
-- **Pitfall 4 (HIGH):** delete only mutates local state — addressed in Phase 3 WRITE-06. RESOLVED.
-- **Pitfall 5 (HIGH):** PDF.js XSS / CVE-2024-4367 — addressed in Phase 1 FRONT-01 (version pin only; READ-06 CSP dropped — pdfjs incompatible with strict meta CSP). RESOLVED.
-- **Pitfall 6 (HIGH):** orphan files on delete — addressed in Phase 3 WRITE-06 (5s 404 verification) and Phase 4 POLISH-05. RESOLVED.
-- **Pitfall 7 (HIGH privacy):** EXIF GPS leak — addressed in Phase 3 WRITE-03. RESOLVED.
-- **Pitfall 13 (CRITICAL operational):** dev creds in production bundle — addressed in Phase 0 (CLEAN-01..03). RESOLVED.
-- **v1.1 NEW — schema migration with no data loss:** vaccine_type added as optional in PocketBase; existing records default to empty string. Verify no records deleted or corrupted after field addition.
-- **v1.2 NEW — Uncategorized pinning under all sort modes:** SORT-01 requires Uncategorized always pinned last. The computed sort logic must handle this as a post-sort fixup, not inline, to avoid coupling with the sort direction.
+- **JsBarcode throws on invalid input (CRITICAL):** Every JsBarcode() call must be wrapped in try/catch. On catch, render card_number as large plain text. Add Zod pre-validation per format. Never pass empty string. (Research: BR-1)
+- **PrimeVue ColorPicker emits hex without leading hash (HIGH):** Store without hash. Use toCSS(hex) in all CSS bindings. Zod validates [0-9a-fA-F]{6}. (Research: CP-1)
+- **iOS fullscreen API does nothing (HIGH):** Use position: fixed; inset: 0; z-index: 9999 viewport overlay — not the Fullscreen API. (Research: FS-2)
+- **Screen dims mid-scan (HIGH):** navigator.wakeLock.request('screen') in try/catch when scan overlay opens. Re-acquire on visibilitychange. (Research: FS-1)
+- **White background behind barcodes is non-negotiable (HIGH):** Use BARCODE_FOREGROUND=#000000 and BARCODE_BACKGROUND=#ffffff constants. Wrap SVG in bg-white container. (Research: BR-2)
+- **ColorPicker initial value ignored inside PrimeVue Form (HIGH):** Use direct v-model refs in ManageMembership.vue — do not use @primevue/forms controlled system. (Research: CP-3 / PrimeVue issue #8135)
+- **PocketBase auto-cancel silently drops parallel fetches (MEDIUM):** Use distinct requestKey strings on every getFullList call. (Research: MR-5)
+- **Watcher fires before SVG element mounts (MEDIUM):** Use useTemplateRef and check svgRef.value before calling JsBarcode. Pattern: onMounted(render) + watch(barcodeValue, render) without immediate. (Research: BR-5)
 
 ## Deferred Items
 
@@ -159,14 +171,14 @@ Known deferred items at close: 11 (see above)
 
 **Last session:** 2026-05-13T12:00:00Z
 
-**Next session entry point:** All 9 phases complete. Consider `/gsd-complete-milestone` to archive and prepare for next milestone, or `/gsd-progress` to review.
+**Next session entry point:** v2.0 roadmap defined. Start with `/gsd-plan-phase 10` to plan the VaccinationsTab.vue extraction.
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/VaccinationGroupPanel.vue` — Phase 9 added edit/delete emits + View/Edit/Delete button row (adaae31)
-- `src/components/projects/wallecx/WallecxApp.vue` — Phase 9 wired @edit/@delete; WR-01/WR-02 fixed: selectedGroup re-derived from groupedVaccinations after delete/edit (719ae2a, bd2c3eb)
-- `.planning/phases/09-restore-edit-delete-in-grouped-view/09-HUMAN-UAT.md` — 4 browser tests approved by user
+- `.planning/ROADMAP.md` — v2.0 milestone section appended (Phases 10–13)
+- `.planning/REQUIREMENTS.md` — traceability table updated with phase assignments
+- `src/components/projects/wallecx/WallecxApp.vue` — target for Phase 10 extraction (currently owns all vaccination state)
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-12 — v1.2 roadmap created (Phase 7: Toolbar — Search & Sort, Phase 8: View Toggle)*
+*Last updated: 2026-05-13 — v2.0 roadmap created (Phases 10–13); 22 requirements mapped; STATE.md updated with v2.0 risk register and key decisions*
