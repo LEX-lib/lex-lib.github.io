@@ -33,7 +33,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 **Milestone goal:** Add a persistent toolbar above the Wallecx grouped card view so users can filter groups by vaccine name/type, sort them, and switch between grid and list layouts — all via pure client-side computed/ref changes with no new PocketBase queries.
 
 - [x] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state — completed 2026-05-13
-- [ ] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session
+- [x] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session — completed 2026-05-13
 
 ---
 
@@ -300,8 +300,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Extend WallecxToolbar.vue with viewMode v-model, showToggle prop, and cycling-toggle Button (VIEW-01)
-- [ ] 08-02-PLAN.md — Extend WallecxApp.vue with viewMode ref, sessionStorage hydrate/persist, gridClass computed, toolbar wiring (VIEW-01, VIEW-02)
+- [x] 08-01-PLAN.md — Extend WallecxToolbar.vue with viewMode v-model, showToggle prop, and cycling-toggle Button (VIEW-01)
+- [x] 08-02-PLAN.md — Extend WallecxApp.vue with viewMode ref, sessionStorage hydrate/persist, gridClass computed, toolbar wiring (VIEW-01, VIEW-02)
 
 **UI hint**: yes
 
@@ -354,8 +354,8 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
 | 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
 | 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
-| 8. View Toggle | 0/2 | Not started | - |
+| 8. View Toggle | 2/2 | Complete | 2026-05-13 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 8 planned: 2 plans (08-01-PLAN.md, 08-02-PLAN.md)*
+*Last updated: 2026-05-13 — Phase 8 complete: VIEW-01, VIEW-02 verified*

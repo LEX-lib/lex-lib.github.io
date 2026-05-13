@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: — Search, Sort & View Toggle
-status: Phase 8 planned (2 plans, 2 waves); ready to execute
-last_updated: "2026-05-13T04:00:00.000Z"
-last_activity: 2026-05-13 — Phase 8 planning session: UI-SPEC approved (c969991, 59cd37a), 08-01-PLAN.md + 08-02-PLAN.md created, verified 10/10 dimensions
+status: Phase 8 complete (2/2 plans); milestone v1.2 done
+last_updated: "2026-05-13T11:10:00.000Z"
+last_activity: 2026-05-13 — Phase 8 executed: VIEW-01 + VIEW-02 verified (b0f1ddd, d96563e)
 progress:
   total_phases: 9
-  completed_phases: 8
-  total_plans: 23
-  completed_plans: 23
+  completed_phases: 9
+  total_plans: 25
+  completed_plans: 25
   percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-13 — Phase 8 context captured (08-CONTEXT.md + 08-DISCUSSION-LOG.md committed in 944fb9c). Ready for `/gsd-plan-phase 8`.
+**Last updated:** 2026-05-13 — Phase 8 complete. VIEW-01 (view toggle + sessionStorage persistence) and VIEW-02 (VaccinationGroupCard untouched) verified. Milestone v1.2 done.
 
 ## Project Reference
 
@@ -26,11 +26,11 @@ progress:
 
 ## Current Position
 
-**Milestone:** v1.2 — Search, Sort & View Toggle
-**Phase:** Phase 7 (complete); Phase 8 next
-**Plan:** 08-01-PLAN.md (next — View Toggle)
-**Status:** 07-01 complete (af0c524); 07-02 complete (d3cce20); Phase 7 done. Phase 8 context captured (944fb9c).
-**Last activity:** 2026-05-13 — Phase 8 discuss session: 08-CONTEXT.md + 08-DISCUSSION-LOG.md committed (944fb9c)
+**Milestone:** v1.2 — Search, Sort & View Toggle (COMPLETE)
+**Phase:** Phase 8 complete
+**Plan:** All plans complete (08-01, 08-02)
+**Status:** 08-01 complete (b0f1ddd); 08-02 complete (d96563e); Phase 8 done. Milestone v1.2 done.
+**Last activity:** 2026-05-13 — Phase 8 executed: viewMode toggle + sessionStorage persistence shipped
 
 ## Roadmap Snapshot
 
@@ -44,7 +44,7 @@ progress:
 | 5 | Schema, Types & Form Field | Complete | 3 (GROUP-01, GROUP-02, GROUP-03) |
 | 6 | Grouped Card View & Group Detail Panel | Not started | 4 (GROUP-04, GROUP-05, GROUP-06, GROUP-07) |
 | 7 | Toolbar — Search & Sort | Not started | 3 (SEARCH-01, SEARCH-02, SORT-01) |
-| 8 | View Toggle | Not started | 2 (VIEW-01, VIEW-02) |
+| 8 | View Toggle | Complete | 2 (VIEW-01, VIEW-02) |
 
 v1.0 Coverage: 34 / 34 requirements mapped. No orphans.
 v1.1 Coverage: 7 / 7 requirements mapped. No orphans.
@@ -52,9 +52,9 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 
 ## Performance Metrics
 
-- Phases shipped: 7 (Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5, Phase 6)
-- Plans shipped: 21 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03, 04-04, 06-01, 06-02, 07-01, 07-02)
-- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 3 / 5 v1.2 (SEARCH-01, SEARCH-02, SORT-01)
+- Phases shipped: 9 (Phase 0–8)
+- Plans shipped: 25 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02)
+- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 5 / 5 v1.2
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
 
 ## Accumulated Context
@@ -137,15 +137,15 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-13T02:02:00Z
+**Last session:** 2026-05-13T11:10:00Z
 
-**Next session entry point:** Plan and execute Phase 8 — View Toggle (VIEW-01, VIEW-02).
+**Next session entry point:** Milestone v1.2 complete. Consider `/gsd-complete-milestone` to archive v1.2 and prepare for next milestone, or `/gsd-progress` to review.
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/WallecxApp.vue` — extended in 07-02 (d3cce20); target for Phase 8 view toggle
-- `src/components/projects/wallecx/WallecxToolbar.vue` — Phase 8 extends this with a toggle button
-- `.planning/phases/07-toolbar-search-sort/07-02-SUMMARY.md` — 07-02 execution summary
+- `src/components/projects/wallecx/WallecxToolbar.vue` — Phase 8 added viewMode v-model + cycling toggle Button (b0f1ddd)
+- `src/components/projects/wallecx/WallecxApp.vue` — Phase 8 added viewMode ref, gridClass, sessionStorage persistence (d96563e)
+- `.planning/phases/08-view-toggle/08-HUMAN-UAT.md` — 4 browser tests approved by user
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
