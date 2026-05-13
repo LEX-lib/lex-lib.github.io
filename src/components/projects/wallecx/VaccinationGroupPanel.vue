@@ -9,6 +9,8 @@ defineProps<{
 
 const emit = defineEmits<{
   view: [record: Vaccinations];
+  edit: [record: Vaccinations];
+  delete: [record: Vaccinations];
 }>();
 
 function displayDate(iso: string): string {
@@ -28,9 +30,13 @@ function displayDate(iso: string): string {
     <Column header="Lot" style="width: 6rem">
       <template #body="{ data }">{{ data.lot_number || '—' }}</template>
     </Column>
-    <Column header="" style="width: 8rem">
+    <Column header="" style="width: 14rem">
       <template #body="{ data }">
-        <Button size="small" label="View Record" @click="emit('view', data)" />
+        <div class="flex gap-1">
+          <Button size="small" label="View" @click="emit('view', data)" />
+          <Button size="small" icon="pi pi-pencil" label="Edit" severity="secondary" @click="emit('edit', data)" />
+          <Button size="small" icon="pi pi-trash" label="Delete" severity="danger" @click="emit('delete', data)" />
+        </div>
       </template>
     </Column>
   </DataTable>
