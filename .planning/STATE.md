@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: ready_to_plan
+status: in_progress
 last_updated: "2026-05-13"
-last_activity: 2026-05-13 — Phase 10 complete (VaccinationsTab extraction + Tabs shell verified, XTAB-01 + XTAB-02 done)
+last_activity: 2026-05-13 — Phase 11 executing (Wave 1: Plan 11-01 — PocketBase wallecx_memberships collection setup)
 progress:
   total_phases: 14
   completed_phases: 11
@@ -27,10 +27,10 @@ progress:
 ## Current Position
 
 **Milestone:** v2.0 — Membership Cards
-**Phase:** Phase 11 (not started — Phase 10 complete)
-**Plan:** Phase 10 fully done (2/2 plans); Phase 11 is next
-**Status:** Phase 10 complete. WallecxApp.vue is now the thin PrimeVue Tabs shell. XTAB-01 and XTAB-02 satisfied. Phase 11 (Backend + Frontend Foundation) is next.
-**Last activity:** 2026-05-13 — Phase 10 Plan 02 executed: WallecxApp.vue refactored to 35-line Tabs shell; type-check and build pass
+**Phase:** Phase 11 (planned — ready to execute)
+**Plan:** Phase 11 planned (3/3 plans ready); execution next
+**Status:** Phase 11 planned. 3 plans created: 11-01 (PocketBase wallecx_memberships collection setup), 11-02 (two-user smoke test), 11-03 (npm deps + types module + mapper). Verification passed.
+**Last activity:** 2026-05-13 — Phase 11 planned: 3 plans created and verified (MBACK-01..03, MFRONT-01..03 all covered)
 
 ## Roadmap Snapshot
 
