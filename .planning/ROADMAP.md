@@ -50,7 +50,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 
 **Milestone goal:** Add a second Wallecx vault record type — membership/loyalty/insurance/ID cards — with barcode and QR code rendering, a full-screen scan overlay for counter use, a coloured card grid, and full CRUD. Wallecx becomes a tabbed shell switching between Vaccinations and Membership Cards.
 
-- [ ] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression
+- [ ] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (1/2 plans complete)
 - [ ] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test
 - [ ] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay
 - [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
@@ -370,7 +370,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Create VaccinationsTab.vue (full extraction) and MembershipsTab.vue (stub) (XTAB-01, XTAB-02)
+- [x] 10-01-PLAN.md — Create VaccinationsTab.vue (full extraction) and MembershipsTab.vue (stub) (XTAB-01, XTAB-02)
 - [ ] 10-02-PLAN.md — Refactor WallecxApp.vue into Tabs shell and verify build passes (XTAB-01, XTAB-02)
 
 **UI hint**: yes
@@ -518,7 +518,7 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 7. Toolbar — Search & Sort | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
-| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 0/2 | Not started | - |
+| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 1/2 | In progress | - |
 | 11. Backend + Frontend Foundation | v2.0 | 0/TBD | Not started | - |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
