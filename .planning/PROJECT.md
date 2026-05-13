@@ -136,9 +136,9 @@ If everything else fails, this single capability must work.
 | Multi-user from day 1 (vs. single-user for the owner only) | Reuses existing PocketBase auth; per-user rules avoid a future migration | Validated Phase 1 |
 | File attachments included in v1 (vs. text fields only) | Real-world utility; the photo of the card *is* the record for most people | Validated Phase 1 |
 | Standard field set (name, date, dose, lot, location) — not Minimal, not Comprehensive | "Comprehensive" pulls in clinical fields the user doesn't need; "Minimal" loses the lot # which is genuinely useful for recalls | Validated Phase 1 |
-| List + detail view (vs. list-only or calendar) | Matches the LexTrack pattern; calendar adds build cost without earning its keep for a small dataset | — Pending Phase 2 |
+| List + detail view (vs. list-only or calendar) | Matches the LexTrack pattern; calendar adds build cost without earning its keep for a small dataset | ✓ Validated Phase 2 |
 | Defer all other vault record types to future phases | "I just plainly want to save my vaccination records" — narrow first slice. Schema *allows* future generalization without pre-building it | Validated Phase 1 |
-| Re-use Lexarium design system (navy/amber + Rubik) | No reason to introduce a new visual identity for one mini-app | — Pending Phase 4 |
+| Re-use Lexarium design system (navy/amber + Rubik) | No reason to introduce a new visual identity for one mini-app | ✓ Validated Phase 4 |
 
 ## Evolution
 
@@ -157,23 +157,15 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
-## Current Milestone: v1.2 Search, Sort & View Toggle
+## Shipped Milestones
 
-**Goal:** Add a persistent toolbar above the Wallecx grouped card view so users can filter groups by vaccine name/type, sort them by name or type, and switch between a 2-column card grid and a compact single-column list.
+| Milestone | Phases | Shipped | Archive |
+|-----------|--------|---------|---------|
+| v1.0 MVP | 0–4 | 2026-05-12 | [v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md) |
+| v1.1 Vaccine Grouping | 5–6 | 2026-05-12 | — |
+| v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 
-**Target features:**
-- Search input filtering group cards by vaccine name or vaccine type (case-insensitive, matches any record in the group)
-- Sort control: Vaccine type A–Z/Z–A or Vaccine name A–Z/Z–A (Uncategorized always pinned last)
-- View toggle: 2-column card grid ↔ compact single-column list (same VaccinationGroupCard, layout class only)
-- Toolbar above the card grid — all controls in one row, no new PocketBase queries
-
-### Active (v1.2)
-
-- [ ] SEARCH-01: Search input filters visible group cards by vaccine_type or vaccine_name (case-insensitive, real-time)
-- [ ] SEARCH-02: "No results" empty state when search yields no matching groups
-- [ ] SORT-01: Sort control with 4 options — Type A–Z (default), Type Z–A, Name A–Z, Name Z–A; Uncategorized pinned last always
-- [ ] VIEW-01: View toggle switches between 2-column grid and compact single-column list; persists for browser session
-- [ ] VIEW-02: Compact list reuses VaccinationGroupCard unchanged — grid-cols-1 only
+All 9 phases complete. Consider `/gsd-new-milestone` to plan the next milestone.
 
 ---
-*Last updated: 2026-05-12 — Milestone v1.1 (Vaccine Grouping) complete. Milestone v1.2 (Search, Sort & View Toggle) started.*
+*Last updated: 2026-05-13 — v1.0 milestone archived. All three milestones (v1.0, v1.1, v1.2) shipped.*

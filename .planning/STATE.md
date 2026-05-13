@@ -139,6 +139,22 @@ None.
 - **v1.1 NEW — schema migration with no data loss:** vaccine_type added as optional in PocketBase; existing records default to empty string. Verify no records deleted or corrupted after field addition.
 - **v1.2 NEW — Uncategorized pinning under all sort modes:** SORT-01 requires Uncategorized always pinned last. The computed sort logic must handle this as a post-sort fixup, not inline, to avoid coupling with the sort direction.
 
+## Deferred Items
+
+Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 00: 00-HUMAN-UAT.md | partial — 1 pending scenario |
+| uat_gap | Phase 08: 08-HUMAN-UAT.md | partial — 4 pending scenarios |
+| verification_gap | Phase 00: 00-VERIFICATION.md | human_needed |
+| verification_gap | Phase 02: 02-VERIFICATION.md | human_needed |
+| verification_gap | Phase 04: 04-VERIFICATION.md | human_needed |
+| verification_gap | Phase 05: 05-VERIFICATION.md | human_needed |
+| verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
+
+Known deferred items at close: 11 (see above)
+
 ## Session Continuity
 
 **Last session:** 2026-05-13T12:00:00Z

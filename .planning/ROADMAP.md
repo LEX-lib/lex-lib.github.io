@@ -1,21 +1,28 @@
 # Roadmap: Wallecx (Lexarium milestone)
 
 **Created:** 2026-05-10
-**Milestone:** Wallecx — Personal Records Vault, Phase 1 (Vaccination Records)
-**Granularity:** coarse (5 phases, 1–3 plans each)
-**Mode:** YOLO, parallelization on, balanced models, _auto_chain_active honored from config
+**Mode:** YOLO, parallelization on, balanced models
 
-## Core Value
+## Milestones
 
-Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them. Per-user privacy is enforced server-side; the route guard is UX only.
+- ✅ **v1.0 MVP** — Phases 0–4 (shipped 2026-05-12) — [archive](.planning/milestones/v1.0-ROADMAP.md)
+- ✅ **v1.1 Vaccine Grouping** — Phases 5–6 (shipped 2026-05-12)
+- ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
 
 ## Phases
 
-- [x] **Phase 0: Pre-Wallecx Cleanup** — Strip dev-login credentials and rotate before sensitive health data exists
-- [x] **Phase 1: Backend + Frontend Foundation** — PocketBase collection + rules + types + mapper + route shell, with cross-user isolation verified
-- [x] **Phase 2: Read Path (List + Detail + Attachment Preview)** — Date-sorted list, detail view, and image/PDF preview with hardened CSP — completed 2026-05-11
-- [x] **Phase 3: Write Path (Create / Edit / Delete with Attachments)** — Zod-validated dialog, EXIF-stripped image upload, save-loop-safe mapper, confirmed delete, first repo unit test — completed 2026-05-12
-- [x] **Phase 4: Discovery & Polish** — Projects directory tile, design-token sweep, JSON export, route-guard test, and "Looks Done But Isn't" checklist sign-off — completed 2026-05-12
+<details>
+<summary>✅ v1.0 MVP (Phases 0–4) — SHIPPED 2026-05-12</summary>
+
+- [x] Phase 0: Pre-Wallecx Cleanup (2/2 plans) — completed 2026-05-10
+- [x] Phase 1: Backend + Frontend Foundation (3/3 plans) — completed 2026-05-11
+- [x] Phase 2: Read Path (4/4 plans) — completed 2026-05-11
+- [x] Phase 3: Write Path (4/4 plans) — completed 2026-05-12
+- [x] Phase 4: Discovery & Polish (4/4 plans) — completed 2026-05-12
+
+Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-ROADMAP.md)
+
+</details>
 
 ---
 
@@ -369,18 +376,18 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 0. Pre-Wallecx Cleanup | 2/2 | Complete | 2026-05-10 |
-| 1. Backend + Frontend Foundation | 3/3 | Complete | 2026-05-11 |
-| 2. Read Path | 4/4 | Complete | 2026-05-11 |
-| 3. Write Path | 4/4 | Complete | 2026-05-12 |
-| 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
-| 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
-| 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
-| 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
-| 8. View Toggle | 2/2 | Complete | 2026-05-13 |
-| 9. Restore Edit & Delete in Grouped View | 1/1 | Complete | 2026-05-13 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 0. Pre-Wallecx Cleanup | v1.0 | 2/2 | Complete | 2026-05-10 |
+| 1. Backend + Frontend Foundation | v1.0 | 3/3 | Complete | 2026-05-11 |
+| 2. Read Path | v1.0 | 4/4 | Complete | 2026-05-11 |
+| 3. Write Path | v1.0 | 4/4 | Complete | 2026-05-12 |
+| 4. Discovery & Polish | v1.0 | 4/4 | Complete | 2026-05-12 |
+| 5. Schema, Types & Form Field | v1.1 | 2/2 | Complete | 2026-05-12 |
+| 6. Grouped Card View & Group Detail Panel | v1.1 | 2/2 | Complete | 2026-05-12 |
+| 7. Toolbar — Search & Sort | v1.2 | 2/2 | Complete | 2026-05-13 |
+| 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
+| 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
 
 ---
 *Roadmap created: 2026-05-10*
