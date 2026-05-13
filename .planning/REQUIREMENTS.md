@@ -11,8 +11,8 @@ Requirements for the Membership Cards milestone. Phases continue numbering from 
 
 Prerequisites for the membership cards UI — `WallecxApp.vue` must become a tabbed shell before membership components can be added.
 
-- [ ] **XTAB-01**: Vaccination logic extracted into `VaccinationsTab.vue`; `WallecxApp.vue` becomes a `<Tabs>` shell with "Vaccinations" and "Membership Cards" tabs — both tabs visible and navigable
-- [ ] **XTAB-02**: All existing vaccination features (group card view, search/sort, view toggle, edit/delete in drawer) work identically after the extraction — no regression
+- [x] **XTAB-01**: Vaccination logic extracted into `VaccinationsTab.vue`; `WallecxApp.vue` becomes a `<Tabs>` shell with "Vaccinations" and "Membership Cards" tabs — both tabs visible and navigable
+- [x] **XTAB-02**: All existing vaccination features (group card view, search/sort, view toggle, edit/delete in drawer) work identically after the extraction — no regression
 
 ### Backend (PocketBase)
 
@@ -88,8 +88,8 @@ Tracked but not in this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| XTAB-01 | Phase 10 | Pending |
-| XTAB-02 | Phase 10 | Pending |
+| XTAB-01 | Phase 10 | Verified (2026-05-13) |
+| XTAB-02 | Phase 10 | Verified (2026-05-13) |
 | MBACK-01 | Phase 11 | Pending |
 | MBACK-02 | Phase 11 | Pending |
 | MBACK-03 | Phase 11 | Pending |

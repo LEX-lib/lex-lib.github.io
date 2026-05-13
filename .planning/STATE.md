@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: executing
+status: ready_to_plan
 last_updated: "2026-05-13"
-last_activity: 2026-05-13 — Phase 10 Plan 02 executed (WallecxApp.vue refactored to thin Tabs shell; Phase 10 complete)
+last_activity: 2026-05-13 — Phase 10 complete (VaccinationsTab extraction + Tabs shell verified, XTAB-01 + XTAB-02 done)
 progress:
   total_phases: 14
   completed_phases: 11

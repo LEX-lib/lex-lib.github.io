@@ -518,11 +518,11 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 7. Toolbar — Search & Sort | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
-| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 1/2 | In progress | - |
+| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 2/2 | Complete | 2026-05-13 |
 | 11. Backend + Frontend Foundation | v2.0 | 0/TBD | Not started | - |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — v2.0 Membership Cards roadmap appended: Phases 10–13 (22 requirements, 4 phases)*
+*Last updated: 2026-05-13 — Phase 10 complete (VaccinationsTab extraction + Tabs shell, 2/2 plans)*
