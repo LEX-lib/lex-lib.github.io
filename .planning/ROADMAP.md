@@ -50,7 +50,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 
 **Milestone goal:** Add a second Wallecx vault record type — membership/loyalty/insurance/ID cards — with barcode and QR code rendering, a full-screen scan overlay for counter use, a coloured card grid, and full CRUD. Wallecx becomes a tabbed shell switching between Vaccinations and Membership Cards.
 
-- [ ] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (1/2 plans complete)
+- [x] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (2/2 plans complete)
 - [ ] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test
 - [ ] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay
 - [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
@@ -371,7 +371,7 @@ Plans:
 
 Plans:
 - [x] 10-01-PLAN.md — Create VaccinationsTab.vue (full extraction) and MembershipsTab.vue (stub) (XTAB-01, XTAB-02)
-- [ ] 10-02-PLAN.md — Refactor WallecxApp.vue into Tabs shell and verify build passes (XTAB-01, XTAB-02)
+- [x] 10-02-PLAN.md — Refactor WallecxApp.vue into Tabs shell and verify build passes (XTAB-01, XTAB-02)
 
 **UI hint**: yes
 

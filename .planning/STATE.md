@@ -4,33 +4,33 @@ milestone: v2.0
 milestone_name: Membership Cards
 status: executing
 last_updated: "2026-05-13"
-last_activity: 2026-05-13 — Phase 10 Plan 01 executed (VaccinationsTab.vue + MembershipsTab.vue created)
+last_activity: 2026-05-13 — Phase 10 Plan 02 executed (WallecxApp.vue refactored to thin Tabs shell; Phase 10 complete)
 progress:
   total_phases: 14
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 28
-  completed_plans: 27
-  percent: 96
+  completed_plans: 28
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-13 — Phase 10 Plan 01 executed. VaccinationsTab.vue created (full extraction) and MembershipsTab.vue created (stub). Plan 02 (WallecxApp shell refactor) is the next step.
+**Last updated:** 2026-05-13 — Phase 10 Plan 02 executed. WallecxApp.vue refactored to a 35-line thin PrimeVue Tabs shell. Phase 10 complete (2/2 plans done). XTAB-01 and XTAB-02 fully satisfied. Phase 11 (Backend + Frontend Foundation for Memberships) is next.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx v2.0 Membership Cards
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own records — vaccination records and now membership/loyalty cards — without ever losing access to them.
-**Current focus:** Phase 10 — Tabs Shell & VaccinationsTab Extraction (next action: `/gsd-execute-phase 10`)
+**Current focus:** Phase 11 — Backend + Frontend Foundation (Memberships) (next action: `/gsd-execute-phase 11`)
 
 ## Current Position
 
 **Milestone:** v2.0 — Membership Cards
-**Phase:** Phase 10 (in progress — Plan 01 complete, Plan 02 pending)
-**Plan:** 2 plans in 2 waves (10-01 complete, 10-02 next)
-**Status:** Phase 10 Plan 01 executed. VaccinationsTab.vue and MembershipsTab.vue created. Plan 02 (WallecxApp shell refactor) is next.
-**Last activity:** 2026-05-13 — Phase 10 Plan 01 executed: VaccinationsTab.vue (full extraction) + MembershipsTab.vue (stub) created; type-check passes
+**Phase:** Phase 11 (not started — Phase 10 complete)
+**Plan:** Phase 10 fully done (2/2 plans); Phase 11 is next
+**Status:** Phase 10 complete. WallecxApp.vue is now the thin PrimeVue Tabs shell. XTAB-01 and XTAB-02 satisfied. Phase 11 (Backend + Frontend Foundation) is next.
+**Last activity:** 2026-05-13 — Phase 10 Plan 02 executed: WallecxApp.vue refactored to 35-line Tabs shell; type-check and build pass
 
 ## Roadmap Snapshot
 
@@ -38,7 +38,7 @@ progress:
 
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
-| 10 | Tabs Shell — VaccinationsTab Extraction | In progress (1/2 plans) | 2 (XTAB-01, XTAB-02) |
+| 10 | Tabs Shell — VaccinationsTab Extraction | Complete (2/2 plans) | 2 (XTAB-01, XTAB-02) |
 | 11 | Backend + Frontend Foundation | Not started | 6 (MBACK-01..03, MFRONT-01..03) |
 | 12 | Read Path — Card Grid, Barcode Display & Detail | Not started | 8 (SCAN-01..04, MREAD-01..04) |
 | 13 | Write Path — ManageMembership CRUD | Not started | 6 (MWRITE-01..06) |
@@ -62,11 +62,11 @@ v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
 
 ## Performance Metrics
 
-- Phases shipped (lifetime): 10 (Phase 0–9, all complete)
-- Plans shipped (lifetime): 27 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02, 09-01, 10-01)
-- Requirements verified: 33/34 v1.0 (READ-06 dropped); 7/7 v1.1; 5/5 v1.2; 2/2 Phase 9
+- Phases shipped (lifetime): 11 (Phase 0–10, all complete)
+- Plans shipped (lifetime): 28 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02, 09-01, 10-01..02)
+- Requirements verified: 33/34 v1.0 (READ-06 dropped); 7/7 v1.1; 5/5 v1.2; 2/2 Phase 9; 2/2 Phase 10 (XTAB-01, XTAB-02)
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
-- v2.0 phases planned: 4 | v2.0 phases complete: 0 (Phase 10 in progress: 1/2 plans done)
+- v2.0 phases planned: 4 | v2.0 phases complete: 1 (Phase 10 done: 2/2 plans)
 
 ## Roadmap Evolution
 
@@ -139,9 +139,15 @@ v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
 - **VaccinationDetail remains auto-imported in VaccinationsTab.vue.** Resolved by unplugin-vue-components — matching the existing WallecxApp.vue pattern. No explicit import added.
 - **MembershipsTab.vue omits the script block entirely.** Purely presentational stub — no empty `<script setup>` block needed.
 
+### Decisions from 10-02 Execution
+
+- **activeTab = ref<string>("vaccinations") — string type, not number.** PrimeVue 4 Tabs binds Tab/TabPanel by `value` prop (string literals), not numeric index.
+- **h1 heading is above `<Tabs>`, not inside a TabPanel.** Heading belongs to the page/card context, not to tab content — matches UI-SPEC rationale.
+- **No explicit imports of PrimeVue Tabs components in WallecxApp.vue.** Tabs, TabList, Tab, TabPanels, TabPanel are all auto-resolved by PrimeVueResolver — matching the existing codebase pattern.
+
 ### Open Todos
 
-- Execute Plan 02: refactor WallecxApp.vue into a thin PrimeVue Tabs shell using VaccinationsTab.vue and MembershipsTab.vue.
+- Execute Phase 11: Backend + Frontend Foundation for Memberships (PocketBase collection, types, MembershipsTab wiring).
 
 ### Active Blockers
 
@@ -176,19 +182,19 @@ Known deferred items at close: 11 (see above)
 
 ## Session Continuity
 
-**Last session:** 2026-05-13T06:53:26Z
+**Last session:** 2026-05-13T07:01:00Z
 
-**Stopped at:** Completed 10-01-PLAN.md
+**Stopped at:** Completed 10-02-PLAN.md — Phase 10 fully done
 
-**Next session entry point:** Execute Plan 10-02 — refactor WallecxApp.vue into a thin PrimeVue Tabs shell using VaccinationsTab.vue and MembershipsTab.vue.
+**Next session entry point:** Execute Phase 11 — Backend + Frontend Foundation for Memberships. Start with `/gsd-execute-phase 11`.
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/VaccinationsTab.vue` — created in 10-01; all vaccination logic extracted verbatim
-- `src/components/projects/wallecx/MembershipsTab.vue` — created in 10-01; pure-template stub
-- `src/components/projects/wallecx/WallecxApp.vue` — target for Plan 02 refactor (becomes thin Tabs shell)
-- `.planning/phases/10-tabs-shell-vaccinationstab-extraction/10-01-SUMMARY.md` — Plan 01 summary
+- `src/components/projects/wallecx/WallecxApp.vue` — thin Tabs shell (35 lines); finalized in 10-02
+- `src/components/projects/wallecx/VaccinationsTab.vue` — self-contained vaccination component; no changes needed
+- `src/components/projects/wallecx/MembershipsTab.vue` — stub; Phase 11+ will flesh this out
+- `.planning/phases/10-tabs-shell-vaccinationstab-extraction/10-02-SUMMARY.md` — Plan 02 summary
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-13 — Phase 10 Plan 01 executed: VaccinationsTab.vue + MembershipsTab.vue created; type-check passes; Plan 02 next*
+*Last updated: 2026-05-13 — Phase 10 Plan 02 executed: WallecxApp.vue refactored to thin Tabs shell; Phase 10 complete (XTAB-01, XTAB-02 satisfied); Phase 11 next*
