@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { useConfirm } from "primevue/useconfirm";
@@ -9,6 +9,8 @@ import ManageVaccination from "./ManageVaccination.vue";
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 import WallecxToolbar from './WallecxToolbar.vue';
+
+const VIEW_MODE_STORAGE_KEY = 'wallecx:view-mode';
 
 // --- STATE ---
 const records = ref<Vaccinations[]>([]);
@@ -25,6 +27,7 @@ const showGroupPanel = ref(false);
 const selectedGroup = ref<VaccineGroup | null>(null);
 const searchQuery = ref<string>('');
 const sortMode = ref<string>('type-asc');
+const viewMode = ref<'grid' | 'list'>('grid');
 
 // --- GROUPING ---
 interface VaccineGroup {
@@ -109,12 +112,28 @@ const displayedGroups = computed<VaccineGroup[]>(() => {
   return [...named, ...uncategorized];
 });
 
+const gridClass = computed(() =>
+  viewMode.value === 'list'
+    ? 'grid grid-cols-1 gap-4'
+    : 'grid grid-cols-1 sm:grid-cols-2 gap-4',
+);
+
 // WR-01: refresh listToken before PocketBase's 5-min TTL expires
 const LIST_TOKEN_TTL_MS = 4 * 60 * 1000;
 let listTokenTimer: ReturnType<typeof setInterval> | null = null;
 
 // --- LOGIC ---
 onMounted(async () => {
+  // Phase 8 / VIEW-01: restore viewMode from sessionStorage before any render that depends on it
+  try {
+    const stored = sessionStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    if (stored === 'grid' || stored === 'list') {
+      viewMode.value = stored;
+    }
+    // Any other value (null, 'foo', JSON garbage) — keep default 'grid'
+  } catch {
+    // sessionStorage may throw in privacy-mode iframes; fall back to default silently
+  }
   isLoading.value = true;
   try {
     records.value = await pb
@@ -138,6 +157,15 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (listTokenTimer) clearInterval(listTokenTimer);
+});
+
+// Phase 8 / VIEW-01: persist viewMode on every change (silent fallback if sessionStorage write throws)
+watch(viewMode, (next) => {
+  try {
+    sessionStorage.setItem(VIEW_MODE_STORAGE_KEY, next);
+  } catch {
+    // sessionStorage write failures are non-fatal — user just won't have persistence this session
+  }
 });
 
 async function openDetail(record: Vaccinations): Promise<void> {
@@ -291,6 +319,8 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       <WallecxToolbar
         v-model:search-query="searchQuery"
         v-model:sort-mode="sortMode"
+        v-model:view-mode="viewMode"
+        :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0"
       />
 
       <!-- Loading state: skeleton card grid -->
@@ -342,7 +372,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       </div>
 
       <!-- Grouped card grid (GROUP-04, GROUP-05, D-03) -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div v-else :class="gridClass">
         <VaccinationGroupCard
           v-for="group in displayedGroups"
           :key="group.vaccineType"
