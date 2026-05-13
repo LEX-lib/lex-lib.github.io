@@ -1,21 +1,21 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: — Vaccine Grouping
-status: Phase 7 in progress (07-01 complete, 07-02 pending); Phase 8 roadmapped
-last_updated: "2026-05-13T01:52:00.000Z"
-last_activity: 2026-05-13 — 07-01 executed (WallecxToolbar.vue created, af0c524)
+milestone: v1.2
+milestone_name: — Search, Sort & View Toggle
+status: Phase 7 complete (07-01, 07-02 done); Phase 8 next
+last_updated: "2026-05-13T02:02:00.000Z"
+last_activity: 2026-05-13 — 07-02 executed (WallecxApp.vue search/sort wiring, d3cce20)
 progress:
   total_phases: 9
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 23
-  completed_plans: 22
-  percent: 96
+  completed_plans: 23
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-12 — Milestone v1.2 roadmap created: Phase 7 (Toolbar — Search & Sort) and Phase 8 (View Toggle).
+**Last updated:** 2026-05-13 — Phase 7 complete: 07-02 executed (WallecxApp.vue search/sort wiring, d3cce20).
 
 ## Project Reference
 
@@ -27,10 +27,10 @@ progress:
 ## Current Position
 
 **Milestone:** v1.2 — Search, Sort & View Toggle
-**Phase:** Phase 7 (in progress)
-**Plan:** 07-02-PLAN.md (Wave 2 — next)
-**Status:** 07-01 complete (af0c524); 07-02 pending
-**Last activity:** 2026-05-13 — 07-01 executed: WallecxToolbar.vue created (af0c524)
+**Phase:** Phase 7 (complete); Phase 8 next
+**Plan:** 08-01-PLAN.md (next — View Toggle)
+**Status:** 07-01 complete (af0c524); 07-02 complete (d3cce20); Phase 7 done
+**Last activity:** 2026-05-13 — 07-02 executed: WallecxApp.vue search/sort wiring complete (d3cce20)
 
 ## Roadmap Snapshot
 
@@ -53,8 +53,8 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 ## Performance Metrics
 
 - Phases shipped: 7 (Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5, Phase 6)
-- Plans shipped: 19 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03, 04-04, 06-01, 06-02)
-- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 0 / 5 v1.2
+- Plans shipped: 21 (00-01, 00-02, 01-01, 01-02, 01-03, 02-01, 02-02, 02-03, 02-04, 03-01, 03-02, 03-03, 03-04, 04-01, 04-02, 04-03, 04-04, 06-01, 06-02, 07-01, 07-02)
+- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 3 / 5 v1.2 (SEARCH-01, SEARCH-02, SORT-01)
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
 
 ## Accumulated Context
@@ -137,16 +137,15 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-13T01:46:17Z
+**Last session:** 2026-05-13T02:02:00Z
 
-**Next session entry point:** Execute 07-02-PLAN.md — wire WallecxToolbar into WallecxApp.vue, add searchQuery/sortMode refs, add displayedGroups computed, add no-results empty state branch.
+**Next session entry point:** Plan and execute Phase 8 — View Toggle (VIEW-01, VIEW-02).
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/WallecxToolbar.vue` — created in 07-01 (af0c524)
-- `src/components/projects/wallecx/WallecxApp.vue` — target for 07-02 (import WallecxToolbar, refs, displayedGroups computed, template wiring)
-- `.planning/phases/07-toolbar-search-sort/07-01-SUMMARY.md` — 07-01 execution summary
-- `.planning/ROADMAP.md` — v1.2 phases appended (Phase 7, Phase 8)
+- `src/components/projects/wallecx/WallecxApp.vue` — extended in 07-02 (d3cce20); target for Phase 8 view toggle
+- `src/components/projects/wallecx/WallecxToolbar.vue` — Phase 8 extends this with a toggle button
+- `.planning/phases/07-toolbar-search-sort/07-02-SUMMARY.md` — 07-02 execution summary
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

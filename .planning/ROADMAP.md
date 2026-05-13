@@ -32,7 +32,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 **Milestone goal:** Add a persistent toolbar above the Wallecx grouped card view so users can filter groups by vaccine name/type, sort them, and switch between grid and list layouts — all via pure client-side computed/ref changes with no new PocketBase queries.
 
-- [ ] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state
+- [x] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state — completed 2026-05-13
 - [ ] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session
 
 ---
@@ -274,8 +274,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — WallecxToolbar.vue new component: search input (IconField + InputIcon + inline clear) + sort Select dropdown; v-model:searchQuery + v-model:sortMode (SEARCH-01, SORT-01)
-- [ ] 07-02-PLAN.md — WallecxApp.vue extensions: searchQuery + sortMode refs, displayedGroups computed (filter + sort + Uncategorized pin), toolbar wiring, no-results empty state branch (SEARCH-01, SEARCH-02, SORT-01)
+- [x] 07-01-PLAN.md — WallecxToolbar.vue new component: search input (IconField + InputIcon + inline clear) + sort Select dropdown; v-model:searchQuery + v-model:sortMode (SEARCH-01, SORT-01)
+- [x] 07-02-PLAN.md — WallecxApp.vue extensions: searchQuery + sortMode refs, displayedGroups computed (filter + sort + Uncategorized pin), toolbar wiring, no-results empty state branch (SEARCH-01, SEARCH-02, SORT-01)
 
 **UI hint**: yes
 
@@ -347,8 +347,8 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 3. Write Path | 4/4 | Complete | 2026-05-12 |
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
-| 6. Grouped Card View & Group Detail Panel | 0/2 | Not started | - |
-| 7. Toolbar — Search & Sort | 0/2 | Not started | - |
+| 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
+| 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | 0/? | Not started | - |
 
 ---
