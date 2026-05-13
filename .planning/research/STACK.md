@@ -345,3 +345,345 @@ That's it. Everything else (`pocketbase`, `primevue`, `zod`, `@primevue/forms`, 
 
 *Stack research for: Wallecx vaccination records (Lexarium mini-app, Phase 1)*
 *Researched: 2026-05-10*
+
+---
+---
+
+# Stack Addendum — Wallecx v2.0 Membership Cards
+
+**Domain:** Barcode/QR rendering + fullscreen scan overlay for the membership cards feature
+**Researched:** 2026-05-13
+**Confidence:** HIGH — all library versions verified via npm registry; bundle sizes measured directly from installed dist files; Vite 8 / Rolldown CJS interop behaviour verified against Rolldown docs and vite.config.ts
+
+> **Scope discipline.** This addendum answers only what is NEW for v2.0. The locked stack (Vue 3.5, Vite 8 rolldown, PrimeVue 4 Aura, Pinia 3, Vue Router 4, Tailwind v4, PocketBase, Zod 4, dayjs, lodash-es, dompurify, vue-sonner, browser-image-compression, vue-pdf-embed) is not re-litigated here.
+>
+> Three new concerns for v2.0:
+> 1. QR code rendering
+> 2. Linear barcode rendering (Code128, EAN-13, Code39)
+> 3. Fullscreen scan overlay
+
+---
+
+## v2.0 TL;DR — Prescriptive Picks
+
+| Concern | Pick | Net-new install? |
+|---------|------|-----------------|
+| QR code rendering | **`qrcode.vue` ^3.9.1** — SVG or canvas, zero runtime deps, bundled QR algorithm | Yes — `npm install qrcode.vue` |
+| Linear barcode rendering (Code128, EAN-13, Code39) | **`jsbarcode` ^3.12.3** + thin Vue wrapper composable (hand-rolled, ~30 lines) | Yes — `npm install jsbarcode` |
+| Vue component wrapper for JsBarcode | **`@chenfengyuan/vue-barcode` ^2.0.2** OR the hand-rolled composable pattern below | Optional — see trade-off |
+| Fullscreen scan overlay | **`useFullscreen` from `@vueuse/core` ^13.9.0** (already hoisted in `node_modules` as a dep of `@vueuse/motion`) | No new install needed |
+
+Net-new runtime dependencies for v2.0: **2** (`qrcode.vue`, `jsbarcode`). `@vueuse/core` is already on disk.
+
+---
+
+## 1. QR Code Rendering
+
+### Pick: `qrcode.vue` ^3.9.1
+
+**Why this library:**
+
+- Self-contained: the QR encoding algorithm is bundled inside the package. Zero runtime peer dependencies. The ESM build (`qrcode.vue.esm.js`) is 66 KB raw / ~17 KB gzip. This is a one-install, done.
+- Actively maintained: v3.9.1 published 2026-05-12 (one day before this research). The project sees regular patch releases in 2026.
+- Vue 3 native: full `<script setup>` + TypeScript. Exports `Level`, `RenderAs`, `GradientType`, `ImageSettings` type helpers.
+- Dual render target: `render-as="svg"` (preferred for membership cards — scales perfectly on any screen DPI) or `render-as="canvas"`. SVG is also serialisable to a data-URI for export if needed later.
+- 181 downstream npm packages depend on it; far more battle-tested than the alternatives.
+
+**Verified package.json exports** (correct Vite/Rolldown resolution):
+
+```json
+{
+  "module": "./dist/qrcode.vue.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/qrcode.vue.esm.js",
+      "require": "./dist/qrcode.vue.cjs.js"
+    }
+  }
+}
+```
+
+Vite 8 resolves `"import"` first — this is a clean ESM path. No Rolldown CJS interop workaround needed.
+
+**Integration pattern:**
+
+```vue
+<script setup lang="ts">
+import QrcodeVue from "qrcode.vue";
+import type { Level, RenderAs } from "qrcode.vue";
+
+const props = defineProps<{
+  value: string;
+  size?: number;
+}>();
+
+const level: Level = "M";
+const renderAs: RenderAs = "svg";
+</script>
+
+<template>
+  <QrcodeVue
+    :value="props.value"
+    :size="props.size ?? 200"
+    :level="level"
+    :render-as="renderAs"
+    foreground="#002244"
+  />
+</template>
+```
+
+`foreground="#002244"` applies the Lexarium navy colour to the QR modules. Background defaults to white — suitable for the card overlay.
+
+**Bundle contribution:** ~17 KB gzip added to the chunk that first imports `qrcode.vue`. Because this is only used inside the Memberships feature, wrap the card detail component in `defineAsyncComponent` and it will land in a lazy chunk, not the initial bundle.
+
+**Alternatives rejected:**
+
+| Option | Why not |
+|--------|---------|
+| `qrcode-vue3` | Last published 2 years ago, only 10 downstream dependents. Unmaintained. |
+| `useQRCode` from `@vueuse/integrations` | Requires `qrcode` as a separate peer dep (adds another install). Returns a data-URI string rendered into `<img>`, no colour/gradient/logo overlay support. Use only if we need a composable that returns a raw string. |
+| `@fengyuanchen/vue-qrcode` | Fork of the same idea; redirects to `qrcode.vue` in its own docs. No reason to use the fork. |
+| Raw `qrcode` npm package | Works but requires hand-rolling the Vue wrapper. qrcode.vue already does this correctly. |
+
+---
+
+## 2. Linear Barcode Rendering (Code128, EAN-13, Code39)
+
+### Pick: `jsbarcode` ^3.12.3 — render to `<svg>` via a thin composable
+
+**Why JsBarcode and not a Vue-specific wrapper:**
+
+JsBarcode (3.12.3, published 2025-10-xx) is the de-facto standard for browser-side linear barcode generation. It has zero peer dependencies, supports all required formats (CODE128, EAN13, EAN8, CODE39, and 10+ others), and renders to `<svg>`, `<canvas>`, or `<img>`. The dist file (`JsBarcode.all.min.js`) is 66 KB raw / ~11 KB gzip.
+
+The Vue wrapper library `@chenfengyuan/vue-barcode` is a 1.5 KB shim that calls `JsBarcode(el, value, options)` on mount and watch. It is so thin that writing the same 30 lines inline as a composable eliminates one package and avoids the wrapper's limitation (it uses the Options API `watch` + `mounted` pattern, not Composition API).
+
+**Recommended implementation — hand-rolled composable:**
+
+```ts
+// src/composables/useBarcode.ts
+import { onMounted, watch, type Ref } from "vue";
+import JsBarcode from "jsbarcode";
+
+export interface BarcodeOptions {
+  format: "CODE128" | "EAN13" | "EAN8" | "CODE39";
+  displayValue?: boolean;
+  lineColor?: string;
+  background?: string;
+  width?: number;
+  height?: number;
+  margin?: number;
+  fontSize?: number;
+}
+
+export function useBarcode(
+  svgRef: Ref<SVGElement | null>,
+  value: Ref<string>,
+  options: BarcodeOptions,
+) {
+  const render = () => {
+    if (svgRef.value && value.value) {
+      JsBarcode(svgRef.value, value.value, {
+        format: options.format,
+        displayValue: options.displayValue ?? true,
+        lineColor: options.lineColor ?? "#002244",
+        background: options.background ?? "#ffffff",
+        width: options.width ?? 2,
+        height: options.height ?? 80,
+        margin: options.margin ?? 10,
+        fontSize: options.fontSize ?? 14,
+      });
+    }
+  };
+
+  onMounted(render);
+  watch([value], render);
+}
+```
+
+**Usage in a component:**
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { useBarcode } from "@/composables/useBarcode";
+
+const props = defineProps<{
+  value: string;
+  format: "CODE128" | "EAN13" | "EAN8" | "CODE39";
+}>();
+
+const svgEl = ref<SVGElement | null>(null);
+useBarcode(svgEl, () => props.value, { format: props.format });
+</script>
+
+<template>
+  <svg ref="svgEl" />
+</template>
+```
+
+**Rolldown / Vite 8 CJS interop note:**
+
+JsBarcode's `package.json` has `"main": "./bin/JsBarcode.js"` only — no `"module"` or `"exports"` field. This is a CJS-only package. Vite's dep optimiser (powered by Rolldown in Vite 8) will pre-bundle it to ESM during `vite dev` automatically. Rolldown handles CJS modules natively without `@rollup/plugin-commonjs`. No `vite.config.ts` change is required, but if the dev server shows an interop warning, add:
+
+```ts
+// vite.config.ts — only add if warnings appear
+optimizeDeps: {
+  include: ["jsbarcode"],
+}
+```
+
+Testing in the existing project's Vite 8 / Rolldown setup is recommended as a first build step of the implementation phase (not a blocker — the interop path is well-travelled for CJS libs).
+
+**Alternative: `@chenfengyuan/vue-barcode` ^2.0.2**
+
+The `@chenfengyuan` wrapper is 1.5 KB ESM and imports JsBarcode as a peer dep. It is a valid option if a drop-in `<VueBarcode value="..." :options="..." tag="svg" />` template component is preferred over the composable. The trade-off: it uses Options API internally and exposes only `value` + `options` as props (no typed `format` prop at the component level — format lives inside the `options` object). The composable approach above gives typed props and Composition API patterns consistent with the rest of the codebase.
+
+If the roadmap assigns this to a phase with tight time constraints, use `@chenfengyuan/vue-barcode` and skip writing the composable. Either path installs `jsbarcode` as the underlying engine.
+
+**Alternatives rejected:**
+
+| Option | Why not |
+|--------|---------|
+| `bwip-js` ^4.10.1 | Supports 100+ barcode types including QR — but it is 960 KB on disk (the full PostScript transpilation). For three formats (Code128, EAN-13, Code39) this is grotesque overkill. JsBarcode at ~11 KB gzip covers everything we need. |
+| `vue-barcode` (lindell's package) | Wraps JsBarcode the same way as `@chenfengyuan/vue-barcode` but with fewer TypeScript definitions and older maintenance cadence. |
+| Hand-rolled SVG barcode drawing | Not a real option for Code128/EAN-13 — the encoding algorithms alone are non-trivial. Use JsBarcode. |
+
+---
+
+## 3. Fullscreen Scan Overlay
+
+### Pick: `useFullscreen` from `@vueuse/core` ^13.9.0 — already installed
+
+**Key discovery: no new package needed.**
+
+`@vueuse/motion` ^3.0.3 is already a direct dependency in `package.json`. `@vueuse/core` ^13.x is a peer dependency of `@vueuse/motion` and is already hoisted into `node_modules/@vueuse/core` (version 13.9.0 confirmed). Importing `useFullscreen` from `@vueuse/core` is free.
+
+**Why `useFullscreen` over alternatives:**
+
+- `useFullscreen` wraps the native browser Fullscreen API (`requestFullscreen` / `exitFullscreen`) reactively. It exposes `{ isFullscreen, enter, exit, toggle }` — exactly what a "tap card to go fullscreen" UX needs.
+- No third-party modal or overlay library is needed: the card component itself is placed in fullscreen, not a wrapper dialog. This approach lets the barcode/QR SVG fill the entire screen without fighting PrimeVue Dialog's max-height or scroll constraints.
+- Automatic cleanup on unmount via the `autoExit` option (set to `true` for the scan view).
+
+**Integration pattern:**
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { useFullscreen } from "@vueuse/core";
+
+const cardEl = ref<HTMLElement | null>(null);
+const { isFullscreen, toggle } = useFullscreen(cardEl, { autoExit: true });
+</script>
+
+<template>
+  <div
+    ref="cardEl"
+    class="membership-card"
+    :class="{ 'is-fullscreen': isFullscreen }"
+    @click="toggle"
+  >
+    <!-- barcode or QR code component -->
+    <!-- card number fallback text -->
+    <button v-if="isFullscreen" class="exit-btn" @click.stop="toggle">
+      Done
+    </button>
+  </div>
+</template>
+```
+
+In fullscreen mode apply Tailwind utilities (`bg-white flex items-center justify-center`) to centre the barcode/QR on a clean background for scanner readability.
+
+**iOS Safari limitation (MEDIUM confidence — not personally tested):**
+
+iOS Safari only supports fullscreen on `<video>` elements. For all other elements, `requestFullscreen()` is a no-op. The practical mitigation: detect `!document.fullscreenEnabled` and fall back to a CSS-driven "fake fullscreen" via fixed positioning (`position: fixed; inset: 0; z-index: 9999`). Most loyalty card scanners are operated by Android/desktop devices, but the fallback should be implemented to avoid a broken tap on iPhone.
+
+```ts
+// Fallback detection
+const supportsFullscreen = document.fullscreenEnabled ?? false;
+// If false, toggle a `isFakeFullscreen` ref and apply fixed-positioning CSS class instead
+```
+
+**Alternative: PrimeVue Dialog with `maximizable`**
+
+PrimeVue's `<Dialog maximizable>` prop enables a maximize button that expands the dialog to fill the viewport. This is simpler than `useFullscreen` (no API calls, no iOS fallback needed) but has a different UX: the Dialog chrome (header bar, close button) remains visible in maximized state, which wastes vertical space for a barcode display.
+
+Recommendation: use `useFullscreen` + CSS fallback for the primary path. If the implementation phase hits iOS issues and the iOS fallback feels fragile, switch to a `<Dialog maximizable :style="{ width: '100vw' }" position="center">` approach — it is a one-component change.
+
+---
+
+## Bundle Impact Summary
+
+| Library | Raw dist | Gzip | Install path |
+|---------|----------|------|--------------|
+| `qrcode.vue` ^3.9.1 | 67 KB (ESM) | ~17 KB | `npm install qrcode.vue` |
+| `jsbarcode` ^3.12.3 | 66 KB (all formats, minified) | ~11 KB | `npm install jsbarcode` |
+| `@chenfengyuan/vue-barcode` ^2.0.2 | 1.5 KB (ESM shim only) | < 1 KB | Optional — `npm install @chenfengyuan/vue-barcode` if composable path is skipped |
+| `@vueuse/core` `useFullscreen` | Already on disk (13.9.0 hoisted) | ~0 KB marginal | No install |
+
+Total marginal gzip impact for v2.0 barcode feature: **~28 KB** (qrcode.vue + jsbarcode). Both should land in a lazy async chunk for the Memberships sub-app — the initial Lexarium bundle is unaffected.
+
+The existing `vite.config.ts` code-splitting groups do not cover `qrcode.vue` or `jsbarcode`. Add a `memberships` group if profiling shows them contributing to a shared vendor chunk:
+
+```ts
+// vite.config.ts rolldownOptions.output.codeSplitting.groups
+{ name: "memberships", test: /\/qrcode\.vue|\/jsbarcode/, priority: 25 }
+```
+
+---
+
+## Alternatives Considered (v2.0)
+
+| Category | Recommended | Alternative | Why not |
+|----------|-------------|-------------|---------|
+| QR rendering | `qrcode.vue` ^3.9.1 | `useQRCode` (@vueuse/integrations) | Requires separate `qrcode` peer dep; only returns data-URI string; no colour/gradient support |
+| QR rendering | `qrcode.vue` ^3.9.1 | `qrcode-vue3` ^1.7.1 | Unmaintained (last release 2 years ago) |
+| Linear barcode | `jsbarcode` ^3.12.3 | `bwip-js` ^4.10.1 | 960 KB on disk for 100+ formats we don't need; grotesque for 3 formats |
+| Linear barcode | `jsbarcode` ^3.12.3 | Hand-rolled SVG | Code128/EAN-13 encoding algorithms are non-trivial; not worth it |
+| Fullscreen | `useFullscreen` (@vueuse/core) | PrimeVue Dialog `maximizable` | Dialog chrome wastes screen space in a barcode-scan context; fullscreen API gives full-bleed view |
+| Fullscreen | `useFullscreen` (@vueuse/core) | Native `element.requestFullscreen()` | `useFullscreen` adds reactive state + cleanup; no reason to not use it when it's already installed |
+
+---
+
+## What NOT to Add for v2.0
+
+| Do not add | Why | Use instead |
+|-----------|-----|-------------|
+| `bwip-js` | 960 KB for 100+ formats; 3 formats needed | `jsbarcode` |
+| `vue-qrcode-reader` / `vue3-barcode-qrcode-reader` | Scanning the physical world via camera — not in v2.0 scope (we render, not scan) | Not needed |
+| `html2canvas` / screenshot-to-share | Not in v2.0 scope | Not needed |
+| A CSS framework overlay library (e.g., `vue-loading-overlay`) | Overkill; `useFullscreen` + Tailwind fixed-position is sufficient | useFullscreen + CSS |
+| Any new icon set beyond `iconify-icon` | Already covers all needed icons | `iconify-icon` (existing) |
+
+---
+
+## Installation (v2.0 only)
+
+```bash
+# Two new runtime deps for v2.0. Versions verified 2026-05-13.
+npm install qrcode.vue@^3.9.1 jsbarcode@^3.12.3
+
+# Optional — only if skipping the hand-rolled composable approach:
+# npm install @chenfengyuan/vue-barcode@^2.0.2
+```
+
+`@vueuse/core` is already on disk. No additional install required.
+
+---
+
+## Sources (v2.0 Addendum)
+
+- [qrcode.vue on GitHub (scopewu/qrcode.vue)](https://github.com/scopewu/qrcode.vue) — HIGH. Version 3.9.1, active maintenance (published 2026-05-12), TypeScript types, Vue 3 native, SVG + canvas render modes.
+- [JsBarcode on GitHub (lindell/JsBarcode)](https://github.com/lindell/JsBarcode) — HIGH. Version 3.12.3, zero dependencies, all required formats (CODE128, EAN-13, CODE39).
+- [@chenfengyuan/vue-barcode on GitHub](https://github.com/fengyuanchen/vue-barcode) — HIGH. Version 2.0.2, Vue 3 only, JsBarcode peer dep confirmed.
+- [useFullscreen — VueUse docs](https://vueuse.org/core/usefullscreen/) — HIGH. API: `{ isFullscreen, enter, exit, toggle }`, `autoExit` option, iOS Safari video-only limitation documented.
+- [@vueuse/motion package.json `dependencies`](https://www.npmjs.com/package/@vueuse/motion) — HIGH. `@vueuse/core: ^13.0.0` is a direct dep of @vueuse/motion; confirmed hoisted to version 13.9.0 in this project's node_modules.
+- [PrimeVue Dialog docs](https://primevue.org/dialog/) — HIGH. `maximizable` prop confirmed as the alternative fullscreen approach.
+- [Rolldown — Bundling CJS](https://rolldown.rs/in-depth/bundling-cjs) — HIGH. CJS module interop handled natively by Rolldown; no `@rollup/plugin-commonjs` needed; `optimizeDeps.include` available as escape hatch.
+- [Vite 8 migration guide](https://vite.dev/guide/migration) — HIGH. Vite 8 uses Rolldown for both dev pre-bundling and production build; CJS is handled automatically.
+- Direct npm registry: `npm show qrcode.vue version` → 3.9.1; `npm show jsbarcode version` → 3.12.3; `npm show @chenfengyuan/vue-barcode version` → 2.0.2 — HIGH (live registry).
+- Dist file size measurements: installed packages in temp directory, measured with `wc -c` and `gzip -c | wc -c` — HIGH (direct measurement).
+
+---
+
+*Stack addendum for: Wallecx v2.0 Membership Cards (barcode/QR rendering + fullscreen scan overlay)*
+*Researched: 2026-05-13*

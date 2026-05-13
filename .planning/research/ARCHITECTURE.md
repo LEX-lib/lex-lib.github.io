@@ -1,134 +1,134 @@
 # Architecture Research
 
-**Domain:** Wallecx mini-app inside existing Lexarium SPA — Phase 1 = vaccination records vault
-**Researched:** 2026-05-10
-**Confidence:** HIGH (constrained almost entirely by directly-observed Lexarium conventions in `.planning/codebase/` and the LexTrack reference implementation)
+**Domain:** Wallecx mini-app v2.0 — Adding Membership Cards as a second vault record type
+**Researched:** 2026-05-13
+**Confidence:** HIGH (based entirely on direct inspection of the existing Wallecx codebase and Lexarium conventions)
 
-## Standard Architecture
+---
 
-Wallecx is a thin **feature slice** layered onto the existing Lexarium SPA. No new architectural primitives are introduced — every box below already exists for LexTrack and is being mirrored.
+## Integration Approach Decision
 
-### System Overview
+**Verdict: PrimeVue Tabs within the existing `/projects/wallecx` route.**
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Routing / Auth Layer                         │
-│  src/router/index.ts  ──────  beforeEach(requiresAuth) guard         │
-│        │                                                             │
-│        ▼ (lazy import)                                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                          Mini-App Layer                              │
-│   src/components/projects/wallecx/                                   │
-│   ┌─────────────────────────────────────────────────────────────┐   │
-│   │                     WallecxApp.vue                          │   │
-│   │  (route component — owns selectedRecord / dialog state)    │   │
-│   │                                                             │   │
-│   │  ┌──────────────────────┐  ┌────────────────────────────┐  │   │
-│   │  │  VaccinationList     │  │  ManageVaccination (Dialog)│  │   │
-│   │  │  (table / cards)     │  │  - Form fields + file slot │  │   │
-│   │  └──────────┬───────────┘  └────────────┬───────────────┘  │   │
-│   │             │ row click                  │ save / delete    │   │
-│   │             ▼                            ▼                  │   │
-│   │  ┌──────────────────────────────────────────────────────┐  │   │
-│   │  │   VaccinationDetail (Dialog or panel)                │  │   │
-│   │  │   - All fields read-only + AttachmentPreview         │  │   │
-│   │  └──────────────────────────────────────────────────────┘  │   │
-│   │                                                             │   │
-│   │  ┌──────────────────────────────────────────────────────┐  │   │
-│   │  │   AttachmentPreview (image OR PDF, dual rendering)   │  │   │
-│   │  └──────────────────────────────────────────────────────┘  │   │
-│   └─────────────────────────────────────────────────────────────┘   │
-│        │                                                             │
-├────────┼────────────────────────────────────────────────────────────┤
-│        ▼                                                             │
-│                       Backend Client Layer                           │
-│   src/lib/pocketbase/index.ts (singleton `pb`)                       │
-│   src/lib/pocketbase/vaccinationMapper.ts (mapToUpdateVaccination)   │
-├─────────────────────────────────────────────────────────────────────┤
-│                            Type Layer                                │
-│   src/types/wallecx/vaccinations/types.d.ts                          │
-│      Vaccinations extends RecordModel  +  AddVaccination             │
-├─────────────────────────────────────────────────────────────────────┤
-│                       PocketBase (server-side)                       │
-│   collection: wallecx_vaccinations                                   │
-│   - per-user rules: @request.auth.id != "" && user = @request.auth.id│
-│   - file field: card (single, image|PDF)                             │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Three options were evaluated:
 
-### Component Responsibilities
+### Option A — PrimeVue Tabs inside `WallecxApp.vue` (RECOMMENDED)
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| `WallecxApp.vue` | Mini-app root, owns `records` ref, dialog visibility, `selectedRecord`, calls `pb.collection('wallecx_vaccinations').getFullList<Vaccinations>()` on mount. Mirrors `LexTrackView.vue`'s role. | `<script setup lang="ts">`, `ref` + `onMounted`, no Pinia store needed. |
-| `VaccinationList.vue` | Renders user's records sorted by `date_administered` desc. Emits `view`, `edit`, `remove`. Mirrors `ActivityCard.vue`. | PrimeVue `<DataTable>` or card grid, `defineEmits<{ view: [id: string]; edit: [id: string]; remove: [id: string] }>()`. |
-| `ManageVaccination.vue` | Create / edit dialog with form (`vaccine_name`, `date_administered`, `dose_number`, `lot_number`, `location`, `card` file). Validates with Zod via `@primevue/forms`. | `<Dialog v-model:visible>` + `<Form :resolver="zodResolver(...)">`, mirrors `ManageTask.vue`. |
-| `VaccinationDetail.vue` | Read-only view: all fields + embedded `AttachmentPreview`. | `<Dialog>` or inline panel; PrimeVue `<Card>` body. |
-| `AttachmentPreview.vue` | Given a `Vaccinations` record + filename, builds preview URL via `pb.files.getURL(record, record.card)` and renders `<img>` for images, `<iframe>` (or download link) for PDF based on MIME/extension sniff. | `computed(() => isPdf ? ... : ...)`, no PocketBase calls of its own. |
-| `vaccinationMapper.ts` | `mapToUpdateVaccination(record)` strips `id`, `created`, `updated`, `user`, `card` (file replacement is a separate `FormData` flow) before `update`. | Pure function returning a plain object — exact shape of `dsuTaskMapper.ts`. |
-| `types.d.ts` | `Vaccinations extends RecordModel` + `AddVaccination = Omit<...>`. | Mirrors `dsu_tasks/types.d.ts`. |
+Split the existing `WallecxApp.vue` content into a Vaccinations tab and a new Memberships tab, rendered inside a PrimeVue `<Tabs>` / `<TabPanel>` wrapper at the top of the card.
 
-**Why no Pinia store:** LexTrack — the closest analog and a more complex CRUD surface — holds all its state in `LexTrackView.vue` with plain `ref`. Adding a `useWallecxStore` would diverge from the existing pattern without paying for itself in v1. Auth is the only cross-cutting state, and `useAuthStore` already covers it.
+**Why this is correct:**
+- The v2.0 milestone requirement explicitly states "Wallecx tab navigation switching between Vaccinations and Memberships" — tabs are the specified UI.
+- The router already resolves `/projects/wallecx` to `WallecxApp.vue`. Adding tabs keeps the URL stable; users who bookmark `/projects/wallecx` land on the app and choose their view from within, which is the right mental model for a unified vault.
+- LexTrack (`LexTrackApp.vue`) already uses `<TabView>` / `<TabPanel>` (the PrimeVue 3-era API) as the pattern for switching between distinct record types inside one mini-app. v2.0 mirrors that pattern using the PrimeVue 4 `<Tabs>` / `<TabList>` / `<Tab>` / `<TabPanels>` / `<TabPanel>` API (Aura theme-aware, auto-imported).
+- State for each tab (records, loading, selected) remains independent local refs — no Pinia store needed. Both sets of state live in `WallecxApp.vue` or are lifted into per-tab child root components (see component plan below).
 
-## Recommended Project Structure
+**Trade-offs:**
+- `WallecxApp.vue` grows if all state is inlined. Mitigated by extracting `VaccinationsTab.vue` and `MembershipsTab.vue` as tab-root components (each owns its own state), keeping `WallecxApp.vue` as a thin shell that renders the tab container.
+- Deep-linking to a specific tab (`/projects/wallecx#memberships`) is not possible with in-component tabs. Acceptable for v2.0 — the milestone does not require deep-link sharing.
+
+### Option B — Sub-routes (`/projects/wallecx/vaccinations` + `/projects/wallecx/memberships`)
+
+Add child routes with a `<RouterView>` in `WallecxApp.vue`.
+
+**Why not:**
+- Would require making `/projects/wallecx` a layout route (adding `children:`, converting to a view shell, adding `<RouterView>`) — a non-trivial router restructure that touches `index.ts` and the existing `WallecxApp.vue` entry point.
+- Breaks existing bookmarks to `/projects/wallecx` unless a redirect is added.
+- No other Lexarium mini-app uses child routes for tab-like section switching (only Gift Exchange uses separate child routes, and those are genuinely separate screens with different auth contexts, not tabs within a single app).
+- Adds router complexity that earns no user-visible feature. Tabs achieve the same UX without it.
+
+### Option C — Separate route `/projects/wallecx-memberships`
+
+Mount memberships as an entirely separate mini-app route.
+
+**Why not:**
+- Contradicts the Wallecx identity as a unified personal vault. Users would navigate between two disconnected apps.
+- Requires duplicating shared scaffolding (auth check, Card shell, toolbar) across two routes.
+- Provides no separation benefit — memberships and vaccinations share the same PocketBase instance, same auth user, same design tokens, and no conflicting state.
+
+---
+
+## Component Architecture
+
+### Structural change to `WallecxApp.vue`
+
+`WallecxApp.vue` is refactored from a single-concern vaccination screen into a **tab shell**:
 
 ```
-src/
-├── components/projects/wallecx/         # Mini-app feature folder (kebab-case per CONVENTIONS)
-│   ├── WallecxApp.vue                   # Route component, list + dialog orchestration
-│   ├── VaccinationList.vue              # Records table/cards, emits view/edit/remove
-│   ├── ManageVaccination.vue            # Create/edit dialog with Zod-validated form + file upload
-│   ├── VaccinationDetail.vue            # Read-only detail panel/dialog
-│   └── AttachmentPreview.vue            # Image-or-PDF renderer (reused by Detail and Manage)
-├── lib/pocketbase/
-│   └── vaccinationMapper.ts             # mapToUpdateVaccination — strips id/created/updated/user/card
-├── types/wallecx/vaccinations/          # snake_case folder matching collection name suffix
-│   └── types.d.ts                       # Vaccinations + AddVaccination
-├── router/index.ts                      # +1 lazy route entry: /projects/wallecx (requiresAuth)
-└── views/ProjectsView.vue               # +1 entry in `projects` array (directory listing)
+WallecxApp.vue                     (tab container + shared ConfirmDialog)
+  ├── VaccinationsTab.vue           (owns all vaccination state + logic, MOVED from WallecxApp)
+  │     ├── WallecxToolbar.vue      (existing — reused as-is, vaccination-specific props)
+  │     ├── VaccinationGroupCard.vue (existing — unchanged)
+  │     ├── VaccinationGroupPanel.vue (existing — unchanged)
+  │     ├── ManageVaccination.vue   (existing — unchanged)
+  │     └── VaccinationDetail.vue   (existing — unchanged)
+  │           └── AttachmentPreview.vue (existing — unchanged)
+  └── MembershipsTab.vue            (new — owns all membership state + logic)
+        ├── MembershipCard.vue       (new — coloured card tile in wallet grid)
+        ├── ManageMembership.vue    (new — create/edit dialog, mirrors ManageVaccination.vue)
+        └── MembershipDetail.vue    (new — fullscreen/dialog scan view with barcode)
+              └── BarcodeDisplay.vue (new — barcode/QR renderer, shared if vaccinations ever need it)
 ```
 
-### Structure Rationale
+### New components to create
 
-- **`src/components/projects/wallecx/`:** All Lexarium mini-apps live here (`lextrack/`, `larga/`, `gift-exchange/`, `api-playground/`). Folder name is kebab-case route slug, root SFC is `<Name>App.vue`. Non-negotiable per `STRUCTURE.md` "Where to Add New Code → New mini-app".
-- **No `src/views/WallecxView.vue`:** Optional. LexTrack is the only mini-app that uses a view-shell wrapper, and `ARCHITECTURE.md` explicitly flags this as inconsistent. Going straight from router → `WallecxApp.vue` matches `LargaApp.vue` and `ApiPlaygroundApp.vue` and is the better pattern.
-- **`src/types/wallecx/vaccinations/`:** Matches the existing `src/types/lextrack/dsu_tasks/` shape: `<feature>/<collection_snake_case>/types.d.ts`. The `vaccinations/` segment makes future record types (`identity_documents/`, `medical_records/`) sit cleanly alongside.
-- **`src/lib/pocketbase/vaccinationMapper.ts`:** Flat, mirrors `dsuTaskMapper.ts`. Module name uses camelCase per `CONVENTIONS.md`.
-- **No constants subfolder:** None needed in v1. Vaccine name list, dose numbers, etc. are free-text fields.
+| File | Purpose | Notes |
+|------|---------|-------|
+| `src/components/projects/wallecx/VaccinationsTab.vue` | Extraction of all current vaccination logic from `WallecxApp.vue`. Owns `records`, `isLoading`, grouping, search, sort, view-mode, fileToken, listToken state. | Mechanical move, not a rewrite. |
+| `src/components/projects/wallecx/MembershipsTab.vue` | Root component for the memberships tab. Owns `memberships` ref, loading state, delete confirm. Calls `pb.collection('wallecx_memberships').getFullList()` on mount. | Mirrors `VaccinationsTab.vue` structure. |
+| `src/components/projects/wallecx/MembershipCard.vue` | Single card tile in the memberships wallet grid. Shows card name, issuer, colour swatch, expiry badge, barcode preview. Emits `click` (open detail), `edit`, `delete`. | Visual heart of the membership UX. Colour rendered via inline `style` from `card_colour` field. |
+| `src/components/projects/wallecx/ManageMembership.vue` | Create/edit Dialog. Zod schema + `@primevue/forms` `zodResolver`. Fields: card name (required), issuer (optional), barcode value (optional), barcode type Select (QR/Code128/EAN-13/Code39), card number plain text (optional), expiry DatePicker (optional), notes Textarea, card colour ColorPicker or InputText (hex), card photo FileUpload. | Mirrors `ManageVaccination.vue` structure exactly. Uses same `isSaving` guard, `FormData` create, mapper-based update, `pendingFile` for photo. |
+| `src/components/projects/wallecx/MembershipDetail.vue` | Read-only detail view in a Dialog or full-screen overlay. Shows all fields + rendered barcode/QR. "Tap to go fullscreen" behaviour for scanner use. | Contains `BarcodeDisplay.vue`. |
+| `src/components/projects/wallecx/BarcodeDisplay.vue` | Renders a barcode or QR code from a `value` + `type` prop using `vue-barcode` or `qrcode.vue`. Falls back to plain `card_number` text if no barcode value. | Isolated renderer — no PocketBase calls, purely presentational. Candidate for sharing if other vault types ever need barcodes. |
+| `src/types/wallecx/memberships/types.d.ts` | TypeScript interface `Memberships extends RecordModel` + `AddMembership = Omit<Memberships, 'id' \| 'created' \| 'updated'>`. | Mirrors `src/types/wallecx/vaccinations/types.d.ts`. |
+| `src/lib/pocketbase/membershipMapper.ts` | `mapToUpdateMembership(record: Memberships)` returning writable subset (strips `id`, `created`, `updated`, `user`, `card_photo`). | Mirrors `vaccinationMapper.ts`. |
 
-## Architectural Patterns
+### Existing components — modified
 
-### Pattern 1: PocketBase Per-User Collection Isolation
+| File | Change |
+|------|--------|
+| `src/components/projects/wallecx/WallecxApp.vue` | **Significant refactor.** Remove all vaccination state, logic, and template content. Replace with a `<Tabs>` container holding two `<TabPanel>` slots mounting `VaccinationsTab` and `MembershipsTab`. Keep `<ConfirmDialog />` here (shared, singleton per page). |
+| `src/router/index.ts` | **No change.** The route path, name, and component reference remain `/projects/wallecx` → `WallecxApp.vue`. |
 
-**What:** Every CRUD operation is gated server-side by collection rules tying records to `@request.auth.id`. The route guard is **only UX** — the real authorization boundary lives in PocketBase.
+### Existing components — unchanged (zero modification)
 
-**When to use:** Any collection holding user-private data. For Wallecx, this is the entire collection.
+The following files are moved into `VaccinationsTab.vue`'s component tree but their source code does not change. The only difference is they are now children of `VaccinationsTab` instead of `WallecxApp`:
 
-**Trade-offs:** Requires a `user` relation field on every record (small storage cost). Forgetting any one of the five rules silently leaks data; this is the highest-risk part of the milestone.
+- `VaccinationGroupCard.vue`
+- `VaccinationGroupPanel.vue`
+- `ManageVaccination.vue`
+- `VaccinationDetail.vue`
+- `AttachmentPreview.vue`
+- `WallecxToolbar.vue`
 
-**Collection definition (PocketBase admin or migration):**
+Because `unplugin-vue-components` auto-imports globally, moving these into `VaccinationsTab.vue` requires no import-statement changes in those files.
+
+---
+
+## New PocketBase Collection
 
 ```
-Collection: wallecx_vaccinations
+Collection: wallecx_memberships
 Type: base
 
 Fields:
-  user                relation → users (required, single, cascadeDelete)
-  vaccine_name        text     (required, min 1, max 200)
-  date_administered   date     (required)
-  dose_number         number   (optional, min 1, max 20, integer)
-  lot_number          text     (optional, max 100)
-  location            text     (optional, max 200)
-  card                file     (optional, maxSelect 1, maxSize 5_242_880,
-                                mimeTypes [image/jpeg, image/png, image/webp,
-                                           image/heic, application/pdf],
-                                thumbs [100x100, 400x400])
+  user            relation → users (required, single, cascadeDelete)
+  card_name       text     (required, min 1, max 200)
+  issuer          text     (optional, max 200)
+  barcode_value   text     (optional, max 500)    — raw string to encode
+  barcode_type    text     (optional)              — "qr" | "code128" | "ean13" | "code39"
+  card_number     text     (optional, max 100)    — human-readable fallback
+  expiry_date     date     (optional)
+  notes           text     (optional)
+  card_colour     text     (optional, max 7)      — hex string e.g. "#1a2b3c"
+  card_photo      file     (optional, maxSelect 1, maxSize 10_485_760,
+                            mimeTypes [image/jpeg, image/png, image/webp],
+                            thumbs [100x100, 400x400])
 
 Indexes:
-  CREATE INDEX idx_wallecx_vacc_user_date
-    ON wallecx_vaccinations (user, date_administered DESC)
+  CREATE INDEX idx_wallecx_mem_user_name
+    ON wallecx_memberships (user, card_name ASC)
 
-Rules (all five MUST be set; empty = public):
+Rules (all five required — same per-user isolation pattern as wallecx_vaccinations):
   listRule:   @request.auth.id != "" && user = @request.auth.id
   viewRule:   @request.auth.id != "" && user = @request.auth.id
   createRule: @request.auth.id != "" && @request.body.user = @request.auth.id
@@ -136,310 +136,249 @@ Rules (all five MUST be set; empty = public):
   deleteRule: @request.auth.id != "" && user = @request.auth.id
 ```
 
-The `createRule` form is deliberately different — it inspects `@request.body.user` because `user` doesn't yet exist on a not-yet-created record. This is the standard PocketBase idiom.
+**Schema decisions:**
+- `barcode_type` stored as plain text (not a PocketBase select field) so the frontend Select dropdown drives validation via Zod — consistent with how `vaccine_type` is handled.
+- `card_colour` stored as a hex string. The frontend validates format with Zod `.regex(/^#[0-9a-fA-F]{6}$/)`. No separate colour model needed.
+- `card_photo` is optional. Cards with no photo still render as coloured tiles — the photo is a nice-to-have, not a core display element (unlike vaccination where the card scan IS the record).
+- No PDF support for `card_photo` — membership card photos are always images, not documents.
 
-### Pattern 2: Mirror LexTrack's State + CRUD Loop
+---
 
-**What:** Local `ref<Vaccinations[]>([])` in `WallecxApp.vue`, fetched in `onMounted` (and refetched after save/delete), passed to `VaccinationList` via `v-model`. Edits flow through a single `selectedRecord` ref bound to `ManageVaccination` via `v-model:record`.
+## Shared Patterns and Opportunities
 
-**When to use:** Single-screen CRUD with <100 records (v1 scope).
+### Pattern: Tab-Root Component as State Owner
 
-**Trade-offs:** No optimistic update sophistication, no caching across navigations — fine here, refetch is cheap, and switching to a Pinia store later is mechanical.
+`VaccinationsTab.vue` and `MembershipsTab.vue` each own their record slice's state independently. Neither communicates with the other. `WallecxApp.vue` does not need to know about records at all — it only holds the active tab index.
 
-**Sketch:**
+This is the cleanest separation: switching tabs unmounts/remounts the inactive tab component (unless `keepAlive` is used), which naturally resets state. If preserving scroll position across tab switches becomes important, wrap with `<KeepAlive>`.
 
-```ts
-// WallecxApp.vue
-const records = ref<Vaccinations[]>([]);
-const selected = ref<AddVaccination | Vaccinations | null>(null);
-const manageVisible = ref(false);
-const detailVisible = ref(false);
+### Pattern: Mapper Pair (type + mapper)
 
-const fetch = async () => {
-  records.value = await pb
-    .collection("wallecx_vaccinations")
-    .getFullList<Vaccinations>({ sort: "-date_administered" });
-};
+Every vault record type gets:
+1. `src/types/wallecx/<collection>/types.d.ts` — interface + AddType
+2. `src/lib/pocketbase/<collection>Mapper.ts` — mapToUpdate<Type>
 
-onMounted(fetch);
+For memberships:
+- `src/types/wallecx/memberships/types.d.ts` — `Memberships` + `AddMembership`
+- `src/lib/pocketbase/membershipMapper.ts` — `mapToUpdateMembership`
 
-const onSaved = async () => {
-  manageVisible.value = false;
-  await fetch();
-};
+This is already the established convention from vaccinations and LexTrack's three mappers.
+
+### Pattern: Isolated BarcodeDisplay Component
+
+`BarcodeDisplay.vue` takes `value: string`, `type: 'qr' | 'code128' | 'ean13' | 'code39'` and `fallbackNumber?: string` as props and renders the appropriate barcode or plain text. It is completely decoupled from the Memberships type — if a future vault type (insurance cards, access badges) also needs barcode rendering, `BarcodeDisplay.vue` is already reusable.
+
+Barcode library recommendation: `jsbarcode` (for 1D barcodes: Code128, EAN-13, Code39) + `qrcode` npm package (for QR). Both render to SVG/canvas without DOM dependencies. Alternative: a single Vue wrapper library such as `vue-barcode` if it covers all four types — verify coverage before committing.
+
+### Pattern: Full-Screen Scan View
+
+`MembershipDetail.vue` should implement a full-screen toggle using the Fullscreen API (`document.documentElement.requestFullscreen()`), triggered by tapping/clicking the barcode area. This is a contained behaviour inside the detail component — no router or state involvement needed. Fallback: if Fullscreen API is unavailable, render the barcode at maximum width inside a Dialog with `maximizable: true` (PrimeVue Dialog prop).
+
+### Pattern: WallecxToolbar reuse
+
+`WallecxToolbar.vue` currently has vaccination-specific placeholder text ("Search by name or type…") and sort options. For memberships, a separate `MembershipsToolbar.vue` is the safer choice (different sort dimensions: card name A-Z, issuer A-Z, expiry soonest). Copy-adapt, do not genericise `WallecxToolbar.vue` — the vaccination search+sort logic is different enough that a shared toolbar would need too many props.
+
+If the toolbar shapes converge in a future milestone, consolidate then.
+
+---
+
+## Build Order
+
+Dependencies dictate this order. Each step is independently verifiable.
+
+### Phase A — Backend
+
+**Step 1: `wallecx_memberships` PocketBase collection**
+- Create collection with all fields listed above.
+- Set all five per-user rules.
+- Two-user smoke test: confirm cross-user isolation (same test protocol as vaccinations).
+- **Unblocks:** all subsequent steps. **Risk gate:** wrong rules = data leak.
+
+### Phase B — Type and Mapper Foundation
+
+**Step 2: Type module** — `src/types/wallecx/memberships/types.d.ts`
+- `interface Memberships extends RecordModel` mirroring all backend fields.
+- `type AddMembership = Omit<Memberships, 'id' | 'created' | 'updated'>`.
+- **Unblocks:** mapper, all membership components, Zod schema in `ManageMembership.vue`.
+
+**Step 3: Mapper** — `src/lib/pocketbase/membershipMapper.ts`
+- `mapToUpdateMembership(record: Memberships)` — strips `id`, `created`, `updated`, `user`, `card_photo`.
+- **Unblocks:** edit path in `ManageMembership.vue`.
+
+### Phase C — WallecxApp Refactor (Tab Shell)
+
+**Step 4: Extract `VaccinationsTab.vue`**
+- Mechanical move: lift all vaccination state, computed properties, methods, and template content from `WallecxApp.vue` into a new `VaccinationsTab.vue`.
+- `WallecxApp.vue` becomes a shell that mounts `<VaccinationsTab />` directly (no tabs yet — tabs come in Step 5).
+- **Verify:** vaccination features still work identically after the extraction. This is a pure refactor with no behaviour change.
+- **Unblocks:** Step 5 (adding `MembershipsTab.vue` to the tab container).
+
+**Step 5: Add PrimeVue Tabs wrapper to `WallecxApp.vue`**
+- Wrap `<VaccinationsTab />` in `<Tabs>` / `<TabList>` / `<TabPanels>` with a second `<TabPanel>` showing a stub `<MembershipsTab />` (empty state).
+- Verify tab switching works, PrimeVue Aura Tabs styling is correct.
+- **Unblocks:** Step 6 onward (memberships content).
+
+### Phase D — Memberships Read Path
+
+**Step 6: `MembershipsTab.vue` shell + fetch**
+- Mounts on the Memberships tab. `onMounted` → `pb.collection('wallecx_memberships').getFullList<Memberships>()`.
+- Renders loading skeleton, empty state, and a placeholder card grid.
+- **Verifies:** collection rules, type module, auth session all work for memberships.
+- **Unblocks:** display components.
+
+**Step 7: `BarcodeDisplay.vue`**
+- Accepts `value`, `type`, `fallbackNumber` props.
+- Renders QR or 1D barcode to SVG/canvas. Falls back to plain text.
+- Built before `MembershipCard` and `MembershipDetail` so both can embed it.
+- **Unblocks:** Steps 8 and 9.
+
+**Step 8: `MembershipCard.vue`**
+- Coloured tile card: card name, issuer, colour background, expiry badge, small barcode preview (via `BarcodeDisplay`).
+- Emits `click` (open detail), `edit`, `delete`.
+- **Unblocks:** full memberships read path.
+
+**Step 9: `MembershipDetail.vue`**
+- Dialog showing all fields + full-size `BarcodeDisplay`.
+- Full-screen toggle via Fullscreen API.
+- **Completes:** memberships read path.
+
+### Phase E — Memberships Write Path
+
+**Step 10: `ManageMembership.vue`**
+- Create/edit Dialog. Zod schema validating required fields + hex colour + barcode type.
+- `FormData` create; `mapToUpdateMembership` for update.
+- Optional photo: image-only FileUpload with EXIF strip (reuse same canvas re-encode pattern from `ManageVaccination.vue`).
+- `isSaving` guard, vue-sonner toasts.
+- Emits `created` and `updated` to `MembershipsTab.vue`.
+- **Completes:** memberships write path.
+
+**Step 11: Delete flow in `MembershipsTab.vue`**
+- `useConfirm()` confirm dialog (shared `<ConfirmDialog />` in `WallecxApp.vue` is already present).
+- `await pb.collection('wallecx_memberships').delete(id)` → splice → toast.
+- Same guard pattern as vaccinations: do NOT splice on failure.
+
+### Phase F — Polish
+
+**Step 12: `MembershipsToolbar.vue`** (optional for v2.0 MVP, add if time allows)
+- Search by card name or issuer.
+- Sort: Name A-Z (default), Name Z-A, Issuer A-Z, Expiry soonest.
+
+**Step 13: Mapper unit test** — `src/lib/pocketbase/__tests__/membershipMapper.spec.ts`
+- Covers `mapToUpdateMembership` (strips correct fields).
+- Follows the pattern of `vaccinationMapper.spec.ts`.
+
+---
+
+## Full File Change Summary
+
+### New files
+
+```
+src/
+├── components/projects/wallecx/
+│   ├── VaccinationsTab.vue           (extracted from WallecxApp.vue — Step 4)
+│   ├── MembershipsTab.vue            (new — Step 6)
+│   ├── MembershipCard.vue            (new — Step 8)
+│   ├── ManageMembership.vue          (new — Step 10)
+│   ├── MembershipDetail.vue          (new — Step 9)
+│   └── BarcodeDisplay.vue            (new — Step 7)
+├── types/wallecx/memberships/
+│   └── types.d.ts                    (new — Step 2)
+└── lib/pocketbase/
+    ├── membershipMapper.ts           (new — Step 3)
+    └── __tests__/
+        └── membershipMapper.spec.ts  (new — Step 13)
 ```
 
-### Pattern 3: File Upload via FormData, Read via `pb.files.getURL`
-
-**What:** PocketBase file fields require `FormData` on create/update. Reads use `pb.files.getURL(record, filename, { thumb })`. Same field stores both image and PDF — MIME-sniff at render time.
-
-**When to use:** Whenever a record has a binary attachment. Vaccination card is the primary example for v1.
-
-**Trade-offs:** A single mixed `card` field (vs `card_image` + `card_pdf`) keeps the schema simple and dodges the "user uploads PDF, then re-uploads photo" awkwardness of two fields. Cost: the preview component must branch on MIME. This is a 10-line component — worth it.
-
-**Create:**
-
-```ts
-// ManageVaccination.vue (excerpt)
-const save = async (form: VaccinationFormValues, file: File | null) => {
-  const data = new FormData();
-  data.append("user", auth.user!.id);
-  data.append("vaccine_name", form.vaccine_name);
-  data.append("date_administered", dayjs(form.date_administered).format("YYYY-MM-DD"));
-  if (form.dose_number != null) data.append("dose_number", String(form.dose_number));
-  if (form.lot_number) data.append("lot_number", form.lot_number);
-  if (form.location) data.append("location", form.location);
-  if (file) data.append("card", file);
-
-  if (props.record?.id) {
-    await pb.collection("wallecx_vaccinations").update<Vaccinations>(props.record.id, data);
-  } else {
-    await pb.collection("wallecx_vaccinations").create<Vaccinations>(data);
-  }
-  emit("saved");
-};
-```
-
-**Read / preview:**
-
-```ts
-// AttachmentPreview.vue
-const props = defineProps<{ record: Vaccinations }>();
-const url = computed(() =>
-  props.record.card ? pb.files.getURL(props.record, props.record.card) : null
-);
-const thumbUrl = computed(() =>
-  props.record.card
-    ? pb.files.getURL(props.record, props.record.card, { thumb: "400x400" })
-    : null
-);
-const isPdf = computed(() => /\.pdf$/i.test(props.record.card ?? ""));
-```
-
-```vue
-<template>
-  <div v-if="url">
-    <img v-if="!isPdf" :src="thumbUrl ?? url" alt="Vaccination card" class="max-w-full rounded" />
-    <iframe v-else :src="url" class="w-full h-[60vh] rounded" title="Vaccination card PDF" />
-  </div>
-</template>
-```
-
-### Pattern 4: Vault-Friendly Schema Without Pre-Built Generality
-
-**What:** The collection name (`wallecx_vaccinations`) and folder name (`vaccinations`) are *deliberately specific*. PROJECT.md is explicit: "the schema should accommodate [future record types] *if it doesn't add complexity*, but we are NOT pre-building a generic record system in v1."
-
-**When to use:** Phase 1. Future record types get their own collections (`wallecx_identity_documents`, `wallecx_medical_records`) with their own type folders. No `wallecx_records` polymorphic table. No `record_type` discriminator. No JSON blob schemas.
-
-**Trade-offs:** When phase 2 lands, adding a new collection + type folder + a couple of components is cheaper than the migration tax of a generic schema that turned out wrong. The shared shape across collections (per-user `user` relation, optional `card`-style file field, common audit columns) is the only "vault" abstraction worth carrying forward — and that's just convention, not code.
-
-## Data Flow
-
-### Request Flow — Create with Attachment
+### Modified files
 
 ```
-[User clicks "Add vaccination"]
-        │
-        ▼
-[WallecxApp.vue] → manageVisible=true, selected=null
-        │
-        ▼
-[ManageVaccination.vue] (Dialog opens)
-        │   user fills form, picks file via PrimeVue <FileUpload mode="basic">
-        │   form validated by zodResolver (vaccine_name + date_administered required)
-        ▼
-[save()] → builds FormData, appends user=auth.user.id + fields + file
-        │
-        ▼
-[pb.collection('wallecx_vaccinations').create(data)]
-        │   PocketBase: createRule checks @request.body.user = @request.auth.id
-        │              file written to PB_DATA/storage; record persisted
-        ▼
-[server returns Vaccinations record]
-        │
-        ▼
-[emit('saved')] → WallecxApp.fetch() → records.value updated → list re-renders
-        │
-        ▼
-[toast.success("Vaccination saved")]   ← vue-sonner
+src/
+├── components/projects/wallecx/
+│   └── WallecxApp.vue                (refactored to tab shell — Steps 4+5)
 ```
 
-### Request Flow — Read + Preview
+### Unchanged files (zero modification)
 
 ```
-[Route /projects/wallecx]
-        │
-        ▼
-[router.beforeEach] → auth.isLoggedIn? no → /login?redirect=/projects/wallecx
-                      yes ↓
-[WallecxApp.onMounted] → pb.collection('wallecx_vaccinations')
-                            .getFullList<Vaccinations>({ sort: '-date_administered' })
-        │   PocketBase: listRule → returns ONLY rows where user = caller
-        ▼
-[records.value populated] → VaccinationList renders rows
-        │
-        ▼
-[User clicks row] → emit('view', id) → WallecxApp sets selected, detailVisible=true
-        │
-        ▼
-[VaccinationDetail] embeds <AttachmentPreview :record="selected" />
-        │
-        ▼
-[AttachmentPreview] computes pb.files.getURL(record, record.card)
-                    PocketBase serves file (auth check via signed URL or auth header)
-                    branches on .pdf vs image → <iframe> or <img>
+src/
+├── components/projects/wallecx/
+│   ├── VaccinationGroupCard.vue
+│   ├── VaccinationGroupPanel.vue
+│   ├── ManageVaccination.vue
+│   ├── VaccinationDetail.vue
+│   ├── AttachmentPreview.vue
+│   └── WallecxToolbar.vue
+├── router/index.ts
+└── types/wallecx/vaccinations/types.d.ts
 ```
 
-### State Management
+---
 
-No new Pinia store. State map:
+## System Diagram (post-v2.0)
 
-| State | Owner | Reactive shape |
-|-------|-------|----------------|
-| Auth (user, isLoggedIn) | `useAuthStore` (existing) | shared, Pinia |
-| Records list | `WallecxApp.vue` | `ref<Vaccinations[]>` |
-| Selected record | `WallecxApp.vue` | `ref<Vaccinations \| AddVaccination \| null>` |
-| Dialog visibility | `WallecxApp.vue` | two `ref<boolean>` |
-| Form values | `ManageVaccination.vue` | local `reactive` (per `Login.vue` convention for grouped form state) |
-| Preview URL | `AttachmentPreview.vue` | `computed` from props |
+```
+src/router/index.ts
+  /projects/wallecx (requiresAuth: true)
+        │
+        ▼
+WallecxApp.vue (tab shell)
+  ├── <ConfirmDialog /> (singleton)
+  ├── <Tabs>
+  │    ├── Tab: "Vaccinations"
+  │    │    └── VaccinationsTab.vue
+  │    │         ├── WallecxToolbar.vue
+  │    │         ├── VaccinationGroupCard.vue × N
+  │    │         ├── Drawer → VaccinationGroupPanel.vue
+  │    │         ├── ManageVaccination.vue (Dialog)
+  │    │         └── VaccinationDetail.vue (Dialog)
+  │    │               └── AttachmentPreview.vue
+  │    └── Tab: "Memberships"
+  │         └── MembershipsTab.vue
+  │              ├── MembershipCard.vue × N
+  │              ├── ManageMembership.vue (Dialog)
+  │              └── MembershipDetail.vue (Dialog/Fullscreen)
+  │                    └── BarcodeDisplay.vue
+  │
+  └── PocketBase
+       ├── wallecx_vaccinations (existing, unchanged)
+       └── wallecx_memberships  (new)
+```
 
-## Suggested Build Order
+---
 
-The build order below is dictated by dependencies — every step unblocks the next, and each step is independently mergeable / verifiable.
+## Anti-Patterns to Avoid
 
-1. **PocketBase schema + rules** (server-side, no code commits)
-   - Create `wallecx_vaccinations` collection in PocketBase admin (or migration file)
-   - Set all five rules + indexes
-   - Smoke-test from PB admin: create row as user A, log in as user B, confirm A's row is invisible
-   - **Unblocks:** every subsequent step. **Risk gate:** if the rules are wrong, every later step is built on a leaky foundation.
+### Do not inline all membership state in `WallecxApp.vue`
 
-2. **Type module** — `src/types/wallecx/vaccinations/types.d.ts`
-   - `interface Vaccinations extends RecordModel` (id/created/updated/user/vaccine_name/date_administered/dose_number?/lot_number?/location?/card?)
-   - `type AddVaccination = Omit<Vaccinations, 'id' | 'created' | 'updated'>`
-   - **Unblocks:** mapper + every component that imports the type. Pure data, no runtime.
+The refactored `WallecxApp.vue` must only own the active tab index. Inlining both `vaccinationRecords` and `membershipRecords` plus all their logic in one file recreates the pre-refactor problem at double the size. Tab-root components (`VaccinationsTab`, `MembershipsTab`) own their own state.
 
-3. **Mapper** — `src/lib/pocketbase/vaccinationMapper.ts`
-   - `mapToUpdateVaccination(r: Vaccinations)` returning the writable subset (everything except id/created/updated/user/card — file replacement is its own FormData flow)
-   - **Unblocks:** edit path in `ManageVaccination.vue`.
+### Do not genericise the mapper or type before a third record type exists
 
-4. **Route registration + auth gate** — `src/router/index.ts`
-   - Add `{ path: '/projects/wallecx', name: 'wallecx', component: () => import('@/components/projects/wallecx/WallecxApp.vue'), meta: { requiresAuth: true } }`
-   - Existing `beforeEach` guard handles redirect for free
-   - **Unblocks:** local navigation testing. Stub `WallecxApp.vue` with a single `<div>Wallecx</div>` while the rest is built.
+`mapToUpdateVaccination` and `mapToUpdateMembership` are separate files. Do not create a `wallecxBaseMapper.ts` abstraction. Convention carries the vault identity, not shared code. Premature abstraction here creates more coupling than it prevents.
 
-5. **`WallecxApp.vue` shell** — list + fetch only
-   - `onMounted` → `pb.collection('wallecx_vaccinations').getFullList<Vaccinations>({ sort: '-date_administered' })`
-   - Render with a placeholder `VaccinationList` (or inline `<DataTable>`) — no edit path yet
-   - **Verifies:** auth gate, listRule, type module, env wiring all work end-to-end. **Unblocks:** every interactive piece.
+### Do not reuse `WallecxToolbar.vue` for memberships by adding feature flags
 
-6. **`VaccinationList.vue`** — extract list rendering, wire `view`/`edit`/`remove` emits
-   - **Unblocks:** Detail and Manage dialogs (which open in response to its emits).
+Adding an `activeTab` prop or `mode: 'vaccination' | 'membership'` to `WallecxToolbar.vue` to conditionally render different sort options is the wrong direction. The toolbar components are cheap to clone-and-adapt. Conditional branching inside a shared toolbar makes both usages harder to understand and change.
 
-7. **`AttachmentPreview.vue`** — image / PDF branching renderer
-   - Built **before** Detail + Manage so both can use it
-   - **Unblocks:** detail and edit/preview-existing flows.
+### Do not use `v-html` for card name or barcode value
 
-8. **`VaccinationDetail.vue`** — read-only panel/dialog using `AttachmentPreview`
-   - **Unblocks:** "view a record" UX. Independent of write paths.
+Card names and barcode values are user-supplied strings. Render with `{{ }}` interpolation only. The barcode library renders its own SVG — feed the raw string value as a prop, never interpolate it into an HTML template.
 
-9. **`ManageVaccination.vue`** — create + edit dialog
-   - Form with `zodResolver` (vaccine_name + date_administered required, dose_number int min 1, file MIME/size client-side check)
-   - FormData create / mapper-based update
-   - **Unblocks:** full CRUD.
-
-10. **Delete flow** — confirm dialog from `VaccinationList` row, `pb.collection(...).delete(id)`, refetch, toast
-    - Tiny, but worth its own step so it isn't wedged into Manage.
-
-11. **Projects directory entry** — add Wallecx tile to `src/views/ProjectsView.vue` `projects` array
-    - Pure UX, lowest risk, last so the link only appears when the destination works.
-
-12. **Seed tests** (optional but flagged in PROJECT.md "Known concerns"): mapper unit test + auth-gate route guard test — first tests in the codebase, low-effort high-signal targets.
-
-**Critical path:** 1 → 2 → 5. Steps 3, 4 are tiny. 6–11 are leaf work that can fan out once the shell is up.
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 1 user, <50 records (v1 reality) | `getFullList` + client-side sort. No pagination, no caching. Current plan is already correct here. |
-| 10 users, <500 records each | Still fine. PocketBase indexes on `(user, date_administered DESC)` keep listRule queries cheap. |
-| 100+ users, 1000+ records each | Switch `getFullList` → paginated `getList(page, perPage)` and add a search/filter input. Move state to a Pinia store if cross-route caching becomes valuable. |
-| New record types added (phase 2+) | Add new collections + type folders, NOT a polymorphic table. Lift shared UI bits (`AttachmentPreview`, file upload helpers) into `src/components/projects/wallecx/shared/` only after the second collection exists and the duplication is real. |
-
-### Scaling Priorities
-
-1. **First bottleneck:** unbounded `getFullList` once one user accumulates many records. Fix: paginate.
-2. **Second bottleneck:** file storage growth on the PocketBase host. Fix: configure PocketBase S3 backend (already supported by PB 0.26) — zero app-side change because `pb.files.getURL` keeps working.
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Trusting the Client-Side Auth Guard for Authorization
-
-**What people do:** Set `meta: { requiresAuth: true }` and assume vaccination data is private.
-**Why it's wrong:** The guard runs in the browser. Anyone hitting the PocketBase REST endpoint directly bypasses it. Without all five collection rules set, a logged-in user can read/edit/delete *every* user's records.
-**Do this instead:** Configure all five PocketBase rules (`listRule`, `viewRule`, `createRule`, `updateRule`, `deleteRule`) to compare `user` against `@request.auth.id`. Treat the route guard as UX only. Verify by signing in as a second user in an incognito window before merging.
-
-### Anti-Pattern 2: Pre-Building a Generic "Records" Vault
-
-**What people do:** Phase 1 ships a `wallecx_records` collection with `record_type: 'vaccination' | 'identity' | 'medical'` and a JSON `data` blob, "to make phase 2 easier."
-**Why it's wrong:** Explicitly out of scope per PROJECT.md ("the schema should accommodate [future] *if it doesn't add complexity*, but we are NOT pre-building a generic record system"). Polymorphic schemas defeat PocketBase's typed fields, kill the type layer, and the second record type usually needs different fields anyway, forcing the migration the abstraction was supposed to prevent.
-**Do this instead:** One concrete collection per record type. Convention — not abstraction — carries the "vault" identity (`wallecx_*` prefix, `user` relation, optional file field).
-
-### Anti-Pattern 3: Two File Fields (`card_image` + `card_pdf`)
-
-**What people do:** Add a separate field per accepted MIME type "for type safety."
-**Why it's wrong:** Splits the user's mental model ("here's my card") into two backend slots, makes "they uploaded a PDF, now they want to replace it with a photo" awkward, and bloats the schema. The MIME-sniff at render is ten lines.
-**Do this instead:** Single `card` field with PocketBase `mimeTypes` whitelisting `image/*` + `application/pdf`. Branch in `AttachmentPreview.vue`.
-
-### Anti-Pattern 4: Storing the File as a Base64 String in a Text Field
-
-**What people do:** Skip PocketBase file fields, base64-encode the upload into a text column.
-**Why it's wrong:** ~33% size inflation, blows past PocketBase's default body-size limit on a single 5MB scan, breaks `pb.files.getURL`, and prevents `thumbs` generation.
-**Do this instead:** PocketBase file field with `maxSize` and `thumbs` configured. Always.
-
-### Anti-Pattern 5: Forgetting to Strip `user` From the Update Payload
-
-**What people do:** Spread the entire `Vaccinations` record into `pb.collection(...).update(id, record)`.
-**Why it's wrong:** Resending `user` is harmless when correct, but if any client-side bug ever mutates `record.user`, the `updateRule` will reject the request with a confusing message — or, worse, in a future schema where `updateRule` is laxer, silently re-assign ownership.
-**Do this instead:** `mapToUpdateVaccination` returns only the writable, non-immutable, non-relation fields — exactly mirroring `mapToUpdateTask`. File replacement is a separate FormData call.
-
-### Anti-Pattern 6: Letting `unplugin-vue-components` Auto-Register Conflicting Names
-
-**What people do:** Name a subcomponent `List.vue` or `Detail.vue` because "it's inside `wallecx/`."
-**Why it's wrong:** PROJECT.md's "Known concerns" calls this out: `unplugin-vue-components` auto-registers globally. `List.vue` will clash with future mini-apps' lists.
-**Do this instead:** Prefix every Wallecx subcomponent with `Vaccination*` (or, for shared, `Wallecx*`). `VaccinationList.vue`, `VaccinationDetail.vue`, `ManageVaccination.vue`, `AttachmentPreview.vue` (this last is generic enough to keep, but if a second app needs one, rename to `WallecxAttachmentPreview.vue`).
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| PocketBase | Shared `pb` singleton from `@/lib/pocketbase`; collection: `wallecx_vaccinations` | Server-side rules are the real auth boundary. File uploads via FormData; reads via `pb.files.getURL`. |
-| Vercel | Static deploy via GitHub push; no app-side change | New route resolves client-side via Vercel's default SPA rewrite. No `vercel.json` needed. |
-
-### Internal Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Router ↔ `WallecxApp.vue` | Lazy `import()` + `requiresAuth` meta | Same pattern as LexTrack. |
-| `WallecxApp.vue` ↔ `useAuthStore` | `auth.user!.id` read on create (for `user` field), `auth.isLoggedIn` indirectly via guard | No store writes — auth is read-only here. |
-| `WallecxApp.vue` ↔ subcomponents | `defineProps` / `defineEmits` / `defineModel` per CONVENTIONS Vue 3 patterns | Mirror `LexTrackView.vue` ↔ `ActivityCard` / `ManageTask` wiring. |
-| `ManageVaccination.vue` ↔ PocketBase | Direct via `pb`; create=FormData, update=FormData (when file changed) or `mapToUpdateVaccination` JSON | One component owns its own writes — no service layer. Matches LexTrack. |
-| `AttachmentPreview.vue` ↔ PocketBase | Read-only via `pb.files.getURL(record, filename, { thumb })` | Pure render component, no async. |
-| `ProjectsView.vue` ↔ Wallecx | One row in the `projects` array | No coupling beyond the route name + label. |
+---
 
 ## Sources
 
-- `.planning/codebase/ARCHITECTURE.md` — Lexarium architecture analysis (2026-05-10) — HIGH confidence
-- `.planning/codebase/STRUCTURE.md` — directory layout and "Where to Add New Code" — HIGH confidence
-- `.planning/codebase/CONVENTIONS.md` — naming, Vue 3 patterns, error handling — HIGH confidence
-- `.planning/PROJECT.md` — Wallecx requirements, constraints, decisions — HIGH confidence
-- `src/components/projects/lextrack/LexTrackApp.vue`, `src/views/LexTrackView.vue` — reference implementation — HIGH confidence
-- `src/lib/pocketbase/dsuTaskMapper.ts`, `src/types/lextrack/dsu_tasks/types.d.ts` — mapper + type pattern — HIGH confidence
-- `src/router/index.ts` — auth guard + lazy route pattern — HIGH confidence
-- PocketBase 0.26 docs — collection rules, file fields, `pb.files.getURL`, FormData uploads (https://pocketbase.io/docs/collections/, https://pocketbase.io/docs/files-handling/) — HIGH confidence
+- `src/components/projects/wallecx/WallecxApp.vue` — direct inspection (2026-05-13) — HIGH confidence
+- `src/components/projects/lextrack/LexTrackApp.vue` — TabView/TabPanel reference pattern — HIGH confidence
+- `src/components/projects/wallecx/ManageVaccination.vue` — form/mapper/FormData pattern to mirror — HIGH confidence
+- `src/types/wallecx/vaccinations/types.d.ts` — type pattern to mirror — HIGH confidence
+- `src/lib/pocketbase/vaccinationMapper.ts` — mapper pattern to mirror — HIGH confidence
+- `.planning/PROJECT.md` (v2.0 milestone section) — feature requirements — HIGH confidence
+- `.planning/codebase/ARCHITECTURE.md` — Lexarium mini-app conventions — HIGH confidence
+- `.planning/codebase/CONVENTIONS.md` — naming and component conventions — HIGH confidence
+- PrimeVue 4 Tabs component (Aura theme, auto-imported) — confirmed available via `primevue: ^4.3.7` in `package.json`
 
 ---
-*Architecture research for: Wallecx Phase 1 inside Lexarium*
-*Researched: 2026-05-10*
+*Architecture research for: Wallecx v2.0 Membership Cards — second vault record type*
+*Researched: 2026-05-13*

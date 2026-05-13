@@ -1,475 +1,433 @@
-# Pitfalls Research — Wallecx Vaccination Records (Phase 1)
+# Pitfalls Research — Wallecx v2.0 Membership Cards
 
-**Domain:** Personal multi-user health-records mini-app on PocketBase + Vue 3 SPA, with image/PDF attachments, deployed via Vercel.
-**Researched:** 2026-05-10
-**Confidence:** HIGH for PocketBase/PDF.js/Vercel-specific items (verified against official docs and existing CONCERNS.md), MEDIUM for behavioural/UX items (general health-app practice).
+**Domain:** Barcode/QR rendering + fullscreen scan display + second PocketBase record type + hex colour picker in Vue 3 SPA.
+**Researched:** 2026-05-13
+**Confidence:** HIGH for barcode-library behaviour and PrimeVue ColorPicker (verified against official docs and GitHub issue tracker), HIGH for Wake Lock API (MDN + caniuse.com), MEDIUM for fullscreen iOS behaviour (community reports + Apple forums), MEDIUM for PocketBase multi-collection patterns (official docs + community discussions).
 
-> Cross-references existing Lexarium concerns from `.planning/codebase/CONCERNS.md`. Where a known bug or pattern in the rest of the codebase already demonstrates a pitfall, it is cited inline with file:line and tagged **[Repo precedent]**.
+> This document covers NEW pitfalls introduced by the v2.0 membership-cards milestone. Pitfalls already solved in the vaccination records slice (per-user isolation, save-loop, EXIF GPS, isSaving guard, filter injection, v-html) are **not** repeated here — they are addressed patterns that must be carried forward into the new `wallecx_memberships` collection using the same conventions.
 
 ---
 
-## Critical Pitfalls
+## Section 1: Barcode Rendering Pitfalls
 
-### Pitfall 1: Per-user isolation enforced only by client filters, not by collection rules
+### BR-1: JsBarcode throws an uncaught exception on invalid input, crashing the component
 
-**Severity:** CRITICAL
 **What goes wrong:**
-The `wallecx_vaccinations` collection ships with permissive list/view/update/delete rules (e.g. `@request.auth.id != ""` only) and the SPA "filters" by `user.id` in the query. Any authenticated Lexarium user (LexTrack user, MonitoX user, anyone with a valid token) can list, fetch, modify, or delete *every other user's* vaccination records by sending a raw API call without the filter. Health data leaks across the multi-user boundary on day 1.
+JsBarcode validates barcode values against format-specific rules before rendering. If the value fails validation — wrong length for EAN-13, non-numeric characters in a numeric-only format, characters outside the Code39 charset — it throws a synchronous `Error` with message like `"[value] is not a valid input for [format]"`. Because the throw happens inside a Vue `onMounted` or watcher callback where the template has already rendered the `<svg>` element, Vue catches it in the component lifecycle but the error propagates to the global error handler (if one exists) or silently swallows it (if not). The user sees a blank barcode area with no explanation.
 
 **Why it happens:**
-The `pb` client is shared across all four mini-apps (`src/lib/pocketbase/index.ts`, see CONCERNS "Mini-apps share global state via single `pb` client (HIGH)"). The Lexarium router guard is client-side only (CONCERNS "Auth guard is client-side only (HIGH)"). Developers extend that habit and rely on a `filter: \`user = "${auth.user.id}"\`` string in the SPA, forgetting that PocketBase rules — not the client — are the actual gate. There is also a tempting precedent in the same codebase: `GiftExchangeManage.vue:9` defines `isSuperUser = computed(() => authStore.isLoggedIn)` (CONCERNS "Manage page exposed to anyone authenticated (HIGH)"), which is the wrong pattern to copy.
+JsBarcode was designed for Node.js and browser scripting, not reactive frameworks. It has no "soft fail" mode — it either renders or throws. Vue 3 `watch` callbacks do not automatically catch synchronous exceptions from the watched handler; the exception surfaces as an unhandled promise rejection only when the watcher is async.
 
-**How to avoid:**
-- Set every rule on `wallecx_vaccinations` to require ownership: `@request.auth.id != "" && user = @request.auth.id` for `listRule`, `viewRule`, `updateRule`, `deleteRule`. For `createRule`: `@request.auth.id != "" && @request.data.user = @request.auth.id`.
-- Never trust `@request.body` alone for the user field — set it from `@request.auth.id` in a `onRecordCreateRequest` hook if you want belt-and-braces.
-- Test the rule with a second user's token using API Playground (already in this codebase) before considering the feature done.
-- Do **not** introduce a "manager" or "admin" view in v1. If/when admin tooling is needed, model it as a real PocketBase role on `users`, not `isLoggedIn`.
+Specific format constraints that bite real users:
+- **EAN-13**: must be exactly 13 digits; the 13th is a checksum digit JsBarcode validates. A 12-digit retail barcode (EAN-12 / UPC-A) throws unless the checksum digit is appended.
+- **Code39**: uppercase letters, digits, and `- . $ / + % SPACE` only. Lowercase letters throw. Asterisks (`*`) are the start/stop symbol — if a user's card value includes a `*` it throws.
+- **Code128**: accepts any ASCII but length matters; extremely long values can produce SVGs wider than the viewport without throwing, just silently rendering off-screen.
+- **ITF** (Interleaved 2 of 5): must have an even number of digits; an odd-length numeric string throws.
 
-**Warning signs:**
-- A code review where the only access control is a filter string in the Vue component.
-- `superusers.authWithPassword` or `pb.authStore.isAdmin` referenced in app code.
-- The phrase "we'll add the rule later."
-- `getList` returning records with a `user` field that doesn't match the current user.
+**Prevention:**
+1. Wrap every JsBarcode render call in `try/catch`. On catch, set a `barcodeError: string | null` reactive ref and render a fallback UI (the plain card number in large text) instead of the SVG.
+2. Add client-side pre-validation in the `ManageMembership.vue` form using Zod: `z.string().regex(/^\d{13}$/)` for EAN-13, `z.string().regex(/^[A-Z0-9\-\.\$\/\+\% ]+$/)` for Code39. Show inline field errors before the user hits save.
+3. The fallback must be a visible element, not an empty `<div>`. Render the card number as large plain text with a "Barcode unavailable" caption.
+4. Never pass an empty string to JsBarcode — check `barcodeValue.trim() !== ''` before calling.
 
-**Phase to address:** Phase 1 — gate is the schema migration that creates the collection. Cannot ship Phase 1 without server-side rules verified.
+**Phase assignment:** Phase implementing barcode rendering (MembershipCard component). The try/catch fallback must be present from day one — it cannot be added later after users have saved invalid-format values.
 
 ---
 
-### Pitfall 2: Filter-string injection on lookups (`getFirstListItem`, `getList`)
+### BR-2: QR code renders invisibly on dark card backgrounds — contrast failure
 
-**Severity:** HIGH
 **What goes wrong:**
-A Wallecx detail/edit screen does `pb.collection('wallecx_vaccinations').getFirstListItem(\`vaccine_name = "${userInput}"\`)`. A user types `" || user != ""` or escapes the quote with `\\` and the parser-level filter becomes `vaccine_name = "" || user != ""` — bypassing per-user isolation *even if the collection rule is correct*, because the rule is `&&`-combined with the supplied filter and an attacker-shaped filter can short-circuit semantics or trigger a 500.
+QR codes rendered with `qrcode.vue` or similar libraries default to black-on-white (`#000000` on `#ffffff`). When the card's `card_color` is a dark colour (navy, charcoal, dark green), the developer may try to match the QR code's foreground/background to the card palette. Dark-on-dark QR codes fail to scan: most phone scanner algorithms require a minimum contrast ratio of 3:1 between modules and background; effective scanning requires 4.5:1 or higher. Even if the code is technically visible to the human eye, the camera sensor may not capture sufficient contrast under overhead fluorescent lighting.
+
+Additionally, QR codes rendered with a red or orange foreground colour fail on some cameras because the sensor struggles to distinguish red wavelengths as "dark" — the camera sees a red module as too bright and loses the pattern.
 
 **Why it happens:**
-This is the dominant pattern already in the Lexarium codebase. CONCERNS "PocketBase filter-string interpolation (MEDIUM)" lists 11 occurrences across `GiftExchange*.vue` and others. PocketBase's filter parser has its own quoting rules and JS `${}` interpolation does not escape them. Developers reach for template literals out of habit.
+The card colour controls the visual identity of the card tile; it is tempting to style the barcode to match. The standard says barcode foreground must be dark relative to background — not relative to the card's accent colour.
 
-**How to avoid:**
-- Use parameterised filters everywhere. PocketBase SDK supports placeholders: `pb.collection('wallecx_vaccinations').getFirstListItem("id = {:id}", { filter: { id } })` and the `getList(page, perPage, { filter, ... })` form with bind params.
-- Lint rule (or simple grep in CI) banning template-literal `\`...${...}...\`` strings passed to `filter`/`getFirstListItem`/`getList`.
-- For date filtering, follow the existing safe pattern in `LexTrackView.vue:104` which uses `dayjs.format('YYYY-MM-DD')` (no user-supplied chars).
+**Prevention:**
+1. Always render QR codes and linear barcodes with a **white background panel** (`#ffffff`) and **black foreground** (`#000000`), regardless of the card's `card_color`. Wrap the SVG/canvas in a `rounded-md bg-white p-2` container.
+2. Never expose `colorDark` / `colorLight` props to end users. The barcode rendering is a functional element, not a design element.
+3. Explicitly prohibit red, orange, and warm-light foreground values in the barcode renderer props — use constants `BARCODE_FOREGROUND = '#000000'` and `BARCODE_BACKGROUND = '#ffffff'` with no overrides from card data.
+4. In fullscreen scan mode, add extra white padding around the barcode (quiet zone) — QR code specs require 4 module-widths of quiet zone; most library defaults provide this but verify it isn't clipped by the card layout.
 
-**Warning signs:**
-- Any `\`...${var}...\`` passed as the first arg to `getFirstListItem` or as `.filter` in `getList`.
-- New `eslint-disable` lines next to a `pb.collection(...)` call.
-- Manual `.replace(/"/g, '')` "sanitisation" of user input — that's the wrong primitive.
-
-**Phase to address:** Phase 1 — establish the parameterised pattern in the first mapper file (`vaccinationMapper.ts`) so it sets the convention for the future vault record types.
+**Phase assignment:** Phase implementing barcode rendering and fullscreen scan view.
 
 ---
 
-### Pitfall 3: Save loop that never refreshes IDs (re-create on every edit)
+### BR-3: Bundle size spike from including all JsBarcode format encoders
 
-**Severity:** HIGH
 **What goes wrong:**
-A Wallecx form lets the user add a new vaccination, hits save (POST → PocketBase creates record `abc123`), then the user edits a field and hits save again. Because the local record's `id` was never set from the server response, the second save is another POST → creates record `def456`. The list now shows two of the same vaccination; the original is orphaned with the original attachment file.
+The standard JsBarcode import (`import JsBarcode from 'jsbarcode'`) loads all supported barcode formats: Code128, Code39, EAN, UPC, ITF, Pharmacode, Codabar, MSI — totalling approximately 47 kB minified / 11 kB gzipped. For a Vite/rolldown build the tree-shaker can only eliminate JsBarcode encoders if the library provides named ESM exports, which the current JsBarcode release (`3.11.6`) does not — it ships a UMD bundle that treats the whole library as one chunk. The result is the full 47 kB is always bundled even if only Code128 is used.
+
+For QR codes, `qrcode` (the underlying library for `qrcode.vue`) adds approximately 40 kB minified / 15 kB gzipped.
+
+Combined: approximately 26 kB gzipped added to the Wallecx chunk if both are imported eagerly.
 
 **Why it happens:**
-**[Repo precedent]** This bug exists today in LexTrack: CONCERNS "LexTrack save loop never refreshes IDs (MEDIUM)" (`src/views/LexTrackView.vue:127-165`). New entries call `pb.collection(...).create(item)` without capturing the returned record id. Wallecx will be implemented by the same developer in the same idiom, so the bug will be copy-pasted unless explicitly prevented.
+Wallecx is a mini-app under `/projects/wallecx`. If the barcode/QR libraries are imported at the top of `WallecxApp.vue` or `MembershipCard.vue`, Vite bundles them into the Wallecx route chunk, which is already lazy-loaded from the router. The size hit is confined to the Wallecx chunk, not the global bundle — but it still affects Wallecx first-load time on slow mobile connections.
 
-**How to avoid:**
-- Mapper contract: `createVaccination(input)` must `return await pb.collection('wallecx_vaccinations').create(form)` and the caller must do `Object.assign(item, created)` (id, created, updated, file token).
-- For files: re-read the *server's* filename for the attachment after create — the original filename gets a `_xxxxxxxxxx` suffix on disk and your local `file: File` object no longer matches the URL.
-- Form state machine: `draft → saving → saved(id)`. Disable save button while `saving`. Treat `saved(id)` as the only state where re-saves issue PATCH.
-- Unit test the create→update sequence in `__tests__/vaccinationMapper.spec.ts`.
+**Prevention:**
+1. Keep the barcode/QR imports inside the `MembershipCard.vue` component (or a dedicated `MembershipBarcode.vue` subcomponent) so Vite can split them into a sub-chunk. Since `WallecxApp.vue` lazy-loads `MembershipCard.vue` only when the Memberships tab is active, there is a natural split point.
+2. Use `defineAsyncComponent(() => import('./MembershipBarcode.vue'))` for the barcode subcomponent with a `<Skeleton>` loading slot — this defers the ~26 kB until the user first navigates to the memberships tab.
+3. For JsBarcode, prefer format-specific imports if the library ever ships per-format ESM: `import { CODE128 } from 'jsbarcode/src/barcodes/CODE128'`. For now, import the full library but keep it isolated to the barcode component.
+4. Run `npm run build` and check the Rollup chunk report after adding the libraries. Anything over 50 kB gzipped for the Wallecx chunk warrants attention.
 
-**Warning signs:**
-- `pb.collection(...).create(item)` with no `await` capture into a variable.
-- Two list-view rows with identical text after the user edits once.
-- Orphan files in PocketBase storage with no record pointing at them.
-
-**Phase to address:** Phase 1 — bake into the first mapper. Add a regression test before the dialog component is wired up.
+**Phase assignment:** Phase implementing membership card grid and barcode rendering.
 
 ---
 
-### Pitfall 4: Delete UI that only removes from local state (record persists on server)
+### BR-4: `qrcode.vue` Canvas vs SVG — canvas fails in strict CSP environments
 
-**Severity:** HIGH
 **What goes wrong:**
-User clicks "Delete" on a vaccination row. The row disappears from the table. User logs out, logs in next day — the record is back. Worse: the *file* is still in PocketBase storage. Worst: in a multi-user scenario, the user thinks their sensitive record is gone (and changes their behaviour accordingly) when it is still discoverable.
+`qrcode.vue` offers both `QrcodeCanvas` (renders to `<canvas>`) and `QrcodeSvg` (renders to inline SVG). If the existing Lexarium `index.html` CSP includes `default-src 'self'` without explicitly allowing `blob:` or if canvas-to-blob operations are restricted, `QrcodeCanvas` may fail silently. Additionally, canvas-rendered QR codes cannot be right-click-saved as images in some browsers.
+
+SVG QR codes are preferable because they are resolution-independent (crisp on high-DPI screens), scale correctly in fullscreen mode without pixelation, and are not affected by canvas CSP restrictions.
+
+**Prevention:**
+1. Use `QrcodeSvg` (or the `render-as="svg"` prop) for all QR code rendering. Do not use canvas for QR codes in this project.
+2. For JsBarcode (linear barcodes), the library renders to SVG by default when passed an `<svg>` element reference — prefer SVG over canvas here too.
+3. SVG output scales perfectly to fullscreen without blur. Canvas at standard DPI appears pixelated when scaled up in fullscreen mode.
+4. Verify the existing CSP in `index.html` does not need updating for SVG inline rendering (it does not — inline SVG is part of the HTML document and covered by `default-src 'self'`).
+
+**Phase assignment:** Phase implementing barcode rendering.
+
+---
+
+### BR-5: Watcher-driven barcode re-render fires before the SVG element mounts
+
+**What goes wrong:**
+A common pattern is to `watch(barcodeValue, () => JsBarcode('#barcode-svg', barcodeValue.value, options))`. If the component conditionally renders the `<svg id="barcode-svg">` element (e.g., inside a `v-if="barcodeValue"`), the watcher may fire before the DOM element exists on the first render cycle. `document.querySelector('#barcode-svg')` returns `null`, and JsBarcode receives `null` — throwing a second type of error distinct from the invalid-input error.
 
 **Why it happens:**
-**[Repo precedent]** CONCERNS "`removeSupport`/`removeMeeting`/`removeTask` only mutate local state (HIGH)" — `src/views/LexTrackView.vue:42-91` removes from a `ref` array via `lodash-es/remove` but never calls `pb.collection(...).delete(...)`. Same dev, same idiom, same risk.
+Vue 3's reactivity updates the DOM asynchronously. A synchronous watcher fires before the `v-if` branch has had a chance to insert the element. Using `{ immediate: true }` on the watcher without `nextTick` guarantees is the most common trigger.
 
-**How to avoid:**
-- Delete handler signature: `async function deleteVaccination(item)` → `if (item.id) await pb.collection('wallecx_vaccinations').delete(item.id)` *first*, then splice from local list. Show a toast on success.
-- On failure (network, 403), do NOT splice locally. Surface the error.
-- Add a confirmation dialog with the vaccine name in plain text — finger-slip on a phone is the dominant failure mode for this UI.
-- Unit test: stub `pb.collection().delete()` to throw; assert local list is unchanged.
+**Prevention:**
+1. Use `templateRef` (`const svgRef = useTemplateRef<SVGElement>('barcode-svg')`) and render JsBarcode against the ref, not a DOM query. The ref is `null` until mount, which you can check.
+2. Wrap the JsBarcode call in `nextTick` when triggered by a watcher: `watch(barcodeValue, async () => { await nextTick(); if (svgRef.value) JsBarcode(svgRef.value, ...); })`.
+3. Alternatively, use `onMounted` + `watch` without `{ immediate: true }`: `onMounted(() => renderBarcode())` + `watch(barcodeValue, renderBarcode)`. This avoids the race entirely.
+4. For `qrcode.vue`, the `QrcodeSvg` component handles its own reactive re-rendering via props — no manual DOM manipulation needed; this pitfall only applies to direct JsBarcode usage.
 
-**Warning signs:**
-- `remove(arr, ...)` or `arr.splice(...)` is the entire body of a delete handler.
-- No `await` in the delete function.
-- "Delete" button has no confirmation step.
-
-**Phase to address:** Phase 1.
+**Phase assignment:** Phase implementing barcode rendering in card components.
 
 ---
 
-### Pitfall 5: PDF rendering via `v-html` or untrusted iframe (PDF.js CVE-2024-4367)
+## Section 2: Fullscreen Scan Display Pitfalls
 
-**Severity:** HIGH
+### FS-1: Screen dims and locks during barcode scan — the Wake Lock API is required
+
 **What goes wrong:**
-The detail view shows a PDF attachment by either (a) `<div v-html="pdfHtml">` after some toString-of-PDF nonsense, (b) `<iframe :src="pdfUrl">` pointing at the PocketBase file URL with no sandbox, or (c) using PDF.js without updating past 4.2.67. A malicious PDF (the user uploads a "vaccination certificate" they were emailed) embeds a PostScript calc-function that executes JavaScript in PDF.js's worker — CVE-2024-4367 — XSS in the SPA origin. Because the SPA also holds the PocketBase auth token in `localStorage`, the attacker reads it and now has full account access.
+A user opens the fullscreen scan overlay, holds the phone up to the counter scanner, and the screen auto-dims (5–15 seconds on iOS/Android defaults) or locks (30–60 seconds). The barcode disappears. The user has to unlock, navigate back, and try again. In a queue at a pharmacy or transport gate, this is a significant UX failure.
 
 **Why it happens:**
-PDF preview "looks easy" — drop the URL into an iframe, ship it. PDF.js bundles get pinned and forgotten. Vue 3 `v-html` is the standard "render HTML I have" reflex (already used in `ApiPlaygroundApp.vue:894`, see CONCERNS "`v-html` of API response in API Playground (MEDIUM)").
+Phone OS screen timeout applies to web pages including PWA fullscreen views. There is no CSS or HTML attribute to prevent dimming. The JavaScript `Screen Wake Lock API` (`navigator.wakeLock.request('screen')`) is the only browser-native solution.
 
-**How to avoid:**
-- Use `pdfjs-dist` ≥ 4.2.67 (CVE-2024-4367 fix) and pin it. Keep it on a Renovate/Dependabot watch.
-- Render PDFs to a `<canvas>` via PDF.js `getDocument().promise.then(pdf => pdf.getPage(n).then(page => page.render({ canvasContext, viewport })))` — never raw `v-html`.
-- If you must use an iframe (cheapest preview), set `sandbox="allow-same-origin"` only and cross-check the PDF's MIME type from PocketBase headers. Better: separate the preview origin (e.g. `pdf-preview.lexarium.app`) so an XSS there can't read the SPA's auth token. For Phase 1 this is overkill — choose canvas rendering with pinned PDF.js.
-- Update the existing CSP in `index.html`: PDF.js needs `worker-src 'self' blob:` and `script-src 'self' blob:` for its worker. Add these *narrowly*, not by relaxing `script-src 'self'` globally.
-- Keep `frame-src 'none'` unless you switch to the iframe approach.
+**Browser support as of 2026-05:**
+- Chrome (Android): supported since Chrome 84
+- Safari (iOS): supported since iOS 16.4 — but **a bug broke Wake Lock in installed PWA mode until iOS 18.4** (Apple fixed in March 2025). In iOS 18.4+ it works correctly.
+- Firefox: supported since Firefox 126
+- The API is available in **secure contexts only** (HTTPS) — Vercel deployments satisfy this.
 
-**Warning signs:**
-- `v-html` appears anywhere in `WallecxDetail.vue`.
-- An `<iframe>` without `sandbox=""`.
-- `pdfjs-dist` not pinned in `package.json`, or the version is < 4.2.67.
-- CSP relaxed broadly to make a viewer "just work."
+**Prevention:**
+1. In the fullscreen scan overlay `onMounted`, call `navigator.wakeLock.request('screen')` inside a `try/catch`. Store the sentinel: `const wakeLock = ref<WakeLockSentinel | null>(null)`.
+2. Release the wake lock in `onUnmounted` and when the overlay closes: `wakeLock.value?.release()`.
+3. The wake lock is auto-released when the tab becomes hidden (user switches apps). Re-acquire it on `visibilitychange`: `document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeLock.value = await navigator.wakeLock.request('screen'); })`.
+4. Guard with feature detection: `if ('wakeLock' in navigator)` — do not throw if unsupported (older iOS Safari 16.3 and below).
+5. Do **not** rely on Wake Lock to also increase brightness — the API prevents dimming but cannot force maximum brightness. Inform users via a tooltip: "Keep screen bright for best scanning."
 
-**Phase to address:** Phase 1 if PDF preview ships in v1. If preview is deferred (download-only), this becomes Phase 2 and Phase 1 should disable PDF preview UI rather than ship a placeholder.
+**Phase assignment:** Phase implementing fullscreen scan overlay.
 
 ---
 
-### Pitfall 6: Orphan files after record delete (cascade-delete file gap)
+### FS-2: The Fullscreen API does not work on iPhones — use a viewport overlay instead
 
-**Severity:** HIGH
 **What goes wrong:**
-A user deletes a vaccination record. The record row goes away. The attached card scan stays in PocketBase storage forever. Over a year of use the storage bill grows; more importantly, a sensitive medical scan persists past the user's perceived "I deleted it." If the file URL was ever cached, copied, or exposed to a CDN, deletion of the record does not invalidate it.
+`document.documentElement.requestFullscreen()` works on Android Chrome and desktop browsers. On iPhone (all iOS versions before iOS 26), the Fullscreen API is **not supported for non-video elements**. Calling `requestFullscreen()` on an iPhone returns a rejected promise or `undefined`. As of iOS 26 (September 2025), Safari added support — but devices on iOS 17/18 will remain on the old behaviour for years.
 
 **Why it happens:**
-PocketBase's open issue [#151](https://github.com/pocketbase/pocketbase/issues/151) documents that *cascade-delete via relations* (`onDelete: cascade`) historically did not remove files from storage — only direct record deletes do. Even direct record deletes happen in a separate goroutine after the response, so for a few seconds the file URL is still live. Developers assume "delete record = delete file" and never verify.
+Apple historically restricted the Fullscreen API on iPhone to video elements only. iPad had limited support with vendor prefixes (`webkitRequestFullscreen`). The restriction existed from iOS 12 through iOS 18, affecting the majority of current real-world devices.
 
-**How to avoid:**
-- v1 schema: keep the file field on the same record. Don't model the attachment as a separate `wallecx_vaccination_files` collection joined by relation — that triggers the cascade-delete-doesn't-remove-files bug.
-- After delete, verify: in the smoke test, capture the file URL pre-delete, delete the record, and assert the URL returns 404 within 5 seconds.
-- Document the "files clean up async" caveat for the user (or just delay the success toast until a HEAD on the file URL returns 404).
-- Set a server-side scheduled job (PocketBase cron hook) to sweep orphan files monthly. Defer this to Phase 2; document the gap in Phase 1.
+**Prevention:**
+1. Do not implement the fullscreen scan view via the Fullscreen API. Instead, implement it as a `position: fixed; inset: 0; z-index: 9999` overlay div that covers the entire viewport. This works identically on all devices.
+2. Use Tailwind classes: `fixed inset-0 z-50 bg-black flex flex-col items-center justify-center`.
+3. Set `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (already present in most Vite-generated `index.html` files) to cover the notch area on iPhone.
+4. The status bar will still be visible on iPhone in a browser tab — this is expected and acceptable. The QR/barcode can still be scanned with the status bar present.
+5. If targeting installed PWA mode (Add to Home Screen), add `"display": "standalone"` to the web app manifest to get near-fullscreen on both iOS and Android.
+6. Lock orientation to landscape is also not reliably possible (Screen Orientation API not supported on iOS Safari) — design the scan overlay to work in both portrait and landscape.
 
-**Warning signs:**
-- A "soft delete" pattern (`deleted_at`) being introduced "for safety" — it leaves files live forever.
-- Two collections joined by relation where the file lives on the parent.
-- No test that verifies the file URL is unreachable after delete.
-
-**Phase to address:** Phase 1 (single-collection design); Phase 2 (orphan sweeper hook).
+**Phase assignment:** Phase implementing fullscreen scan overlay.
 
 ---
 
-### Pitfall 7: EXIF GPS coordinates leak the user's home address
+### FS-3: Screen brightness cannot be increased via web APIs — manual instruction required
 
-**Severity:** HIGH (privacy)
 **What goes wrong:**
-The user uploads a photo of their vaccination card taken on their phone — at home, on the kitchen counter. The JPEG includes EXIF GPS tags pointing at their home (within metres). The file is stored as-is in PocketBase. Even with per-user isolation, the user's *own* attachment leaks GPS in the file binary. If the attachment is ever exported, shared, screenshotted-with-metadata, or the storage is breached, the GPS is the leak — not the visual content.
+The user is in a dimly-lit store. The QR code needs maximum screen brightness to scan reliably. Web browsers have no API to programmatically set or increase screen brightness — the W3C Screen Brightness API is proposed (`WICG/proposals#17`) but not implemented in any browser as of 2026. Wake Lock prevents dimming but cannot go above the user's current brightness setting.
 
 **Why it happens:**
-Phone cameras default to writing EXIF GPS. PocketBase stores files as uploaded (correct behaviour for a generic file field). The Vue SPA passes the raw `File` object to a `FormData` and uploads. No one stripped EXIF.
+Brightness control is considered a sensitive hardware API and has not been standardised for web access.
 
-**How to avoid:**
-- Strip EXIF client-side before upload using the canvas trick: load the image into an `Image`, draw to a `<canvas>`, export via `canvas.toBlob('image/jpeg', 0.92)`. Canvas does not preserve EXIF — you get a clean image with only pixel data. Verified pattern as of 2025.
-- Surface the strip in the upload UI: "We've removed location data from your photo for privacy." This is also a differentiator vs naive health trackers.
-- For PDFs, EXIF doesn't apply but PDF metadata (`/Author`, `/Producer`) does. Stripping PDFs in-browser is much harder; document the gap and recommend users upload PDFs they generated themselves rather than scans from a clinic kiosk.
-- Test: upload a file with known GPS EXIF (test fixture), download from PocketBase, confirm `exiftool` shows no GPS.
+**Prevention:**
+1. Display a persistent "Tip" message in the fullscreen overlay: "For best scanning: increase your screen brightness in Settings." Use a dismissible `Message` component from PrimeVue.
+2. Set the fullscreen overlay background to pure black (`#000000`) everywhere except the white barcode panel — the contrast makes the barcode panel appear brighter to the scanner.
+3. Use `QrcodeSvg` / SVG barcodes (not canvas) — SVG renders crisply at any DPI and does not have the slight gamma shift that canvas exhibits on OLED screens.
+4. Do not promise "auto-brightness" in marketing copy or UI strings.
 
-**Warning signs:**
-- The upload code path is just `formData.append('attachment', file)` with no preprocessing.
-- No mention of EXIF in the `WallecxApp.vue` PR description.
-- A `image/heic` allowed MIME type with no transcode (HEIC carries even more metadata and is unreadable on many platforms anyway).
-
-**Phase to address:** Phase 1 — privacy guarantee is part of the Core Value ("save and retrieve their own vaccination records … without ever losing access"). Sensitivity is implied. Stripping is cheap and table-stakes for a health vault.
+**Phase assignment:** Phase implementing fullscreen scan overlay.
 
 ---
 
-### Pitfall 8: File field misconfiguration — wrong MIME allowlist, wrong size, single vs multi
+### FS-4: Tap to exit fullscreen conflicts with tap to copy card number
 
-**Severity:** MEDIUM
 **What goes wrong:**
-The file field is configured permissively (`maxSize: 0` → defaults to 5 MB; `maxSelect: 0` → ambiguous; no `mimeTypes` allowlist) or *too restrictively* (`mimeTypes: ['image/jpeg']` blocks PNG photos and PDFs entirely). Common failure modes:
-- Modern phone photos (12 MP HEIC, 4–8 MB) hit the 5 MB default and silently fail to upload.
-- PDFs from email scanners (10–25 MB) blow through the limit.
-- `maxSelect: 1` is set but the field is read in code as an array (`record.attachment[0]`) → `undefined`.
-- No allowlist → user uploads `.exe` because the "file picker" had no `accept` attribute.
+The fullscreen overlay has a "tap anywhere to close" gesture. The card also shows the card number which should be tappable to copy to clipboard. These two interactions conflict: tapping the card number both copies it AND closes the overlay.
+
+**Prevention:**
+1. Use an explicit close button (X icon, top-right corner, large tap target: `min-h-[44px] min-w-[44px]`) rather than "tap anywhere to close."
+2. If a background-tap-to-close gesture is desired, attach it only to the background overlay element (not the card content area), using `@click.self` on the outer div.
+3. The copy-to-clipboard button should call `event.stopPropagation()` to prevent bubbling to any parent tap handlers.
+
+**Phase assignment:** Phase implementing fullscreen scan overlay.
+
+---
+
+### FS-5: Fullscreen overlay stacking context interferes with PrimeVue Dialog z-index
+
+**What goes wrong:**
+PrimeVue Dialogs use `z-index: 1100` (Aura theme default). If the fullscreen overlay is rendered at `z-index: 9999` inside a `<Teleport to="body">`, the stacking works. But if the overlay is a sibling inside the same Vue component tree without a `<Teleport>`, it may be clipped by a parent `overflow: hidden` or `transform` — both of which create a new stacking context that traps the `z-index`.
+
+**Prevention:**
+1. Always render the fullscreen scan overlay via `<Teleport to="body">`. This ensures it is a direct child of `<body>` and participates in the root stacking context.
+2. Set `z-index` to at least `1200` to clear PrimeVue's Dialog layer.
+3. Test on mobile: PrimeVue's Drawer and Dialog components add CSS transforms for their slide/fade animations which create stacking contexts — the overlay must be teleported to escape them.
+
+**Phase assignment:** Phase implementing fullscreen scan overlay.
+
+---
+
+## Section 3: Multi-Record-Type Pitfalls
+
+### MR-1: Component name collision between Vaccination and Membership components
+
+**What goes wrong:**
+`unplugin-vue-components` auto-imports and globally registers every `.vue` file under `src/components/`. When adding membership card components alongside vaccination components in `src/components/projects/wallecx/`, generic names like `ManageRecord.vue`, `RecordCard.vue`, or `RecordDetail.vue` will collide if there is any vaccination component with a similar name — or worse, will shadow PrimeVue components (`Card`, `Dialog`, `Button`).
+
+The existing PITFALLS.md (v1.0) already documents this for vaccination components. Adding a second record type doubles the surface area.
 
 **Why it happens:**
-PocketBase defaults: `maxSize` defaults to 5 MB if zero; `maxSelect <= 1` means single-file (stored as string, not array); `maxSize * maxSelect` is the request body limit (verified from official docs). Developers don't read the docs; they configure in the admin UI clicking through.
+All Wallecx subcomponents share the same global namespace via `unplugin-vue-components`. The plugin resolves conflicts by "last registered wins" — alphabetical file discovery order — so `ManageRecord.vue` for memberships silently overrides the vaccination `ManageVaccination.vue` if they are resolved in the same namespace.
 
-**How to avoid:**
-- Set `maxSelect: 1` (one card per record), `maxSize: 10485760` (10 MB), `mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']`.
-- After EXIF strip + canvas re-encode, most phone photos drop below 2 MB anyway. The 10 MB ceiling exists for PDFs.
-- Generate `Thumb sizes` (e.g. `100x100`, `400x0`) on the file field for image previews — PocketBase serves them via `?thumb=WxH`. Avoids shipping the full 10 MB to a list view.
-- TypeScript: type the field as `attachment: string` (single-file) on the `Vaccinations` interface, not `string[]`.
-- Reject `.exe`, `.html`, etc. at upload time (HTML is a vector if you ever serve files inline rather than as `Content-Disposition: attachment`).
+**Prevention:**
+1. Prefix all membership components with `Membership`: `MembershipCard.vue`, `ManageMembership.vue`, `MembershipDetail.vue`, `MembershipBarcode.vue`, `MembershipScanOverlay.vue`.
+2. Keep the tab-navigation host in `WallecxApp.vue` — do not create a separate `MembershipApp.vue` that duplicates the auth/toolbar/drawer pattern.
+3. After adding membership components, verify `components.d.ts` (the auto-generated file) to confirm no membership component name shadows a PrimeVue component or a vaccination component.
+4. Run `git diff components.d.ts` after each new component addition as a sanity check.
 
-**Warning signs:**
-- `record.attachment[0]` accessed on a `maxSelect: 1` field.
-- `<input type="file">` with no `accept` attribute.
-- "Why is this 8 MB photo failing?" in chat.
-
-**Phase to address:** Phase 1 — collection schema decision.
+**Phase assignment:** Phase implementing membership card list (first component added).
 
 ---
 
-### Pitfall 9: PocketBase file URLs are public-by-token but served direct (CDN/cache misconception)
+### MR-2: Forgetting to replicate per-user isolation rules on the new collection
 
-**Severity:** MEDIUM
 **What goes wrong:**
-Developers assume that because the *records* are gated by collection rules, the *file URLs* are too. They aren't fully — PocketBase serves files via `/api/files/COLLECTION/RECORD_ID/FILENAME[?token=...]`. Without `token=`, access depends on the file field's `protected` flag. If `protected: false` (default), anyone with the URL can fetch the file forever — even after the user logs out, even if they're not logged in at all. The URL gets shared via copy-paste, leaks into analytics referrers, or sits in the browser cache on a shared computer.
+The `wallecx_vaccinations` collection has correct per-user server-side rules (`user = @request.auth.id` in every rule). A new `wallecx_memberships` collection is created in PocketBase admin UI by clicking through quickly. The default rules are either permissive (`@request.auth.id != ""` only — any logged-in user can see any other user's cards) or empty (public access). Because the SPA still correctly filters by the current user in queries, casual testing passes — but any user can call the API directly to see all membership cards.
+
+Membership cards contain card numbers, expiry dates, and potentially insurance card or government ID information — a privacy breach with real-world consequences.
+
+**Prevention:**
+1. Apply identical rules to `wallecx_memberships` as on `wallecx_vaccinations` before any frontend work begins:
+   - `listRule`: `@request.auth.id != "" && user = @request.auth.id`
+   - `viewRule`: `@request.auth.id != "" && user = @request.auth.id`
+   - `createRule`: `@request.auth.id != "" && @request.data.user = @request.auth.id`
+   - `updateRule`: `@request.auth.id != "" && user = @request.auth.id`
+   - `deleteRule`: `@request.auth.id != "" && user = @request.auth.id`
+2. Run the two-user smoke test immediately after collection creation (same test as vaccination Phase 1): log in as user B, attempt `pb.collection('wallecx_memberships').getList()` — must return zero records from user A's data.
+3. Add this to the definition-of-done for the collection setup phase: "Two-user API isolation test passes before any UI work."
+
+**Phase assignment:** Phase creating the `wallecx_memberships` PocketBase collection (must be first task).
+
+---
+
+### MR-3: WallecxApp.vue state explosion from two independent record lists
+
+**What goes wrong:**
+Following the vaccination pattern, a developer adds membership card state directly into `WallecxApp.vue`: `memberships`, `isLoadingMemberships`, `selectedMembership`, `showMembershipDetail`, `membershipFileToken`, `showManageMembership`, `manageMembership`, `showScanOverlay`, `scanMembership` — plus all the equivalent computed properties and handlers. `WallecxApp.vue` already has ~300 lines for vaccinations. A naively-duplicated membership implementation would push it past 600 lines, making both the vaccination and membership logic hard to maintain and test.
+
+**Prevention:**
+1. Extract membership state and logic into a dedicated Pinia store: `src/stores/wallecx/memberships.ts` (following the same shape as `useAuthStore`). Keep vaccination state in `WallecxApp.vue` (or extract it to `src/stores/wallecx/vaccinations.ts` for consistency).
+2. `WallecxApp.vue` becomes an orchestrator: it delegates to the store and handles tab-switching between the Vaccinations and Memberships views.
+3. A Pinia store also makes the mapper + store logic unit-testable independently of the component, consistent with `__tests__/vaccinationMapper.spec.ts`.
+4. Tab state (`activeTab: 'vaccinations' | 'memberships'`) lives in `WallecxApp.vue` itself — it is UI state, not business logic.
+
+**Phase assignment:** Phase implementing membership list view.
+
+---
+
+### MR-4: Membership mapper carries the same save-loop and id-refresh risk as vaccinations
+
+**What goes wrong:**
+The vaccination mapper (`vaccinationMapper.ts`) was designed to return the server response (with the real `id`) to the caller, enabling the `Object.assign` id-refresh pattern. If a `membershipMapper.ts` is written quickly by copy-paste and the `create` function returns `void` instead of the server record, the same duplicate-on-edit bug (Pitfall 3 from the v1.0 research) reappears for memberships.
+
+**Prevention:**
+1. `membershipMapper.ts` must follow the exact same contract as `vaccinationMapper.ts`: `createMembership()` returns `Promise<Memberships>` (the full server record, not void).
+2. Add a `membershipMapper.spec.ts` with the create-then-update sequence test before wiring the form dialog.
+3. Code-review checklist: `await pb.collection('wallecx_memberships').create(...)` must always be `const created = await ...` (captured, not discarded).
+
+**Phase assignment:** Phase implementing membership CRUD (mapper and form dialog).
+
+---
+
+### MR-5: PocketBase auto-cancel silently drops the membership list fetch when vaccinations load in parallel
+
+**What goes wrong:**
+`WallecxApp.vue` loads vaccination records on `onMounted`. If membership records are also fetched on `onMounted` in the same component (or a child component mounted at the same time), PocketBase's default auto-cancellation (`$autoCancel: true`) treats two `getFullList` calls to different collections as potentially duplicate requests and cancels one of them. The cancelled request resolves with an empty array without throwing — the user sees a memberships list that is always empty until they navigate away and back.
 
 **Why it happens:**
-PocketBase file behaviour is documented but easy to skim past. The `protected` flag is a per-file-field setting in the collection schema, not a global toggle. Developers test with their own logged-in session and don't notice the URL works in incognito.
+PocketBase SDK's auto-cancellation keying is based on collection name + query parameters. Two separate collections should not collide — but if any wrapper function re-uses the same AbortController or the same cancellation key is generated, the second request is silently dropped.
 
-**How to avoid:**
-- Set `protected: true` on the `attachment` file field in the collection schema. With this set, file URLs require a short-lived `token` query param obtained via `pb.files.getToken()` (or `pb.collection().getList({ files: 'short' })` depending on SDK version). Tokens expire (default ~3 minutes) — appropriate for a health-record viewer.
-- Generate the token at view-time, not at list-time. If you put a 3-minute token in a list-view URL, it expires before the user clicks.
-- Document that tokens *are bearer credentials*: don't log them, don't put them in error messages, don't paste them into the API Playground for "testing."
-- Test: open the file URL in an incognito tab without the token — must 403.
+**Prevention:**
+1. Explicitly set `{ requestKey: null }` (or a unique string key) on every `getFullList` call: `pb.collection('wallecx_memberships').getFullList({ requestKey: 'memberships-init', sort: '-created' })`. This opts out of auto-cancellation for the initial load.
+2. Alternatively, fetch vaccinations and memberships sequentially in `onMounted` with `await` between them — no parallelism, no cancellation risk. The extra latency (~100–200ms) is acceptable on initial load.
+3. If parallel fetching is used for performance, use `Promise.all([vaccinationsPromise, membershipsPromise])` where each promise uses a distinct `requestKey`.
 
-**Warning signs:**
-- File URLs that work in incognito.
-- `protected` is not set or is `false` in the collection schema.
-- Tokens hardcoded into list-view templates (so they expire before render).
-- Vercel Speed Insights or any RUM showing file URLs (with tokens) in `referer` headers.
-
-**Phase to address:** Phase 1.
+**Phase assignment:** Phase implementing the tab-switching WallecxApp with both record types.
 
 ---
 
-### Pitfall 10: `v-html` for vaccination notes / location field
+## Section 4: Color Picker Pitfalls
 
-**Severity:** MEDIUM
+### CP-1: PrimeVue ColorPicker stores hex WITHOUT the leading `#` — CSS `background-color` will not accept it
+
 **What goes wrong:**
-A future iteration adds a "Notes" field with rich text (Quill, like LexTrack uses). The notes are saved as raw HTML and rendered with `v-html` in the detail view. Stored XSS — one user's notes script-tags-inject into another user's session... oh wait, but per-user isolation means they only XSS *themselves*. So who cares? **They care if** the database is breached, the data is exported and re-imported, an admin reviews records via a tool that uses `v-html`, or a Phase-3 "share with my doctor" feature renders the same HTML to a third party.
+PrimeVue `<ColorPicker v-model="card_color" format="hex">` stores and emits hex values **without** the leading `#`. Example: the user picks navy blue; `card_color.value` is `'002244'`, not `'#002244'`. If this value is used directly in a CSS binding — `:style="{ backgroundColor: card_color }"` — the browser ignores the invalid colour value and the card renders with no background colour (transparent or default). The card grid looks broken.
+
+This is confirmed by the PrimeVue documentation example showing `6466f1` (no hash), and is consistent with the PrimeVue source code which does not prepend `#` when emitting values.
+
+**Prevention:**
+1. Store `card_color` in the database **without** the `#` prefix (matching what ColorPicker emits). This avoids a strip-on-save / add-on-load transform.
+2. Create a single utility function used everywhere: `function toCSS(hex: string): string { return hex.startsWith('#') ? hex : '#' + hex; }`.
+3. In all style bindings: `:style="{ backgroundColor: toCSS(card.card_color) }"`. Never interpolate `card_color` directly into a CSS string.
+4. In the form, `v-model` binds directly to the local `formState.card_color` ref — no transformation needed on the ColorPicker side.
+5. When reading a card from PocketBase, the stored value is already hash-free; pass it directly to `<ColorPicker v-model="formState.card_color">` — no strip needed.
+
+**Phase assignment:** Phase implementing membership card form and card grid display.
+
+---
+
+### CP-2: Three-digit hex shorthand is misinterpreted by PrimeVue ColorPicker
+
+**What goes wrong:**
+If a user types a 3-digit hex shorthand (`fff`, `000`, `f0a`) into any companion text input wired to the same `v-model` as the ColorPicker, PrimeVue ColorPicker misinterprets it and displays the wrong colour. This is an open enhancement issue in the PrimeVue tracker (issue #7505, March 2025 — unfixed as of research date). The misinterpretation is silent — no error is thrown, the picker just shows an incorrect preview.
 
 **Why it happens:**
-**[Repo precedent]** CONCERNS "Editor descriptions saved as raw HTML (MEDIUM)" — `LexTrackView.vue:127-162` saves Quill output verbatim; sanitisation only happens on read in the *dead* `LexTrackApp.vue:5`. The live view doesn't `v-html` it today, but the data on disk is unsafe. CONCERNS "`v-html` of API response in API Playground (MEDIUM, currently safe)" — `ApiPlaygroundApp.vue:894` uses `v-html` with DOMPurify, which is the *correct* pattern, but is one careless commit away from regressing.
+ColorPicker's internal parser expects exactly 6 hex digits. A 3-character string is treated as a truncated 6-character string with implicit trailing zeros, not as CSS shorthand.
 
-**How to avoid:**
-- v1: do NOT add a rich-text notes field. Plain text only. `<textarea>` → store as plain string → render as `{{ notes }}` (Vue auto-escapes).
-- If/when notes become rich text in a future phase: `DOMPurify.sanitize(html, { ALLOWED_TAGS: ['p','br','strong','em','ul','ol','li'], ALLOWED_ATTR: [] })` *on write*, not just on read. Add a unit test asserting `<script>` and `<img onerror=>` are stripped.
-- Mirror the sanitization test from `ApiPlaygroundApp.vue` (CONCERNS suggests this exists as a coverage gap — opportunity to add it for both apps).
+**Prevention:**
+1. Do not provide a free-text hex input field in the membership form. Use only the ColorPicker widget for colour selection. This eliminates the shorthand input path entirely.
+2. If a text input is added in the future (for power users), normalize 3-digit input to 6-digit before passing to ColorPicker: `hex.length === 3 ? hex.split('').map(c => c + c).join('') : hex`.
+3. Add Zod validation on the `card_color` field in the form schema: `z.string().regex(/^[0-9a-fA-F]{6}$/, 'Invalid colour — use a 6-digit hex code')`.
 
-**Warning signs:**
-- A Quill `<Editor>` import in `WallecxApp.vue`.
-- Any `v-html` directive in the Wallecx folder.
-- A migration that changes a `text` field to `editor` type in the collection.
-
-**Phase to address:** Phase 1 (decision: plain text). Phase 2+ if rich text introduced.
+**Phase assignment:** Phase implementing membership card form.
 
 ---
 
-### Pitfall 11: Race condition / double-submit on save dialog
+### CP-3: ColorPicker initial value ignored when used inside PrimeVue Forms (Forms library bug)
 
-**Severity:** MEDIUM
 **What goes wrong:**
-User clicks "Save" twice (network slow, button doesn't disable, eager finger). Two POST requests fire. PocketBase creates two records, two file uploads, two attachments. Same end-state as Pitfall 3 but caused by user, not by stale-id. Especially likely on mobile (double-tap zoom).
+When `<ColorPicker>` is used inside PrimeVue's `<Form>` component (the `@primevue/forms` controlled-form system), the initial value bound via `v-model` or `:defaultValue` is ignored — the picker always starts showing red (`#ff0000`). This is PrimeVue issue #8135, reported September 2025, unfixed as of research date.
 
 **Why it happens:**
-Vue 3 + PrimeVue dialogs are easy to wire as `<Button @click="save">` without `:loading` or `:disabled` bound to a saving flag. The save handler is `async` but the button state isn't.
+PrimeVue Forms initialises the internal field state from the `defaultValues` prop of the `<Form>` component. ColorPicker has a bug in how it syncs its internal HSB/canvas state from the provided initial hex value when instantiated inside the Form context.
 
-**How to avoid:**
-- Pattern: `const isSaving = ref(false); async function save() { if (isSaving.value) return; isSaving.value = true; try { ... } finally { isSaving.value = false; } }` — on the button: `:disabled="isSaving" :loading="isSaving"`.
-- Idempotency on PocketBase: include a client-generated UUID (`crypto.randomUUID()`) in a `client_id` field with a unique index. A duplicate POST returns the same record. Overkill for v1; keep in mind for Phase 2.
-- Disable the form (PrimeVue `<Fieldset :disabled>`) during save, not just the button.
+**Prevention:**
+1. Do **not** use `<ColorPicker>` inside a PrimeVue `<Form>` wrapper. Use the existing `<form>` + direct `v-model` pattern that Wallecx vaccination forms already use (not the `@primevue/forms` controlled system).
+2. The vaccination form (`ManageVaccination.vue`) uses direct refs + `v-model` per field — follow this exact pattern for `ManageMembership.vue`.
+3. When editing an existing card, set the local form state ref directly: `formState.card_color = existingCard.card_color` in a `watch(props.record, ...)` handler (same pattern as vaccination edit flow).
 
-**Warning signs:**
-- Save button has no `:loading` binding.
-- Two records appearing per save in QA.
-
-**Phase to address:** Phase 1.
+**Phase assignment:** Phase implementing membership card form (especially edit flow).
 
 ---
 
-### Pitfall 12: `watch(date/filter)` doesn't run on mount → empty state flash
+### CP-4: Very dark or very light card colours make white or black text unreadable
 
-**Severity:** LOW (UX)
 **What goes wrong:**
-The list view watches a `selectedYear` or `vaccineFilter` ref to refetch records. On first mount the ref has its initial value but the watcher doesn't fire, so the user sees an empty list for ~200ms until they touch the filter.
+The membership card grid shows card name, issuer, and card number text over the `card_color` background. If a user picks a very dark colour (close to black) and the text is dark, or a very light colour and the text is light, the card becomes illegible. There is no built-in readability enforcement in PrimeVue ColorPicker.
 
-**Why it happens:**
-**[Repo precedent]** Verbatim from CONCERNS "`watch(selectedDate)` does not run on mount in `LexTrackView.vue` (MEDIUM)" — same dev, same pattern.
+**Prevention:**
+1. Implement automatic text colour selection based on card background luminance. A simple algorithm: convert hex to RGB, compute relative luminance (`L = 0.2126*R + 0.7152*G + 0.0722*B`), use white text for L < 0.5, black text for L >= 0.5.
+2. Export this as a pure utility function `getContrastText(hex: string): '#000000' | '#ffffff'` and use it in both the card grid tile and the fullscreen scan overlay.
+3. No user preference needed — this should be automatic and invisible.
 
-**How to avoid:**
-- `watch(selectedYear, fetchVaccinations, { immediate: true })`.
-- Or better: `watchEffect(fetchVaccinations)` for simple cases.
-- Or load data in `onMounted` *and* watch — but only one of these or you'll double-fetch.
-
-**Warning signs:**
-- Empty list flash on first navigation to `/projects/wallecx`.
-- `watch(...)` without `{ immediate: true }` followed by no `onMounted` fetch.
-
-**Phase to address:** Phase 1.
+**Phase assignment:** Phase implementing membership card grid display.
 
 ---
 
-### Pitfall 13: Dev-login credentials shipped to client / leaked
+### CP-5: Storing card_color as a plain `text` field with no server-side hex validation
 
-**Severity:** CRITICAL (operational)
 **What goes wrong:**
-Wallecx is a more sensitive app than the rest of Lexarium (real health data, real users beyond the owner). Yet the existing `VITE_LOGIN_EMAIL` / `VITE_LOGIN_PASSWORD` mechanism (CONCERNS "Env-injected dev-login credentials shipped to client (HIGH)") inlines those into the production JS bundle if `.env.production` ever has them set. Anyone reading the bundle gets superuser access if those creds are an admin.
+PocketBase does not have a native `color` field type (open feature request, discussion #400 — unimplemented as of 2026). Storing `card_color` as a plain `text` field with no regex constraint means a user (or a crafted API request bypassing the SPA) can store arbitrary strings: empty string, CSS colour names (`red`), injection payloads, or excessively long strings.
 
-**Why it happens:**
-Vite inlines all `VITE_*` vars at build time. The CONCERNS doc already flags this for Lexarium broadly; adding Wallecx multiplies the blast radius because the data is now health records.
+If `card_color` is rendered via `:style="{ backgroundColor: toCSS(card.card_color) }"` and the stored value is something like `red; position: fixed` — this is not a CSS injection risk in Vue because Vue's `:style` binding only sets the named property value, not raw CSS. However, an empty string causes the card to render with no background colour, and a non-hex value causes the colour to be silently ignored.
 
-**How to avoid:**
-- Strip `VITE_LOGIN_*` from `env.d.ts` and remove all call sites *before* Wallecx Phase 1 ships. This is a Phase 0 cleanup, not a Wallecx feature.
-- Add a CI grep that fails if `import.meta.env.VITE_LOGIN_PASSWORD` is referenced under `src/`.
-- Rotate any creds that ever sat in `local.jsonc` (CONCERNS "Plaintext credentials in `local.jsonc` (CRITICAL)").
-- Recommend: gate Wallecx behind a separate PocketBase user (or at minimum a non-admin user) — current dev creds may have admin access to the entire DB.
+**Prevention:**
+1. Add a PocketBase `text` field with a pattern constraint (regex) on `card_color`: `^[0-9a-fA-F]{6}$` (6 hex digits, no hash). PocketBase supports regex field validation in the admin UI.
+2. Also validate client-side in the Zod schema (same regex) so the form rejects invalid values before the API call.
+3. Provide a sensible default value in the form: `card_color: '1a56db'` (a readable navy/blue) so new cards always have a valid colour even if the user skips the picker.
+4. In the card grid, add a fallback in the style binding: `toCSS(card.card_color || '1a56db')`.
 
-**Warning signs:**
-- `local.jsonc` still contains credentials.
-- `.env.production` has any `VITE_LOGIN_*` value.
-- A `git grep VITE_LOGIN_` returns hits in `src/`.
-
-**Phase to address:** Phase 0 (pre-Wallecx cleanup) — or first task in Phase 1 if folded together.
+**Phase assignment:** Phase creating the `wallecx_memberships` collection schema and Phase implementing the membership form.
 
 ---
 
-## Technical Debt Patterns
+## Phase Assignment Summary
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|---|---|---|---|
-| Skip `protected: true` on file field | One less round-trip for tokens; URLs work in `<img src>` directly | Health-record file URLs are public-by-knowledge-of-URL forever; fails any reasonable privacy review | **Never** for health data |
-| Use template-literal filters because "the input is a date" | No need to learn parameterised filters | Pattern propagates; the next dev uses it for a search box; injection lands | Acceptable only when input is from `dayjs.format('YYYY-MM-DD')` (zero user-controlled chars) |
-| Skip EXIF strip because "PocketBase is private to me anyway" | Saves ~30 lines of canvas code | Backups, exports, future sharing features all leak GPS retroactively | Only acceptable in a single-user owner-only deployment, which Wallecx is *not* |
-| Single-file deployment = single PocketBase user pool for all mini-apps | Reuses existing auth | LexTrack/MonitoX/API Playground users all auto-have Wallecx accounts | Acceptable for v1 (matches current Lexarium model). Revisit when external users join. |
-| Skip tests because "it's a personal app" | Faster MVP | The known LexTrack save/delete bugs (CONCERNS) prove this idiom *will* recur in Wallecx | Never — at least add the mapper test (create-then-update) and the auth-rule test |
-| Render PDF in `<iframe :src=>` without sandbox | One line of code | CVE-2024-4367-class XSS, full account takeover via auth token in localStorage | Never |
-| Soft delete (`deleted_at` flag) instead of real delete | Easy "undo" for users | Files never freed; "I deleted it" UX is a lie | Acceptable only with a documented reaper hook + UX disclosure |
+| Pitfall | Code | Phase |
+|---------|------|-------|
+| JsBarcode throws on invalid input (no try/catch + fallback) | BR-1 | Barcode rendering component |
+| QR code invisible on dark card — contrast failure | BR-2 | Barcode rendering + card grid |
+| JsBarcode full-format bundle not tree-shakeable | BR-3 | Barcode rendering component |
+| Canvas QR vs SVG — use SVG | BR-4 | Barcode rendering component |
+| Watcher fires before SVG element mounts | BR-5 | Barcode rendering component |
+| Screen dims/locks during scan — Wake Lock required | FS-1 | Fullscreen scan overlay |
+| Fullscreen API unsupported on iPhone — use viewport overlay | FS-2 | Fullscreen scan overlay |
+| Screen brightness cannot be set via web API | FS-3 | Fullscreen scan overlay |
+| Tap-to-close conflicts with tap-to-copy | FS-4 | Fullscreen scan overlay |
+| Overlay z-index trapped by parent stacking context | FS-5 | Fullscreen scan overlay |
+| Component name collision between record types | MR-1 | First membership component |
+| Per-user isolation rules not applied to new collection | MR-2 | Collection creation (first task) |
+| WallecxApp.vue state explosion from two record types | MR-3 | Membership list view |
+| Membership mapper save-loop (copied id-refresh bug) | MR-4 | Membership CRUD mapper |
+| PocketBase auto-cancel drops parallel collection fetches | MR-5 | WallecxApp tab integration |
+| ColorPicker emits hex without `#` — CSS binding breaks | CP-1 | Membership form + card grid |
+| 3-digit hex shorthand misinterpreted by ColorPicker | CP-2 | Membership form |
+| ColorPicker initial value ignored in PrimeVue Forms | CP-3 | Membership form (edit flow) |
+| Dark/light card colour makes text unreadable | CP-4 | Card grid display |
+| No server-side hex validation on card_color text field | CP-5 | Collection schema + form |
 
-## Integration Gotchas
-
-| Integration | Common Mistake | Correct Approach |
-|---|---|---|
-| PocketBase collection rules | `@request.auth.id != ""` only (any logged-in user) | `@request.auth.id != "" && user = @request.auth.id` for list/view/update/delete |
-| PocketBase `create` rule | Allowing client to set `user` from request body | `@request.auth.id != "" && @request.data.user = @request.auth.id` (or set it in a hook) |
-| PocketBase file URLs | Treating them as private because record is gated | File field needs `protected: true` AND tokens generated at view time |
-| PocketBase file delete | Assuming relation cascade removes files | Direct record delete only (issue #151); model files on the parent record, not via relation |
-| PocketBase filter strings | `\`name = "${input}"\`` | `('name = {:name}', { filter: { name: input } })` |
-| PocketBase 0.26 SDK upgrades | Auto-pinned `^0.26.x` | Pin exact version (CONCERNS "Dependencies at Risk"); auth-store API churns |
-| Vercel hosting | Worrying about Vercel Edge Function payload limits for file uploads | **Vercel only proxies the SPA** — uploads go directly from browser to PocketBase. Confirmed: there is no `vercel.json`, no API routes, no Edge Functions in this repo (INTEGRATIONS "Hosting"). Vercel's 4.5 MB request-body limit is irrelevant. |
-| Vercel + PocketBase CSP | Adding PDF.js worker breaks `script-src 'self'` | Add `worker-src 'self' blob:` and `script-src 'self' blob:` *narrowly* in `index.html`'s existing CSP |
-| Vercel Speed Insights | RUM beacons include URLs as referrer | Don't put auth tokens in URL paths; use query params and consider stripping them via a custom beacon hook (or accept the leak window) |
-| `unplugin-vue-components` auto-import | Wallecx subcomponent named `Card.vue` collides with PrimeVue's `Card` | Prefix Wallecx subcomponents (`WallecxCard.vue`, `WallecxList.vue`) — CONCERNS already warns for LexTrack |
-
-## Performance Traps
-
-| Trap | Symptoms | Prevention | When It Breaks |
-|---|---|---|---|
-| Loading full-resolution attachments in list view | List takes 5+ seconds; browser memory spikes | Use PocketBase `?thumb=100x100` for list rows; load full image only in detail view | Breaks at ~10 records on mobile with 8 MP photos |
-| Sequential creates of multiple vaccinations | Bulk import takes minutes | `Promise.all(items.map(create))`, or PocketBase batch API (0.22+) | Breaks at ~5 records (matches CONCERNS "LexTrack save runs sequentially") |
-| PDF.js loaded eagerly into the main bundle | First-contentful-paint regression on `/` route | Dynamic `import('pdfjs-dist')` inside the detail view only (mirrors existing Leaflet pattern in `LargaApp.vue:69-72`) | Felt immediately on the landing page |
-| `unplugin-vue-components` registers every PrimeVue component referenced anywhere | Bundle bloat, noisy `components.d.ts` diffs | Restrict resolver after dead-code cleanup (CONCERNS suggests `Components({ exclude: [...] })`) | Felt at deploy review, not runtime |
-| Refetching the full list after every save | UI lag on save; double round-trip | Optimistic update: splice the returned record into local state, no refetch | Breaks above ~50 records |
-| Polling for changes (e.g. to detect concurrent edits) | Battery drain on mobile | PocketBase realtime (`pb.collection().subscribe('*', cb)`) — but defer to Phase 2; v1 is single-user-per-record, no concurrency | N/A in v1 |
-
-## Security Mistakes
-
-| Mistake | Risk | Prevention |
-|---|---|---|
-| Client-only auth gate for `/projects/wallecx` route | Anyone can hit the API directly with a stale or stolen token | PocketBase collection rules are the truth; route guard is UX only |
-| Storing auth token in `localStorage` (PocketBase default) | XSS in *any* mini-app reads the token and accesses Wallecx records | (a) Pin and audit `pdfjs-dist`; (b) never `v-html` untrusted; (c) consider migrating to httpOnly cookie auth in Phase 2 — out of scope for v1 |
-| File URL leakage via `referer` header to third-party tile servers (Larga uses Google tiles) | A health file URL ends up in Google logs | Cross-origin isolation: file URLs only opened from `/projects/wallecx`, never from a route that loads cross-origin tiles. Also: `Referrer-Policy: same-origin` meta tag |
-| Ingesting clinic-supplied PDFs without scanning | Malicious PDF lands in user's vault, executes via PDF.js | Pin PDF.js ≥ 4.2.67; render via canvas not iframe; document that uploads are not antivirus-scanned |
-| Health data in error messages / Sentry / console | Vaccination details in stack-trace breadcrumbs | No global error handler exists today (CONCERNS "No global error handler"); when added, scrub `record.*` fields before logging |
-| Treating "logged in" as "authorised for admin actions" | Same bug as `GiftExchangeManage.vue` (CONCERNS) | No admin actions in Wallecx v1. Period. |
-| Including user-id in URL (`/projects/wallecx/user/abc/vaccination/xyz`) | Enumeration risk; URLs in browser history | Route is `/projects/wallecx/:vaccinationId` — no user-id; the collection rule enforces ownership |
-| Backups with file storage included, not encrypted at rest | Lost backup tape = data breach | Out of scope for SPA but: document the PocketBase data dir contents; user owns hosting decision |
-| Over-collection: adding "race", "sex", "DOB" fields "for completeness" | More sensitive data than the user signed up for | Stick to the locked list: vaccine name, date administered, dose number, lot/batch number, location/clinic. Refuse scope creep at PR time. |
-
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---|---|---|
-| No "downloaded a copy" affordance | User panics when they can't access PocketBase (offline, host down, account locked) | Phase 1: a "Download all my data (JSON + files zip)" button. This is *the* health-data table-stake. |
-| File preview only, no download | User can see it, can't show it to a doctor offline | Both: preview inline + download button on detail view |
-| Soft delete with no UI hint | User thinks data is gone; isn't | Either real delete with confirm, or visible "Trash" tab with auto-purge timer |
-| PDF preview that fails silently on unsupported PDFs | User uploads, sees blank, doesn't know what's wrong | Catch render failure → show "Preview unavailable. Click to download." |
-| "Vaccine name" as a free-text field with no autocomplete | 17 different spellings of "Pfizer-BioNTech" / "Comirnaty" | Provide a non-blocking autocomplete from a small static list (top 20 vaccines), but accept any text. Searchability across records improves. |
-| Date picker without timezone awareness | Vaccinations recorded "yesterday" because of UTC drift | Store as `YYYY-MM-DD` (no time component). PocketBase date fields default to datetime; either constrain to date-only via a string field or always use `dayjs(date).startOf('day').utc()` consistently. |
-| Photo upload UX with no progress | Mobile user thinks the app froze on a 6 MB upload | PrimeVue `<FileUpload>` with `:auto="false"` + progress; show "Compressing..." (during canvas re-encode) before "Uploading..." |
-| No "what data we store" disclosure | Health-data trust deficit | Even one paragraph: "We store [fields] and your attachment in PocketBase. We do not share or analyse your data. You can export and delete at any time." On the empty state and once in settings. |
-
-## "Looks Done But Isn't" Checklist
-
-- [ ] **Per-user isolation:** Verify by logging in as user B and `pb.collection('wallecx_vaccinations').getList()` — must return only B's records. Then try `getOne(userA_record_id)` — must 404, not 200.
-- [ ] **Filter injection:** Submit a vaccine_name with `"`, `\`, `||` in it; record must save successfully and lookup must find only that one record (not the whole collection).
-- [ ] **File access without token:** Open a file URL in incognito — must 403 if `protected: true`.
-- [ ] **Save round-trip:** Create a record, edit it, save again — confirm there's only one record on the server, not two (Pitfall 3).
-- [ ] **Delete actually deletes:** Delete a record, then `pb.collection().getOne(id)` — must 404. File URL must 404.
-- [ ] **EXIF stripped:** Upload a photo with known GPS; download from PocketBase; `exiftool` shows no GPS.
-- [ ] **PDF.js version:** `package.json` pins `pdfjs-dist` ≥ 4.2.67. CSP allows `worker-src 'self' blob:`.
-- [ ] **CSP not regressed:** `index.html` CSP is unchanged for `script-src` (only `worker-src` added narrowly).
-- [ ] **No `v-html` in Wallecx:** `git grep "v-html" src/components/projects/wallecx` returns nothing.
-- [ ] **No template-literal filters:** `git grep -E '\.collection.*filter.*\$\{' src/lib/pocketbase` and `src/components/projects/wallecx` return nothing.
-- [ ] **Watcher fires on mount:** Navigate fresh to `/projects/wallecx` — list populates, no empty-state flash.
-- [ ] **Save button disables during save:** Slow the network in devtools; double-click save; only one record appears.
-- [ ] **Auth token not in production bundle:** `grep -r VITE_LOGIN dist/` returns nothing; `local.jsonc` creds rotated.
-- [ ] **Mapper test:** `vaccinationMapper.spec.ts` covers the create-then-update sequence.
-- [ ] **Route guard test:** `guard.spec.ts` (CONCERNS suggests this exists as a gap) covers `/projects/wallecx` redirect.
-- [ ] **Data-export feature works:** "Download all my data" zip contains records JSON + files; file URLs no longer needed once user has the zip.
-- [ ] **Subcomponent names:** `git grep "Components.*global" components.d.ts` — no Wallecx component collides with PrimeVue (`Card`, `Dialog`, `Button`).
-- [ ] **Vercel deploy:** SPA route `/projects/wallecx/<uuid>` resolves on hard-refresh (Vercel auto-detected SPA rewrite is in effect — no `vercel.json` needed).
-- [ ] **Speed Insights gated:** `<SpeedInsights v-if="import.meta.env.PROD">` (CONCERNS "Vercel Speed Insights fires in dev") so dev RUM doesn't include health-app routes.
-
-## Recovery Strategies
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---|---|---|
-| 1. Per-user rules wrong; data leaked | HIGH | (1) Tighten rules immediately; (2) audit PocketBase logs for cross-user `getList`/`getOne` reads — if any non-self reads happened, notify affected users; (3) rotate all auth tokens (`pb.authStore.clear()` server-side via revoke); (4) public post-mortem if external users affected. |
-| 2. Filter injection exploited | HIGH | Same as #1 plus: rebuild affected mappers with parameterised filters; add a CI grep guard. |
-| 3. Save loop creating duplicates | MEDIUM | Dedupe script: `getFullList` per user, group by `(vaccine_name, date_administered)`, keep oldest, delete the rest, reattach files if needed. |
-| 4. Delete UI didn't actually delete | MEDIUM | Re-fetch, compare with last-known UI state, prompt user "We found N records you may have intended to delete — review now." |
-| 5. Malicious PDF executed via PDF.js XSS | CRITICAL | Force re-auth all users; rotate PocketBase JWT signing key; review storage for malicious PDFs and quarantine; pin PDF.js fix; CVE response. |
-| 6. Orphan files | LOW | One-time sweep script: list all `wallecx_vaccinations` files in storage, cross-reference with `record.attachment`, delete dangling. |
-| 7. EXIF GPS leaked | MEDIUM | One-time backfill: download every existing attachment, re-encode through canvas, re-upload, update record. Notify users. |
-| 8. File field too small / wrong MIME | LOW | Update collection schema; existing records unaffected; new uploads get the new limits. |
-| 9. File URL exposed without protection | MEDIUM | Set `protected: true` on the field; existing URLs become invalid; affected users see broken images and re-fetch with new tokens. Document the change. |
-| 10. `v-html` regression | LOW (if caught early) | Revert; sanitize on write; add unit test. |
-| 11. Race condition duplicates | LOW | Same as #3 but smaller scope. |
-| 12. Empty-state flash | LOW (UX only) | Add `{ immediate: true }` and ship. |
-| 13. Dev creds leaked to bundle | CRITICAL | Rotate creds; remove `VITE_LOGIN_*`; redeploy; review access logs since last build. |
-
-## Pitfall-to-Phase Mapping
-
-| Pitfall | Prevention Phase | Verification |
-|---|---|---|
-| 1. Per-user isolation in collection rules | **Phase 1** (cannot ship without) | Two-user smoke test in checklist |
-| 2. Filter-string injection | **Phase 1** (set the convention in the first mapper) | CI grep + unit test with `"` in input |
-| 3. Save loop never refreshes IDs | **Phase 1** (mapper contract) | `vaccinationMapper.spec.ts` create-then-update test |
-| 4. Delete only mutates local state | **Phase 1** (handler contract) | Spec asserts `pb.delete` called before splice |
-| 5. PDF.js XSS / unsafe rendering | **Phase 1** if PDF preview ships, else **Phase 2** | Pinned version in `package.json`; CSP audit |
-| 6. Cascade delete leaves files | **Phase 1** (single-collection design) | File URL 404 within 5 s after record delete |
-| 7. EXIF GPS leak | **Phase 1** (privacy is core to the value prop) | Round-trip test with `exiftool` |
-| 8. File field misconfiguration | **Phase 1** (schema decision) | Smoke upload of 8 MB photo, of PDF, of `.exe` (rejected) |
-| 9. File URL public-by-knowledge | **Phase 1** (`protected: true`) | Incognito file URL fetch must 403 |
-| 10. `v-html` for notes | **Phase 1** decision (no rich text in v1); **Phase 2+** if introduced | Static analysis: no `v-html` under `wallecx/` |
-| 11. Double-submit race | **Phase 1** (button state machine) | Slow-network double-click test |
-| 12. Watcher not immediate | **Phase 1** | Manual nav-to-route test; covered by route-guard spec |
-| 13. Dev creds in bundle | **Phase 0** cleanup (or first task in Phase 1) | `grep -r VITE_LOGIN dist/` empty; CI grep on `src/` |
+---
 
 ## Sources
 
-**Verified — HIGH confidence**
-- [PocketBase docs — Files upload and handling](https://pocketbase.io/docs/files-handling/) — `maxSize` defaults to 5 MB; `maxSize * maxSelect` is request body limit; thumb sizes
-- [PocketBase docs — Web APIs reference: Files](https://pocketbase.io/docs/api-files/) — file URLs, `?token=`, `?thumb=` query params
-- [PocketBase docs — API rules and filters](https://pocketbase.io/docs/api-rules-and-filters/) — `@request.auth.id`, parameterised filter syntax `{:name}`
-- [PocketBase issue #151 — cascade delete doesn't remove files](https://github.com/pocketbase/pocketbase/issues/151) — cited Pitfall 6
-- [PocketBase discussion #5246 — cascade delete CPU](https://github.com/pocketbase/pocketbase/discussions/5246) — async file deletion
-- [PocketBase JSVM FileField reference](https://pocketbase.io/jsvm/classes/FileField.html) — `MaxSelect`/`MaxSize` semantics
-- [Codean Labs — CVE-2024-4367 PDF.js arbitrary JS execution](https://codeanlabs.com/blog/research/cve-2024-4367-arbitrary-js-execution-in-pdf-js/) — PDF.js < 4.2.67 XSS
-- [Snyk advisory — pdfjs-dist XSS (CVE-2018-5158)](https://security.snyk.io/vuln/SNYK-JS-PDFJSDIST-469200) — older PDF.js precedent
-- [Vue.js Security Guide](https://vuejs.org/guide/best-practices/security.html) — `v-html` warnings
-- [Syncfusion blog — Top Security Risks in JavaScript PDF Viewers](https://www.syncfusion.com/blogs/post/security-vulnerabilities-javascript-pdf-viewer) — CSP for PDF.js worker
+**HIGH confidence — official documentation or verified library source:**
+- [PrimeVue ColorPicker docs](https://primevue.org/colorpicker/) — confirms hex format stores without `#`, format options
+- [PrimeVue issue #7505](https://github.com/primefaces/primevue/issues/7505) — 3-digit hex misinterpretation (open, March 2025)
+- [PrimeVue issue #8135](https://github.com/primefaces/primevue/issues/8135) — ColorPicker initial value ignored in Forms (open, September 2025)
+- [MDN — Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API) — full API reference
+- [caniuse.com — Wake Lock](https://caniuse.com/wake-lock) — browser support matrix
+- [web.dev — Screen Wake Lock supported in all browsers](https://web.dev/blog/screen-wake-lock-supported-in-all-browsers) — Safari 16.4+ confirmed
+- [JsBarcode issue #269](https://github.com/lindell/JsBarcode/issues/269) — invalid input exception details
+- [JsBarcode issue #212](https://github.com/lindell/JsBarcode/issues/212) — uncaught exception on invalid value
+- [JsBarcode Code39 wiki](https://github.com/lindell/JsBarcode/wiki/CODE39) — charset restrictions
+- [caniuse.com — Fullscreen API](https://caniuse.com/fullscreen) — iPhone restriction documented
+- [PocketBase discussion #400](https://github.com/pocketbase/pocketbase/discussions/400) — no native color field type
+- [QR code color contrast guidelines — Pageloot](https://pageloot.com/blog/qr-code-color-contrast-best-practices/) — minimum 3:1 ratio requirement
+- [QR codes on dark backgrounds — SmartyTags](https://www.smartytags.com/blog/qr-codes-dark-backgrounds) — inversion and contrast failure
 
-**Verified — MEDIUM confidence (web-search corroborated)**
-- Browser canvas as EXIF stripper — multiple 2025 client-side tool implementations confirm canvas re-encode drops metadata. [exif.tools](https://exif.tools/strip), [SimpleTool](https://www.simpletool.co/strip-exif).
-
-**Repo-internal — HIGH confidence (read directly)**
-- `.planning/codebase/CONCERNS.md` — full document; specific items cross-referenced inline by quoted heading (Pitfalls 1, 2, 3, 4, 10, 12, 13).
-- `.planning/codebase/INTEGRATIONS.md` — confirms Vercel-only-proxies-SPA (no `vercel.json`, no API routes) → Pitfall section "Integration Gotchas / Vercel hosting".
-- `.planning/PROJECT.md` — locks the field set (no over-collection), Phase-1 boundaries, and the Core Value statement that frames privacy as table-stakes.
+**MEDIUM confidence — community reports + Apple forums:**
+- [Apple Community — screen brightness for barcode](https://discussions.apple.com/thread/254421438) — iOS brightness behaviour
+- [W3C Screen Wake Lock issue #129](https://github.com/w3c/screen-wake-lock/issues/129) — brightness API gap acknowledged
+- [magicbell PWA iOS limitations guide](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide) — iOS 18.4 Wake Lock PWA fix
+- [Apple Developer Forums — Fullscreen API iOS Safari](https://developer.apple.com/forums/thread/133248) — iPhone limitation
 
 ---
-*Pitfalls research for: Wallecx vaccination records on PocketBase + Vue 3 SPA*
-*Researched: 2026-05-10*
+*Pitfalls research for: Wallecx v2.0 Membership Cards — barcode rendering, fullscreen scan, multi-record type, colour picker*
+*Researched: 2026-05-13*
