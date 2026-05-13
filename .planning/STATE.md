@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Search, Sort & View Toggle
-status: in_progress
-last_updated: "2026-05-12T00:00:00.000Z"
+milestone: v1.1
+milestone_name: — Vaccine Grouping
+status: Phase 7 in progress (07-01 complete, 07-02 pending); Phase 8 roadmapped
+last_updated: "2026-05-13T01:52:00.000Z"
+last_activity: 2026-05-13 — 07-01 executed (WallecxToolbar.vue created, af0c524)
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 23
+  completed_plans: 22
+  percent: 96
 ---
 
 # Project State
@@ -26,10 +27,10 @@ progress:
 ## Current Position
 
 **Milestone:** v1.2 — Search, Sort & View Toggle
-**Phase:** Phase 6 (in progress — plans not yet executed)
-**Plan:** —
-**Status:** Phase 6 planned; Phases 7 and 8 roadmapped
-**Last activity:** 2026-05-12 — v1.2 roadmap created (SEARCH-01/02, SORT-01, VIEW-01/02 mapped to Phase 7 and Phase 8)
+**Phase:** Phase 7 (in progress)
+**Plan:** 07-02-PLAN.md (Wave 2 — next)
+**Status:** 07-01 complete (af0c524); 07-02 pending
+**Last activity:** 2026-05-13 — 07-01 executed: WallecxToolbar.vue created (af0c524)
 
 ## Roadmap Snapshot
 
@@ -136,16 +137,16 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-12 — v1.2 roadmap created. Phase 7 (Toolbar — Search & Sort) and Phase 8 (View Toggle) appended to ROADMAP.md. All 5 v1.2 requirements mapped with no orphans.
+**Last session:** 2026-05-13T01:46:17Z
 
-**Next session entry point:** Execute Phase 6 plans (`06-01-PLAN.md`, `06-02-PLAN.md`) — VaccinationGroupCard.vue, groupedVaccinations computed, Drawer panel. Then plan Phase 7 via `/gsd-plan-phase 7`.
+**Next session entry point:** Execute 07-02-PLAN.md — wire WallecxToolbar into WallecxApp.vue, add searchQuery/sortMode refs, add displayedGroups computed, add no-results empty state branch.
 
 **Files of interest:**
 
+- `src/components/projects/wallecx/WallecxToolbar.vue` — created in 07-01 (af0c524)
+- `src/components/projects/wallecx/WallecxApp.vue` — target for 07-02 (import WallecxToolbar, refs, displayedGroups computed, template wiring)
+- `.planning/phases/07-toolbar-search-sort/07-01-SUMMARY.md` — 07-01 execution summary
 - `.planning/ROADMAP.md` — v1.2 phases appended (Phase 7, Phase 8)
-- `.planning/REQUIREMENTS.md` — traceability table updated with SEARCH-01/02, SORT-01, VIEW-01/02
-- `.planning/STATE.md` — this file; updated with v1.2 roadmap context
-- `src/components/projects/wallecx/WallecxApp.vue` — target for Phase 7 (computed filter/sort extensions) and Phase 8 (view toggle ref + layout class binding)
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
