@@ -323,10 +323,10 @@ Plans:
 2. User opens a vaccine group drawer, clicks Delete on a record row, sees the confirmation dialog, confirms, and the record is removed from both the panel and the card grid.
 3. No regression: the "Add vaccination" button, search, sort, and view toggle all continue to work normally.
 
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
-- [ ] (not yet planned)
+- [ ] 09-01-PLAN.md — Restore edit & delete emits in VaccinationGroupPanel.vue and wire @edit/@delete in WallecxApp.vue (CRUD-01, CRUD-02)
 
 **UI hint**: yes
 
@@ -380,8 +380,8 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
 | 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | 2/2 | Complete | 2026-05-13 |
-| 9. Restore Edit & Delete in Grouped View | 0/0 | Not started | - |
+| 9. Restore Edit & Delete in Grouped View | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 8 complete: VIEW-01, VIEW-02 verified*
+*Last updated: 2026-05-13 — Phase 9 planned: 09-01-PLAN.md (CRUD-01, CRUD-02)*
