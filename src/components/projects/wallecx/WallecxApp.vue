@@ -287,6 +287,12 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         </div>
       </div>
 
+      <!-- Toolbar: search + sort (SEARCH-01, SORT-01) — always visible -->
+      <WallecxToolbar
+        v-model:search-query="searchQuery"
+        v-model:sort-mode="sortMode"
+      />
+
       <!-- Loading state: skeleton card grid -->
       <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card v-for="i in 3" :key="i">
@@ -313,10 +319,32 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         />
       </div>
 
+      <!-- Empty state: no search results (SEARCH-02 — user has records but search matches nothing) -->
+      <div
+        v-else-if="displayedGroups.length === 0 && searchQuery"
+        class="flex flex-col items-center py-12 gap-3"
+      >
+        <iconify-icon
+          icon="mdi:magnify-remove-outline"
+          width="48"
+          height="48"
+          style="color: var(--color-brand-primary)"
+        ></iconify-icon>
+        <p class="text-sm" style="color: var(--color-typo-heading)">
+          No groups match "{{ searchQuery }}"
+        </p>
+        <Button
+          label="Clear search"
+          severity="secondary"
+          size="small"
+          @click="searchQuery = ''"
+        />
+      </div>
+
       <!-- Grouped card grid (GROUP-04, GROUP-05, D-03) -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <VaccinationGroupCard
-          v-for="group in groupedVaccinations"
+          v-for="group in displayedGroups"
           :key="group.vaccineType"
           :vaccine-type="group.vaccineType"
           :records="group.records"
