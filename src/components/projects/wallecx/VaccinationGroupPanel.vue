@@ -31,7 +31,7 @@ function displayDate(iso: string): string {
       <template #body="{ data }">{{ data.lot_number || '—' }}</template>
     </Column>
     <Column header="" style="width: 14rem">
-      <template #body="{ data }">
+      <template #body="{ data }: { data: Vaccinations }">
         <div class="flex gap-1">
           <Button size="small" label="View" @click="emit('view', data)" />
           <Button size="small" icon="pi pi-pencil" label="Edit" severity="secondary" @click="emit('edit', data)" />

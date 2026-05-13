@@ -260,6 +260,13 @@ function onUpdated(updatedRecord: Vaccinations): void {
   records.value.sort((a, b) =>
     dayjs(b.date_administered).diff(dayjs(a.date_administered))
   );
+  // WR-02: sync open Drawer to the freshly recomputed groupedVaccinations snapshot
+  if (showGroupPanel.value && selectedGroup.value) {
+    const vaccineType = selectedGroup.value.vaccineType;
+    const updated = groupedVaccinations.value.find((g) => g.vaccineType === vaccineType) ?? null;
+    selectedGroup.value = updated;
+    if (!updated) showGroupPanel.value = false;
+  }
 }
 
 function openDelete(record: Vaccinations): void {
@@ -282,6 +289,14 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
     const idx = records.value.findIndex((r) => r.id === record.id);
     if (idx !== -1) records.value.splice(idx, 1);
     toast.success("Vaccination deleted.");
+    // WR-01: sync open Drawer to the freshly recomputed groupedVaccinations snapshot;
+    // close if the group is now empty (last record in its type was deleted)
+    if (showGroupPanel.value && selectedGroup.value) {
+      const vaccineType = selectedGroup.value.vaccineType;
+      const updated = groupedVaccinations.value.find((g) => g.vaccineType === vaccineType) ?? null;
+      selectedGroup.value = updated;
+      if (!updated) showGroupPanel.value = false;
+    }
   } catch (e: unknown) {
     // On failure: do NOT splice — row stays visible (Pitfall 4)
     toast.error("Failed to delete. Please try again.");
