@@ -367,7 +367,11 @@ Plans:
 3. The Membership Cards tab is visible and clickable; its panel may be a stub with an empty state or "coming soon" message — it must not throw a runtime error.
 4. `npm run build` and `npm run type-check` both pass after the extraction with no new TypeScript errors.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Create VaccinationsTab.vue (full extraction) and MembershipsTab.vue (stub) (XTAB-01, XTAB-02)
+- [ ] 10-02-PLAN.md — Refactor WallecxApp.vue into Tabs shell and verify build passes (XTAB-01, XTAB-02)
 
 **UI hint**: yes
 
@@ -514,7 +518,7 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 7. Toolbar — Search & Sort | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
-| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 0/TBD | Not started | - |
+| 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 0/2 | Not started | - |
 | 11. Backend + Frontend Foundation | v2.0 | 0/TBD | Not started | - |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
