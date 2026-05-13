@@ -52,7 +52,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 
 - [x] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (2/2 plans complete)
 - [x] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test (3/3 plans complete)
-- [ ] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay
+- [x] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay (4/4 plans complete)
 - [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
 
 ---
@@ -432,10 +432,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — BarcodeDisplay.vue: four-branch render (qr/linear/fallback/empty), JsBarcode try/catch, useTemplateRef, BARCODE_FOREGROUND/BACKGROUND constants (SCAN-01, SCAN-02, SCAN-04)
-- [ ] 12-02-PLAN.md — MembershipCard.vue (coloured tile, expiry warning) + AttachmentPreview.vue refactor to generic props + VaccinationDetail call site update (MREAD-01, MREAD-04)
-- [ ] 12-03-PLAN.md — MembershipDetail.vue: field grid, BarcodeDisplay embed, scan overlay (Teleport + wake lock + Escape handler), AttachmentPreview card_image (MREAD-03, MREAD-04, SCAN-03)
-- [ ] 12-04-PLAN.md — MembershipsTab.vue: replace stub with three-state tab, getFullList, openDetail WR-03, MembershipDetail Dialog, human verification checkpoint (MREAD-02, MREAD-03)
+- [x] 12-01-PLAN.md — BarcodeDisplay.vue: four-branch render (qr/linear/fallback/empty), JsBarcode try/catch, useTemplateRef, BARCODE_FOREGROUND/BACKGROUND constants (SCAN-01, SCAN-02, SCAN-04)
+- [x] 12-02-PLAN.md — MembershipCard.vue (coloured tile, expiry warning) + AttachmentPreview.vue refactor to generic props + VaccinationDetail call site update (MREAD-01, MREAD-04)
+- [x] 12-03-PLAN.md — MembershipDetail.vue: field grid, BarcodeDisplay embed, scan overlay (Teleport + wake lock + Escape handler), AttachmentPreview card_image (MREAD-03, MREAD-04, SCAN-03)
+- [x] 12-04-PLAN.md — MembershipsTab.vue: replace stub with three-state tab, getFullList, openDetail WR-03, MembershipDetail Dialog, human verification checkpoint (MREAD-02, MREAD-03)
 
 **UI hint**: yes
 
@@ -531,9 +531,9 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
 | 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 2/2 | Complete | 2026-05-13 |
 | 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
-| 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
+| 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 11 complete (wallecx_memberships collection, smoke test, frontend foundation, 3/3 plans)*
+*Last updated: 2026-05-13 — Phase 12 complete (BarcodeDisplay, MembershipCard, MembershipDetail, MembershipsTab — 4/4 plans)*
