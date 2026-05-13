@@ -34,7 +34,7 @@ Each authenticated user can save and retrieve their own vaccination records — 
 
 - [x] **Phase 7: Toolbar — Search & Sort** — WallecxToolbar component with search input and sort control; groupedVaccinations computed extended with filter and sort logic; "no results" empty state — completed 2026-05-13
 - [x] **Phase 8: View Toggle** — View toggle button added to the toolbar; layout class switches between 2-column grid and single-column list; selection persists for the browser session — completed 2026-05-13
-- [ ] **Phase 9: Restore Edit & Delete in Grouped View** — Wire edit/delete actions back into VaccinationGroupPanel.vue rows; existing WallecxApp.vue handlers reconnected via emits
+- [x] **Phase 9: Restore Edit & Delete in Grouped View** — Wire edit/delete actions back into VaccinationGroupPanel.vue rows; existing WallecxApp.vue handlers reconnected via emits — completed 2026-05-13
 
 ---
 
@@ -326,7 +326,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 09-01-PLAN.md — Restore edit & delete emits in VaccinationGroupPanel.vue and wire @edit/@delete in WallecxApp.vue (CRUD-01, CRUD-02)
+- [x] 09-01-PLAN.md — Restore edit & delete emits in VaccinationGroupPanel.vue and wire @edit/@delete in WallecxApp.vue (CRUD-01, CRUD-02)
 
 **UI hint**: yes
 
@@ -380,8 +380,8 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
 | 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
 | 8. View Toggle | 2/2 | Complete | 2026-05-13 |
-| 9. Restore Edit & Delete in Grouped View | 0/1 | Not started | - |
+| 9. Restore Edit & Delete in Grouped View | 1/1 | Complete | 2026-05-13 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 9 planned: 09-01-PLAN.md (CRUD-01, CRUD-02)*
+*Last updated: 2026-05-13 — Phase 9 complete: CRUD-01, CRUD-02 verified; stale-Drawer WR-01/WR-02 fixed*

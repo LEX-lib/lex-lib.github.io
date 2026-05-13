@@ -2,35 +2,35 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: — Search, Sort & View Toggle
-status: Phase 8 complete (2/2 plans); milestone v1.2 done
-last_updated: "2026-05-13T11:10:00.000Z"
-last_activity: 2026-05-13 — Phase 8 executed: VIEW-01 + VIEW-02 verified (b0f1ddd, d96563e)
+status: Phase 9 complete (1/1 plans); all phases done
+last_updated: "2026-05-13T12:00:00.000Z"
+last_activity: 2026-05-13 — Phase 9 executed: CRUD-01 + CRUD-02 verified; WR-01/WR-02 stale-Drawer fixes committed (bd2c3eb)
 progress:
   total_phases: 9
   completed_phases: 9
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 26
+  completed_plans: 26
   percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-13 — Phase 8 complete. VIEW-01 (view toggle + sessionStorage persistence) and VIEW-02 (VaccinationGroupCard untouched) verified. Milestone v1.2 done.
+**Last updated:** 2026-05-13 — Phase 9 complete. CRUD-01 (Edit/Delete buttons per drawer row) and CRUD-02 (openManage/openDelete wiring via emits) verified. Stale-Drawer WR-01/WR-02 fixed — selectedGroup re-derived from groupedVaccinations after each mutation.
 
 ## Project Reference
 
-**Project:** Lexarium — Wallecx milestone v1.2 (Search, Sort & View Toggle)
+**Project:** Lexarium — Wallecx (all milestones complete)
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** Phase 6 — Grouped Card View & Group Detail Panel (GROUP-04, GROUP-05, GROUP-06, GROUP-07). Phases 7 and 8 are queued for v1.2.
+**Current focus:** All 9 phases complete. Consider `/gsd-complete-milestone` or next milestone planning.
 
 ## Current Position
 
-**Milestone:** v1.2 — Search, Sort & View Toggle (COMPLETE)
-**Phase:** Phase 8 complete
-**Plan:** All plans complete (08-01, 08-02)
-**Status:** 08-01 complete (b0f1ddd); 08-02 complete (d96563e); Phase 8 done. Milestone v1.2 done.
-**Last activity:** 2026-05-13 — Phase 8 executed: viewMode toggle + sessionStorage persistence shipped
+**Milestone:** Phase 9 complete (final planned phase)
+**Phase:** Phase 9 complete
+**Plan:** All plans complete (09-01)
+**Status:** 09-01 complete (adaae31, 719ae2a, bd2c3eb); Phase 9 done. All roadmap phases complete.
+**Last activity:** 2026-05-13 — Phase 9 executed: Edit/Delete restored in grouped drawer; stale-state WR-01/WR-02 fixed
 
 ## Roadmap Snapshot
 
@@ -52,9 +52,9 @@ v1.2 Coverage: 5 / 5 requirements mapped. No orphans.
 
 ## Performance Metrics
 
-- Phases shipped: 9 (Phase 0–8)
-- Plans shipped: 25 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02)
-- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 5 / 5 v1.2
+- Phases shipped: 9 (Phase 0–9)
+- Plans shipped: 26 (00-01..02, 01-01..03, 02-01..04, 03-01..04, 04-01..04, 05-01..02, 06-01..02, 07-01..02, 08-01..02, 09-01)
+- Requirements verified: 33 / 34 v1.0 (READ-06 dropped); 7 / 7 v1.1; 5 / 5 v1.2; 2 / 2 Phase 9 (CRUD-01, CRUD-02)
 - Tests in repo: 13 (vaccinationMapper.spec.ts 10 tests + guard.spec.ts 3 tests)
 
 ## Roadmap Evolution
@@ -141,15 +141,15 @@ None.
 
 ## Session Continuity
 
-**Last session:** 2026-05-13T11:10:00Z
+**Last session:** 2026-05-13T12:00:00Z
 
-**Next session entry point:** Milestone v1.2 complete. Consider `/gsd-complete-milestone` to archive v1.2 and prepare for next milestone, or `/gsd-progress` to review.
+**Next session entry point:** All 9 phases complete. Consider `/gsd-complete-milestone` to archive and prepare for next milestone, or `/gsd-progress` to review.
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/WallecxToolbar.vue` — Phase 8 added viewMode v-model + cycling toggle Button (b0f1ddd)
-- `src/components/projects/wallecx/WallecxApp.vue` — Phase 8 added viewMode ref, gridClass, sessionStorage persistence (d96563e)
-- `.planning/phases/08-view-toggle/08-HUMAN-UAT.md` — 4 browser tests approved by user
+- `src/components/projects/wallecx/VaccinationGroupPanel.vue` — Phase 9 added edit/delete emits + View/Edit/Delete button row (adaae31)
+- `src/components/projects/wallecx/WallecxApp.vue` — Phase 9 wired @edit/@delete; WR-01/WR-02 fixed: selectedGroup re-derived from groupedVaccinations after delete/edit (719ae2a, bd2c3eb)
+- `.planning/phases/09-restore-edit-delete-in-grouped-view/09-HUMAN-UAT.md` — 4 browser tests approved by user
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

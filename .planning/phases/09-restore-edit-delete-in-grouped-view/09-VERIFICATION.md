@@ -1,7 +1,7 @@
 ---
 phase: 09-restore-edit-delete-in-grouped-view
 verified: 2026-05-13T11:45:00Z
-status: human_needed
+status: passed
 score: 3/4 must-haves verified
 overrides_applied: 0
 human_verification:
