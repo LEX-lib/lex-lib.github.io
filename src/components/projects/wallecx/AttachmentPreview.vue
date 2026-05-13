@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent, computed, ref } from "vue";
 import { pb } from "@/lib/pocketbase";
-import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
+import type { RecordModel } from 'pocketbase'
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 const VuePdfEmbed = defineAsyncComponent(async () => {
@@ -11,9 +11,11 @@ const VuePdfEmbed = defineAsyncComponent(async () => {
 });
 
 const props = defineProps<{
-  record: Vaccinations;
-  token: string;
-}>();
+  record: RecordModel
+  attachmentField: string
+  attachmentName: string
+  token: string
+}>()
 
 const pdfFailed = ref(false);
 
@@ -30,18 +32,20 @@ function getMimeCategory(filename: string): "image" | "pdf" | "unknown" {
   return "unknown";
 }
 
-const mimeCategory = computed(() => getMimeCategory(props.record.card));
+const mimeCategory = computed(() =>
+  getMimeCategory((props.record as Record<string, string>)[props.attachmentField] ?? '')
+)
 
 const tokenUrl = computed(() =>
-  pb.files.getURL(props.record, props.record.card, { token: props.token })
-);
+  pb.files.getURL(props.record, (props.record as Record<string, string>)[props.attachmentField] ?? '', { token: props.token })
+)
 
 const thumbUrl = computed(() =>
-  pb.files.getURL(props.record, props.record.card, {
+  pb.files.getURL(props.record, (props.record as Record<string, string>)[props.attachmentField] ?? '', {
     thumb: "400x400",
     token: props.token,
   })
-);
+)
 
 function onPdfError(): void {
   pdfFailed.value = true;
@@ -49,12 +53,12 @@ function onPdfError(): void {
 </script>
 
 <template>
-  <div v-if="record.card">
+  <div v-if="(record as Record<string, string>)[attachmentField]">
     <!-- Image branch -->
     <img
       v-if="mimeCategory === 'image'"
       :src="thumbUrl"
-      :alt="`${record.vaccine_name} vaccination card`"
+      :alt="attachmentName"
       class="max-w-full rounded shadow-sm"
       style="max-height: 480px; object-fit: contain;"
     />

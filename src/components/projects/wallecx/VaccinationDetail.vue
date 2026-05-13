@@ -52,6 +52,6 @@ function displayDate(iso: string): string {
     <Divider />
 
     <!-- Attachment preview — passes record and token down to child -->
-    <AttachmentPreview :record="record" :token="token" />
+    <AttachmentPreview :record="record" attachment-field="card" :attachment-name="record.vaccine_name" :token="token" />
   </div>
 </template>
