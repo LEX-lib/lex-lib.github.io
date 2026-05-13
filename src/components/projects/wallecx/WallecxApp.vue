@@ -8,6 +8,7 @@ import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
 import ManageVaccination from "./ManageVaccination.vue";
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
+import WallecxToolbar from './WallecxToolbar.vue';
 
 // --- STATE ---
 const records = ref<Vaccinations[]>([]);
@@ -22,6 +23,8 @@ const confirm = useConfirm();
 const isExporting = ref(false);
 const showGroupPanel = ref(false);
 const selectedGroup = ref<VaccineGroup | null>(null);
+const searchQuery = ref<string>('');
+const sortMode = ref<string>('type-asc');
 
 // --- GROUPING ---
 interface VaccineGroup {
@@ -52,6 +55,57 @@ const groupedVaccinations = computed<VaccineGroup[]>(() => {
   named.sort((a, b) =>
     a.vaccineType.localeCompare(b.vaccineType, undefined, { sensitivity: "base" })
   );
+  return [...named, ...uncategorized];
+});
+
+const displayedGroups = computed<VaccineGroup[]>(() => {
+  // Step 1: filter (SEARCH-01)
+  const query = searchQuery.value.trim().toLowerCase();
+  const filtered = query
+    ? groupedVaccinations.value.filter(
+        (group) =>
+          group.vaccineType.toLowerCase().includes(query) ||
+          group.records.some((r) =>
+            r.vaccine_name.toLowerCase().includes(query)
+          )
+      )
+    : groupedVaccinations.value;
+
+  // Step 2: sort (SORT-01) — split named/uncategorized first to preserve pinning
+  const named = filtered.filter((g) => g.vaccineType !== 'Uncategorized');
+  const uncategorized = filtered.filter((g) => g.vaccineType === 'Uncategorized');
+
+  switch (sortMode.value) {
+    case 'type-desc':
+      named.sort((a, b) =>
+        b.vaccineType.localeCompare(a.vaccineType, undefined, { sensitivity: 'base' })
+      );
+      break;
+    case 'name-asc':
+      named.sort((a, b) =>
+        (a.latestRecord.vaccine_name ?? '').localeCompare(
+          b.latestRecord.vaccine_name ?? '',
+          undefined,
+          { sensitivity: 'base' }
+        )
+      );
+      break;
+    case 'name-desc':
+      named.sort((a, b) =>
+        (b.latestRecord.vaccine_name ?? '').localeCompare(
+          a.latestRecord.vaccine_name ?? '',
+          undefined,
+          { sensitivity: 'base' }
+        )
+      );
+      break;
+    case 'type-asc':
+    default:
+      // groupedVaccinations already sorted type-asc — preserve order
+      break;
+  }
+
+  // Step 3: re-pin Uncategorized last regardless of sort direction
   return [...named, ...uncategorized];
 });
 
