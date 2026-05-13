@@ -157,6 +157,23 @@ This document evolves at phase transitions and milestone boundaries.
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
+## Current Milestone: v2.0 Membership Cards
+
+**Goal:** Add a second vault record type — membership/loyalty cards — so users can store loyalty cards, memberships, insurance cards, and ID/access cards with barcodes or QR codes that can be displayed full-screen for scanning at the counter.
+
+**Target features:**
+- `wallecx_memberships` PocketBase collection with per-user rules (same isolation pattern as vaccinations)
+- Fields: card name, issuer, barcode value + type (QR/Code128/EAN-13/Code39), card number (plain fallback), expiry date, notes, card colour, optional card photo
+- Barcode/QR rendering — render when a value exists, fall back to plain number display
+- Full-screen scan view — tap a card to go fullscreen for counter scanning
+- Coloured card grid (visual wallet feel)
+- Full CRUD with same Zod + PrimeVue dialog + mapper pattern
+- Wallecx tab navigation switching between Vaccinations and Memberships
+
+### Active (v2.0)
+
+*(Requirements defined — see REQUIREMENTS.md)*
+
 ## Shipped Milestones
 
 | Milestone | Phases | Shipped | Archive |
@@ -165,7 +182,5 @@ This document evolves at phase transitions and milestone boundaries.
 | v1.1 Vaccine Grouping | 5–6 | 2026-05-12 | — |
 | v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 
-All 9 phases complete. Consider `/gsd-new-milestone` to plan the next milestone.
-
 ---
-*Last updated: 2026-05-13 — v1.0 milestone archived. All three milestones (v1.0, v1.1, v1.2) shipped.*
+*Last updated: 2026-05-13 — v2.0 Membership Cards milestone started.*

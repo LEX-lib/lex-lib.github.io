@@ -1,28 +1,28 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: — Search, Sort & View Toggle
-status: Phase 9 complete (1/1 plans); all phases done
+milestone: v2.0
+milestone_name: Membership Cards
+status: Defining requirements and roadmap
 last_updated: "2026-05-13T12:00:00.000Z"
-last_activity: 2026-05-13 — Phase 9 executed: CRUD-01 + CRUD-02 verified; WR-01/WR-02 stale-Drawer fixes committed (bd2c3eb)
+last_activity: 2026-05-13 — Milestone v2.0 started; membership cards feature scoped
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-13 — Phase 9 complete. CRUD-01 (Edit/Delete buttons per drawer row) and CRUD-02 (openManage/openDelete wiring via emits) verified. Stale-Drawer WR-01/WR-02 fixed — selectedGroup re-derived from groupedVaccinations after each mutation.
+**Last updated:** 2026-05-13 — Milestone v2.0 Membership Cards started. Adding second Wallecx vault record type: loyalty/membership/insurance/ID cards with barcode/QR display and full-screen scan mode.
 
 ## Project Reference
 
-**Project:** Lexarium — Wallecx (all milestones complete)
+**Project:** Lexarium — Wallecx v2.0 Membership Cards
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
-**Core value:** Each authenticated user can save and retrieve their own vaccination records — text fields plus an attached scan/photo of the card — without ever losing access to them.
-**Current focus:** All 9 phases complete. Consider `/gsd-complete-milestone` or next milestone planning.
+**Core value:** Each authenticated user can save and retrieve their own records — vaccination records and now membership/loyalty cards — without ever losing access to them.
+**Current focus:** Defining requirements and roadmap for v2.0.
 
 ## Current Position
 
