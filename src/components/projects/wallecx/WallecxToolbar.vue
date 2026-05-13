@@ -1,12 +1,20 @@
 <script setup lang="ts">
-const props = defineProps<{
-  searchQuery: string;
-  sortMode: string;
-}>();
+withDefaults(
+  defineProps<{
+    searchQuery: string;
+    sortMode: string;
+    viewMode: 'grid' | 'list';
+    showToggle?: boolean;
+  }>(),
+  {
+    showToggle: false,
+  },
+);
 
 const emit = defineEmits<{
   'update:searchQuery': [value: string];
   'update:sortMode': [value: string];
+  'update:viewMode': [value: 'grid' | 'list'];
 }>();
 
 const sortOptions = [
@@ -41,5 +49,20 @@ const sortOptions = [
       class="w-36"
       @update:model-value="emit('update:sortMode', $event)"
     />
+    <Button
+      v-if="showToggle"
+      severity="secondary"
+      size="small"
+      :aria-label="viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
+      :title="viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
+      @click="emit('update:viewMode', viewMode === 'grid' ? 'list' : 'grid')"
+    >
+      <iconify-icon
+        :icon="viewMode === 'grid' ? 'mdi:view-list' : 'mdi:view-grid'"
+        width="20"
+        height="20"
+        aria-hidden="true"
+      ></iconify-icon>
+    </Button>
   </div>
 </template>
