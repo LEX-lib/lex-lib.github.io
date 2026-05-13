@@ -1,268 +1,337 @@
-# Feature Research
+# Feature Research: Wallecx v2.0 — Membership / Loyalty Cards
 
-**Domain:** Personal vaccination records tracker (Phase 1 of Wallecx personal records vault)
-**Researched:** 2026-05-10
-**Confidence:** MEDIUM-HIGH (HIGH on FHIR/Apple Health field schemas; MEDIUM on which features users genuinely expect vs. which are vendor marketing)
+**Domain:** Digital wallet for personal loyalty, membership, and ID cards with barcode/QR display
+**Researched:** 2026-05-13
+**Confidence:** HIGH (barcode formats, standard card fields, UX patterns from Apple Wallet / Google Wallet specs and multiple live apps); MEDIUM (differentiator value judgment, per-card-type barcode defaults)
+
+---
 
 ## Scope Anchor
 
-PROJECT.md is unambiguous about v1: "I just plainly want to save my vaccination records" — text fields plus an attached scan/photo of the card, per authenticated user. This research deliberately surveys the *broader* PHR/immunization landscape so the team can confirm v1 is narrow on purpose, not by accident. Anything categorized below as "table stakes" is what mature products ship — *not* what Wallecx v1 must ship. The MVP section at the bottom maps these findings back to v1 scope.
+This research covers the NEW membership cards feature added in v2.0. Vaccination records, PocketBase auth, PrimeVue UI, and the navy/amber design system are already built — do not re-research them. Focus: what does a personal membership/loyalty/ID card store need to ship and what are the field, barcode, and UX patterns that the ecosystem has established?
 
 ## Reference Products Surveyed
 
 | Product | Category | What It Represents |
 |---------|----------|--------------------|
-| Apple Health Records (Immunizations) | OS-level PHR | "Verifiable" record store, FHIR-backed, QR import, manual add |
-| MyChart (Epic patient portal) | Provider-tethered PHR | Authoritative immunization history pulled from EHR, PDF export, proxy/family access |
-| CommonHealth (Android) | Cross-provider PHR | SMART Health Card import, on-device storage, sharing with apps |
-| Docket | Government registry app | Pulls from state immunization registries (IIS) |
-| VaxYes | Verification-focused | OCR/AI vaccination card validation, fraud checks |
-| The Vaccine App / Samsung Wallet vaccine pass | Digital wallet pass | QR-code-as-card, present-to-verifier flow |
-| VaxTrack / Vaccy / CareClinic PHR | Consumer manual-entry trackers | Manual CRUD, family profiles, reminders, PDF reports |
-| FHIR `Immunization` resource (R4/R5) | Data standard | The canonical "what fields are a vaccination record" answer |
+| Apple Wallet (PassKit) | OS-level wallet | Canonical field schema and barcode symbology spec |
+| Google Wallet (Passes API) | OS-level wallet | Layout constraints, field structure, pass types |
+| Stocard (ceased Dec 2024, absorbed by Klarna) | Dedicated loyalty wallet | Dominant market player; feature set represents category table stakes |
+| Barcodes: Loyalty Card Wallet (trybarcodes.com) | Dedicated loyalty wallet | Active iOS-first replacement for Stocard niche |
+| FidMe (still active) | Loyalty + cashback hybrid | 10,000+ pre-loaded brand cards, QR/barcode/stamps |
+| Key Ring | Loyalty + coupons | Store cards + shopping lists integration |
+| SuperCards (App Store) | Stocard successor | Post-Stocard migration target; same use-case |
 
-## Feature Landscape
+---
 
-### Table Stakes (Users Expect These in a Mature Product)
+## Table Stakes
 
-Note: "expected in the category" — *not* "required for Wallecx v1." Wallecx v1 deliberately picks a subset.
+Features users expect from any card-wallet app. Missing these makes the product feel incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Create / view / edit / delete a vaccination record | Core CRUD; without it the app is read-only or pointless | LOW | PrimeVue dialogs + PocketBase collection. Mirrors LexTrack pattern. |
-| Vaccine name (with date administered) | The two fields *every* tracker has | LOW | Free-text name is acceptable for v1. Coded vocabularies (CVX/SNOMED) are over-engineering. |
-| Dose number / "X of Y" in a series | Multi-dose vaccines (HepB, HPV, COVID boosters) require it; otherwise a record is ambiguous | LOW | Two integers (`doseNumber`, optional `seriesDoses`) or a single "1 of 3" string. |
-| Lot/batch number | On every paper card; required if a vaccine is recalled | LOW | Plain string. Already in v1 scope. |
-| Administering provider / clinic / location | Where it was given — useful for record retrieval and chasing missing info | LOW | Free-text. Already in v1 scope. |
-| Attach card image or PDF per record | The photo of the card *is* the record for most users; lets a doctor confirm at a glance | LOW-MED | PocketBase file field. Constrain MIME types (image/*, application/pdf) and size (~10 MB). Already in v1. |
-| List view sorted by date (recent first) | Default expectation for a chronological log | LOW | PocketBase `sort: '-dateAdministered'`. Already in v1. |
-| Detail view showing all fields + attachment preview | Drill-down from list; attachment must be viewable, not just downloadable | LOW-MED | Image: `<img>`. PDF: `<iframe>` or `<embed>`, with download fallback. |
-| Per-user privacy / isolation | Health data — leakage between accounts would be a trust killer | LOW (in PocketBase rules) | **Server-side rules**, not just client guards. Already called out in PROJECT.md Constraints. |
-| Authentication required to access | Same reason — sensitive data behind a login | LOW | Already in v1 (route guard + PocketBase). |
-| Manufacturer | Distinguishes Pfizer vs. Moderna for the same "COVID-19 vaccine" name; printed on every card | LOW | Optional free-text. Trivial to add; meaningful when looking back. |
-| Notes / free-text field | Side-effects, "got this with my booster", any context the structured fields don't capture | LOW | Single textarea. `dompurify` only if rendered as HTML; plain text is safer. |
-| Empty state on the list view | Brand-new users see a screen with zero records and need a clear CTA | LOW | "No vaccinations yet — add your first record." Pattern already used in LexTrack. |
-| Loading and error states | Network failure, slow PocketBase response, file upload failure | LOW | `vue-sonner` for errors; skeleton or spinner during load. Lexarium convention. |
-| Confirmation before delete | Health records are not casual data; an accidental delete is painful | LOW | PrimeVue `ConfirmDialog`. |
-| Sort + basic filter | Useful past ~10 records: filter by vaccine name, sort by date asc/desc | LOW | Client-side filter on a small list is fine for v1+. |
+| Create a card manually (name, issuer, barcode value, card number) | Core CRUD; every loyalty wallet supports this | LOW | PrimeVue Dialog + Zod + PocketBase; mirrors vaccination pattern |
+| View all cards in a visual grid | Wallet-feel; cards as coloured tiles, not rows | LOW-MED | CSS grid of card components; 2-column default matching vaccination toggle |
+| Full-screen barcode / QR display on card tap | Primary use case: show phone at counter | MED | See Fullscreen UX Patterns section below |
+| Barcode rendering from stored value + type | Without rendering the barcode is just a number string | MED | JsBarcode (1D) + qrcode.vue (QR); see Library section |
+| Edit card details | Card numbers change, expiry rolls over | LOW | Same ManageCard dialog pre-filled |
+| Delete a card | Removing old/cancelled memberships | LOW | Confirm dialog; existing pattern |
+| Fallback plain number display when no barcode | Some cards have no scannable code, just a number | LOW | If `barcode_value` is empty, show `card_number` as styled text |
+| Card colour personalisation | Differentiates cards visually; every wallet app does it | LOW | `card_colour` hex field; colour-picker in the form |
+| Per-user isolation (same as vaccinations) | Wallet data is personal; cross-user leak is a trust failure | LOW | PocketBase collection rules: `@request.auth.id = user.id` |
+| Expiry date field (optional) | Gym memberships, insurance cards, gift cards all expire | LOW | Date field; show visual warning when near or past expiry |
+| Empty state + loading + error states | Zero-card new users need a clear CTA | LOW | Mirrors vaccination pattern; "Add your first card" |
+| Confirm before delete | A deleted loyalty card is mildly annoying to recover | LOW | PrimeVue ConfirmDialog |
+| Notes field | Membership number PIN, redemption instructions, contact number | LOW | Plain textarea |
 
-### Differentiators (Could Set Wallecx Apart, Future Phases)
+---
 
-These are *not* v1 candidates per PROJECT.md, but documenting them prevents losing institutional memory.
+## Differentiators
+
+Features that set a personal card vault apart. Not required at launch but add genuine value.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Generic "vault" record types beyond vaccinations | One app for IDs, prescriptions, lab results, certificates — the stated long-term Wallecx vision | HIGH | Schema must *not* preclude this, but PROJECT.md explicitly defers building it. Phase 2+. |
-| Family / dependent profiles (parents tracking kids) | Parents are the heaviest users of vax trackers; multi-profile is on every consumer PHR (Vaccy, MyHealth Rex, Capzule, MDR) | MED | Either a `profileId` FK on records (one user, many profiles) or proxy access (one user manages others' accounts). FK is simpler. |
-| Generate a PDF "vaccination summary" | Hand a clean printout to a school, employer, travel desk; replaces the photo-of-a-card workflow | MED | `jsPDF` or `@react-pdf` equivalent for Vue. PROJECT.md explicitly defers. |
-| Share a record (or whole history) via signed link | Send to a doctor without giving them an account | MED-HIGH | Signed token + read-only public route + expiry. PROJECT.md explicitly defers. |
-| Reminder for next dose / overdue boosters | Keeps the app useful between annual events | HIGH | Requires cron/scheduled job + email or push — Lexarium has neither today. PROJECT.md explicitly defers. |
-| OCR / auto-fill from card photo | Reduces the typing burden — the friction killer for manual-entry trackers | HIGH | Tesseract.js (browser) or vision API (server). VaxYes does this. PROJECT.md explicitly defers. |
-| Import SMART Health Card / verifiable credential QR | Standards-based, signed, tamper-evident. Apple Health / CommonHealth do this | HIGH | JWS verification, FHIR parsing. Not on the v1 roadmap. |
-| CDC-schedule-aware "what's due" suggestions | Personalized "you're due for a Tdap booster" — high perceived value | HIGH | Static schedule data + age/last-dose math. Phase 3+ at earliest. |
-| Tag / flag a record (travel, COVID, childhood) | Power-user filtering once history grows | LOW | Simple multi-select tag field. Easy add in v1.x if requested. |
-| Attach multiple files per record | Front + back of card; certificate + photo | LOW-MED | PocketBase supports multi-file fields natively. Could be in v1; not requested. |
-| Search across records | At ~30+ records, scan-the-list fails | LOW | Client-side filter on name/manufacturer is enough until volumes grow. |
-| Export full history (JSON / CSV) | Data portability — trust signal for a privacy-focused vault | LOW | A button that posts PocketBase records as a JSON download. Trivial. Reasonable for v1.x. |
-| Audit log (who viewed/edited what, when) | Trust signal; useful when shared with a doctor | MED | PocketBase has a `created`/`updated` field per record but not a full audit table. |
-| End-to-end encryption / on-device only | CommonHealth's positioning; appeals to privacy-sensitive users | HIGH | Conflicts with PocketBase's server-side query model. Major architectural change. |
+| Card photo / custom background image | Upload the physical card's artwork for visual identity | LOW-MED | Optional file field (`card_image`); shown as card background or thumbnail |
+| Category / card type tagging | Filter by Loyalty, Gym, Insurance, Library, Transport | LOW | Enum or free-text `card_type` field; enables grouped view |
+| Search + sort on card grid | At 20+ cards, scroll-to-find fails | LOW | Mirrors vaccination search/sort — can reuse toolbar pattern |
+| Screen brightness boost on fullscreen view | Dark-environment scanning (counter scanners need contrast) | LOW | `document.documentElement.style.filter = 'brightness(1.5)'`; reset on exit |
+| Screen wake-lock during fullscreen scan | Prevents auto-sleep mid-scan at checkout | LOW-MED | Web Screen Wake Lock API (`navigator.wakeLock.request('screen')`) — good browser support since 2022 |
+| Wallecx tab navigation (Vaccinations / Memberships) | Single Wallecx entry point with two sections | LOW | PrimeVue TabView or router-based tabs |
+| Landscape orientation hint on fullscreen for wide barcodes | Code128 barcodes are wide; landscape scan reads better | LOW | CSS `@media (orientation: portrait)` hint; CSS `transform: rotate` trick |
+| Card grid view vs list view toggle | Matches existing vaccination view-toggle pattern | LOW | Reuse the existing toggle UX |
 
-### Anti-Features (Commonly Built, Often Problematic for This Scope)
+---
 
-| Feature | Why Tempting | Why Problematic for Wallecx | Alternative |
-|---------|--------------|----------------------------|-------------|
-| Coded vaccine vocabularies (CVX, SNOMED, CPT) on input | "Real" health systems use them | Forces a dropdown lookup that destroys the "plainly save" UX. The user's card just says "Tdap" — they don't know its CVX code | Free-text name field. Add coded mapping later only if interop is needed. |
-| Public unauthenticated landing page that lists records | Marketing site appeal | Vaccination data is sensitive; even *titles* leak medical info | Auth-only routes (already PROJECT.md constraint). |
-| Built-in "verifier" mode (scan a QR, prove the card is valid) | Pandemic-era vaccine-passport pattern | Wallecx is a personal vault, not a verification service. Different audience, different threat model | Out of scope. If users need verification, point at SMART Health Card Verifier. |
-| Auto-sync from EHRs / state immunization registries (IIS) | Docket and MyChart do it; users love the "no typing" magic | Requires SMART-on-FHIR integrations, BAAs, per-state IIS contracts. Multi-quarter project. Wrong scale for a portfolio mini-app | Manual entry + photo attachment. The photo is the source of truth. |
-| Reminders/notifications in v1 | "Won't users forget?" | Lexarium has no notification infrastructure — adding cron + email/push for one mini-app is cost-prohibitive. Most users open the app *because* they're already at a clinic | Defer to Phase 2+ when other mini-apps also need notifications, or rely on the user's calendar. |
-| Calendar view in v1 | Visually appealing, "vaccinations as events" | Users have ~5–30 vaccination records over a *lifetime* — calendar density is wrong. List + sort > calendar at this scale | List view (PROJECT.md decision). Reconsider only if data volume justifies it. |
-| Rich-text notes / formatting | "What if I want to bold something?" | XSS surface on health data, sanitization burden, no real user value for "got it at lunch" | Plain textarea. `dompurify` only if HTML rendering ever appears. |
-| Generic schema flexibility ("custom fields per record") in v1 | "Future-proofs the vault" | Generic schemas are 5x the build cost and worse UX than typed schemas. PROJECT.md explicitly says don't pre-build the generic vault | Concrete `vaccinations` collection now; add new collections per record type later. |
-| Telemetry / analytics on record contents | "We want to know what's used" | Privacy-sensitive data + EU/AU privacy norms + no business need | None. If usage telemetry is added later, scope it to *route hits* not *record fields*. |
-| Real-time multi-device sync UI (websockets, presence) | "Modern" feel | PocketBase realtime exists, but a personal vault accessed from one device at a time doesn't earn the complexity | Stateless fetch-on-load + refresh on focus. Add realtime only if multi-device editing emerges. |
-| OCR auto-extraction in v1 | "Just snap a photo and we figure it out" | Tesseract is unreliable on glossy cards; vision APIs add server cost and a vendor dependency. PROJECT.md explicitly defers | Manual entry, photo as the canonical artifact. |
+## Anti-Features
+
+Features commonly built in the category that are wrong for this scope.
+
+| Feature | Why Tempting | Why Wrong for Wallecx | Alternative |
+|---------|--------------|----------------------|-------------|
+| NFC tap-to-add cards | Stocard announced it; feels modern | Requires native app capability; not available in a browser-deployed SPA (Web NFC is Android-Chrome-only and not Wallecx's deployment target) | Manual barcode value entry + optional card photo |
+| Integration with merchant loyalty APIs (live points balance) | FidMe / Key Ring fetch real-time balances | Requires per-merchant OAuth, API keys, and maintenance as APIs change — far beyond a personal vault mini-app | Store the card; the user checks points in the merchant's own app |
+| Apple Wallet / Google Wallet export | "Add to Apple Wallet" button | Requires server-side PassKit cert signing (Apple) or Google service account (Google) — server infrastructure Wallecx doesn't have | Display the barcode in-app; that solves the same problem for counter scanning |
+| Cashback / offers feed | FidMe does this; looks like added value | Turns a vault into a commerce product; wrong scope, wrong data feeds | Out of scope; link to the merchant app if needed |
+| Barcode scanning camera input to add cards | Snap the card's barcode to fill the value | Requires camera + ZXing decode; build cost is MED-HIGH; manual entry works fine | Type or paste the barcode value from the card; optional photo covers the "show physical card" use case |
+| Gamification (streaks, tier progress, points history) | Stocard had deal notifications | Wallecx is a vault, not a loyalty engagement platform | Defer indefinitely; different product category |
+| Sharing / shareable links to a card | "Send my membership to a friend" | PocketBase per-user rules need signed token infra; loyalty cards are personal (unlike vaccination record sharing which has a clearer medical use case) | Out of scope |
+| Geolocation reminders ("you're near Woolworths, open your card") | Key Ring does this | Background geolocation in a web SPA is battery-hostile and unreliable; not Wallecx's deployment model | Out of scope |
+| Auto-detect barcode format from value string | "Smart" format sniffing | Brittle — EAN-13 is 13 digits, but so is some Code128; wrong sniff causes scan failure | User selects format from a dropdown; provide helpful format descriptions |
+| Rich card artwork generation (like Apple Wallet's visual pass designer) | Looks premium | Multiple-week design + render pipeline; passcreator.com is a product just for this | `card_colour` + optional uploaded photo is 80% of the value at 5% of the cost |
+
+---
+
+## Standard Card Field Schema
+
+Based on Apple PassKit, Google Wallet Passes, Stocard, and FidMe field surveys:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `card_name` | string | YES | "Woolworths Rewards", "City Library", "PureGym" |
+| `issuer` | string | NO | Organisation name if different from card name |
+| `barcode_value` | string | NO | Raw string to encode; empty = no barcode rendered |
+| `barcode_type` | enum | NO | QR, CODE128, EAN13, CODE39, PDF417, CODABAR; default CODE128 |
+| `card_number` | string | NO | Human-readable number (fallback display + printing on card) |
+| `expiry_date` | date | NO | MM/YYYY or full date; warn when <30 days or past |
+| `card_colour` | hex string | NO | Background colour for the card tile; default #1a1a2e |
+| `card_image` | file | NO | Optional photo of physical card; displayed as bg or thumbnail |
+| `notes` | string | NO | PIN, redemption instructions, contact number |
+| `card_type` | enum/string | NO | Category tag: Loyalty, Gym, Library, Insurance, Transport, Other |
+| `user` | relation | YES | FK to PocketBase `users`; enforced in collection rules |
+
+---
+
+## Barcode Format Guide
+
+### 1D Linear Barcodes
+
+| Format | Character Set | Common Real-World Uses | Width Profile | Scanner Compatibility |
+|--------|--------------|----------------------|---------------|----------------------|
+| **Code 128** | Full ASCII (128 chars) | Retail loyalty cards, event tickets, employee badges, healthcare wristbands, parcel labels | Variable (compact for long strings) | Universal — all laser + imager POS scanners |
+| **EAN-13** | 13 digits only | Retail product barcodes on physical cards (static — same barcode printed on every card in a run) | Fixed 13-digit width | Universal retail POS |
+| **EAN-8** | 8 digits only | Smaller cards where space is tight; subset of EAN-13 use cases | Narrower than EAN-13 | Universal retail POS |
+| **Code 39** | Alphanumeric (A-Z, 0-9, some symbols) | Legacy: automotive, military, some library systems (older installs); much larger than Code 128 for same data | Wide (low density) | Universal but bulky |
+| **Codabar** | Digits + limited symbols | Blood banks, FedEx shipping, older library systems (newer libraries use Code 128 or QR) | Variable | Widely supported |
+| **ITF-14** | 14 digits (GTIN-14) | Outer cartons / warehouse; almost never appears on consumer-held cards | Fixed 14-digit | Less relevant for personal wallet |
+
+### 2D Barcodes
+
+| Format | Capacity | Common Real-World Uses | Scanner Compatibility |
+|--------|----------|----------------------|----------------------|
+| **QR Code** | Up to ~3,000 alphanumeric chars | Modern loyalty programs, gym check-in, insurance cards, event tickets, government IDs, URLs | Universal: phones + modern POS imagers |
+| **PDF417** | Up to ~1,100 bytes | Government IDs (driver's licence, passport), boarding passes, Apple Wallet generic pass | Imager scanners only (not laser) |
+| **Aztec** | Up to 3,000 chars | Apple Wallet boarding passes, UK rail tickets | Imager scanners |
+| **Data Matrix** | Up to 2,335 chars | Healthcare / pharmaceutical labelling; rarely on consumer loyalty cards | Industrial imager scanners |
+
+### Per-Card-Type Defaults (Recommended UI Defaults)
+
+| Card Category | Recommended Default Format | Rationale |
+|--------------|---------------------------|-----------|
+| Grocery / supermarket loyalty | **Code 128** | Dominant in Woolworths, Coles, Tesco, Kroger legacy POS systems; POS laser scanners read it reliably |
+| Pharmacy loyalty | **Code 128** or **QR** | Priceline/Chemist Warehouse use Code 128; newer systems shifting to QR |
+| Gym membership | **QR Code** | Modern gym turnstiles use phone-camera QR readers (not laser scanners) |
+| Library card | **Code 39** or **Codabar** | Older library systems (RFID increasingly displacing both) |
+| Insurance card | **QR Code** | Modern insurance wallets use QR; some legacy cards still use Code 39 |
+| Transport / transit | **QR Code** or **PDF417** | Opal, Myki, Oyster digital passes; PDF417 for printed boarding passes |
+| Gift card | **EAN-13** or **Code 128** | Depends on issuer; EAN-13 for retail-printed cards, Code 128 for variable-issue |
+| General membership / access | **Code 128** | Most versatile; default when card type is unknown |
+| ID / access badge | **QR Code** | Modern access control predominantly QR |
+
+**Design decision for Wallecx:** Default `barcode_type` to `CODE128` in the create form. Show a plain-English description next to each option in the dropdown. Let the user override — they can read their physical card or look up their loyalty app.
+
+---
+
+## Fullscreen UX Patterns
+
+### What Reference Apps Do
+
+Based on analysis of Stocard, Barcodes (trybarcodes.com), Apple Wallet, and FidMe:
+
+1. **Tap-to-fullscreen** — tapping the card tile opens a dedicated fullscreen or modal view, not just enlarging inline. The barcode fills the width of the screen with maximum height the display allows.
+
+2. **White background behind the barcode** — regardless of the card's colour theme, the barcode rendering area is always white or very light grey. Dark backgrounds cause scanner read failures. The card-colour branding is shown as a header strip only.
+
+3. **Screen brightness boost** — apps typically maximise screen brightness on fullscreen entry. In a web SPA, this is approximated with `filter: brightness(1.5)` on the barcode container, or using the Screen Brightness API if available (Chrome Android experimental). Most reliable approach: document-level filter on fullscreen entry, reversed on exit.
+
+4. **Screen wake-lock** — prevents the phone screen from sleeping mid-scan. Web platform: `navigator.wakeLock.request('screen')`. Well-supported on Chrome/Edge/Samsung Internet since 2022. Graceful degrade: if wake lock fails (Safari doesn't support it), show a toast: "Keep your screen on while scanning."
+
+5. **Hide UI chrome** — fullscreen hides the navbar, toolbar, any cards below. Only the barcode + card name + close/exit button are visible.
+
+6. **Card name + number as text below barcode** — human-readable fallback in case the scanner fails; also lets a cashier type it manually. Show `card_number` (or first 16 chars of `barcode_value` if `card_number` is absent) below the barcode.
+
+7. **Close / exit control** — swipe down or a visible "X" / back arrow. Do not rely on browser back button alone; in a modal fullscreen view the back button is ambiguous.
+
+8. **Orientation** — 1D barcodes (Code 128, EAN-13) are wider than tall; landscape orientation scans better on narrow phones. Show a soft prompt: "Rotate to landscape for wide barcodes." Do not force rotation — the Web Orientation Lock API requires an installed PWA. For web SPA: show the hint only, CSS rotate the barcode SVG 90° as a user toggle if the barcode is being clipped.
+
+### Recommended Implementation for Wallecx
+
+```
+Tap card tile
+  → Open PrimeVue Dialog fullscreen (maximizable=true) OR navigate to /projects/wallecx/scan/:id
+  → Dialog shows:
+      [Card name + issuer — header strip in card_colour]
+      [White area — barcode SVG centred, full-width minus padding]
+      [card_number or barcode_value text — below barcode, monospace]
+      [Notes snippet — if present]
+      [Close button — top right]
+  → On dialog open:
+      document.body.style.filter = 'brightness(1.4)' (or target the modal root)
+      navigator.wakeLock.request('screen').catch(() => toast.info('Keep your screen on while scanning'))
+  → On dialog close:
+      Revert brightness
+      Release wake lock
+```
+
+**PrimeVue approach:** Use `<Dialog :maximizable="true" :modal="true">` and trigger `.maximize()` programmatically on open. This gives the fullscreen appearance while staying within Vue's reactivity model. Alternatively, a dedicated route `/projects/wallecx/scan/:id` gives true fullscreen and better back-button behaviour — recommended if the barcode view has its own URL.
+
+---
+
+## Barcode Rendering Library Recommendation
+
+### For 1D barcodes (Code128, EAN-13, Code39, Codabar)
+
+**Recommend: `jsbarcode` via `vue-barcode` wrapper**
+
+- `jsbarcode` is the most widely used browser barcode generator; no dependencies, renders to SVG or Canvas
+- `vue-barcode` (npm: `vue-barcode`, by lindell) wraps JsBarcode as a Vue component — but note: the fengyuanchen fork (`@fengyuanchen/vue-barcode`) is Vue 3 compatible and more actively maintained
+- Alternatively: use `jsbarcode` directly with a `<canvas ref>` in a Vue composable — avoids wrapper-specific Vue version concerns
+- Supported formats: CODE128, EAN, EAN-13, EAN-8, UPC-A, CODE39, ITF-14, MSI, Codabar, Pharmacode
+
+**Complexity:** LOW — `npm install jsbarcode`, call `JsBarcode(canvasRef.value, value, { format: 'CODE128' })` in `onMounted` / watcher.
+
+### For QR codes
+
+**Recommend: `qrcode.vue` (npm: `qrcode.vue`, by scopewu)**
+
+- Actively maintained (version 3.8.1 updated May 2025); supports both Vue 2 and Vue 3
+- Exports `<QrcodeCanvas>` and `<QrcodeSvg>` components
+- Zero config: `<QrcodeSvg :value="barcodeValue" :size="280" />`
+- Alternative: `useQRCode` from VueUse integrations — already installed in Lexarium; zero new deps
+
+**Complexity:** LOW — import and render.
+
+### For PDF417 (transport / government ID pass type)
+
+**Recommend: `bwip-js`** — covers 100+ symbologies including PDF417, Aztec, Data Matrix. Heavier (~400KB), but only loaded if card type = PDF417. Use dynamic import.
+
+---
 
 ## Feature Dependencies
 
 ```
-[Authentication + per-user PocketBase rules]
-    └──required by──> [Create / Edit / Delete record]
-    └──required by──> [List view of own records]
-    └──required by──> [File attachment on record]
+[PocketBase wallecx_memberships collection]
+    └──required by──> [Create / Edit / Delete card]
+    └──required by──> [List / grid view]
+    └──required by──> [Fullscreen scan view]
 
-[File attachment field on record]
-    └──required by──> [Detail view shows image/PDF preview]
-    └──enables──────> [Multi-file per record (future)]
-    └──enables──────> [OCR auto-fill (future)]
+[barcode_value + barcode_type fields on record]
+    └──required by──> [JsBarcode render]
+    └──required by──> [qrcode.vue render]
+    └──enables──────> [Fullscreen scan display]
 
-[Concrete vaccinations collection]
-    └──enables──────> [Generic vault with multiple record types (future)]
-    (NOT the other way around — building generic first blocks v1)
+[card_number field]
+    └──fallback for──> [Barcode-less cards (plain number display)]
+    └──shown in──────> [Fullscreen view below barcode]
 
-[Family / dependent profiles]
-    └──requires─────> [profileId on every record OR proxy auth]
-    └──conflicts────> [Per-user PocketBase rules as currently scoped]
-                      (rules need to allow "owner OR proxy", not just owner)
+[Fullscreen scan view]
+    └──required by──> [Screen wake-lock]
+    └──required by──> [Brightness boost]
+    └──enables──────> [Landscape orientation hint]
 
-[Reminders for next dose]
-    └──requires─────> [Notification infrastructure (cron + email/push)]
-    └──requires─────> [Stored "next due" date per record OR CDC schedule logic]
+[card_colour field]
+    └──enables──────> [Visual card tile differentiation]
+    └──used in──────> [Fullscreen view header strip]
 
-[Share via signed link]
-    └──requires─────> [Public read-only route]
-    └──requires─────> [Token issuance + expiry collection]
+[card_type / category field]
+    └──enables──────> [Grouped view by category]
+    └──enables──────> [Default barcode format suggestion per category]
 
-[Coded vocabularies (CVX/SNOMED)]
-    └──conflicts────> [Free-text vaccine name UX]
-                      (one or the other; not both without a "type-ahead" investment)
+[expiry_date field]
+    └──enables──────> [Expiry badge / warning on card tile]
 
-[SMART Health Card import]
-    └──requires─────> [JWS verification + FHIR Immunization parser]
-    └──requires─────> [QR scan capability in browser]
+[Wallecx tab navigation]
+    └──requires─────> [Vaccinations tab (already built)]
+    └──requires─────> [Memberships tab (new)]
+    └──independent──> [Both sections share WallecxApp.vue shell]
 ```
 
-### Dependency Notes
+---
 
-- **Per-user rules block proxy/family profiles.** v1's "user owns their records" rule (`@request.auth.id = user.id`) will need to expand to "owner OR linked proxy" if family profiles ship in Phase 2. Cheap to refactor *if anticipated*; painful if rules and queries leak the assumption.
-- **Concrete schema → generic vault is forward-compatible; the reverse is not.** Building generic first costs more and ships worse v1 UX. PROJECT.md's "make generalization possible, not pre-built" is the right call.
-- **Reminders require infrastructure Lexarium doesn't have.** This is the single biggest scope-creep risk; flag aggressively if it surfaces in stakeholder discussion.
-- **File attachment unlocks the entire "photo is the record" mental model.** Without it, users must transcribe everything — adoption killer. v1 must include it (and PROJECT.md does).
+## MVP for v2.0
 
-## MVP Definition
+### Launch With
 
-### Launch With (v1) — Mapped to PROJECT.md "Active" Requirements
+- [ ] `wallecx_memberships` PocketBase collection — same per-user rules pattern as vaccinations
+- [ ] Fields: `card_name` (required), `issuer`, `barcode_value`, `barcode_type` (enum, default CODE128), `card_number`, `expiry_date`, `card_colour`, `notes`, `card_image` (optional file), `card_type`
+- [ ] Coloured card grid — 2-column default, matches vaccination grid
+- [ ] Barcode rendering — JsBarcode for 1D (Code128, EAN-13, Code39, Codabar) + qrcode.vue for QR
+- [ ] Fallback plain number display when `barcode_value` is empty
+- [ ] Fullscreen scan dialog — white barcode area, brightness boost, wake-lock attempt
+- [ ] Full CRUD — create/edit/delete with Zod validation, PrimeVue dialogs, mapper
+- [ ] Wallecx tab navigation switching between Vaccinations and Memberships
+- [ ] Expiry date shown on card tile with visual warning for expired / near-expiry
+- [ ] Empty state, loading, error toasts
 
-Minimum viable product. These are essentials; everything else is deferred.
+### Defer to v2.x
 
-- [x] Auth-gated `/projects/wallecx` route — essential for privacy
-- [x] PocketBase `wallecx_vaccinations` collection with per-user list/view/create/update/delete rules — essential, server-side gate
-- [x] Fields: vaccine name, date administered, dose number, lot/batch number, location/clinic — confirmed standard set
-- [x] Optional file attachment (image OR PDF) per record — essential, "photo is the record"
-- [x] List view sorted by date administered (newest first) — essential default UX
-- [x] Detail view showing all fields + attachment preview — essential drill-down
-- [x] Create / edit / delete via PrimeVue dialogs (LexTrack pattern) — essential CRUD
-- [x] Empty state, loading state, error toasts — essential polish (cheap, large UX impact)
-- [x] Confirm dialog before delete — essential safety net
-- [x] Wallecx tile in `ProjectsView.vue` — essential discoverability
-- [x] Lexarium navy/amber + Rubik styling — essential consistency
-- [ ] **Recommended addition:** `manufacturer` field (free-text, optional) — trivial to add, present on every paper card, common downstream filter. LOW cost, MEDIUM future value.
-- [ ] **Recommended addition:** `notes` field (plain textarea, optional) — captures everything the structured fields don't. LOW cost.
+- [ ] Search + sort on membership grid (follow vaccination pattern after v2.0 validates)
+- [ ] Card category filter / grouped view by `card_type`
+- [ ] View toggle (grid vs list) on memberships
+- [ ] Screen brightness API (if available) — additional enhancement over CSS filter
+- [ ] Landscape rotation hint in fullscreen view
+- [ ] PDF417 / Aztec via `bwip-js` dynamic import (niche formats)
 
-### Add After Validation (v1.x — same milestone, post-launch polish)
+### Out of Scope (Explicitly)
 
-Triggered when v1 is in real use and the gaps become obvious.
+- NFC tap-to-add
+- Apple Wallet / Google Wallet export / PassKit signing
+- Live points balance integration
+- Barcode camera scanning to populate `barcode_value`
+- Geolocation reminders
+- Sharing / public card links
+- Cashback / merchant offers feed
 
-- [ ] Client-side filter / search by vaccine name — trigger: a user with >10 records starts scrolling
-- [ ] Sort toggle (date asc/desc, name) — trigger: user request
-- [ ] Multi-file per record (front + back of card) — trigger: any user attaches the same record twice
-- [ ] Tag/category field (e.g. "travel", "childhood", "COVID") — trigger: user wants to filter without typing
-- [ ] JSON / CSV export — trigger: portability question from any user; cheap trust signal
-- [ ] Better PDF preview (current `<embed>` may render inconsistently across browsers) — trigger: a render bug report
-
-### Future Consideration (v2+ / future Wallecx phases)
-
-Defer until product-market fit is established and infrastructure exists.
-
-- [ ] Other vault record types (identity docs, prescriptions, lab results) — Phase 2+; the explicit Wallecx roadmap
-- [ ] Family / dependent profiles — high user value but requires schema + auth model rework; Phase 2+
-- [ ] PDF vaccination summary export — Phase 2 candidate; depends on whether photo attachment alone solves the "show a doctor" use case in practice
-- [ ] Reminders for upcoming doses — only after Lexarium has notification infra, or never if calendar-app integration suffices
-- [ ] Share via signed link — only if "send to my doctor" surfaces as a recurring need
-- [ ] OCR auto-fill from card photo — only after enough records exist to make the typing burden the dominant UX complaint
-- [ ] SMART Health Card / FHIR import — only if interoperability becomes a goal (institutional users, providers asking)
-- [ ] CDC-schedule-aware "what's due" — Phase 3+; significant data + logic investment
-- [ ] Coded vaccine vocabularies — only if interop with EHRs is a real use case
-
-## Feature Prioritization Matrix
-
-Scope: v1 candidates and immediate v1.x extensions. Higher-numbered features (PDF export, reminders, OCR, vault-generic) are uniformly P3 — captured in "Future Consideration" above.
-
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| CRUD on vaccination record | HIGH | LOW | P1 |
-| Per-user PocketBase rules | HIGH | LOW | P1 |
-| File attachment (image/PDF) per record | HIGH | LOW-MED | P1 |
-| List view sorted by date | HIGH | LOW | P1 |
-| Detail view + attachment preview | HIGH | LOW-MED | P1 |
-| Auth-gated route + redirect | HIGH | LOW (already exists) | P1 |
-| Empty / loading / error states | MEDIUM | LOW | P1 |
-| Confirm-before-delete | MEDIUM | LOW | P1 |
-| `manufacturer` field | MEDIUM | LOW | P1 (recommended addition) |
-| `notes` field | MEDIUM | LOW | P1 (recommended addition) |
-| Wallecx tile in projects directory | MEDIUM | LOW | P1 |
-| Client-side filter / search | MEDIUM | LOW | P2 |
-| Sort toggle | LOW-MED | LOW | P2 |
-| JSON/CSV export | MEDIUM | LOW | P2 |
-| Multi-file per record | MEDIUM | LOW-MED | P2 |
-| Tag/category field | LOW-MED | LOW | P2 |
-| Family profiles | HIGH | MED-HIGH | P3 |
-| PDF summary export | MEDIUM | MED | P3 |
-| Reminders | MEDIUM | HIGH (infra) | P3 |
-| Share via signed link | MEDIUM | MED-HIGH | P3 |
-| OCR auto-fill | HIGH | HIGH | P3 |
-| SMART Health Card import | LOW (this audience) | HIGH | P3 |
-
-**Priority key:**
-- P1: Must have for v1 launch
-- P2: Should have, add in v1.x once v1 is in real use
-- P3: Defer to a later Wallecx phase
-
-## Competitor Feature Analysis
-
-| Feature | Apple Health (Immunizations) | MyChart | CommonHealth | Consumer manual-entry (Vaccy/VaxTrack) | Wallecx v1 |
-|---------|-------------------------------|---------|--------------|----------------------------------------|------------|
-| Manual entry | Yes (limited fields) | No (provider-pushed) | Yes (via SMART card) | Yes (full) | Yes (full) |
-| File / photo attachment | No (verifiable cards only) | No (PDF export only) | No | Some (photo of card) | **Yes** |
-| Standard fields (name, date, lot, location) | Yes (FHIR-backed) | Yes | Yes | Yes | Yes |
-| Manufacturer field | Yes | Yes | Yes | Mixed | Recommended add |
-| Per-user privacy | Device-only / iCloud | Provider-tethered | Device-only | Cloud, varies | PocketBase per-user rules |
-| Family profiles | No (separate iCloud accts) | Proxy access | Per-user app installs | Yes | Deferred (Phase 2+) |
-| Reminders | No | Some (clinics push) | No | Yes | Deferred |
-| PDF export | No | Yes | No | Yes | Deferred |
-| QR / SMART Health Card | Yes (verifiable) | Yes (issue) | Yes (import) | No | Deferred |
-| OCR | No | No | No | VaxYes only | Deferred |
-| Multi-record-type vault | Yes (broad PHR) | Yes (broad PHR) | Yes (broad PHR) | Vaccinations only | Vaccinations only (v1); vault later |
-| Sharing / link export | Limited | Limited | Yes (consented apps) | PDF email | Deferred |
-
-**Wallecx's positioning:** Closest to "consumer manual-entry tracker" (Vaccy/VaxTrack) for v1, with the photo-of-the-card as the differentiator vs. Apple Health (which doesn't allow attachments) and MyChart (which is provider-bound). The path to differentiation is "personal vault for *all* records" — but only after v1 proves the mechanic.
+---
 
 ## Confidence Assessment
 
 | Finding | Confidence | Basis |
 |---------|------------|-------|
-| Standard fields (name, date, dose, lot, location, manufacturer) | HIGH | FHIR R4/R5 Immunization spec (HL7 official); confirmed across all surveyed apps |
-| File attachment is high-value-low-cost | HIGH | PROJECT.md user statement + universal pattern in consumer trackers |
-| Reminders require infra Lexarium lacks | HIGH | Direct Lexarium codebase fact (no scheduled jobs, no email transport) |
-| OCR is high-cost, low-v1-value | MEDIUM-HIGH | VaxYes is the only major app doing it consistently; Tesseract reliability on cards is mixed (anecdotal) |
-| Family profiles are the #1 expansion users will request | MEDIUM | Consistent across surveyed consumer apps; not yet validated for Wallecx specifically |
-| Coded vocabularies hurt v1 UX | MEDIUM-HIGH | UX pattern observed in clinical apps; subjective but well-supported |
-| SMART Health Card import is low-value for this audience | LOW-MED | Inference: Wallecx is a personal portfolio mini-app, not an interop product. Could be wrong if user audience shifts to clinical use cases |
+| Standard card fields (name, barcode value+type, card number, expiry, colour) | HIGH | Apple PassKit spec + Google Wallet Passes + multiple surveyed apps |
+| Code 128 as the dominant loyalty/retail barcode format | HIGH | CardPrinting.com industry guide + Scandit barcode type guide + supermarket POS ecosystem |
+| QR code for gym / modern loyalty / insurance | HIGH | Live app behaviour observed across Barcodes app, FidMe, gym app patterns |
+| Codabar for libraries (legacy) | MEDIUM | Industry sources; many libraries now use RFID or Code 128 |
+| White background + brightness boost for fullscreen scan | HIGH | Pattern visible in all surveyed loyalty wallet apps; counter-scanner physics |
+| Screen wake-lock via Web API | HIGH | MDN docs + caniuse.com show broad support since Chrome 84, Edge 84 |
+| JsBarcode recommendation for 1D | HIGH | Widely used, no deps, Vue 3 compatible via direct canvas ref |
+| qrcode.vue recommendation for QR | HIGH | Actively maintained May 2025, explicit Vue 3 support |
+| Landscape orientation hint (not lock) | HIGH | Web Orientation Lock requires PWA; hint-only is correct for SPA |
+| Barcode camera scanning deferred | HIGH | ZXing wrapper adds significant build cost; manual entry + optional photo achieves the same result |
+
+---
 
 ## Sources
 
-- [Apple Health: Download health records on iPhone](https://support.apple.com/guide/iphone/download-health-records-iphc30019594/ios)
-- [Apple Support: Add verifiable COVID-19 vaccination information to Apple Wallet and Health](https://support.apple.com/en-us/102467)
-- [Apple Developer: Explore Verifiable Health Records (WWDC21)](https://developer.apple.com/videos/play/wwdc2021/10089/)
-- [HL7 FHIR R5: Immunization resource](https://www.hl7.org/fhir/immunization.html)
-- [HL7 FHIR R4: Immunization resource](http://hl7.org/fhir/R4/immunization.html)
-- [US Core Immunization Profile](https://build.fhir.org/ig/HL7/US-Core/StructureDefinition-us-core-immunization.html)
-- [MyChart Help: View Test Results and Immunization Records](https://www.mychart.org/Help/test-results-immunizations)
-- [Epic: COVID vaccine passport tool](https://www.epic.com/epic/post/epic-covid-vaccine-passport-tool-now-available-to-around-70-million-patients/)
-- [CommonHealth: Vaccinations and Test Results](https://www.commonhealth.org/vaccinations-and-test-results)
-- [CommonHealth: SMART Health Cards](https://www.commonhealth.org/smart-health-cards)
-- [The Commons Project: SMART Health Card Verifier](https://www.thecommonsproject.org/smart-health-card-verifier)
-- [Docket: immunization records platform](https://docket.care/)
-- [VaxYes: digital vaccine verification](https://www.healthcareitnews.com/news/covid-19-vaccine-credential-app-now-available-small-businesses-schools)
-- [Vaccy: Immunization Record (App Store)](https://apps.apple.com/us/app/vaccy-immunization-record/id1539910324)
-- [VaxTrack: Vaccine Tracker (Google Play)](https://play.google.com/store/apps/details?id=com.planet72.myvaccinations&hl=en_US)
-- [The Vaccine App](https://thevaccineapp.com/)
-- [CDC Vaccine Schedules App](https://www.cdc.gov/vaccines/hcp/imz-schedules/app.html)
-- [Vishnu Ravi: How SMART Health Cards work](https://vishnuravi.medium.com/how-do-verifiable-covid-19-vaccination-records-with-smart-health-cards-work-df099370b27a)
-- [VCI Charter (Vaccination Credential Initiative)](https://vci.org/about/)
-- [Apps for immunization (PMC review article)](https://pmc.ncbi.nlm.nih.gov/articles/PMC4635844/)
-- [NFID: Tools at Your Fingertips - Immunization Apps](https://www.nfid.org/tools-at-your-fingertips-immunization-apps/)
+- [Apple Wallet PassKit: Pass Design and Creation](https://developer.apple.com/library/archive/documentation/UserExperience/Conceptual/PassKit_PG/Creating.html)
+- [Apple Human Interface Guidelines: Wallet](https://developer.apple.com/design/human-interface-guidelines/wallet)
+- [Apple & Google Wallet Pass Design Guide — Litecard](https://litecard.com.au/docs/apple-google-wallet-pass-design-guide/)
+- [The Anatomy of a Wallet Pass — Passcreator](https://www.passcreator.com/en/features/ultimate-guide/the-anatomy-of-a-wallet-pass)
+- [Barcodes: Loyalty Card Wallet app — Product listing](https://trybarcodes.com/)
+- [Stocard — Klarna acquisition / shutdown Dec 2024](https://stocardapp.com/en/us)
+- [Stocard alternatives — AlternativeTo.net](https://alternativeto.net/software/stocard/)
+- [FidMe: Loyalty Cards, Cashback — App Store](https://apps.apple.com/us/app/fidme-loyalty-cards-cashback/id391329324)
+- [Common Barcode Types for Plastic Cards — CardPrinting.com](https://www.cardprinting.com/page/common-barcode-types)
+- [Barcode Types Guide — Scandit](https://www.scandit.com/resources/guides/types-of-barcodes-choosing-the-right-barcode/)
+- [Barcode Format Comparison: CODE128 vs CODE39 vs EAN — WildandFreeTools](https://wildandfreetools.com/blog/barcode-format-comparison-guide/)
+- [JsBarcode — GitHub (lindell)](https://github.com/lindell/JsBarcode)
+- [qrcode.vue — GitHub (scopewu)](https://github.com/scopewu/qrcode.vue)
+- [bwip-js — npm](https://www.npmjs.com/package/bwip-js)
+- [bwip-js vs jsbarcode comparison — npm-compare.com](https://npm-compare.com/bwip-js,jsbarcode)
+- [Digital Loyalty Card Implementation Guide — The Droids on Roids](https://www.thedroidsonroids.com/blog/digital-loyalty-card-implementation-guide)
+- [QR Codes for Membership Cards — Bitly](https://bitly.com/blog/qr-codes-for-membership-cards/)
+- [Screen Wake Lock API — MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API)
 
 ---
-*Feature research for: personal vaccination records tracker (Wallecx Phase 1)*
-*Researched: 2026-05-10*
+*Feature research for: Wallecx v2.0 Membership Cards*
+*Researched: 2026-05-13*
