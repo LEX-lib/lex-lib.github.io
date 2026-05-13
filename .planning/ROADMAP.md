@@ -297,7 +297,12 @@ Plans:
 3. A fresh session (new tab or after closing and reopening the browser) always opens in the default 2-column grid view.
 4. Switching view mode while a search filter or non-default sort is active preserves both the filter and the sort — only the layout class changes.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Extend WallecxToolbar.vue with viewMode v-model, showToggle prop, and cycling-toggle Button (VIEW-01)
+- [ ] 08-02-PLAN.md — Extend WallecxApp.vue with viewMode ref, sessionStorage hydrate/persist, gridClass computed, toolbar wiring (VIEW-01, VIEW-02)
+
 **UI hint**: yes
 
 ---
@@ -349,8 +354,8 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
 | 6. Grouped Card View & Group Detail Panel | 2/2 | Complete | 2026-05-12 |
 | 7. Toolbar — Search & Sort | 2/2 | Complete | 2026-05-13 |
-| 8. View Toggle | 0/? | Not started | - |
+| 8. View Toggle | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 7 planned: 2 plans (07-01-PLAN.md, 07-02-PLAN.md)*
+*Last updated: 2026-05-13 — Phase 8 planned: 2 plans (08-01-PLAN.md, 08-02-PLAN.md)*
