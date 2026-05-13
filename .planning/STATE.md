@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: in_progress
+status: ready_to_execute
 last_updated: "2026-05-13"
-last_activity: 2026-05-13 — Phase 11 executing (Wave 1: Plan 11-01 — PocketBase wallecx_memberships collection setup)
+last_activity: 2026-05-13 — Phase 11 complete (3/3 plans: MBACK-01..03 + MFRONT-01..03 verified). Phase 12 next.
 progress:
   total_phases: 14
   completed_phases: 11
@@ -22,7 +22,7 @@ progress:
 **Project:** Lexarium — Wallecx v2.0 Membership Cards
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save and retrieve their own records — vaccination records and now membership/loyalty cards — without ever losing access to them.
-**Current focus:** Phase 11 — Backend + Frontend Foundation (Memberships) (next action: `/gsd-execute-phase 11`)
+**Current focus:** Phase 12 — Read Path: Card Grid, Barcode Display & Detail (next action: `/gsd-plan-phase 12`)
 
 ## Current Position
 

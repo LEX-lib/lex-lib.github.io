@@ -16,15 +16,15 @@ Prerequisites for the membership cards UI — `WallecxApp.vue` must become a tab
 
 ### Backend (PocketBase)
 
-- [ ] **MBACK-01**: A `wallecx_memberships` PocketBase collection exists with fields: `user` (relation, required), `card_name` (text, required), `issuer` (text, optional), `barcode_value` (text, optional), `barcode_type` (text, optional — values: qr / code128 / ean13 / code39 / number), `card_number` (text, optional), `expiry_date` (date, optional), `notes` (text, optional), `card_color` (text, optional — hex value without `#`), `card_image` (file, optional, single)
-- [ ] **MBACK-02**: All 5 collection rules enforce per-user access (same pattern as `wallecx_vaccinations`): listRule/viewRule/updateRule/deleteRule → `@request.auth.id != "" && user = @request.auth.id`; createRule → `@request.auth.id != "" && @request.body.user = @request.auth.id`
-- [ ] **MBACK-03**: Two-user smoke test confirms user A's membership cards are inaccessible to user B across all five access types (list/view/update/delete/file)
+- [x] **MBACK-01**: A `wallecx_memberships` PocketBase collection exists with fields: `user` (relation, required), `card_name` (text, required), `issuer` (text, optional), `barcode_value` (text, optional), `barcode_type` (SELECT, optional — values: qr / code128 / ean13 / code39 / number), `card_number` (text, optional), `expiry_date` (date, optional), `notes` (text, optional), `card_color` (text, optional — hex value without `#`), `card_image` (file, optional, single)
+- [x] **MBACK-02**: All 5 collection rules enforce per-user access: listRule/viewRule/updateRule/deleteRule → `@request.auth.id != "" && user = @request.auth.id`; createRule → `@request.auth.id != "" && @request.body.user = @request.auth.id` (PocketBase v0.29.x syntax)
+- [x] **MBACK-03**: Two-user smoke test confirms user A's membership cards are inaccessible to user B across all five access types (list/view/update/delete/file)
 
 ### Frontend Foundation
 
-- [ ] **MFRONT-01**: Type module `src/types/wallecx/memberships/types.d.ts` exports `interface Memberships extends RecordModel` (all fields) and `type AddMembership = Omit<Memberships, 'id' | 'created' | 'updated'>`
-- [ ] **MFRONT-02**: Mapper module `src/lib/pocketbase/membershipMapper.ts` exports `mapToUpdateMembership(record: Memberships)` returning a writable subset (strips `id`, `created`, `updated`, `user`, `card_image`)
-- [ ] **MFRONT-03**: `qrcode.vue@^3.9.1` and `jsbarcode@^3.12.3` installed and committed to `package.json`; `npm run build` passes
+- [x] **MFRONT-01**: Type module `src/types/wallecx/memberships/types.d.ts` exports `interface Memberships extends RecordModel` (all fields) and `type AddMembership = Omit<Memberships, 'id' | 'created' | 'updated'>`
+- [x] **MFRONT-02**: Mapper module `src/lib/pocketbase/membershipMapper.ts` exports `mapToUpdateMembership(record: Memberships)` returning a writable subset (strips `id`, `created`, `updated`, `user`, `card_image`)
+- [x] **MFRONT-03**: `qrcode.vue@^3.9.1` and `jsbarcode@^3.12.3` installed and committed to `package.json`; `npm run build` passes
 
 ### Barcode Display
 
@@ -90,12 +90,12 @@ Tracked but not in this milestone.
 |-------------|-------|--------|
 | XTAB-01 | Phase 10 | Verified (2026-05-13) |
 | XTAB-02 | Phase 10 | Verified (2026-05-13) |
-| MBACK-01 | Phase 11 | Pending |
-| MBACK-02 | Phase 11 | Pending |
-| MBACK-03 | Phase 11 | Pending |
-| MFRONT-01 | Phase 11 | Pending |
-| MFRONT-02 | Phase 11 | Pending |
-| MFRONT-03 | Phase 11 | Pending |
+| MBACK-01 | Phase 11 | Verified (2026-05-13) |
+| MBACK-02 | Phase 11 | Verified (2026-05-13) |
+| MBACK-03 | Phase 11 | Verified (2026-05-13) |
+| MFRONT-01 | Phase 11 | Verified (2026-05-13) |
+| MFRONT-02 | Phase 11 | Verified (2026-05-13) |
+| MFRONT-03 | Phase 11 | Verified (2026-05-13) |
 | SCAN-01 | Phase 12 | Pending |
 | SCAN-02 | Phase 12 | Pending |
 | SCAN-03 | Phase 12 | Pending |

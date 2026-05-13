@@ -51,7 +51,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 **Milestone goal:** Add a second Wallecx vault record type — membership/loyalty/insurance/ID cards — with barcode and QR code rendering, a full-screen scan overlay for counter use, a coloured card grid, and full CRUD. Wallecx becomes a tabbed shell switching between Vaccinations and Membership Cards.
 
 - [x] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (2/2 plans complete)
-- [ ] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test
+- [x] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test (3/3 plans complete)
 - [ ] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay
 - [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
 
@@ -400,9 +400,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Create wallecx_memberships collection: all 10 fields, barcode_type SELECT config, card_image file config (image-only), 5 rules (MBACK-01, MBACK-02)
-- [ ] 11-02-PLAN.md — Two-user smoke test: verify per-user isolation on list, view, update, delete, and card_image file URL (MBACK-03)
-- [ ] 11-03-PLAN.md — Frontend foundation: npm install qrcode.vue + jsbarcode, types module, mapper module (MFRONT-01, MFRONT-02, MFRONT-03)
+- [x] 11-01-PLAN.md — Create wallecx_memberships collection: all 10 fields, barcode_type SELECT config, card_image file config (image-only), 5 rules (MBACK-01, MBACK-02)
+- [x] 11-02-PLAN.md — Two-user smoke test: verify per-user isolation on list, view, update, delete, and card_image file URL (MBACK-03)
+- [x] 11-03-PLAN.md — Frontend foundation: npm install qrcode.vue + jsbarcode, types module, mapper module (MFRONT-01, MFRONT-02, MFRONT-03)
 
 ---
 
@@ -524,10 +524,10 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 8. View Toggle | v1.2 | 2/2 | Complete | 2026-05-13 |
 | 9. Restore Edit & Delete in Grouped View | v1.2 | 1/1 | Complete | 2026-05-13 |
 | 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 2/2 | Complete | 2026-05-13 |
-| 11. Backend + Frontend Foundation | v2.0 | 0/TBD | Not started | - |
+| 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 0/TBD | Not started | - |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 10 complete (VaccinationsTab extraction + Tabs shell, 2/2 plans)*
+*Last updated: 2026-05-13 — Phase 11 complete (wallecx_memberships collection, smoke test, frontend foundation, 3/3 plans)*
