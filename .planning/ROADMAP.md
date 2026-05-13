@@ -397,7 +397,12 @@ Plans:
 3. `mapToUpdateMembership` strips `id`, `created`, `updated`, `user`, and `card_image` from the record — verifiable by inspecting the returned object in a unit test or browser console.
 4. The `wallecx_memberships` collection is visible in the PocketBase admin UI with all fields and all five access rules correctly configured.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Create wallecx_memberships collection: all 10 fields, barcode_type SELECT config, card_image file config (image-only), 5 rules (MBACK-01, MBACK-02)
+- [ ] 11-02-PLAN.md — Two-user smoke test: verify per-user isolation on list, view, update, delete, and card_image file URL (MBACK-03)
+- [ ] 11-03-PLAN.md — Frontend foundation: npm install qrcode.vue + jsbarcode, types module, mapper module (MFRONT-01, MFRONT-02, MFRONT-03)
 
 ---
 
