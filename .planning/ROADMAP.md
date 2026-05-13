@@ -271,7 +271,12 @@ Plans:
 4. User selects "Name A–Z" from the sort control and groups are re-ordered by their latest record's `vaccine_name` alphabetically; selecting "Type Z–A" reverses the type-name order. The "Uncategorized" group remains pinned last in all four sort modes.
 5. Search and sort compose correctly: filtering while a non-default sort is active produces a filtered-and-sorted result, not a reset to default order.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — WallecxToolbar.vue new component: search input (IconField + InputIcon + inline clear) + sort Select dropdown; v-model:searchQuery + v-model:sortMode (SEARCH-01, SORT-01)
+- [ ] 07-02-PLAN.md — WallecxApp.vue extensions: searchQuery + sortMode refs, displayedGroups computed (filter + sort + Uncategorized pin), toolbar wiring, no-results empty state branch (SEARCH-01, SEARCH-02, SORT-01)
+
 **UI hint**: yes
 
 ---
@@ -343,9 +348,9 @@ All 5 v1.2 requirements are mapped to exactly one phase. No orphans.
 | 4. Discovery & Polish | 4/4 | Complete | 2026-05-12 |
 | 5. Schema, Types & Form Field | 2/2 | Complete | 2026-05-12 |
 | 6. Grouped Card View & Group Detail Panel | 0/2 | Not started | - |
-| 7. Toolbar — Search & Sort | 0/? | Not started | - |
+| 7. Toolbar — Search & Sort | 0/2 | Not started | - |
 | 8. View Toggle | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-12 — Milestone v1.2 phases appended (Phase 7: Search & Sort, Phase 8: View Toggle)*
+*Last updated: 2026-05-13 — Phase 7 planned: 2 plans (07-01-PLAN.md, 07-02-PLAN.md)*
