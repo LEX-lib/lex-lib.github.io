@@ -50,14 +50,16 @@ Source: pattern extracted from existing WallecxApp.vue `mb-4`, `py-12`, `gap-2`,
 
 ## Typography
 
-| Role | Size | Weight | Line Height |
-|------|------|--------|-------------|
-| Body | 14px | 400 | 1.5 |
-| Label | 14px | 600 | 1.4 |
-| Heading (app title) | 24px (`text-2xl`) | 700 (`font-bold`) | 1.2 |
-| Tab label | 14px | 500 | 1.4 |
+All typography is **inherited** from the existing Wallecx design system (Rubik 400/500/700, sizes 14px / 18px / 24px — loaded globally in `main.css`). Phase 10 introduces no new type decisions.
 
-Source: WallecxApp.vue heading uses `text-2xl font-bold`. Tab label size follows PrimeVue Aura preset defaults. Body/label sizes match existing VaccinationGroupCard.vue (`text-sm` = 14px, `text-lg font-bold` = 18px for card type label which stays unchanged in VaccinationsTab.vue).
+New elements introduced in Phase 10 use the following existing weights only:
+
+| Role | Size | Weight | Line Height | Source |
+|------|------|--------|-------------|--------|
+| Tab label | 14px | 500 | 1.4 | Aura preset default |
+| Stub empty-state body | 14px | 400 | 1.5 | Matches existing empty-state body pattern |
+
+All other type elements (`h1` heading, card labels, body copy) are pre-existing and move unchanged into VaccinationsTab.vue.
 
 ---
 
@@ -272,11 +274,11 @@ No new npm dependencies are introduced in Phase 10. All PrimeVue Tabs components
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: FLAG (non-blocking — "Confirm Delete" header lacks noun; inherited from existing app)
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (revised — inheritance statement + 2 new weights only)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** APPROVED — 2026-05-13
