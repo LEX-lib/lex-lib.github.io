@@ -55,6 +55,15 @@ If everything else fails, this single capability must work.
 - ✓ Clicking a group card opens a Drawer detail panel listing all records in that group (4-column DataTable)
 - ✓ Each record row in the group panel opens the existing full-detail dialog on top of the still-open Drawer
 
+### Validated in v1.2 (2026-05-13)
+
+- ✓ Real-time search input filters group cards by vaccine type name or any record's vaccine name (case-insensitive); empty query shows all groups
+- ✓ "No results" empty state shown when search matches nothing — distinct from the zero-records state
+- ✓ Sort control (Type A–Z default, Type Z–A, Name A–Z, Name Z–A) with Uncategorized always pinned last regardless of direction
+- ✓ View toggle Button in the toolbar switches grouped-card layout between 2-column grid and single-column list
+- ✓ Selected view persists for the browser session via sessionStorage (reset on tab close)
+- ✓ `VaccinationGroupCard.vue` reused unchanged across both layouts — only the container grid class swaps
+
 ### Out of Scope
 
 <!-- Explicit boundaries for THIS phase. Reasoning included so we don't quietly re-scope. -->
