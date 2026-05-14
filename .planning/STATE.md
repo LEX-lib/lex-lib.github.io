@@ -4,17 +4,17 @@ milestone: v2.1
 milestone_name: Mobile PWA
 status: in_progress
 stopped_at: ""
-last_updated: "2026-05-14T05:39:45Z"
+last_updated: "2026-05-14T06:00:00Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 4
+  total_plans: 7
   completed_plans: 4
 ---
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 14 Plan 04 complete. Production build verified: dist/sw.js (53-entry precache) and dist/manifest.webmanifest generated. Workbox fix: globIgnores for about-me-photo (9.85 MB), maximumFileSizeToCacheInBytes raised to 3 MiB for vendor bundle. Phase 14 PWA Foundation complete (4/4 plans).
+**Last updated:** 2026-05-14 — Phase 15 Wave 1 complete (15-01 + 15-02 executed). Wave 2: 15-03 (PwaInstallBanner.vue) next.
 
 ## Project Reference
 
@@ -26,9 +26,9 @@ progress:
 ## Current Position
 
 **Milestone:** v2.1 — Mobile PWA (IN PROGRESS)
-**Phase:** Phase 14 — PWA Foundation (4/4 plans complete)
-**Plan:** Phase 14 complete. Next: Phase 15 — Mobile Layouts
-**Status:** Phase 14 complete. Plans 14-01, 14-02, 14-03, and 14-04 complete.
+**Phase:** Phase 15 — Mobile Layouts (2/3 plans complete — Wave 2 in progress)
+**Plan:** Wave 1 complete (15-01, 15-02). Wave 2: 15-03 executing.
+**Status:** Phase 15 execution in progress. Plans 15-01 and 15-02 complete. Plan 15-03 next.
 
 ## Shipped Milestones Summary
 
@@ -100,9 +100,9 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-14T05:39:45Z
 
-**Stopped at:** Plan 14-04 complete (1/1 task committed: ee379a3; Task 2 checkpoint auto-approved per auto_advance:true)
+**Stopped at:** Phase 15 planning complete (3 plans created, checker passed 0 blockers).
 
-**Next session entry point:** Execute Phase 15 — Mobile Layouts (plans TBD).
+**Next session entry point:** Execute Phase 15 — Mobile Layouts (`/gsd-execute-phase 15`).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

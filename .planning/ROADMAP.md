@@ -106,8 +106,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — Viewport meta (viewport-fit=cover, interactive-widget), App.vue top safe-area, WallecxApp.vue bottom/side safe-area + overscroll-none + global dialog CSS override; verify MembershipsTab/VaccinationsTab grid classes
-- [ ] 15-02-PLAN.md — Touch targets on WallecxToolbar.vue, VaccinationGroupPanel.vue, MembershipCard.vue, VaccinationGroupCard.vue
+- [x] 15-01-PLAN.md — Viewport meta (viewport-fit=cover, interactive-widget), App.vue top safe-area, WallecxApp.vue bottom/side safe-area + overscroll-none + global dialog CSS override; verify MembershipsTab/VaccinationsTab grid classes
+- [x] 15-02-PLAN.md — Touch targets on WallecxToolbar.vue, VaccinationGroupPanel.vue, MembershipCard.vue, VaccinationGroupCard.vue
 - [ ] 15-03-PLAN.md — Create PwaInstallBanner.vue (iOS Safari only, localStorage dismiss, Teleport to body); wire into WallecxApp.vue
 
 **UI hint**: yes
@@ -133,8 +133,8 @@ Plans:
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 15. Mobile Layouts | v2.1 | 0/3 | Not started | - |
+| 15. Mobile Layouts | v2.1 | 2/3 | In progress | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Phase 15 Mobile Layouts planned (3 plans, 2 waves); plans 15-01 through 15-03 created*
+*Last updated: 2026-05-14 — Phase 15 Wave 1 complete; plans 15-01 and 15-02 executed (2/3 plans)*
