@@ -103,12 +103,13 @@ Plans:
   4. Opening a CRUD dialog on an iPhone and tapping into a text field causes the form to scroll within the dialog (not push content off-screen); the Save/Cancel buttons remain reachable without dismissing the keyboard
   5. On a notched iPhone, the Wallecx shell content sits inside the safe area — no text or buttons are hidden behind the notch, Dynamic Island, or home indicator bar
   6. On iOS Safari (not standalone), a dismissible "Add to Home Screen" instruction banner appears once; it does not reappear after dismissal, and it is not shown in standalone mode
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [x] 15-01-PLAN.md — Viewport meta (viewport-fit=cover, interactive-widget), App.vue top safe-area, WallecxApp.vue bottom/side safe-area + overscroll-none + global dialog CSS override; verify MembershipsTab/VaccinationsTab grid classes
 - [x] 15-02-PLAN.md — Touch targets on WallecxToolbar.vue, VaccinationGroupPanel.vue, MembershipCard.vue, VaccinationGroupCard.vue
 - [x] 15-03-PLAN.md — Create PwaInstallBanner.vue (iOS Safari only, localStorage dismiss, Teleport to body); wire into WallecxApp.vue
+- [x] 15-04-PLAN.md — [Gap closure] Replace VaccinationGroupPanel DataTable (384px min-width overflow) with v-for card list; closes UAT Gap 1
 
 **UI hint**: yes
 
@@ -133,8 +134,8 @@ Plans:
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 15. Mobile Layouts | v2.1 | 3/3 | Complete | 2026-05-14 |
+| 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Phase 15 Mobile Layouts complete (3/3 plans, 2 waves)*
+*Last updated: 2026-05-14 — Phase 15 Mobile Layouts complete (4/4 plans, gap closure UAT-Gap-1 resolved, verification passed)*

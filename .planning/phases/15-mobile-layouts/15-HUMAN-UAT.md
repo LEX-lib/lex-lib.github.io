@@ -122,4 +122,4 @@ blocked: 0
 
 ## Gaps
 
-- **Gap 1:** VaccinationGroupPanel (Group Detail drawer) is not optimised for mobile — the DataTable layout and action buttons inside the drawer do not adapt well to a 375px viewport. Requires a dedicated mobile layout pass on the drawer (e.g. stacked rows, larger tap targets, responsive columns).
+- **Gap 1:** ~~VaccinationGroupPanel (Group Detail drawer) is not optimised for mobile — the DataTable layout and action buttons inside the drawer do not adapt well to a 375px viewport. Requires a dedicated mobile layout pass on the drawer (e.g. stacked rows, larger tap targets, responsive columns).~~ **RESOLVED by Plan 15-04** — DataTable replaced with v-for card list (commit 74d26c7); no min-width constraint; 3× flex-1 min-h-[44px] action buttons. Verified 2026-05-14.
