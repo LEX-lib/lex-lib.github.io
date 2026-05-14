@@ -5,12 +5,17 @@ import { pb } from '@/lib/pocketbase'
 import type { Memberships } from '@/types/wallecx/memberships/types'
 import MembershipCard from './MembershipCard.vue'
 import MembershipDetail from './MembershipDetail.vue'
+import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
+import ManageMembership from './ManageMembership.vue'
 
 const records = ref<Memberships[]>([])
 const isLoading = ref(false)
 const selectedRecord = ref<Memberships | null>(null)
 const showDetail = ref(false)
 const fileToken = ref<string>('')
+const showManage = ref<boolean>(false)
+const manageRecord = ref<Memberships | null>(null)
+const confirm = useConfirm()
 
 onMounted(async () => {
   isLoading.value = true
@@ -44,6 +49,50 @@ async function openDetail(record: Memberships): Promise<void> {
   }
   showDetail.value = true
 }
+
+function openEdit(record: Memberships): void {
+  manageRecord.value = record
+  showDetail.value = false      // close detail dialog first
+  showManage.value = true       // then open manage dialog
+}
+
+function openManage(record: Memberships | null): void {
+  manageRecord.value = record
+  showManage.value = true
+}
+
+function openDelete(record: Memberships): void {
+  confirm.require({
+    message: `Delete "${record.card_name}"? This cannot be undone.`,   // D-11: plain text — never v-html
+    header: 'Confirm Delete',
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: { label: 'Keep Card', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Delete', severity: 'danger' },
+    accept: () => deleteCard(record),
+  })
+}
+
+async function deleteCard(record: Memberships): Promise<void> {
+  try {
+    await pb.collection('wallecx_memberships').delete(record.id)   // server-first — D-05
+    const idx = records.value.findIndex((r) => r.id === record.id)
+    if (idx !== -1) records.value.splice(idx, 1)                   // splice only on success
+    showDetail.value = false   // close detail after successful delete
+    toast.success('Card deleted.')
+  } catch (e: unknown) {
+    toast.error('Failed to delete. Please try again.')              // no splice on failure
+    console.error('MembershipsTab: delete failed', e)
+  }
+}
+
+function onCreated(created: Memberships): void {
+  records.value.unshift(created)   // prepend — newest first (matches sort: '-created')
+}
+
+function onUpdated(updatedRecord: Memberships): void {
+  const idx = records.value.findIndex((r) => r.id === updatedRecord.id)
+  if (idx !== -1) records.value[idx] = updatedRecord
+}
 </script>
 
 <template>
@@ -54,7 +103,7 @@ async function openDetail(record: Memberships): Promise<void> {
         label="Add card"
         icon="pi pi-plus"
         size="small"
-        :disabled="true"
+        @click="openManage(null)"
       />
     </div>
 
@@ -86,7 +135,7 @@ async function openDetail(record: Memberships): Promise<void> {
         label="Add your first card"
         icon="pi pi-plus"
         size="small"
-        :disabled="true"
+        @click="openManage(null)"
       />
     </div>
 
@@ -113,7 +162,18 @@ async function openDetail(record: Memberships): Promise<void> {
         v-if="selectedRecord"
         :record="selectedRecord"
         :token="fileToken"
+        @edit="openEdit(selectedRecord!)"
+        @delete="openDelete(selectedRecord!)"
       />
     </Dialog>
+
+    <!-- ManageMembership dialog — create and edit (Plan 13-02) -->
+    <ManageMembership
+      v-model:visible="showManage"
+      v-model:record="manageRecord"
+      :token="fileToken"
+      @created="onCreated"
+      @updated="onUpdated"
+    />
   </div>
 </template>
