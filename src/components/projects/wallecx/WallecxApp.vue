@@ -62,7 +62,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Card>
+  <Card
+      class="overscroll-none"
+      :style="{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }"
+    >
     <template #content>
       <h1 class="text-2xl font-bold mb-4" style="color: var(--color-typo-heading)">Wallecx</h1>
       <Tabs v-model:value="activeTab">
@@ -90,4 +97,12 @@ onMounted(async () => {
   </Card>
 </template>
 
-<style scoped></style>
+<style>
+/* MOB-05: non-scoped — must target PrimeVue's rendered DOM nodes.
+   Scoped styles add data-v- attributes that do NOT match PrimeVue's internal .p-dialog-content elements.
+   This single rule covers ManageVaccination, ManageMembership, VaccinationDetail, and MembershipDetail dialogs. */
+.p-dialog-content {
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+</style>
