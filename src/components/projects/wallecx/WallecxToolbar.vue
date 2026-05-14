@@ -35,15 +35,15 @@ const sortOptions = [
         class="w-full"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
-      <div
+      <button
         v-if="searchQuery"
         class="min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer"
-        role="button"
+        style="background: none; border: none; padding: 0;"
         aria-label="Clear search"
         @click="emit('update:searchQuery', '')"
       >
         <InputIcon class="pi pi-times" />
-      </div>
+      </button>
     </IconField>
     <Select
       :model-value="sortMode"
