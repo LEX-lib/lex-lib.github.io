@@ -40,6 +40,9 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ MembershipCard.vue coloured tile grid with expiry warnings; MembershipDetail.vue read-only view — v2.0
 - ✓ ManageMembership.vue CRUD dialog (direct v-model, ColorPicker, Zod, EXIF-stripped upload, server-first delete) — v2.0
 - ✓ membershipMapper.spec.ts Vitest spec; 24 tests passing — v2.0
+- ✓ vite-plugin-pwa: manifest, SW (registerType: 'prompt'), navigateFallback, NetworkOnly for /api/*, vercel.json cache headers — v2.1
+- ✓ PWA icons: pwa-192x192.png, pwa-512x512.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png in public/ — v2.1
+- ✓ WallecxApp.vue: navigator.storage.persist(), pb.authStore.isValid expiry check + toast + redirect, SW update toast (Refresh/Later) — v2.1
 
 ### Active (v3.0 candidates)
 
@@ -62,7 +65,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | Sharing a record / shareable link | Per-user privacy is the default |
 | PDF export / printable summary | Attached card scan covers "show this" use case |
 | Multi-language / localization | English only, matching the rest of Lexarium |
-| Offline-first / PWA support | Online-only, matching the rest of Lexarium |
+| Full offline data access | PocketBase has no offline SDK; IndexedDB replica is out of scope for v2.1 |
 | Public unauthenticated access | Vaccination and membership data is sensitive |
 
 ## Context
@@ -76,11 +79,13 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - Dates: `dayjs` everywhere; PocketBase date filters use `"YYYY-MM-DD"` format
 - File tokens: fetched at view time, not list time; `requestKey` must be distinct per collection to prevent auto-cancel
 
-**Current state (v2.0):**
+**Current state (v2.1 Phase 14 complete):**
 - ~2,800 LOC TypeScript/Vue across `src/components/projects/wallecx/`
 - 24 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11)
-- 2 runtime deps added for Wallecx: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`; existing: `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`
+- Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`
+- Dev deps added in v2.1: `vite-plugin-pwa@^1.3.0`, `workbox-window@^7.4.1`, `workbox-build@^7.4.1`, `@vite-pwa/assets-generator@^1.0.2`
 - Two PocketBase collections: `wallecx_vaccinations` and `wallecx_memberships`, both with 5 per-user access rules
+- PWA: installable, SW precaches 53 entries (3 MiB vendor limit; about-me-photo excluded), vercel.json deployed
 
 ## Constraints
 
