@@ -28,26 +28,26 @@ Prerequisites for the membership cards UI — `WallecxApp.vue` must become a tab
 
 ### Barcode Display
 
-- [ ] **SCAN-01**: `BarcodeDisplay.vue` renders QR codes via `qrcode.vue` on a white background panel when `barcode_type === 'qr'`; uses SVG render mode
-- [ ] **SCAN-02**: `BarcodeDisplay.vue` renders linear barcodes (code128, ean13, code39) via `jsbarcode` on SVG; entire render call is wrapped in `try/catch` with a plain-number fallback displayed on invalid input (EAN-13 checksum failure, Code39 invalid charset, etc.)
-- [ ] **SCAN-03**: Tapping the barcode opens a full-screen scan overlay: white background regardless of `card_color`, screen brightness boost (`filter: brightness(1.4)`), screen wake lock via `navigator.wakeLock.request('screen')` (feature-detected + `try/catch` graceful degrade); iOS Safari uses `position: fixed; inset: 0; z-index: 9999` overlay (not the Fullscreen API); close button always visible
-- [ ] **SCAN-04**: When `barcode_value` is absent, `BarcodeDisplay.vue` shows `card_number` in large text as fallback; when both are absent, shows a "No barcode" placeholder message
+- [x] **SCAN-01**: `BarcodeDisplay.vue` renders QR codes via `qrcode.vue` on a white background panel when `barcode_type === 'qr'`; uses SVG render mode
+- [x] **SCAN-02**: `BarcodeDisplay.vue` renders linear barcodes (code128, ean13, code39) via `jsbarcode` on SVG; entire render call is wrapped in `try/catch` with a plain-number fallback displayed on invalid input (EAN-13 checksum failure, Code39 invalid charset, etc.)
+- [x] **SCAN-03**: Tapping the barcode opens a full-screen scan overlay: white background regardless of `card_color`, screen brightness boost (`filter: brightness(1.4)`), screen wake lock via `navigator.wakeLock.request('screen')` (feature-detected + `try/catch` graceful degrade); iOS Safari uses `position: fixed; inset: 0; z-index: 9999` overlay (not the Fullscreen API); close button always visible
+- [x] **SCAN-04**: When `barcode_value` is absent, `BarcodeDisplay.vue` shows `card_number` in large text as fallback; when both are absent, shows a "No barcode" placeholder message
 
 ### Read Path
 
-- [ ] **MREAD-01**: `MembershipCard.vue` tile displays: card name, issuer, barcode type badge, and expiry date; background colour uses `card_color` (CSS binding always prepends `#`; defaults to navy `#002244` when absent); expiry warning badge shown if expiry is ≤ 30 days away or already past
-- [ ] **MREAD-02**: `MembershipsTab.vue` renders the membership cards as a grid with skeleton loading / empty state / error state (same three-state pattern as vaccinations)
-- [ ] **MREAD-03**: Tapping a `MembershipCard.vue` tile opens `MembershipDetail.vue` with all fields displayed and `BarcodeDisplay.vue` embedded; tapping the barcode within the detail view opens the full-screen scan overlay (SCAN-03)
-- [ ] **MREAD-04**: `card_image` photo preview in `MembershipDetail.vue` reuses the `AttachmentPreview.vue` component pattern (image → `<img>` with thumb URL; unknown MIME → download link)
+- [x] **MREAD-01**: `MembershipCard.vue` tile displays: card name, issuer, barcode type badge, and expiry date; background colour uses `card_color` (CSS binding always prepends `#`; defaults to navy `#002244` when absent); expiry warning badge shown if expiry is ≤ 30 days away or already past
+- [x] **MREAD-02**: `MembershipsTab.vue` renders the membership cards as a grid with skeleton loading / empty state / error state (same three-state pattern as vaccinations)
+- [x] **MREAD-03**: Tapping a `MembershipCard.vue` tile opens `MembershipDetail.vue` with all fields displayed and `BarcodeDisplay.vue` embedded; tapping the barcode within the detail view opens the full-screen scan overlay (SCAN-03)
+- [x] **MREAD-04**: `card_image` photo preview in `MembershipDetail.vue` reuses the `AttachmentPreview.vue` component pattern (image → `<img>` with thumb URL; unknown MIME → download link)
 
 ### Write Path
 
-- [ ] **MWRITE-01**: `ManageMembership.vue` PrimeVue Dialog form for both create and edit, validated by Zod schema via `@primevue/forms` `zodResolver`; `card_name` is required; all other fields optional
-- [ ] **MWRITE-02**: Form includes: `barcode_type` dropdown (QR / Code128 / EAN-13 / Code39 / Number only), `barcode_value` text input (shown when barcode type is not "Number only"), `card_number` text input (plain fallback always available)
-- [ ] **MWRITE-03**: `card_color` field uses PrimeVue `ColorPicker`; value stored and passed as hex without `#` (matching ColorPicker's emit format); CSS background bindings in all display components always prepend `#`
-- [ ] **MWRITE-04**: Optional `card_image` file upload via `<FileUpload mode="basic" :auto="false">` with MIME allowlist `image/jpeg,image/png,image/webp` and 10 MB cap (mirrors vaccination card upload pattern)
-- [ ] **MWRITE-05**: Create flow returns server record and `Object.assign`s into local item (avoids save-loop bug); update flow uses `mapToUpdateMembership`; delete flow: confirm dialog → `pb.delete()` → splice → success toast; on failure no splice + error toast; all flows gated by `isSaving` ref
-- [ ] **MWRITE-06**: Vitest `membershipMapper.spec.ts` covers `mapToUpdateMembership` field-strip and the create-then-update id-refresh contract (mirrors `vaccinationMapper.spec.ts` pattern)
+- [x] **MWRITE-01**: `ManageMembership.vue` PrimeVue Dialog form for both create and edit, validated by Zod schema via `@primevue/forms` `zodResolver`; `card_name` is required; all other fields optional
+- [x] **MWRITE-02**: Form includes: `barcode_type` dropdown (QR / Code128 / EAN-13 / Code39 / Number only), `barcode_value` text input (shown when barcode type is not "Number only"), `card_number` text input (plain fallback always available)
+- [x] **MWRITE-03**: `card_color` field uses PrimeVue `ColorPicker`; value stored and passed as hex without `#` (matching ColorPicker's emit format); CSS background bindings in all display components always prepend `#`
+- [x] **MWRITE-04**: Optional `card_image` file upload via `<FileUpload mode="basic" :auto="false">` with MIME allowlist `image/jpeg,image/png,image/webp` and 10 MB cap (mirrors vaccination card upload pattern)
+- [x] **MWRITE-05**: Create flow returns server record and `Object.assign`s into local item (avoids save-loop bug); update flow uses `mapToUpdateMembership`; delete flow: confirm dialog → `pb.delete()` → splice → success toast; on failure no splice + error toast; all flows gated by `isSaving` ref
+- [x] **MWRITE-06**: Vitest `membershipMapper.spec.ts` covers `mapToUpdateMembership` field-strip and the create-then-update id-refresh contract (mirrors `vaccinationMapper.spec.ts` pattern)
 
 ---
 
@@ -96,20 +96,20 @@ Tracked but not in this milestone.
 | MFRONT-01 | Phase 11 | Verified (2026-05-13) |
 | MFRONT-02 | Phase 11 | Verified (2026-05-13) |
 | MFRONT-03 | Phase 11 | Verified (2026-05-13) |
-| SCAN-01 | Phase 12 | Pending |
-| SCAN-02 | Phase 12 | Pending |
-| SCAN-03 | Phase 12 | Pending |
-| SCAN-04 | Phase 12 | Pending |
-| MREAD-01 | Phase 12 | Pending |
-| MREAD-02 | Phase 12 | Pending |
-| MREAD-03 | Phase 12 | Pending |
-| MREAD-04 | Phase 12 | Pending |
-| MWRITE-01 | Phase 13 | Pending |
-| MWRITE-02 | Phase 13 | Pending |
-| MWRITE-03 | Phase 13 | Pending |
-| MWRITE-04 | Phase 13 | Pending |
-| MWRITE-05 | Phase 13 | Pending |
-| MWRITE-06 | Phase 13 | Pending |
+| SCAN-01 | Phase 12 | Verified (2026-05-14) |
+| SCAN-02 | Phase 12 | Verified (2026-05-14) |
+| SCAN-03 | Phase 12 | Verified (2026-05-14) |
+| SCAN-04 | Phase 12 | Verified (2026-05-14) |
+| MREAD-01 | Phase 12 | Verified (2026-05-14) |
+| MREAD-02 | Phase 12 | Verified (2026-05-14) |
+| MREAD-03 | Phase 12 | Verified (2026-05-14) |
+| MREAD-04 | Phase 12 | Verified (2026-05-14) |
+| MWRITE-01 | Phase 13 | Verified (2026-05-14) |
+| MWRITE-02 | Phase 13 | Verified (2026-05-14) |
+| MWRITE-03 | Phase 13 | Verified (2026-05-14) |
+| MWRITE-04 | Phase 13 | Verified (2026-05-14) |
+| MWRITE-05 | Phase 13 | Verified (2026-05-14) |
+| MWRITE-06 | Phase 13 | Verified (2026-05-14) |
 
 **Coverage:**
 - v2.0 requirements: 22 total

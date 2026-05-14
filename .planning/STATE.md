@@ -4,18 +4,18 @@ milestone: v2.0
 milestone_name: Membership Cards
 status: in_progress
 last_updated: "2026-05-14"
-last_activity: 2026-05-14 — Phase 13 Wave 2 complete. 13-03 (MembershipDetail.vue emits + MembershipsTab.vue full CRUD wiring) committed. All 24 tests passing. Awaiting human verification checkpoint (browser CRUD flow tests).
+last_activity: 2026-05-14 — Phase 13 human verification passed. v2.0 Membership Cards milestone complete. All 22 v2.0 requirements verified. 24 tests passing.
 progress:
   total_phases: 14
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 39
-  completed_plans: 32
-  percent: 93
+  completed_plans: 35
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 13 execution complete (3/3 plans committed). 13-01 mapper spec, 13-02 ManageMembership.vue, 13-03 MembershipsTab+MembershipDetail wiring. Awaiting human verification checkpoint.
+**Last updated:** 2026-05-14 — Phase 13 human verification passed. v2.0 Membership Cards milestone complete. All 22 v2.0 requirements verified (XTAB, MBACK, MFRONT, SCAN, MREAD, MWRITE). 24 tests passing.
 
 ## Project Reference
 
@@ -26,11 +26,11 @@ progress:
 
 ## Current Position
 
-**Milestone:** v2.0 — Membership Cards
-**Phase:** Phase 13 (executed — awaiting human verification)
-**Plan:** Phase 13 complete (3/3 plans executed); human verification checkpoint next
-**Status:** Phase 13 execution complete. 13-01 (membershipMapper.spec.ts 11 tests), 13-02 (ManageMembership.vue 370 lines), 13-03 (MembershipsTab+MembershipDetail CRUD wiring) all committed. 24 tests passing. Awaiting browser verification.
-**Last activity:** 2026-05-14 — Phase 13 executed: 13-03 MembershipsTab write state + MembershipDetail emits committed (908c8cb, ba17bb4)
+**Milestone:** v2.0 — Membership Cards (COMPLETE)
+**Phase:** Phase 13 (complete — human verified 2026-05-14)
+**Plan:** Phase 13 complete (3/3 plans executed and verified)
+**Status:** v2.0 milestone SHIPPED. All 22 v2.0 requirements verified. 24 tests passing. Full membership card CRUD functional end-to-end.
+**Last activity:** 2026-05-14 — Phase 13 human verification passed. v2.0 complete.
 
 ## Roadmap Snapshot
 
@@ -147,7 +147,7 @@ v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
 
 ### Open Todos
 
-- Execute Phase 13: Write Path — ManageMembership CRUD (3 plans ready).
+- v2.0 milestone complete. No open todos.
 
 ### Active Blockers
 
@@ -184,15 +184,9 @@ Known deferred items at close: 11 (see above)
 
 **Last session:** 2026-05-14
 
-**Stopped at:** Phase 13 Plan 03 — checkpoint:human-verify (browser CRUD flow verification required)
+**Stopped at:** v2.0 milestone complete. No active plan.
 
-**Next session entry point:** Run `npm run dev`, navigate to `/projects/wallecx`, complete the 6-step browser verification in 13-03-PLAN.md checkpoint task. Type "approved" to complete Phase 13.
-
-**Files of interest:**
-
-- `.planning/phases/13-write-path-managemembership-crud/13-01-PLAN.md` — membershipMapper.spec.ts (Wave 1)
-- `.planning/phases/13-write-path-managemembership-crud/13-02-PLAN.md` — ManageMembership.vue (Wave 1, parallel with 13-01)
-- `.planning/phases/13-write-path-managemembership-crud/13-03-PLAN.md` — MembershipsTab+MembershipDetail wiring (Wave 2, has human checkpoint)
+**Next session entry point:** v2.0 Membership Cards is shipped. All 22 requirements verified. Consider planning v3.0 or deploying to GitHub Pages (`npm run deploy`).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

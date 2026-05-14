@@ -8,7 +8,7 @@
 - ✅ **v1.0 MVP** — Phases 0–4 (shipped 2026-05-12) — [archive](.planning/milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Vaccine Grouping** — Phases 5–6 (shipped 2026-05-12)
 - ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
-- 🚧 **v2.0 Membership Cards** — Phases 10–13 (in progress)
+- ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14)
 
 ## Phases
 
@@ -53,7 +53,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 - [x] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (2/2 plans complete)
 - [x] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test (3/3 plans complete)
 - [x] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay (4/4 plans complete)
-- [x] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts (3/3 plans complete — awaiting human verification)
+- [x] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts (3/3 plans complete — human verified 2026-05-14)
 
 ---
 
@@ -537,8 +537,8 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 2/2 | Complete | 2026-05-13 |
 | 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
-| 13. Write Path — ManageMembership CRUD | v2.0 | 0/3 | Not started | - |
+| 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Phase 13 planned: 3 plans created (13-01 membershipMapper.spec.ts, 13-02 ManageMembership.vue, 13-03 MembershipsTab+MembershipDetail wiring)*
+*Last updated: 2026-05-14 — Phase 13 complete: human verified CRUD flow (create, edit, delete, isSaving guard). v2.0 Membership Cards milestone shipped.*
