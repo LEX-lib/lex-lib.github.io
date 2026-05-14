@@ -7,7 +7,7 @@ const isProd = import.meta.env.PROD;
 </script>
 
 <template>
-  <CustomNavBar class="mb-1" />
+  <CustomNavBar class="mb-1" :style="{ paddingTop: 'env(safe-area-inset-top)' }" />
   <RouterView />
   <Toaster />
   <SpeedInsights v-if="isProd" />
