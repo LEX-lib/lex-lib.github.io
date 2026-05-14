@@ -27,7 +27,11 @@ function displayDate(iso: string): string {
 <template>
   <Card
     class="cursor-pointer hover:shadow-md transition-shadow min-h-[44px] touch-manipulation"
+    role="button"
+    tabindex="0"
+    :aria-label="`${vaccineType} vaccination group`"
     @click="emit('click')"
+    @keydown.enter="emit('click')"
   >
     <template #content>
       <!-- Type name + badge (D-04: most prominent) -->
