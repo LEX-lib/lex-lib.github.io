@@ -50,10 +50,10 @@ function displayExpiry(iso: string): string {
 </script>
 
 <template>
+  <!-- min-height: 8rem satisfies the 44px touch-target requirement -->
   <Card
-    class="cursor-pointer hover:shadow-md transition-shadow overflow-hidden min-h-[44px] touch-manipulation"
-    :style="tileStyle"
-    style="min-height: 8rem;"
+    class="cursor-pointer hover:shadow-md transition-shadow overflow-hidden touch-manipulation"
+    :style="[tileStyle, { minHeight: '8rem' }]"
     @click="emit('click')"
   >
     <template #content>
