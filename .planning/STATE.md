@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: ready_to_plan
-last_updated: "2026-05-13"
-last_activity: 2026-05-13 — Phase 12 executed (4/4 plans complete: BarcodeDisplay, MembershipCard+AttachmentPreview, MembershipDetail, MembershipsTab). Human UAT pending. Phase 13 next.
+status: in_progress
+last_updated: "2026-05-14"
+last_activity: 2026-05-14 — Phase 13 Wave 1 complete. 13-01 (membershipMapper.spec.ts 11 tests, MWRITE-06) and 13-02 (ManageMembership.vue 370 lines, MWRITE-01..05) merged. 24 tests passing. Wave 2 (13-03 MembershipsTab wiring) next.
 progress:
   total_phases: 14
   completed_phases: 12
-  total_plans: 36
+  total_plans: 39
   completed_plans: 32
   percent: 93
 ---
 
 # Project State
 
-**Last updated:** 2026-05-13 — Phase 10 Plan 02 executed. WallecxApp.vue refactored to a 35-line thin PrimeVue Tabs shell. Phase 10 complete (2/2 plans done). XTAB-01 and XTAB-02 fully satisfied. Phase 11 (Backend + Frontend Foundation for Memberships) is next.
+**Last updated:** 2026-05-14 — Phase 13 planned (3/3 plans created and verified). membershipMapper.spec.ts, ManageMembership.vue, MembershipsTab+MembershipDetail wiring. Ready to execute Phase 13.
 
 ## Project Reference
 
@@ -27,10 +27,10 @@ progress:
 ## Current Position
 
 **Milestone:** v2.0 — Membership Cards
-**Phase:** Phase 11 (planned — ready to execute)
-**Plan:** Phase 11 planned (3/3 plans ready); execution next
-**Status:** Phase 11 planned. 3 plans created: 11-01 (PocketBase wallecx_memberships collection setup), 11-02 (two-user smoke test), 11-03 (npm deps + types module + mapper). Verification passed.
-**Last activity:** 2026-05-13 — Phase 11 planned: 3 plans created and verified (MBACK-01..03, MFRONT-01..03 all covered)
+**Phase:** Phase 13 (planned — ready to execute)
+**Plan:** Phase 13 planned (3/3 plans ready); execution next
+**Status:** Phase 13 planned. 3 plans created: 13-01 (membershipMapper.spec.ts), 13-02 (ManageMembership.vue complete dialog), 13-03 (MembershipsTab+MembershipDetail wiring). Verification passed.
+**Last activity:** 2026-05-14 — Phase 13 planned: 3 plans created and verified (MWRITE-01..06 all covered)
 
 ## Roadmap Snapshot
 
@@ -39,9 +39,9 @@ progress:
 | # | Phase | Status | Requirements |
 |---|-------|--------|--------------|
 | 10 | Tabs Shell — VaccinationsTab Extraction | Complete (2/2 plans) | 2 (XTAB-01, XTAB-02) |
-| 11 | Backend + Frontend Foundation | Not started | 6 (MBACK-01..03, MFRONT-01..03) |
-| 12 | Read Path — Card Grid, Barcode Display & Detail | Not started | 8 (SCAN-01..04, MREAD-01..04) |
-| 13 | Write Path — ManageMembership CRUD | Not started | 6 (MWRITE-01..06) |
+| 11 | Backend + Frontend Foundation | Complete (3/3 plans) | 6 (MBACK-01..03, MFRONT-01..03) |
+| 12 | Read Path — Card Grid, Barcode Display & Detail | Complete (4/4 plans) | 8 (SCAN-01..04, MREAD-01..04) |
+| 13 | Write Path — ManageMembership CRUD | Planned (3/3 plans ready) | 6 (MWRITE-01..06) |
 
 v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
 
@@ -147,7 +147,7 @@ v2.0 Coverage: 22 / 22 requirements mapped. No orphans.
 
 ### Open Todos
 
-- Execute Phase 11: Backend + Frontend Foundation for Memberships (PocketBase collection, types, MembershipsTab wiring).
+- Execute Phase 13: Write Path — ManageMembership CRUD (3 plans ready).
 
 ### Active Blockers
 
@@ -182,18 +182,17 @@ Known deferred items at close: 11 (see above)
 
 ## Session Continuity
 
-**Last session:** 2026-05-13T07:01:00Z
+**Last session:** 2026-05-14
 
-**Stopped at:** Completed 10-02-PLAN.md — Phase 10 fully done
+**Stopped at:** Phase 13 planned — 3/3 plans created and verified
 
-**Next session entry point:** Execute Phase 11 — Backend + Frontend Foundation for Memberships. Start with `/gsd-execute-phase 11`.
+**Next session entry point:** Execute Phase 13 — Write Path: ManageMembership CRUD. Start with `/gsd-execute-phase 13`.
 
 **Files of interest:**
 
-- `src/components/projects/wallecx/WallecxApp.vue` — thin Tabs shell (35 lines); finalized in 10-02
-- `src/components/projects/wallecx/VaccinationsTab.vue` — self-contained vaccination component; no changes needed
-- `src/components/projects/wallecx/MembershipsTab.vue` — stub; Phase 11+ will flesh this out
-- `.planning/phases/10-tabs-shell-vaccinationstab-extraction/10-02-SUMMARY.md` — Plan 02 summary
+- `.planning/phases/13-write-path-managemembership-crud/13-01-PLAN.md` — membershipMapper.spec.ts (Wave 1)
+- `.planning/phases/13-write-path-managemembership-crud/13-02-PLAN.md` — ManageMembership.vue (Wave 1, parallel with 13-01)
+- `.planning/phases/13-write-path-managemembership-crud/13-03-PLAN.md` — MembershipsTab+MembershipDetail wiring (Wave 2, has human checkpoint)
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

@@ -465,8 +465,8 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — membershipMapper.spec.ts: field-strip + id-refresh contract tests (MWRITE-06)
-- [ ] 13-02-PLAN.md — ManageMembership.vue: direct v-model form, ColorPicker, barcode_type Select + conditional field, FileUpload, create/update submit flows (MWRITE-01, MWRITE-02, MWRITE-03, MWRITE-04, MWRITE-05)
+- [x] 13-01-PLAN.md — membershipMapper.spec.ts: field-strip + id-refresh contract tests (MWRITE-06)
+- [x] 13-02-PLAN.md — ManageMembership.vue: direct v-model form, ColorPicker, barcode_type Select + conditional field, FileUpload, create/update submit flows (MWRITE-01, MWRITE-02, MWRITE-03, MWRITE-04, MWRITE-05)
 - [ ] 13-03-PLAN.md — MembershipDetail.vue edit/delete emits + MembershipsTab.vue write state wiring + human verification checkpoint (MWRITE-05)
 
 **UI hint**: yes
