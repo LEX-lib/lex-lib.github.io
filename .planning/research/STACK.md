@@ -687,3 +687,435 @@ npm install qrcode.vue@^3.9.1 jsbarcode@^3.12.3
 
 *Stack addendum for: Wallecx v2.0 Membership Cards (barcode/QR rendering + fullscreen scan overlay)*
 *Researched: 2026-05-13*
+
+---
+---
+
+# Stack Addendum — Wallecx v3.0 PWA + Mobile-Responsive
+
+**Domain:** PWA installability, offline app shell, standalone mode, mobile-responsive layouts
+**Researched:** 2026-05-14
+**Confidence:** HIGH for vite-plugin-pwa version and Vite 8 compatibility; HIGH for Workbox strategy; HIGH for icon requirements; MEDIUM for iOS-specific behaviour (documented limitations, not personally tested on device)
+
+> **Scope discipline.** This addendum answers only what is NEW for the PWA + mobile milestone. The locked stack (Vue 3.5, Vite 8 rolldown, PrimeVue 4 Aura, Pinia 3, Vue Router 4, Tailwind v4, PocketBase, Zod 4, dayjs, vue-sonner, qrcode.vue, jsbarcode) is not re-litigated here.
+>
+> Four new concerns for v3.0:
+> 1. Service worker and PWA manifest generation (vite-plugin-pwa)
+> 2. Workbox caching strategy for a SPA with PocketBase backend
+> 3. Icon generation (sizes, maskable, iOS touch icon)
+> 4. Mobile-responsive layout with Tailwind v4 and iOS safe area insets
+
+---
+
+## v3.0 TL;DR — Prescriptive Picks
+
+| Concern | Pick | Net-new install? |
+|---------|------|-----------------|
+| PWA plugin | **`vite-plugin-pwa` ^1.3.0** — devDependency | Yes — `npm install -D vite-plugin-pwa` |
+| Service worker strategy | **`generateSW`** (default) with `registerType: 'prompt'` | Config only — no extra package |
+| Workbox caching | **`NetworkFirst`** for PocketBase API; **`CacheFirst`** for static assets (handled automatically by precache) | Config only |
+| Icon generation | **`@vite-pwa/assets-generator`** CLI (devDependency) — one SVG in, all sizes out | Yes — `npm install -D @vite-pwa/assets-generator` |
+| Mobile viewport / safe areas | **Tailwind v4 responsive utilities** + `viewport-fit=cover` in `index.html` + `env(safe-area-inset-*)` CSS | Config only — no new package |
+| Vercel PWA headers | **`vercel.json`** with `Cache-Control: no-cache` on `sw.js` and `Content-Type: application/manifest+json` on manifest | New file |
+
+Net-new dev dependencies for v3.0: **2** (`vite-plugin-pwa`, `@vite-pwa/assets-generator`). Zero new runtime dependencies.
+
+---
+
+## 1. vite-plugin-pwa — Version and Vite 8 Compatibility
+
+### Pick: `vite-plugin-pwa` ^1.3.0 (devDependency)
+
+**Version confirmed:** v1.3.0 released 2026-05-05. This is the first release that explicitly adds Vite 8 to its peer dependency range. Earlier versions (up to v1.2.0, released 2025-11-27) issued a peer dependency warning against Vite 8 but functioned correctly.
+
+**Vite 8 / Rolldown compatibility — CONFIRMED COMPATIBLE.**
+
+vite-plugin-pwa operates entirely as a Vite plugin using the standard Rollup plugin API (hook-based). Rolldown in Vite 8 implements the same hook interface. The plugin does not use any Rollup internals or CJS-specific bundling paths that Rolldown would reject. GitHub issue #918 (opened 2026-03-12, closed with PR #924) confirmed that the only change needed was updating the peer dependency declaration — the plugin code itself required no modification.
+
+No `vite.config.ts` workarounds are needed for Rolldown compatibility with vite-plugin-pwa.
+
+**Why devDependency, not dependency:**
+
+vite-plugin-pwa generates a service worker and manifest at build time. Nothing from the package is imported into or shipped as part of the app bundle — it is purely a build tool.
+
+**Alternatives rejected:**
+
+| Option | Why not |
+|--------|---------|
+| `workbox-build` directly | vite-plugin-pwa wraps workbox-build and handles Vite asset hashing, manifest injection, and SW registration automatically. Rolling our own would reproduce the plugin without the Vite integration. |
+| `@vite-pwa/nuxt` | Nuxt-specific — not applicable to a plain Vue 3 SPA. |
+| `vite-plugin-manifest-icons` | Handles icons only, not service worker. Not a replacement. |
+
+---
+
+## 2. Service Worker Strategy
+
+### Pick: `generateSW` with `registerType: 'prompt'`
+
+**`generateSW` vs `injectManifest`:**
+
+`generateSW` is the correct choice here. It generates a complete service worker using Workbox without writing any custom SW code. `injectManifest` is for teams who need custom SW logic (background sync, push notifications, custom fetch handlers). Wallecx's PWA goal is installability and offline app shell — `generateSW` handles this with zero custom code.
+
+**`registerType: 'prompt'` vs `'autoUpdate'`:**
+
+Use `'prompt'`, not `'autoUpdate'`. Reasoning:
+
+- `autoUpdate` forces `skipWaiting: true` and silently reloads all open tabs when a new SW version is detected. If a user is mid-flow (e.g., typing in a ManageMembership dialog), they lose their work without warning.
+- `'prompt'` surfaces an update notification (via vue-sonner — already installed) that the user dismisses at their own pace. This is the recommended approach when the app handles forms.
+- The update notification is a simple toast with a "Reload" button. Wire it to `useRegisterSW`'s `needRefresh` reactive ref.
+
+**`navigateFallback` for SPA routing:**
+
+Vue Router 4 uses HTML5 history mode. The service worker must serve `index.html` for all navigation requests so the router handles the path, not the SW. Set `navigateFallback: 'index.html'` in the workbox config. Use `navigateFallbackDenylist` to exclude API calls from this fallback:
+
+```ts
+navigateFallbackDenylist: [/^\/api/, /\/_pocketbase/, /\/pb_/]
+```
+
+**Full recommended `vite.config.ts` plugin config:**
+
+```ts
+import { VitePWA } from 'vite-plugin-pwa';
+
+VitePWA({
+  registerType: 'prompt',
+  // generateSW is the default strategies value — explicit for clarity
+  strategies: 'generateSW',
+  // Include all assets Vite outputs so they are precached
+  includeAssets: ['favicon.ico', 'branding_logo.svg', 'apple-touch-icon-180x180.png'],
+  manifest: {
+    name: 'Wallecx — Personal Records Vault',
+    short_name: 'Wallecx',
+    description: 'Your vaccination records and membership cards, always with you.',
+    theme_color: '#002244',   // Lexarium navy
+    background_color: '#002244',
+    display: 'standalone',
+    start_url: '/projects/wallecx',
+    scope: '/',
+    icons: [
+      {
+        src: 'pwa-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: 'pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: 'pwa-maskable-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
+  },
+  workbox: {
+    navigateFallback: 'index.html',
+    navigateFallbackDenylist: [/^\/api/, /\/_pb/, /\/pb_/],
+    // Precache all Vite output assets (JS chunks, CSS, fonts) automatically
+    globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+    runtimeCaching: [
+      {
+        // PocketBase API — network-first; fall back to cache if offline
+        urlPattern: ({ url }) =>
+          url.origin === 'https://your-pocketbase-host.example.com',
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'pocketbase-api',
+          networkTimeoutSeconds: 5,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 60 * 24, // 1 day
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+    ],
+  },
+  devOptions: {
+    // Enable SW in dev to test installability locally
+    enabled: false,  // flip to true when actively developing/testing PWA
+    type: 'module',
+  },
+})
+```
+
+**Why `NetworkFirst` for PocketBase, not `StaleWhileRevalidate`:**
+
+`NetworkFirst` ensures the user always sees fresh data when online — critical for a personal records vault where mutations happen on the backend. `StaleWhileRevalidate` would show stale vaccination records while silently fetching updates, which is confusing. `NetworkFirst` with a 5-second timeout falls back gracefully to cache when offline, which is the "offline app shell" goal.
+
+**Why NOT `CacheFirst` for PocketBase API:**
+
+`CacheFirst` for API responses means the user always sees stale data first, even when online. Incorrect for mutable backend data.
+
+---
+
+## 3. Icon Requirements
+
+### Minimum set for Chrome + iOS installability
+
+The PWA minimum requirements (verified against vite-pwa-org.netlify.app/guide/pwa-minimal-requirements) are:
+
+| Icon | Size | Purpose | Required by |
+|------|------|---------|------------|
+| `pwa-192x192.png` | 192×192 | `any` | Chrome (Android) install prompt |
+| `pwa-512x512.png` | 512×512 | `any` | Chrome splash screen |
+| `pwa-maskable-512x512.png` | 512×512 | `maskable` | Android adaptive icon system |
+| `apple-touch-icon-180x180.png` | 180×180 | (linked in `<head>`) | iOS "Add to Home Screen" |
+| `favicon.ico` | multi-size | (already exists) | Browser tab |
+
+**Do NOT set purpose `"any maskable"` on a single icon.** This is explicitly discouraged — icons with `purpose: "any maskable"` look incorrect on some platforms because the safe zone padding is applied universally, creating excessive whitespace on platforms that expect edge-to-edge icons.
+
+### Maskable icon safe zone
+
+The maskable icon must keep all significant visual content within the inner 80% circle of the 512×512 canvas. The outer 10% on each side may be cropped by the OS. Design the brand mark to occupy the centre 80% and fill the remaining background with the `theme_color` (#002244 navy).
+
+### Icon generation — `@vite-pwa/assets-generator`
+
+Use the official assets generator from the vite-pwa ecosystem. It reads a single SVG source and outputs all required sizes using `sharp` (no Puppeteer, no browser launched).
+
+```bash
+# Install as devDependency
+npm install -D @vite-pwa/assets-generator
+
+# Generate all icons from the existing branding_logo.svg
+# Output lands in public/ by default
+npx pwa-assets-generator --preset minimal-2023 public/branding_logo.svg
+```
+
+The `minimal-2023` preset generates: `favicon.ico` (48×48), `pwa-64x64.png`, `pwa-192x192.png`, `pwa-512x512.png` (any), `pwa-512x512.png` (maskable), `apple-touch-icon-180x180.png`.
+
+**Caveat:** The existing `branding_logo.svg` was designed as a wide-format logo for the nav bar — it may not look good centred in a square icon canvas. The PWA implementation phase must verify this and may need a square-safe version of the mark. This is a design task, not a code task, but it is a blocker for publishable icons.
+
+**Alternative: browser-based generators**
+
+Progressier's maskable icon editor (progressier.com/maskable-icons-editor) allows safe zone preview in the browser. Use it to verify the generated maskable icon before committing. Not a build dependency — a one-off verification tool.
+
+---
+
+## 4. Mobile-Responsive Layout
+
+### Tailwind v4 — no framework changes needed
+
+Tailwind v4 is already installed and mobile-first by default. Unprefixed utilities apply at all breakpoints; `sm:`, `md:`, `lg:` add overrides for wider viewports. This is the correct approach for Wallecx mobile layouts.
+
+**Default breakpoints (Tailwind v4, confirmed):**
+
+| Prefix | Minimum width |
+|--------|--------------|
+| (none) | 0px — mobile base |
+| `sm:` | 640px |
+| `md:` | 768px |
+| `lg:` | 1024px |
+| `xl:` | 1280px |
+
+No custom breakpoints are needed for Wallecx. The existing `my-app-dark` dark mode class and Lexarium design tokens are unaffected by PWA addition.
+
+**Container queries:** Tailwind v4 introduces `@container` / `@sm:` etc. for component-level responsiveness. These are available if a component needs to adapt to its parent width rather than the viewport. Not required for initial mobile work, but a useful tool for the card grid layout.
+
+### iOS standalone mode — viewport and safe areas
+
+When installed as a PWA on iOS in standalone mode, the status bar and home indicator consume screen space that the browser would normally handle. Two changes are required in `index.html`:
+
+**1. Update the viewport meta tag:**
+
+```html
+<!-- Current -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Required for PWA safe areas -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+```
+
+Without `viewport-fit=cover`, all `env(safe-area-inset-*)` values resolve to `0px` and Safari letterboxes content on notched/Dynamic Island devices.
+
+**2. Add iOS-specific PWA meta tags:**
+
+```html
+<!-- iOS standalone mode — do not show Safari chrome when launched from home screen -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<!-- Status bar colour — black-translucent lets content extend under the status bar -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<!-- iOS home screen title -->
+<meta name="apple-mobile-web-app-title" content="Wallecx" />
+<!-- iOS touch icon — must be linked, not only in manifest -->
+<link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+```
+
+**3. Apply safe area insets in CSS where content edges the screen:**
+
+```css
+/* In src/assets/main.css or a global Tailwind @layer */
+.wallecx-shell {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+```
+
+Or via Tailwind utility classes if custom properties are registered:
+
+```html
+<!-- Tailwind v4 arbitrary property approach -->
+<div class="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+```
+
+**iOS PWA known limitations (2026):**
+
+| Limitation | Impact on Wallecx | Mitigation |
+|------------|-------------------|------------|
+| No automatic install prompt | User must manually tap Share → Add to Home Screen | Add visible "Install App" hint in UI |
+| 50 MB storage cap for cached assets | Low risk — Wallecx static assets are well under 10 MB | Monitor with Chrome DevTools storage panel |
+| 7-day cache expiry if app not opened | App shell goes stale; user must be online to refresh | Use `NetworkFirst` so any online visit refreshes the cache |
+| No Background Sync API | Cannot queue writes made offline for later sync | Scope: offline = read-only; all writes require network (acceptable for a personal vault) |
+| EU users (iOS 17.4+) get Safari tab mode | Push and badge APIs unavailable in EU | No push notifications planned for v3.0 |
+| `100vh` includes Safari bottom bar | Layout shift when address bar hides | Use `dvh` (dynamic viewport height) instead of `vh`: `h-dvh` Tailwind utility |
+
+---
+
+## 5. Vercel Deployment — Required `vercel.json`
+
+There is no existing `vercel.json` in the project root. Vercel currently handles SPA routing via its automatic rewrite detection for Vite apps, but PWA requires explicit header control.
+
+Create `vercel.json`:
+
+```json
+{
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
+```
+
+**Why `Service-Worker-Allowed: /`:** The service worker is served from the root (`/sw.js`) and needs to control the entire origin scope. This header grants that permission. Without it, SW registration fails with a scope error.
+
+**Why the rewrite excludes `/api/`:** Prevents the SPA fallback from intercepting any server-side API routes. Vercel's own edge functions or rewrites for the PocketBase proxy (if any) should be added before the catch-all.
+
+---
+
+## 6. Integration Points with Existing `vite.config.ts`
+
+The existing config uses `rolldownOptions.output.codeSplitting.groups`. vite-plugin-pwa sits alongside the existing plugins and does not interfere with Rolldown code splitting. Add it to the `plugins` array after the existing plugins:
+
+```ts
+// vite.config.ts — complete updated plugins array
+import { VitePWA } from 'vite-plugin-pwa';
+
+plugins: [
+  vue({ ... }),                        // existing
+  ...(dev ? [vueDevTools()] : []),     // existing
+  Components({ resolvers: [...] }),    // existing
+  tailwindcss(),                       // existing
+  VitePWA({ ... }),                    // ADD HERE — after tailwindcss()
+],
+```
+
+The service worker registration script (`registerSW.js`) is injected into `index.html` automatically by the plugin at build time — no manual `<script>` tag is needed in `index.html`.
+
+**TypeScript types:** vite-plugin-pwa ships its own types. The `useRegisterSW` composable (for the update prompt) is imported from the virtual module `virtual:pwa-register/vue`:
+
+```ts
+import { useRegisterSW } from 'virtual:pwa-register/vue';
+
+const { needRefresh, updateServiceWorker } = useRegisterSW();
+// needRefresh: Ref<boolean> — true when a new SW version is waiting
+// updateServiceWorker: () => Promise<void> — call to activate the new SW
+```
+
+Add `"virtual:pwa-register/vue"` to `tsconfig.json`'s `compilerOptions.types` if TypeScript complains about the virtual module. vite-plugin-pwa includes the necessary `.d.ts` stubs.
+
+---
+
+## 7. What NOT to Add for v3.0 PWA
+
+| Do not add | Why | Use instead |
+|-----------|-----|-------------|
+| `workbox-window` separately | vite-plugin-pwa bundles and configures workbox-window automatically | vite-plugin-pwa's `useRegisterSW` |
+| `offline-plugin` (webpack-era) | Webpack-only; incompatible with Vite | vite-plugin-pwa |
+| `@nuxtjs/pwa` | Nuxt-only | vite-plugin-pwa |
+| `pwa-asset-generator` (elegantapp) | Older tool using Puppeteer; heavier setup; superseded by `@vite-pwa/assets-generator` which uses sharp directly | `@vite-pwa/assets-generator` |
+| `workbox-strategies` as a runtime dependency | The generated SW already bundles the required strategies; no runtime import needed in app code | workbox via `generateSW` (build-time only) |
+| Push notification infrastructure | Out of scope for v3.0; iOS EU limitations make this unreliable anyway | Not needed |
+| Background sync for offline writes | PocketBase mutations require auth token freshness checks — safe offline writes need significant architecture that exceeds v3.0 scope | Not needed; offline = read-only |
+| `vue-pwa-install` / `@khmyznikov/pwa-install` | Third-party install prompt UIs; overkill for a personal app. A simple vueSonner toast with "Add to home screen" instructions is sufficient. | vue-sonner (existing) + custom prompt |
+| A separate `manifest.json` file | vite-plugin-pwa generates and injects the manifest automatically. Maintaining a static file alongside the generated one causes conflicts. | vite-plugin-pwa manifest config |
+| `<meta name="theme-color">` hardcoded in `index.html` | vite-plugin-pwa injects the theme-color meta tag from the manifest config. Adding it manually creates a duplicate. | Let the plugin handle it |
+
+---
+
+## Installation (v3.0 only)
+
+```bash
+# Two new devDependencies for v3.0. Versions verified 2026-05-14.
+npm install -D vite-plugin-pwa@^1.3.0 @vite-pwa/assets-generator
+
+# Generate icons — run once after choosing the source SVG
+npx pwa-assets-generator --preset minimal-2023 public/branding_logo.svg
+```
+
+Zero new runtime dependencies. The service worker and manifest are build artifacts, not shipped npm packages.
+
+---
+
+## Version Compatibility (v3.0)
+
+| Package | Vite 8 compatible? | Notes |
+|---------|-------------------|-------|
+| `vite-plugin-pwa` ^1.3.0 | YES — confirmed in v1.3.0 release notes and issue #918 | Install as devDependency |
+| `@vite-pwa/assets-generator` | Build-time CLI only; Vite version irrelevant | Uses `sharp` for image processing |
+| Workbox (bundled by vite-plugin-pwa) | Workbox 7.x — Node 16+, matches `engines.node` in package.json | No separate Workbox install |
+| `useRegisterSW` virtual module | Works with Vue 3.5 + `<script setup>` | Import from `virtual:pwa-register/vue` |
+
+---
+
+## Sources (v3.0 Addendum)
+
+- [vite-plugin-pwa GitHub releases](https://github.com/vite-pwa/vite-plugin-pwa/releases) — HIGH. v1.3.0 released 2026-05-05; "Add vite 8 peer dependency support" confirmed in release notes.
+- [vite-plugin-pwa issue #918 — Vite 8 support](https://github.com/vite-pwa/vite-plugin-pwa/issues/918) — HIGH. Confirms peer dep was the only change; plugin functioned with Vite 8 prior to official support.
+- [Vite PWA official docs — Guide](https://vite-pwa-org.netlify.app/guide/) — HIGH. `registerType`, `generateSW`, minimal config.
+- [Vite PWA official docs — Minimal requirements](https://vite-pwa-org.netlify.app/guide/pwa-minimal-requirements) — HIGH. Icon sizes (192, 512), manifest fields, HTTPS, manifest MIME type requirements.
+- [Vite PWA official docs — generateSW workbox options](https://vite-pwa-org.netlify.app/workbox/generate-sw) — HIGH. `runtimeCaching`, `navigateFallback`, `navigateFallbackDenylist`, `globPatterns`.
+- [Vite PWA official docs — Assets Generator](https://vite-pwa-org.netlify.app/assets-generator/) — HIGH. `@vite-pwa/assets-generator` CLI, `minimal-2023` preset, output sizes.
+- [Vite PWA official docs — Vercel deployment](https://vite-pwa-org.netlify.app/deployment/vercel) — HIGH. Required `vercel.json` headers for `sw.js`, manifest, and static assets.
+- [Vite PWA — autoUpdate vs prompt-for-update](https://vite-pwa-org.netlify.app/guide/auto-update.html) — HIGH. autoUpdate risks data loss on forms; prompt is safer.
+- [MDN — Web App Manifest icons](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons) — HIGH. `purpose` values: `any`, `maskable`, and why `"any maskable"` is discouraged.
+- [web.dev — Add a web app manifest](https://web.dev/articles/add-manifest) — HIGH. Chrome minimum icon requirements, manifest fields.
+- [MagicBell — PWA iOS Limitations 2026](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide) — MEDIUM. iOS 50 MB storage cap, 7-day cache expiry, no Background Sync, EU standalone mode loss in iOS 17.4+.
+- [MDN — Define app icons](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/How_to/Define_app_icons) — HIGH. Maskable safe zone = inner 80% circle.
+- [Tailwind CSS v4 — Responsive design](https://tailwindcss.com/docs/responsive-design) — HIGH. Mobile-first breakpoints, `dvh` unit, container queries.
+- [web.dev — App design (safe areas)](https://web.dev/learn/pwa/app-design) — HIGH. `viewport-fit=cover`, `env(safe-area-inset-*)` usage in standalone PWA mode.
+- [Vite 8 announcement](https://vite.dev/blog/announcing-vite8) — HIGH. Rolldown unified bundler, plugin API compatibility with Rollup plugins.
+
+---
+
+*Stack addendum for: Wallecx v3.0 PWA + Mobile-Responsive*
+*Researched: 2026-05-14*

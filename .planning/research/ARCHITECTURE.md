@@ -1,384 +1,417 @@
-# Architecture Research
+# Architecture Patterns — PWA Integration (v3.0 milestone)
 
-**Domain:** Wallecx mini-app v2.0 — Adding Membership Cards as a second vault record type
-**Researched:** 2026-05-13
-**Confidence:** HIGH (based entirely on direct inspection of the existing Wallecx codebase and Lexarium conventions)
-
----
-
-## Integration Approach Decision
-
-**Verdict: PrimeVue Tabs within the existing `/projects/wallecx` route.**
-
-Three options were evaluated:
-
-### Option A — PrimeVue Tabs inside `WallecxApp.vue` (RECOMMENDED)
-
-Split the existing `WallecxApp.vue` content into a Vaccinations tab and a new Memberships tab, rendered inside a PrimeVue `<Tabs>` / `<TabPanel>` wrapper at the top of the card.
-
-**Why this is correct:**
-- The v2.0 milestone requirement explicitly states "Wallecx tab navigation switching between Vaccinations and Memberships" — tabs are the specified UI.
-- The router already resolves `/projects/wallecx` to `WallecxApp.vue`. Adding tabs keeps the URL stable; users who bookmark `/projects/wallecx` land on the app and choose their view from within, which is the right mental model for a unified vault.
-- LexTrack (`LexTrackApp.vue`) already uses `<TabView>` / `<TabPanel>` (the PrimeVue 3-era API) as the pattern for switching between distinct record types inside one mini-app. v2.0 mirrors that pattern using the PrimeVue 4 `<Tabs>` / `<TabList>` / `<Tab>` / `<TabPanels>` / `<TabPanel>` API (Aura theme-aware, auto-imported).
-- State for each tab (records, loading, selected) remains independent local refs — no Pinia store needed. Both sets of state live in `WallecxApp.vue` or are lifted into per-tab child root components (see component plan below).
-
-**Trade-offs:**
-- `WallecxApp.vue` grows if all state is inlined. Mitigated by extracting `VaccinationsTab.vue` and `MembershipsTab.vue` as tab-root components (each owns its own state), keeping `WallecxApp.vue` as a thin shell that renders the tab container.
-- Deep-linking to a specific tab (`/projects/wallecx#memberships`) is not possible with in-component tabs. Acceptable for v2.0 — the milestone does not require deep-link sharing.
-
-### Option B — Sub-routes (`/projects/wallecx/vaccinations` + `/projects/wallecx/memberships`)
-
-Add child routes with a `<RouterView>` in `WallecxApp.vue`.
-
-**Why not:**
-- Would require making `/projects/wallecx` a layout route (adding `children:`, converting to a view shell, adding `<RouterView>`) — a non-trivial router restructure that touches `index.ts` and the existing `WallecxApp.vue` entry point.
-- Breaks existing bookmarks to `/projects/wallecx` unless a redirect is added.
-- No other Lexarium mini-app uses child routes for tab-like section switching (only Gift Exchange uses separate child routes, and those are genuinely separate screens with different auth contexts, not tabs within a single app).
-- Adds router complexity that earns no user-visible feature. Tabs achieve the same UX without it.
-
-### Option C — Separate route `/projects/wallecx-memberships`
-
-Mount memberships as an entirely separate mini-app route.
-
-**Why not:**
-- Contradicts the Wallecx identity as a unified personal vault. Users would navigate between two disconnected apps.
-- Requires duplicating shared scaffolding (auth check, Card shell, toolbar) across two routes.
-- Provides no separation benefit — memberships and vaccinations share the same PocketBase instance, same auth user, same design tokens, and no conflicting state.
+**Domain:** vite-plugin-pwa integration with existing Vite 8 + Vue Router 4 SPA (Wallecx/Lexarium)
+**Researched:** 2026-05-14
+**Confidence:** HIGH (official vite-plugin-pwa docs, Vite docs, Workbox docs, GitHub issue tracker)
 
 ---
 
-## Component Architecture
+## Question Scope
 
-### Structural change to `WallecxApp.vue`
+This document answers six integration questions for adding PWA capabilities to the existing Lexarium SPA:
 
-`WallecxApp.vue` is refactored from a single-concern vaccination screen into a **tab shell**:
-
-```
-WallecxApp.vue                     (tab container + shared ConfirmDialog)
-  ├── VaccinationsTab.vue           (owns all vaccination state + logic, MOVED from WallecxApp)
-  │     ├── WallecxToolbar.vue      (existing — reused as-is, vaccination-specific props)
-  │     ├── VaccinationGroupCard.vue (existing — unchanged)
-  │     ├── VaccinationGroupPanel.vue (existing — unchanged)
-  │     ├── ManageVaccination.vue   (existing — unchanged)
-  │     └── VaccinationDetail.vue   (existing — unchanged)
-  │           └── AttachmentPreview.vue (existing — unchanged)
-  └── MembershipsTab.vue            (new — owns all membership state + logic)
-        ├── MembershipCard.vue       (new — coloured card tile in wallet grid)
-        ├── ManageMembership.vue    (new — create/edit dialog, mirrors ManageVaccination.vue)
-        └── MembershipDetail.vue    (new — fullscreen/dialog scan view with barcode)
-              └── BarcodeDisplay.vue (new — barcode/QR renderer, shared if vaccinations ever need it)
-```
-
-### New components to create
-
-| File | Purpose | Notes |
-|------|---------|-------|
-| `src/components/projects/wallecx/VaccinationsTab.vue` | Extraction of all current vaccination logic from `WallecxApp.vue`. Owns `records`, `isLoading`, grouping, search, sort, view-mode, fileToken, listToken state. | Mechanical move, not a rewrite. |
-| `src/components/projects/wallecx/MembershipsTab.vue` | Root component for the memberships tab. Owns `memberships` ref, loading state, delete confirm. Calls `pb.collection('wallecx_memberships').getFullList()` on mount. | Mirrors `VaccinationsTab.vue` structure. |
-| `src/components/projects/wallecx/MembershipCard.vue` | Single card tile in the memberships wallet grid. Shows card name, issuer, colour swatch, expiry badge, barcode preview. Emits `click` (open detail), `edit`, `delete`. | Visual heart of the membership UX. Colour rendered via inline `style` from `card_colour` field. |
-| `src/components/projects/wallecx/ManageMembership.vue` | Create/edit Dialog. Zod schema + `@primevue/forms` `zodResolver`. Fields: card name (required), issuer (optional), barcode value (optional), barcode type Select (QR/Code128/EAN-13/Code39), card number plain text (optional), expiry DatePicker (optional), notes Textarea, card colour ColorPicker or InputText (hex), card photo FileUpload. | Mirrors `ManageVaccination.vue` structure exactly. Uses same `isSaving` guard, `FormData` create, mapper-based update, `pendingFile` for photo. |
-| `src/components/projects/wallecx/MembershipDetail.vue` | Read-only detail view in a Dialog or full-screen overlay. Shows all fields + rendered barcode/QR. "Tap to go fullscreen" behaviour for scanner use. | Contains `BarcodeDisplay.vue`. |
-| `src/components/projects/wallecx/BarcodeDisplay.vue` | Renders a barcode or QR code from a `value` + `type` prop using `vue-barcode` or `qrcode.vue`. Falls back to plain `card_number` text if no barcode value. | Isolated renderer — no PocketBase calls, purely presentational. Candidate for sharing if other vault types ever need barcodes. |
-| `src/types/wallecx/memberships/types.d.ts` | TypeScript interface `Memberships extends RecordModel` + `AddMembership = Omit<Memberships, 'id' \| 'created' \| 'updated'>`. | Mirrors `src/types/wallecx/vaccinations/types.d.ts`. |
-| `src/lib/pocketbase/membershipMapper.ts` | `mapToUpdateMembership(record: Memberships)` returning writable subset (strips `id`, `created`, `updated`, `user`, `card_photo`). | Mirrors `vaccinationMapper.ts`. |
-
-### Existing components — modified
-
-| File | Change |
-|------|--------|
-| `src/components/projects/wallecx/WallecxApp.vue` | **Significant refactor.** Remove all vaccination state, logic, and template content. Replace with a `<Tabs>` container holding two `<TabPanel>` slots mounting `VaccinationsTab` and `MembershipsTab`. Keep `<ConfirmDialog />` here (shared, singleton per page). |
-| `src/router/index.ts` | **No change.** The route path, name, and component reference remain `/projects/wallecx` → `WallecxApp.vue`. |
-
-### Existing components — unchanged (zero modification)
-
-The following files are moved into `VaccinationsTab.vue`'s component tree but their source code does not change. The only difference is they are now children of `VaccinationsTab` instead of `WallecxApp`:
-
-- `VaccinationGroupCard.vue`
-- `VaccinationGroupPanel.vue`
-- `ManageVaccination.vue`
-- `VaccinationDetail.vue`
-- `AttachmentPreview.vue`
-- `WallecxToolbar.vue`
-
-Because `unplugin-vue-components` auto-imports globally, moving these into `VaccinationsTab.vue` requires no import-statement changes in those files.
+1. SPA routing — service worker interaction with Vue Router HTML5 history mode and the 404.html fallback
+2. PocketBase auth — which caching strategy for auth API calls
+3. Manifest location and injection mechanism
+4. Service worker registration: main.ts vs auto-registration
+5. Standalone display mode + router guard interaction
+6. Mobile viewport meta tags — current index.html adequacy
 
 ---
 
-## New PocketBase Collection
+## Integration Points
 
-```
-Collection: wallecx_memberships
-Type: base
+### Plugin Version
 
-Fields:
-  user            relation → users (required, single, cascadeDelete)
-  card_name       text     (required, min 1, max 200)
-  issuer          text     (optional, max 200)
-  barcode_value   text     (optional, max 500)    — raw string to encode
-  barcode_type    text     (optional)              — "qr" | "code128" | "ean13" | "code39"
-  card_number     text     (optional, max 100)    — human-readable fallback
-  expiry_date     date     (optional)
-  notes           text     (optional)
-  card_colour     text     (optional, max 7)      — hex string e.g. "#1a2b3c"
-  card_photo      file     (optional, maxSelect 1, maxSize 10_485_760,
-                            mimeTypes [image/jpeg, image/png, image/webp],
-                            thumbs [100x100, 400x400])
+Install `vite-plugin-pwa@^1.3.0`. Version 1.3.0 (released 2026-05-05) explicitly adds Vite 8 peer dependency support. The Rolldown bundler used by this project (via `rolldownOptions` in `vite.config.ts`) is API-compatible with Rollup plugins, and the vite-plugin-pwa maintainers confirmed hooks are optimised for rolldown-vite. No compatibility shims needed.
 
-Indexes:
-  CREATE INDEX idx_wallecx_mem_user_name
-    ON wallecx_memberships (user, card_name ASC)
+**Confidence:** HIGH — confirmed via GitHub issue #918 and release notes.
 
-Rules (all five required — same per-user isolation pattern as wallecx_vaccinations):
-  listRule:   @request.auth.id != "" && user = @request.auth.id
-  viewRule:   @request.auth.id != "" && user = @request.auth.id
-  createRule: @request.auth.id != "" && @request.body.user = @request.auth.id
-  updateRule: @request.auth.id != "" && user = @request.auth.id
-  deleteRule: @request.auth.id != "" && user = @request.auth.id
-```
+### Interaction with rolldownOptions.output.codeSplitting
 
-**Schema decisions:**
-- `barcode_type` stored as plain text (not a PocketBase select field) so the frontend Select dropdown drives validation via Zod — consistent with how `vaccine_type` is handled.
-- `card_colour` stored as a hex string. The frontend validates format with Zod `.regex(/^#[0-9a-fA-F]{6}$/)`. No separate colour model needed.
-- `card_photo` is optional. Cards with no photo still render as coloured tiles — the photo is a nice-to-have, not a core display element (unlike vaccination where the card scan IS the record).
-- No PDF support for `card_photo` — membership card photos are always images, not documents.
+The existing `vite.config.ts` uses `build.rolldownOptions.output.codeSplitting` with `groups` for `leaflet`, `primevue`, and `vendor`. The vite-plugin-pwa plugin operates at the build manifest injection level (it processes the final output), not at the chunking level. The two configurations do not conflict. The service worker's precache manifest will simply include the additional chunk files the codeSplitting groups produce.
 
 ---
 
-## Shared Patterns and Opportunities
+## 1. SPA Routing — Service Worker and HTML5 History Mode
 
-### Pattern: Tab-Root Component as State Owner
+### The Problem
 
-`VaccinationsTab.vue` and `MembershipsTab.vue` each own their record slice's state independently. Neither communicates with the other. `WallecxApp.vue` does not need to know about records at all — it only holds the active tab index.
+Vue Router uses `createWebHistory()` (HTML5 pushState mode). When a user navigates directly to `/projects/wallecx` or `/login` after installing the PWA, the request goes through the service worker before any server. If the service worker has no rule for that URL, it falls through to the network. If the network returns a 404 (because the host has no server-side routing), the user sees an error.
 
-This is the cleanest separation: switching tabs unmounts/remounts the inactive tab component (unless `keepAlive` is used), which naturally resets state. If preserving scroll position across tab switches becomes important, wrap with `<KeepAlive>`.
+### The Vercel SPA Routing Layer
 
-### Pattern: Mapper Pair (type + mapper)
+The project currently copies `dist/index.html` to `dist/404.html` in the build step. On Vercel this is the GitHub Pages compatibility shim — it is not needed for Vercel deployments, which use `vercel.json` rewrites. **Verify whether `vercel.json` already contains a catch-all rewrite** (`{ "source": "/(.*)", "destination": "/index.html" }`). If it does, Vercel handles navigation requests before the service worker on first load. After the SW is installed, the SW intercepts all subsequent navigations.
 
-Every vault record type gets:
-1. `src/types/wallecx/<collection>/types.d.ts` — interface + AddType
-2. `src/lib/pocketbase/<collection>Mapper.ts` — mapToUpdate<Type>
+### navigateFallback — The Service Worker Solution
 
-For memberships:
-- `src/types/wallecx/memberships/types.d.ts` — `Memberships` + `AddMembership`
-- `src/lib/pocketbase/membershipMapper.ts` — `mapToUpdateMembership`
+In the `workbox` block of the VitePWA plugin config, set:
 
-This is already the established convention from vaccinations and LexTrack's three mappers.
+```ts
+workbox: {
+  navigateFallback: '/index.html',
+  navigateFallbackDenylist: [
+    /^\/api\//,            // exclude PocketBase API calls (none in this project, but defensive)
+    /\.[a-z]{2,}$/i,       // exclude direct file requests (assets, images)
+  ],
+}
+```
 
-### Pattern: Isolated BarcodeDisplay Component
+`navigateFallback: '/index.html'` instructs the service worker: "for any navigation request that isn't a precached asset, serve `/index.html`." This is exactly what Vue Router needs — the SPA bootstraps from `index.html`, Vue Router reads `window.location.pathname`, and routes to the correct component.
 
-`BarcodeDisplay.vue` takes `value: string`, `type: 'qr' | 'code128' | 'ean13' | 'code39'` and `fallbackNumber?: string` as props and renders the appropriate barcode or plain text. It is completely decoupled from the Memberships type — if a future vault type (insurance cards, access badges) also needs barcode rendering, `BarcodeDisplay.vue` is already reusable.
+**Do not** rely on the `dist/404.html` file to handle navigation when a SW is active — the SW intercepts the navigation before it reaches the server.
 
-Barcode library recommendation: `jsbarcode` (for 1D barcodes: Code128, EAN-13, Code39) + `qrcode` npm package (for QR). Both render to SVG/canvas without DOM dependencies. Alternative: a single Vue wrapper library such as `vue-barcode` if it covers all four types — verify coverage before committing.
+### navigateFallbackDenylist
 
-### Pattern: Full-Screen Scan View
+The denylist regex prevents the SW from serving `index.html` for requests that should genuinely fail or go to the network:
+- Any future PocketBase API URL patterns
+- File extension requests (`.svg`, `.png`, `.js`, `.css`) — these should be handled by the precache or return a real 404
 
-`MembershipDetail.vue` should implement a full-screen toggle using the Fullscreen API (`document.documentElement.requestFullscreen()`), triggered by tapping/clicking the barcode area. This is a contained behaviour inside the detail component — no router or state involvement needed. Fallback: if Fullscreen API is unavailable, render the barcode at maximum width inside a Dialog with `maximizable: true` (PrimeVue Dialog prop).
+### Relationship to dist/404.html
 
-### Pattern: WallecxToolbar reuse
+Keep the `dist/404.html` build step. It serves two purposes:
+1. Handles navigation on **first visit** (before SW is installed) on Vercel if no `vercel.json` rewrite exists
+2. Handles the GitHub Pages deploy target mentioned in `CLAUDE.md` (GitHub Pages has no catch-all rewrite, it serves `404.html` on unknown paths)
 
-`WallecxToolbar.vue` currently has vaccination-specific placeholder text ("Search by name or type…") and sort options. For memberships, a separate `MembershipsToolbar.vue` is the safer choice (different sort dimensions: card name A-Z, issuer A-Z, expiry soonest). Copy-adapt, do not genericise `WallecxToolbar.vue` — the vaccination search+sort logic is different enough that a shared toolbar would need too many props.
-
-If the toolbar shapes converge in a future milestone, consolidate then.
+After SW installation, `navigateFallback` takes over and `404.html` is no longer exercised for navigation. The two mechanisms are complementary, not competing.
 
 ---
 
-## Build Order
+## 2. PocketBase Auth — Caching Strategy
 
-Dependencies dictate this order. Each step is independently verifiable.
+### Recommendation: Network-Only for all PocketBase API calls
 
-### Phase A — Backend
+PocketBase auth calls (login, token refresh, auth-with-password) and all collection API calls must be **Network-Only** inside the service worker. Never cache them.
 
-**Step 1: `wallecx_memberships` PocketBase collection**
-- Create collection with all fields listed above.
-- Set all five per-user rules.
-- Two-user smoke test: confirm cross-user isolation (same test protocol as vaccinations).
-- **Unblocks:** all subsequent steps. **Risk gate:** wrong rules = data leak.
+```ts
+workbox: {
+  runtimeCaching: [
+    {
+      // Match all PocketBase API traffic
+      urlPattern: ({ url }) => url.hostname === 'your-pocketbase-host.pockethost.io',
+      handler: 'NetworkOnly',
+    },
+  ],
+}
+```
 
-### Phase B — Type and Mapper Foundation
+Replace `your-pocketbase-host.pockethost.io` with the actual PocketBase hostname from `VITE_API_BASE_URL`.
 
-**Step 2: Type module** — `src/types/wallecx/memberships/types.d.ts`
-- `interface Memberships extends RecordModel` mirroring all backend fields.
-- `type AddMembership = Omit<Memberships, 'id' | 'created' | 'updated'>`.
-- **Unblocks:** mapper, all membership components, Zod schema in `ManageMembership.vue`.
+### Justification
 
-**Step 3: Mapper** — `src/lib/pocketbase/membershipMapper.ts`
-- `mapToUpdateMembership(record: Memberships)` — strips `id`, `created`, `updated`, `user`, `card_photo`.
-- **Unblocks:** edit path in `ManageMembership.vue`.
+**Auth token security:** The PocketBase auth token is stored in `localStorage` via `pb.authStore` and accessed by `useAuthStore`. The service worker runs in a separate context and cannot access `localStorage`. If the SW cached an authenticated response, it could serve stale user data to a different authenticated user on the same device (e.g., after logout and re-login). Network-Only eliminates this risk entirely.
 
-### Phase C — WallecxApp Refactor (Tab Shell)
+**Data freshness:** Vaccination records and membership cards are the product. Serving stale records offline would show the user data they have already deleted or updated — worse than showing an offline error.
 
-**Step 4: Extract `VaccinationsTab.vue`**
-- Mechanical move: lift all vaccination state, computed properties, methods, and template content from `WallecxApp.vue` into a new `VaccinationsTab.vue`.
-- `WallecxApp.vue` becomes a shell that mounts `<VaccinationsTab />` directly (no tabs yet — tabs come in Step 5).
-- **Verify:** vaccination features still work identically after the extraction. This is a pure refactor with no behaviour change.
-- **Unblocks:** Step 5 (adding `MembershipsTab.vue` to the tab container).
+**PocketBase token format:** PocketBase issues short-lived JWT tokens. The token expiry and refresh are managed by the `pb.authStore`. The service worker has no visibility into token validity, so it cannot conditionally serve cached responses.
 
-**Step 5: Add PrimeVue Tabs wrapper to `WallecxApp.vue`**
-- Wrap `<VaccinationsTab />` in `<Tabs>` / `<TabList>` / `<TabPanels>` with a second `<TabPanel>` showing a stub `<MembershipsTab />` (empty state).
-- Verify tab switching works, PrimeVue Aura Tabs styling is correct.
-- **Unblocks:** Step 6 onward (memberships content).
+**What about offline?** The `PROJECT.md` explicitly lists "Offline-first / PWA support" as out of scope for Wallecx (`Online-only, matching the rest of Lexarium`). The PWA milestone adds installability and mobile UX — not offline data access. Network-Only is therefore correct: if the user is offline, PocketBase calls fail at the network layer, and the Vue component shows its existing loading/error state.
 
-### Phase D — Memberships Read Path
+### Static Asset Caching Strategy: Cache-First
 
-**Step 6: `MembershipsTab.vue` shell + fetch**
-- Mounts on the Memberships tab. `onMounted` → `pb.collection('wallecx_memberships').getFullList<Memberships>()`.
-- Renders loading skeleton, empty state, and a placeholder card grid.
-- **Verifies:** collection rules, type module, auth session all work for memberships.
-- **Unblocks:** display components.
+The precache manifest (auto-generated by vite-plugin-pwa) handles all built JS/CSS/HTML chunks using **Cache-First with network fallback** by default. This is correct for versioned assets — the service worker serves the app shell instantly from cache, then Workbox checks for updates in the background.
 
-**Step 7: `BarcodeDisplay.vue`**
-- Accepts `value`, `type`, `fallbackNumber` props.
-- Renders QR or 1D barcode to SVG/canvas. Falls back to plain text.
-- Built before `MembershipCard` and `MembershipDetail` so both can embed it.
-- **Unblocks:** Steps 8 and 9.
-
-**Step 8: `MembershipCard.vue`**
-- Coloured tile card: card name, issuer, colour background, expiry badge, small barcode preview (via `BarcodeDisplay`).
-- Emits `click` (open detail), `edit`, `delete`.
-- **Unblocks:** full memberships read path.
-
-**Step 9: `MembershipDetail.vue`**
-- Dialog showing all fields + full-size `BarcodeDisplay`.
-- Full-screen toggle via Fullscreen API.
-- **Completes:** memberships read path.
-
-### Phase E — Memberships Write Path
-
-**Step 10: `ManageMembership.vue`**
-- Create/edit Dialog. Zod schema validating required fields + hex colour + barcode type.
-- `FormData` create; `mapToUpdateMembership` for update.
-- Optional photo: image-only FileUpload with EXIF strip (reuse same canvas re-encode pattern from `ManageVaccination.vue`).
-- `isSaving` guard, vue-sonner toasts.
-- Emits `created` and `updated` to `MembershipsTab.vue`.
-- **Completes:** memberships write path.
-
-**Step 11: Delete flow in `MembershipsTab.vue`**
-- `useConfirm()` confirm dialog (shared `<ConfirmDialog />` in `WallecxApp.vue` is already present).
-- `await pb.collection('wallecx_memberships').delete(id)` → splice → toast.
-- Same guard pattern as vaccinations: do NOT splice on failure.
-
-### Phase F — Polish
-
-**Step 12: `MembershipsToolbar.vue`** (optional for v2.0 MVP, add if time allows)
-- Search by card name or issuer.
-- Sort: Name A-Z (default), Name Z-A, Issuer A-Z, Expiry soonest.
-
-**Step 13: Mapper unit test** — `src/lib/pocketbase/__tests__/membershipMapper.spec.ts`
-- Covers `mapToUpdateMembership` (strips correct fields).
-- Follows the pattern of `vaccinationMapper.spec.ts`.
+The app icons, manifest, and `index.html` itself are also precached. Set `Cache-Control: no-store` or `public, max-age=0, must-revalidate` on `sw.js`, `index.html`, and `manifest.webmanifest` in `vercel.json` so the browser always fetches the latest SW registration script.
 
 ---
 
-## Full File Change Summary
+## 3. Manifest Location and Injection
 
-### New files
+### Where the manifest lives
 
-```
-src/
-├── components/projects/wallecx/
-│   ├── VaccinationsTab.vue           (extracted from WallecxApp.vue — Step 4)
-│   ├── MembershipsTab.vue            (new — Step 6)
-│   ├── MembershipCard.vue            (new — Step 8)
-│   ├── ManageMembership.vue          (new — Step 10)
-│   ├── MembershipDetail.vue          (new — Step 9)
-│   └── BarcodeDisplay.vue            (new — Step 7)
-├── types/wallecx/memberships/
-│   └── types.d.ts                    (new — Step 2)
-└── lib/pocketbase/
-    ├── membershipMapper.ts           (new — Step 3)
-    └── __tests__/
-        └── membershipMapper.spec.ts  (new — Step 13)
+The plugin generates `manifest.webmanifest` (or `manifest.json` — controlled by `manifestFilename` option, default is `manifest.webmanifest`) in the **build output directory** (`dist/`). You do not create it manually in `public/`.
+
+Place icon assets in `public/` (e.g. `public/pwa-192x192.png`, `public/pwa-512x512.png`, `public/apple-touch-icon.png`) and reference them in the plugin `manifest.icons` array. The plugin copies them to `dist/` at build time.
+
+### How it gets injected into index.html
+
+At build time the plugin injects into `dist/index.html`:
+```html
+<link rel="manifest" href="/manifest.webmanifest">
 ```
 
-### Modified files
+It also injects the service worker registration script (script tag in `<head>` or as an inline script, depending on `injectRegister` setting — see section 4).
 
-```
-src/
-├── components/projects/wallecx/
-│   └── WallecxApp.vue                (refactored to tab shell — Steps 4+5)
+**You do not manually edit `index.html`** to add the manifest link. The plugin handles it.
+
+### Manifest configuration example (vite.config.ts)
+
+```ts
+VitePWA({
+  registerType: 'autoUpdate',
+  manifest: {
+    name: 'Lexarium — Wallecx',
+    short_name: 'Wallecx',
+    description: 'Personal records vault — vaccinations and membership cards',
+    theme_color: '#002244',         // brand navy, must match theme-color meta in index.html
+    background_color: '#002244',
+    display: 'standalone',
+    scope: '/',
+    start_url: '/projects/wallecx', // open to the app directly on launch
+    icons: [
+      { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+      { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+    ],
+  },
+})
 ```
 
-### Unchanged files (zero modification)
-
-```
-src/
-├── components/projects/wallecx/
-│   ├── VaccinationGroupCard.vue
-│   ├── VaccinationGroupPanel.vue
-│   ├── ManageVaccination.vue
-│   ├── VaccinationDetail.vue
-│   ├── AttachmentPreview.vue
-│   └── WallecxToolbar.vue
-├── router/index.ts
-└── types/wallecx/vaccinations/types.d.ts
-```
+`start_url: '/projects/wallecx'` means installed PWA opens to the Wallecx vault directly rather than the Lexarium home page. This is the correct UX for a vault mini-app. The router guard will redirect to `/login` if the session has expired.
 
 ---
 
-## System Diagram (post-v2.0)
+## 4. Service Worker Registration
+
+### Recommended approach: injectRegister: 'auto' (default)
+
+Do not touch `src/main.ts` for registration. Set `injectRegister: 'auto'` (the default) in the plugin config. The plugin generates a `/registerSW.js` file and injects a `<script>` tag for it into `index.html` at build time.
+
+The registration script calls:
+```js
+window.addEventListener('load', () => {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+})
+```
+
+This fires after the Vue app mounts. Because the service worker registers on `load` (not `DOMContentLoaded`), the first paint is never blocked.
+
+### Why not in main.ts
+
+Registering in `main.ts` manually (via `navigator.serviceWorker.register('/sw.js')`) would work but loses three plugin features:
+- Automatic update detection via `workbox-window`
+- `virtual:pwa-register/vue` composable for showing an update toast
+- `registerType: 'autoUpdate'` automatic reload on new SW activation
+
+If the team wants an "update available" toast in a future phase, import `useRegisterSW` from `virtual:pwa-register/vue` in a top-level component (e.g., `App.vue`) — this automatically handles registration and exposes `needRefresh` and `offlineReady` refs. No changes to `main.ts` needed.
+
+### registerType: 'autoUpdate' vs 'prompt'
+
+For Wallecx, use `registerType: 'autoUpdate'`. The app has no long-running forms that would be disrupted by a silent reload (CRUD dialogs are short-lived). AutoUpdate means the new SW activates and the page reloads silently when the user next navigates, without a "reload to update" prompt. This matches the online-only, low-interruption UX goal.
+
+---
+
+## 5. Standalone PWA Mode + Router Guard
+
+### How standalone interacts with the router
+
+When the PWA is installed and launched from the home screen, the browser opens it in a standalone WebView. The URL is `start_url` from the manifest — in this project, `/projects/wallecx`. Vue Router's `beforeEach` guard runs as normal: it checks `useAuthStore().isLoggedIn` and redirects to `/login` if the session has expired.
+
+**This works correctly** because:
+- The service worker, router guard, and auth store are all same-origin JavaScript — there is no boundary between them in terms of execution
+- `pb.authStore` checks the token in `localStorage`; if expired, `isLoggedIn` is `false`, and the guard redirects to `{ name: 'login', query: { redirect: '/projects/wallecx' } }`
+- The `/login` route is not `requiresAuth`, so the guard allows it through
+- After login, the `redirect` query param restores the user to Wallecx — the same flow as the browser version
+
+**Standalone mode does not break the guard.** The guard runs in the same JS context as a normal browser tab.
+
+### iOS standalone and auth redirect caution
+
+One known iOS quirk: if the auth flow requires navigating to an **external domain** (e.g., OAuth provider), iOS Safari opens a new browser tab instead of staying in the standalone window, and the user must manually return to the PWA. This project uses PocketBase auth (same origin, not OAuth redirect), so this issue does not apply. The login page at `/login` is same-origin and renders within the standalone window without issue.
+
+### Scope boundary
+
+The manifest `scope: '/'` covers the entire origin. All routes (`/`, `/login`, `/projects/wallecx`, etc.) are within scope. If the user navigates to a URL outside the scope (e.g., the PocketBase admin panel on a different origin), iOS drops them to Safari. This is expected and correct.
+
+### Back button in standalone
+
+When the user navigates: Home → /projects/wallecx → (back), the browser's back history works within the standalone window on Android Chrome. On iOS Safari in standalone mode, the native back gesture works for history within the session but there is no visible back button in the UI chrome. The existing `CustomNavBar` provides in-app navigation, which is sufficient.
+
+---
+
+## 6. Mobile Viewport Meta Tags
+
+### Current state: index.html line 6
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+```
+
+This is **adequate for PWA installability** but **missing two required PWA manifest-linked tags**:
+
+| Tag | Current | Required for PWA | Action |
+|-----|---------|------------------|--------|
+| `viewport` | `width=device-width, initial-scale=1.0` | `width=device-width,initial-scale=1` | Functionally equivalent — no change needed |
+| `theme-color` | Missing | Must match manifest `theme_color` | Add `<meta name="theme-color" content="#002244">` |
+| `apple-touch-icon` | Missing | Required for iOS Add to Home Screen | Add `<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">` |
+| `description` | Missing | Lighthouse PWA audit | Add `<meta name="description" content="...">` |
+
+The `theme-color` meta tag must match `manifest.theme_color` exactly (the plugin warns if they differ). The icon file must exist in `public/` before building.
+
+The `<link rel="icon" type="image/svg+xml" href="/branding_logo.svg" />` on line 5 serves as the browser tab favicon but is not used for the PWA home screen icon — separate PNG icons are required for that.
+
+### Minimum additions to index.html
+
+```html
+<meta name="theme-color" content="#002244" />
+<meta name="description" content="Wallecx — personal records vault for vaccinations and membership cards" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+```
+
+The `<link rel="manifest" ...>` tag is injected automatically by the plugin at build time — do not add it manually.
+
+---
+
+## File Change Map
+
+| File | Change Type | What Changes | Phase |
+|------|-------------|--------------|-------|
+| `package.json` | Add dep | `vite-plugin-pwa@^1.3.0` | 1 |
+| `vite.config.ts` | Modify | Import and configure `VitePWA()` plugin in `plugins[]` array; add `workbox.navigateFallback`, `workbox.runtimeCaching` (NetworkOnly for PocketBase host), `manifest` object | 1 |
+| `index.html` | Modify | Add `theme-color` meta, `apple-touch-icon` link, `description` meta; manifest link injected automatically at build time | 1 |
+| `public/pwa-192x192.png` | New file | PWA icon — 192×192 PNG | 1 |
+| `public/pwa-512x512.png` | New file | PWA icon — 512×512 PNG (also used as maskable) | 1 |
+| `public/apple-touch-icon.png` | New file | iOS Add to Home Screen icon — 180×180 PNG | 1 |
+| `vercel.json` | New or modify | Add `Cache-Control: no-store` header for `sw.js`, `index.html`, `manifest.webmanifest`; add catch-all rewrite to `index.html` if not already present; add `Content-Type: application/manifest+json` for `*.webmanifest` | 1 |
+| `src/App.vue` | Optional modify | Import `useRegisterSW` from `virtual:pwa-register/vue` if an update-available toast is desired | 2 |
+| `env.d.ts` | Optional modify | Add `/// <reference types="vite-plugin-pwa/vue" />` for TypeScript virtual module resolution | 1 |
+
+**No changes to:**
+- `src/main.ts` — registration is handled by the plugin's injected script
+- `src/router/index.ts` — guard logic is unchanged; works correctly in standalone mode
+- Any Wallecx component — PWA layer is below the component tree
+
+---
+
+## Caching Strategy Summary
+
+| Request Type | Strategy | Rationale |
+|--------------|----------|-----------|
+| Built JS/CSS/HTML chunks (versioned) | CacheFirst (precache) | Static, content-hashed filenames; safe to cache indefinitely |
+| `index.html`, `sw.js`, `manifest.webmanifest` | NetworkFirst / no-cache via headers | Must not be cached; SW updates depend on fresh registration |
+| PocketBase API calls (auth + collections) | NetworkOnly | Auth security, data freshness; offline not a goal |
+| PocketBase file/thumbnail URLs | NetworkOnly | Short-lived signed URLs; caching would produce broken image requests |
+| Static public assets (SVG icon, PNG icons) | CacheFirst (precache) | Included in precache manifest automatically |
+| Google Fonts or external CDN | Not applicable | No external fonts/CDN in current stack (Rubik loaded via CSS in `main.css`) |
+
+---
+
+## Build Order (Phase Dependencies)
+
+The order below respects hard dependencies. Each step is independently verifiable.
+
+### Step 1 — Icon Assets (prerequisite for everything)
+
+Create the three PNG files and place them in `public/`:
+- `pwa-192x192.png` — 192×192, any brand-consistent design
+- `pwa-512x512.png` — 512×512 (used for both regular and maskable; for a proper maskable icon, content must be inside the "safe zone" — centred with 20% padding)
+- `apple-touch-icon.png` — 180×180
+
+**Why first:** The build fails if `VitePWA.manifest.icons[].src` references files that don't exist in `public/`.
+
+### Step 2 — vite.config.ts Plugin Configuration
+
+Install `vite-plugin-pwa`, add `VitePWA()` to `plugins[]`. Configure `manifest`, `workbox.navigateFallback`, and `workbox.runtimeCaching` (NetworkOnly for PocketBase host).
+
+**Why second:** Must be present before a build can generate the SW and manifest.
+
+### Step 3 — index.html Meta Tag Additions
+
+Add `theme-color`, `description`, and `apple-touch-icon` link. These are independent of the plugin but must be in place for Lighthouse PWA audit to pass and for iOS home screen display to work correctly.
+
+**Why third:** Can be done simultaneously with Step 2, but should be done before testing.
+
+### Step 4 — vercel.json Headers
+
+Add `Cache-Control` headers for SW, manifest, and index.html. Add the catch-all rewrite if not already present.
+
+**Why fourth:** Without correct headers, Vercel may cache `sw.js` and prevent SW updates from propagating.
+
+### Step 5 — Build and Smoke Test
+
+Run `npm run build` and verify:
+- `dist/manifest.webmanifest` exists and contains correct icon paths
+- `dist/sw.js` exists
+- `dist/index.html` contains the injected `<link rel="manifest">` and the `<script src="/registerSW.js">` (or inline script)
+- `dist/registerSW.js` exists (if `injectRegister: 'auto'` used script mode)
+
+### Step 6 — Lighthouse PWA Audit (optional but recommended)
+
+Run Lighthouse in Chrome DevTools against the preview build (`npm run preview`). PWA audit checks: manifest validity, SW registration, HTTPS (reported as warning in preview mode), icons, viewport, theme-color.
+
+### Step 7 — Update Toast (optional, Phase 2)
+
+If an update-available notification is wanted, add `useRegisterSW` import to `App.vue` and build a toast component. This is independent of Step 1-6 and can be deferred.
+
+---
+
+## Architecture Diagram (post-PWA layer)
 
 ```
-src/router/index.ts
-  /projects/wallecx (requiresAuth: true)
+Browser / Installed PWA
         │
         ▼
-WallecxApp.vue (tab shell)
-  ├── <ConfirmDialog /> (singleton)
-  ├── <Tabs>
-  │    ├── Tab: "Vaccinations"
-  │    │    └── VaccinationsTab.vue
-  │    │         ├── WallecxToolbar.vue
-  │    │         ├── VaccinationGroupCard.vue × N
-  │    │         ├── Drawer → VaccinationGroupPanel.vue
-  │    │         ├── ManageVaccination.vue (Dialog)
-  │    │         └── VaccinationDetail.vue (Dialog)
-  │    │               └── AttachmentPreview.vue
-  │    └── Tab: "Memberships"
-  │         └── MembershipsTab.vue
-  │              ├── MembershipCard.vue × N
-  │              ├── ManageMembership.vue (Dialog)
-  │              └── MembershipDetail.vue (Dialog/Fullscreen)
-  │                    └── BarcodeDisplay.vue
-  │
-  └── PocketBase
-       ├── wallecx_vaccinations (existing, unchanged)
-       └── wallecx_memberships  (new)
+Service Worker (sw.js — generated by workbox)
+  ├── Precache: index.html, assets/*, *.js chunks, *.css, icons
+  ├── navigateFallback: /index.html (for all non-file navigation requests)
+  └── runtimeCaching: NetworkOnly for pb.example.com/*
+        │
+        ▼
+Vue SPA (index.html bootstraps)
+  ├── src/main.ts         (unchanged)
+  ├── src/router/index.ts (unchanged — beforeEach guard works as-is in standalone)
+  │     └── /projects/wallecx (requiresAuth: true)
+  │           └── WallecxApp.vue → VaccinationsTab + MembershipsTab
+  └── src/stores/auth.ts  (unchanged — pb.authStore in localStorage, readable in SW context)
+        │
+        ▼
+PocketBase (remote host)
+  ├── auth API   → NetworkOnly (never cached)
+  └── collections → NetworkOnly (never cached)
 ```
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Do not inline all membership state in `WallecxApp.vue`
+### Do not cache PocketBase API responses
 
-The refactored `WallecxApp.vue` must only own the active tab index. Inlining both `vaccinationRecords` and `membershipRecords` plus all their logic in one file recreates the pre-refactor problem at double the size. Tab-root components (`VaccinationsTab`, `MembershipsTab`) own their own state.
+Caching auth or collection responses creates stale-data risk and potential data leakage after logout. Use `NetworkOnly` for the entire PocketBase host.
 
-### Do not genericise the mapper or type before a third record type exists
+### Do not use StaleWhileRevalidate for PocketBase
 
-`mapToUpdateVaccination` and `mapToUpdateMembership` are separate files. Do not create a `wallecxBaseMapper.ts` abstraction. Convention carries the vault identity, not shared code. Premature abstraction here creates more coupling than it prevents.
+`StaleWhileRevalidate` serves cached data while fetching fresh data in the background. For a personal records vault, showing stale vaccination or membership records while the fresh data loads is confusing and potentially harmful (showing deleted records). Stick with `NetworkOnly`.
 
-### Do not reuse `WallecxToolbar.vue` for memberships by adding feature flags
+### Do not register the SW manually in main.ts alongside plugin auto-registration
 
-Adding an `activeTab` prop or `mode: 'vaccination' | 'membership'` to `WallecxToolbar.vue` to conditionally render different sort options is the wrong direction. The toolbar components are cheap to clone-and-adapt. Conditional branching inside a shared toolbar makes both usages harder to understand and change.
+Using both `injectRegister: 'auto'` and a manual `navigator.serviceWorker.register()` call in `main.ts` causes double registration. The plugin's virtual module composable (`useRegisterSW`) handles everything needed. Do not add manual registration.
 
-### Do not use `v-html` for card name or barcode value
+### Do not set start_url to '/' unless the intent is to land on the Lexarium home page
 
-Card names and barcode values are user-supplied strings. Render with `{{ }}` interpolation only. The barcode library renders its own SVG — feed the raw string value as a prop, never interpolate it into an HTML template.
+The manifest's `start_url` determines where the installed PWA opens. Setting `/` opens the portfolio hub. Setting `/projects/wallecx` opens the vault directly — the correct UX for Wallecx as a dedicated installable app. The router guard handles auth redirection from this URL if the session has expired.
+
+### Do not remove dist/404.html from the build
+
+The `dist/404.html` file handles navigation before the SW is installed (first load on GitHub Pages or Vercel without a catch-all rewrite). Remove it and first-time visitors who bookmark a deep route get a real 404.
+
+---
+
+## Open Questions / Flags for Phase Execution
+
+| Topic | Question | Recommendation |
+|-------|----------|----------------|
+| Vercel catch-all rewrite | Does `vercel.json` already exist with a rewrite rule? | Check before Phase execution; add if missing |
+| PocketBase host URL | What is the exact hostname in `VITE_API_BASE_URL`? | Read from `.env.production` and use as the `urlPattern` hostname in `runtimeCaching` |
+| Maskable icon safe zone | Is the 512×512 PNG maskable-compliant? | Content must be in central 60% of canvas; use Maskable.app to verify |
+| `env.d.ts` virtual module types | Does `vite-plugin-pwa/vue` need to be added to `tsconfig.json`? | Yes — add `"types": ["vite-plugin-pwa/vue"]` or `/// <reference types="vite-plugin-pwa/vue" />` in `env.d.ts` if using the composable |
+| Rubik font loading | Is Rubik loaded from Google Fonts (external) or bundled? | Inspect `src/assets/main.css`; if Google Fonts, add a separate `runtimeCaching` CacheFirst rule for `fonts.googleapis.com` and `fonts.gstatic.com` |
 
 ---
 
 ## Sources
 
-- `src/components/projects/wallecx/WallecxApp.vue` — direct inspection (2026-05-13) — HIGH confidence
-- `src/components/projects/lextrack/LexTrackApp.vue` — TabView/TabPanel reference pattern — HIGH confidence
-- `src/components/projects/wallecx/ManageVaccination.vue` — form/mapper/FormData pattern to mirror — HIGH confidence
-- `src/types/wallecx/vaccinations/types.d.ts` — type pattern to mirror — HIGH confidence
-- `src/lib/pocketbase/vaccinationMapper.ts` — mapper pattern to mirror — HIGH confidence
-- `.planning/PROJECT.md` (v2.0 milestone section) — feature requirements — HIGH confidence
-- `.planning/codebase/ARCHITECTURE.md` — Lexarium mini-app conventions — HIGH confidence
-- `.planning/codebase/CONVENTIONS.md` — naming and component conventions — HIGH confidence
-- PrimeVue 4 Tabs component (Aura theme, auto-imported) — confirmed available via `primevue: ^4.3.7` in `package.json`
+- [vite-plugin-pwa official docs — Guide](https://vite-pwa-org.netlify.app/guide/) — HIGH confidence
+- [vite-plugin-pwa — PWA Minimal Requirements](https://vite-pwa-org.netlify.app/guide/pwa-minimal-requirements) — HIGH confidence
+- [vite-plugin-pwa — Register Service Worker](https://vite-pwa-org.netlify.app/guide/register-service-worker) — HIGH confidence
+- [vite-plugin-pwa — generateSW Workbox options](https://vite-pwa-org.netlify.app/workbox/generate-sw) — HIGH confidence
+- [vite-plugin-pwa — Vue framework guide](https://vite-pwa-org.netlify.app/frameworks/vue) — HIGH confidence
+- [vite-plugin-pwa — Vercel deployment](https://vite-pwa-org.netlify.app/deployment/vercel) — HIGH confidence
+- [GitHub: vite-plugin-pwa Vite 8 support issue #918](https://github.com/vite-pwa/vite-plugin-pwa/issues/918) — HIGH confidence
+- [vite-plugin-pwa v1.3.0 release notes](https://github.com/vite-pwa/vite-plugin-pwa/releases) — HIGH confidence
+- [vite-plugin-pwa vue-router example vite.config.ts](https://github.com/vite-pwa/vite-plugin-pwa/blob/main/examples/vue-router/vite.config.ts) — HIGH confidence
+- Direct inspection: `vite.config.ts`, `index.html`, `src/main.ts`, `src/router/index.ts` — HIGH confidence
+- [Vue Router HTML5 history mode docs](https://router.vuejs.org/guide/essentials/history-mode.html) — HIGH confidence
 
 ---
-*Architecture research for: Wallecx v2.0 Membership Cards — second vault record type*
-*Researched: 2026-05-13*
+*Architecture research for: Lexarium PWA integration — v3.0 PWA + mobile-responsive milestone*
+*Researched: 2026-05-14*
