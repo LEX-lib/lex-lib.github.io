@@ -51,7 +51,7 @@ function displayExpiry(iso: string): string {
 
 <template>
   <Card
-    class="cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
+    class="cursor-pointer hover:shadow-md transition-shadow overflow-hidden min-h-[44px] touch-manipulation"
     :style="tileStyle"
     style="min-height: 8rem;"
     @click="emit('click')"

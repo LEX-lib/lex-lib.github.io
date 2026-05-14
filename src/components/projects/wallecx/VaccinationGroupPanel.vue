@@ -33,9 +33,9 @@ function displayDate(iso: string): string {
     <Column header="" style="width: 14rem">
       <template #body="{ data }: { data: Vaccinations }">
         <div class="flex gap-1">
-          <Button size="small" label="View" @click="emit('view', data)" />
-          <Button size="small" icon="pi pi-pencil" label="Edit" severity="secondary" @click="emit('edit', data)" />
-          <Button size="small" icon="pi pi-trash" label="Delete" severity="danger" @click="emit('delete', data)" />
+          <Button size="small" label="View" class="min-h-[44px] touch-manipulation" @click="emit('view', data)" />
+          <Button size="small" icon="pi pi-pencil" label="Edit" class="min-h-[44px] touch-manipulation" severity="secondary" @click="emit('edit', data)" />
+          <Button size="small" icon="pi pi-trash" label="Delete" class="min-h-[44px] touch-manipulation" severity="danger" @click="emit('delete', data)" />
         </div>
       </template>
     </Column>

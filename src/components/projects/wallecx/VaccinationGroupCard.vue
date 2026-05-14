@@ -26,7 +26,7 @@ function displayDate(iso: string): string {
 
 <template>
   <Card
-    class="cursor-pointer hover:shadow-md transition-shadow"
+    class="cursor-pointer hover:shadow-md transition-shadow min-h-[44px] touch-manipulation"
     @click="emit('click')"
   >
     <template #content>

@@ -35,24 +35,29 @@ const sortOptions = [
         class="w-full"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
-      <InputIcon
+      <div
         v-if="searchQuery"
-        class="pi pi-times cursor-pointer"
+        class="min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer"
+        role="button"
+        aria-label="Clear search"
         @click="emit('update:searchQuery', '')"
-      />
+      >
+        <InputIcon class="pi pi-times" />
+      </div>
     </IconField>
     <Select
       :model-value="sortMode"
       :options="sortOptions"
       option-label="label"
       option-value="value"
-      class="w-36"
+      class="w-36 min-h-[44px]"
       @update:model-value="emit('update:sortMode', $event)"
     />
     <Button
       v-if="showToggle"
       severity="secondary"
       size="small"
+      class="min-h-[44px] min-w-[44px] touch-manipulation"
       :aria-label="viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
       :title="viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
       @click="emit('update:viewMode', viewMode === 'grid' ? 'list' : 'grid')"
