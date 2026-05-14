@@ -7,6 +7,7 @@ import { pb } from "@/lib/pocketbase";
 import VaccinationsTab from "./VaccinationsTab.vue";
 import MembershipsTab from "./MembershipsTab.vue";
 import PwaInstallBanner from './PwaInstallBanner.vue';
+import '@/assets/wallecx-overrides.css';
 
 const router = useRouter();
 const activeTab = ref<string>("vaccinations");
@@ -98,13 +99,3 @@ onMounted(async () => {
   </Card>
   <PwaInstallBanner />
 </template>
-
-<style>
-/* MOB-05: non-scoped — must target PrimeVue's rendered DOM nodes.
-   Scoped styles add data-v- attributes that do NOT match PrimeVue's internal .p-dialog-content elements.
-   This single rule covers ManageVaccination, ManageMembership, VaccinationDetail, and MembershipDetail dialogs. */
-.p-dialog-content {
-  max-height: 80dvh;
-  overflow-y: auto;
-}
-</style>

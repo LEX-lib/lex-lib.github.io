@@ -1,0 +1,19 @@
+/*
+ * wallecx-overrides.css
+ *
+ * MOB-05: PrimeVue Dialog content height constraint for Wallecx dialogs.
+ * Imported exclusively from WallecxApp.vue so the rule is bundled with the
+ * Wallecx lazy-loaded chunk, keeping it out of the global stylesheet for
+ * other routes (LexTrack, Gift Exchange, etc.).
+ *
+ * A non-scoped approach is required because PrimeVue's <Dialog> teleports
+ * its DOM to <body>, so scoped data-v- attributes do not reach the rendered
+ * .p-dialog-content element. A dedicated CSS file imported from the Wallecx
+ * entry component is the safest scoping strategy available.
+ *
+ * Covers: ManageVaccination, ManageMembership, VaccinationDetail, MembershipDetail dialogs.
+ */
+.p-dialog-content {
+  max-height: 80dvh;
+  overflow-y: auto;
+}
