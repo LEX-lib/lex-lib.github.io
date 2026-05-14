@@ -63,6 +63,12 @@ async function onVisibilityChange(): Promise<void> {
 
 onMounted(() => document.addEventListener('visibilitychange', onVisibilityChange))
 onUnmounted(() => document.removeEventListener('visibilitychange', onVisibilityChange))
+
+// Edit / Delete emits — MembershipsTab.vue wires @edit and @delete (Plan 13-03)
+const emit = defineEmits<{
+  edit: [];
+  delete: [];
+}>()
 </script>
 
 <template>
@@ -133,6 +139,24 @@ onUnmounted(() => document.removeEventListener('visibilitychange', onVisibilityC
         attachment-field="card_image"
         :attachment-name="record.card_name"
         :token="token"
+      />
+    </div>
+
+    <!-- Edit / Delete action row (D-04: emits to MembershipsTab; Plan 13-03) -->
+    <div class="flex justify-end gap-2 pt-2">
+      <Button
+        label="Edit"
+        icon="pi pi-pencil"
+        severity="secondary"
+        aria-label="Edit card"
+        @click="emit('edit')"
+      />
+      <Button
+        label="Delete"
+        icon="pi pi-trash"
+        severity="danger"
+        aria-label="Delete card"
+        @click="emit('delete')"
       />
     </div>
 
