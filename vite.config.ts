@@ -63,6 +63,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
+        // Exclude large non-PWA assets from precache manifest (about-me photo is 9.85 MB,
+        // not needed offline for Wallecx PWA functionality)
+        globIgnores: ["**/about-me-photo*"],
+        // Raise limit to 3 MiB to accommodate the vendor bundle (2.57 MiB)
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         navigateFallback: "index.html",  // LOCKED: mandatory for SPA offline — no leading slash
         navigateFallbackDenylist: [/^\/api\//],
