@@ -1,5 +1,5 @@
 ---
-status: partial
+status: resolved
 phase: 15-mobile-layouts
 source: [15-VERIFICATION.md]
 started: 2026-05-14T00:00:00Z
@@ -8,7 +8,7 @@ updated: 2026-05-14T00:00:00Z
 
 ## Current Test
 
-[awaiting human testing — open on iPhone in Safari]
+All 6 tests completed 2026-05-14.
 
 ## Tests
 
@@ -25,7 +25,7 @@ updated: 2026-05-14T00:00:00Z
 **Pass:** No horizontal scrollbar appears. No content is clipped or cut off at the edges. You never need to scroll sideways.
 **Fail:** Any screen has a horizontal scrollbar, or content disappears behind the left/right edge.
 
-result: [pending]
+result: pass — note: Group Detail drawer (VaccinationGroupPanel) is not optimised for mobile; logged as gap
 
 ---
 
@@ -41,7 +41,7 @@ result: [pending]
 **Pass:** Nav bar text/logo is fully visible below the notch. Last card is not hidden behind the home indicator. Landscape content clears the side cutout.
 **Fail:** Nav bar overlaps the notch, or card content hides behind the home indicator bar.
 
-result: [pending]
+result: pass
 
 ---
 
@@ -58,7 +58,7 @@ result: [pending]
 **Pass:** The form scrolls within the dialog. Save/Cancel are reachable by scrolling inside the dialog while the keyboard is still open.
 **Fail:** The keyboard covers the entire dialog and you cannot scroll to Save/Cancel without dismissing it first.
 
-result: [pending]
+result: pass
 
 ---
 
@@ -76,7 +76,7 @@ result: [pending]
 **Pass:** Banner shows on first visit. Tap ✕ → banner disappears. Refresh → still gone.
 **Fail:** Banner never appears, OR it reappears after refresh.
 
-result: [pending]
+result: pass
 
 ---
 
@@ -91,7 +91,7 @@ result: [pending]
 **Pass:** No banner. The app is already installed — it should not ask you to install.
 **Fail:** Banner appears even though you're running in standalone mode from the home screen.
 
-result: [pending]
+result: pass
 
 ---
 
@@ -107,17 +107,19 @@ result: [pending]
 **Pass:** Buttons are comfortably tappable without precision. They visually appear to be at least the same height as an iOS navigation bar button.
 **Fail:** Buttons are tiny and require precise tapping.
 
-result: [pending]
+result: pass
 
 ---
 
 ## Summary
 
 total: 6
-passed: 0
-issues: 0
-pending: 6
+passed: 6
+issues: 1
+pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- **Gap 1:** VaccinationGroupPanel (Group Detail drawer) is not optimised for mobile — the DataTable layout and action buttons inside the drawer do not adapt well to a 375px viewport. Requires a dedicated mobile layout pass on the drawer (e.g. stacked rows, larger tap targets, responsive columns).
