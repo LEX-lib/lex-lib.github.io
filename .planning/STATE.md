@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Membership Cards
-status: in_progress
+status: complete
 last_updated: "2026-05-14"
-last_activity: 2026-05-14 — Phase 13 human verification passed. v2.0 Membership Cards milestone complete. All 22 v2.0 requirements verified. 24 tests passing.
+last_activity: 2026-05-14 — Phase 13 complete. v2.0 Membership Cards milestone shipped. All 22 v2.0 requirements verified. 24 tests passing. MWRITE-01..06 satisfied.
 progress:
   total_phases: 14
   completed_phases: 13
