@@ -1,5 +1,28 @@
 # Milestones
 
+## v2.0 — Membership Cards
+
+**Shipped:** 2026-05-14
+**Phases:** 10–13 (4 phases, 12 plans)
+**Timeline:** 2026-05-13 → 2026-05-14 (2 days)
+**Requirements:** 22/22 shipped
+
+### Delivered
+
+1. WallecxApp.vue refactored from a 452-line vaccination monolith into a 35-line PrimeVue Tabs shell; VaccinationsTab.vue verbatim-extracts all vaccination state with zero regression
+2. `wallecx_memberships` PocketBase collection with 10 fields and 5 per-user access rules; two-user smoke test confirmed cross-user isolation across all access types
+3. BarcodeDisplay.vue four-branch renderer (QR/linear/number-fallback/empty) with JsBarcode try/catch guard and qrcode.vue SVG; full-screen scan overlay via Teleport + viewport overlay (iOS-safe) + wake lock
+4. MembershipCard.vue coloured tile grid with expiry warnings; MembershipDetail.vue read-only field grid with embedded barcode and card photo preview via refactored AttachmentPreview.vue
+5. ManageMembership.vue create/edit dialog with direct v-model refs (ColorPicker issue #8135 workaround), Zod safeParse, conditional barcode_value field, EXIF-stripped FileUpload, isSaving guard, server-first delete
+6. membershipMapper.spec.ts Vitest spec (11 tests) locking 5-field strip and id-refresh contract; 24 tests total passing
+
+### Known deferred items at close: 0 (prior deferred items from v1.0 close, already in STATE.md)
+
+**Archive:** `.planning/milestones/v2.0-ROADMAP.md`
+**Requirements:** `.planning/milestones/v2.0-REQUIREMENTS.md`
+
+---
+
 ## v1.0 — Wallecx MVP
 
 **Shipped:** 2026-05-12
