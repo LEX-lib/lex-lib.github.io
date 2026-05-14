@@ -60,6 +60,21 @@ export default defineConfig({
             purpose: "maskable",
           },
         ],
+        screenshots: [
+          {
+            src: "screenshots/screenshot-mobile.png",
+            sizes: "390x844",
+            type: "image/png",
+            label: "Wallecx — Vaccination & Membership Card Vault",
+          },
+          {
+            src: "screenshots/screenshot-desktop.png",
+            sizes: "1280x800",
+            type: "image/png",
+            form_factor: "wide",
+            label: "Wallecx — Vaccination & Membership Card Vault (Desktop)",
+          },
+        ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
