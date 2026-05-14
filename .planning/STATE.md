@@ -21,7 +21,7 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v2.1 Mobile PWA — Phase 14: PWA Foundation is next.
+**Current focus:** v2.1 Mobile PWA — Phase 15: Mobile Layouts is next.
 
 ## Current Position
 
@@ -92,7 +92,9 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
 | verification_gap | Phase 05: 05-VERIFICATION.md | human_needed |
 | verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
 
-Known deferred items at close: 7 (carried from v1.0 close)
+| uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 3 pending scenarios (Chrome DevTools PWA install, iOS standalone, offline precache) |
+
+Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
