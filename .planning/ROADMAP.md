@@ -87,7 +87,7 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 Plans:
 - [x] 14-01-PLAN.md — Install PWA packages, create vercel.json, create square icon SVG source
 - [x] 14-02-PLAN.md — Generate PWA icon PNGs, configure vite.config.ts VitePWA plugin, add env.d.ts type reference
-- [ ] 14-03-PLAN.md — Modify WallecxApp.vue with auth resilience and SW update toast
+- [x] 14-03-PLAN.md — Modify WallecxApp.vue with auth resilience and SW update toast
 - [ ] 14-04-PLAN.md — Production build verification and Chrome DevTools PWA-07 installability check
 
 **UI hint**: yes
@@ -126,9 +126,9 @@ Plans:
 | 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
-| 14. PWA Foundation | v2.1 | 2/4 | In progress | - |
+| 14. PWA Foundation | v2.1 | 3/4 | In progress | - |
 | 15. Mobile Layouts | v2.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Plan 14-02 complete; PWA icons generated, VitePWA() wired in vite.config.ts, env.d.ts type reference added*
+*Last updated: 2026-05-14 — Plan 14-03 complete; WallecxApp.vue extended with auth resilience (navigator.storage.persist, pb.authStore.isValid) and SW update toast (useRegisterSW, needRefresh watch)*
