@@ -1,0 +1,221 @@
+# Project Research Summary - Wallecx v2.0 Membership Cards
+
+**Project:** Wallecx v2.0 - Membership / Loyalty Card Wallet
+**Domain:** Barcode/QR rendering, fullscreen scan overlay, second PocketBase vault record type
+**Researched:** 2026-05-13
+**Confidence:** HIGH (stack, architecture, pitfalls verified against live codebase and official docs); MEDIUM (differentiator value judgments)
+
+---
+
+## Executive Summary
+
+Wallecx v2.0 adds a Membership Cards vault alongside the existing Vaccination Records slice. The core UX is a coloured card grid where each card stores a barcode value and type; tapping a card opens a fullscreen scan overlay that centres the barcode on a white background for checkout scanner use. The feature follows every v1.0 convention (mapper pair, per-user PocketBase rules, Zod + PrimeVue form pattern, vue-sonner toasts) and introduces exactly two new runtime dependencies: qrcode.vue ^3.9.1 for QR codes and jsbarcode ^3.12.3 for linear barcodes. @vueuse/core useFullscreen is already on disk as a hoisted dependency of @vueuse/motion.
+
+The critical structural change for v2.0 is a mandatory refactor of WallecxApp.vue: the existing vaccination logic must be extracted into a VaccinationsTab.vue component before any membership work begins. Without this extraction, adding memberships doubles the state surface of an already-large component. The architecture is deliberate: WallecxApp.vue becomes a thin tab shell; VaccinationsTab.vue and MembershipsTab.vue each own their own state independently; no Pinia store is needed because neither tab communicates with the other.
+
+The dominant risks are in two clusters. First, barcode rendering silently fails unless every JsBarcode call is wrapped in try/catch with a plain-text fallback, and barcodes must always render on a white background regardless of card colour (counter scanners require minimum 4.5:1 contrast). Second, the PrimeVue ColorPicker has three documented bugs: emits hex without a leading hash, misinterprets 3-digit shorthand, and ignores initial values when used inside a PrimeVue Form wrapper. Both clusters must be addressed from day one.
+
+---
+## 1. Recommended Stack Additions
+
+Two new runtime dependencies only.
+
+| Package | Version | Gzip | Purpose |
+|---------|---------|------|---------|
+| qrcode.vue | ^3.9.1 | ~17 KB | QR rendering to SVG; zero peer deps; Vue 3 native; published 2026-05-12 |
+| jsbarcode | ^3.12.3 | ~11 KB | 1D barcode rendering (CODE128, EAN13, EAN8, CODE39); renders to SVG element |
+| @vueuse/core useFullscreen | 13.9.0 hoisted | ~0 KB | Already on disk - no install needed |
+
+Total marginal gzip: ~28 KB. Both land in a lazy async chunk; the initial Lexarium bundle is unaffected.
+
+Install: npm install qrcode.vue@^3.9.1 jsbarcode@^3.12.3
+
+Explicit non-picks: bwip-js (960 KB for 100+ formats vs 11 KB for 4 needed), qrcode-vue3 (unmaintained), Dialog maximizable as fullscreen replacement (Dialog chrome wastes scan area).
+
+JsBarcode Vite/Rolldown note: JsBarcode ships CJS only. Rolldown handles CJS interop natively. If dev server warnings appear add optimizeDeps.include: [jsbarcode] to vite.config.ts.
+
+---
+
+## 2. Feature Table Stakes
+
+Must-have for v2.0 launch. Missing any makes the feature feel incomplete.
+
+| Feature | Complexity | Notes |
+|---------|------------|-------|
+| wallecx_memberships collection with per-user rules on all 5 operations | LOW | Must be first task; two-user smoke test gate before any UI |
+| Coloured card grid 2-column default | LOW-MED | MembershipCard.vue tiles; colour from card_colour hex field |
+| Barcode/QR rendering from stored value + type | MED | JsBarcode 1D; qrcode.vue QR; SVG output only, not canvas |
+| Full CRUD: create / edit / delete | LOW | Mirrors ManageVaccination.vue; isSaving guard required |
+| Fullscreen scan overlay on card tap | MED | position fixed viewport overlay (NOT Fullscreen API - broken on iOS); white barcode panel; wake lock |
+| Fallback plain number when barcode_value is empty | LOW | Show card_number as large monospace text |
+| Expiry date field with visual warning | LOW | Amber badge less than 30 days; red badge past expiry |
+| Wallecx tab navigation | LOW | PrimeVue 4 Tabs in refactored WallecxApp.vue; requires VaccinationsTab.vue extraction first |
+| Screen wake lock during fullscreen scan | LOW-MED | navigator.wakeLock.request in try/catch; graceful degrade |
+| Empty state, loading, error toasts | LOW | Mirrors vaccination pattern |
+| Confirm before delete | LOW | PrimeVue ConfirmDialog singleton in WallecxApp.vue |
+
+Default barcode type: CODE128 - most universally supported for retail/loyalty POS scanners. User selects override from dropdown with plain-English descriptions.
+
+Defer to v2.x: search + sort on membership grid, card category filter, grid/list view toggle, screen brightness API, landscape orientation hint, PDF417/Aztec via bwip-js.
+
+Out of scope: NFC tap-to-add, Apple/Google Wallet export (requires PassKit signing), live points balance, barcode camera scanning, geolocation reminders, sharing/public links.
+
+---
+
+## 3. Architecture Decision
+
+Decision: PrimeVue Tabs inside WallecxApp.vue (not sub-routes)
+
+Sub-routes were evaluated and rejected: they require a non-trivial router restructure, break existing bookmarks to /projects/wallecx, and no other Lexarium mini-app uses child routes for tab-like switching. src/router/index.ts is unchanged.
+
+### Critical Refactor: VaccinationsTab.vue Extraction
+
+This is mandatory before membership work begins.
+
+Build order:
+  Step 4 BLOCKER: Extract VaccinationsTab.vue
+    Mechanical move of all vaccination state, computed props, handlers, template from WallecxApp.vue
+    Verify vaccinations still work identically (pure refactor, no behaviour change)
+  Step 5: Add Tabs wrapper to WallecxApp.vue
+    Wrap VaccinationsTab in Tabs + TabPanels; stub MembershipsTab in second panel
+    Verify tab switching and Aura styling
+  Steps 6-11: Build MembershipsTab content
+    MembershipsTab.vue (fetch + state)
+    BarcodeDisplay.vue (built first so both card + detail can embed it)
+    MembershipCard.vue (tile; embeds BarcodeDisplay)
+    MembershipDetail.vue (fullscreen scan overlay)
+    ManageMembership.vue (create/edit dialog)
+    Delete flow in MembershipsTab.vue
+
+Component map post-v2.0:
+  WallecxApp.vue (tab shell + shared ConfirmDialog)
+    VaccinationsTab.vue (all vaccination state extracted from WallecxApp)
+      WallecxToolbar / VaccinationGroupCard / VaccinationGroupPanel
+      ManageVaccination / VaccinationDetail / AttachmentPreview (all unchanged)
+    MembershipsTab.vue (new - owns membership state)
+      MembershipCard.vue (new - coloured tile)
+      ManageMembership.vue (new - create/edit dialog)
+      MembershipDetail.vue (new - fullscreen scan overlay)
+        BarcodeDisplay.vue (new - isolated, purely presentational renderer)
+
+Key pattern decisions:
+- Tab-root state ownership: each tab owns its own state; WallecxApp.vue holds only active tab index
+- Separate toolbar: MembershipsToolbar.vue (copy-adapt, not genericised) - different sort dimensions
+- Mapper pair: src/types/wallecx/memberships/types.d.ts + src/lib/pocketbase/membershipMapper.ts
+- BarcodeDisplay.vue is purely presentational - no PocketBase calls; reusable by future vault types
+- card_colour stored WITHOUT hash prefix (matches ColorPicker emit); use toCSS(hex) utility in all CSS bindings
+- No new Pinia store needed; local refs per tab root are sufficient
+
+New PocketBase collection (wallecx_memberships):
+  Fields: user (relation, cascadeDelete), card_name (required max 200), issuer, barcode_value (max 500),
+    barcode_type (qr|code128|ean13|code39), card_number (max 100), expiry_date, notes,
+    card_colour (max 6, regex [0-9a-fA-F]{6}), card_photo (file image/* 10 MB thumbs 100x100 + 400x400)
+  All 5 rules: @request.auth.id != empty AND user = @request.auth.id
+    (createRule uses @request.data.user)
+  Index: user + card_name ASC
+
+---
+
+## 4. Top Pitfalls to Avoid
+
+Numbered in priority order. Full mitigations in PITFALLS.md.
+
+1. JsBarcode throws uncaught exception on invalid input (BR-1) - CRITICAL
+   JsBarcode has no soft-fail mode. Invalid format/value combos (wrong length for EAN-13, lowercase
+   in Code39, empty string) throw a synchronous Error crashing the component with a blank area.
+   Wrap every JsBarcode() call in try/catch; on catch render card_number as large plain text with
+   Barcode unavailable caption. Add Zod pre-validation per format. Never pass empty string.
+
+2. PrimeVue ColorPicker emits hex WITHOUT the leading hash (CP-1) - HIGH
+   ColorPicker v-model emits 002244 not #002244. Direct use in :style produces transparent tiles.
+   Store without hash. Create toCSS(hex) utility and apply in ALL CSS bindings.
+   Zod validates [0-9a-fA-F]{6}. Default for new cards: 1a56db.
+
+3. iOS fullscreen API does nothing - use viewport overlay (FS-2) - HIGH
+   requestFullscreen() on non-video elements is unsupported on iPhone (iOS < 26; majority of
+   current devices). Do not use the Fullscreen API. Use position: fixed; inset: 0; z-index: 9999
+   viewport overlay - works identically on all devices.
+
+4. Screen dims mid-scan - Wake Lock is required (FS-1) - HIGH
+   Screen auto-dims at checkout making barcode disappear. Call navigator.wakeLock.request(screen)
+   in try/catch when scan overlay opens. Release in onUnmounted and tab-hidden. Re-acquire on
+   visibilitychange. Guard with wakeLock in navigator for pre-iOS 16.4.
+
+5. White background behind barcodes is non-negotiable (BR-2) - HIGH
+   Dark-on-dark and red-foreground barcodes fail counter scanners (minimum 4.5:1 contrast).
+   Use BARCODE_FOREGROUND=#000000 and BARCODE_BACKGROUND=#ffffff constants - no user override.
+   Wrap SVG in bg-white p-2 rounded-md container.
+
+6. ColorPicker initial value ignored inside PrimeVue Form (CP-3) - HIGH
+   PrimeVue issue #8135 (unfixed 2026-05-13). ColorPicker inside Form always starts showing red.
+   Do not use @primevue/forms controlled system for ManageMembership.vue.
+   Use direct v-model refs same pattern as ManageVaccination.vue.
+
+7. PocketBase auto-cancel silently drops parallel collection fetches (MR-5) - MEDIUM
+   Use distinct requestKey strings on every getFullList call to opt out of auto-cancellation.
+   Example: pb.collection(wallecx_memberships).getFullList({ requestKey: memberships-init })
+
+8. Per-user isolation rules missing on new collection (MR-2) - CRITICAL first-task gate
+   Apply all 5 rules before any frontend work. Two-user smoke test required.
+   Definition of Done gate for collection creation.
+
+9. Watcher fires before SVG element mounts (BR-5) - MEDIUM
+   Use useTemplateRef and check svgRef.value before calling JsBarcode.
+   Pattern: onMounted(render) + watch(barcodeValue, render) without immediate.
+
+10. WallecxApp.vue state explosion from two record types (MR-3) - MEDIUM
+    Extract VaccinationsTab.vue as dedicated step. WallecxApp.vue must own only the active tab index.
+
+---
+
+## 5. Research Flags
+
+| Flag | Confidence | Recommendation |
+|------|------------|----------------|
+| useFullscreen iOS CSS fallback exact implementation | MEDIUM | Verify on real iPhone hardware; 30-min test is more valuable than further research |
+| Wake Lock re-acquisition on visibilitychange in PWA mode | MEDIUM | Implement as documented on MDN and smoke-test |
+| Vite code-split group for qrcode.vue + jsbarcode | LOW | Add memberships chunk group from STACK.md if build report shows vendor chunk bleed |
+| card_colour server-side regex on PocketBase text field | LOW | Configure in PocketBase admin UI during collection setup |
+| MembershipsToolbar.vue vs deferred search/sort | LOW | Optional for v2.0 MVP; flag as add-if-time-allows in polish phase |
+
+Phases needing /gsd-research-phase: Phase implementing BarcodeDisplay.vue and fullscreen scan.
+  iOS fallback, wake lock re-acquisition, and JsBarcode try/catch have subtle ordering requirements.
+
+Phases following standard patterns (no research needed): Collection setup, ManageMembership.vue
+  form, membershipMapper.ts - all direct mirrors of established vaccination patterns.
+
+---
+
+## Confidence Assessment
+
+| Area | Confidence | Notes |
+|------|------------|-------|
+| Stack additions | HIGH | qrcode.vue v3.9.1 verified live; jsbarcode v3.12.3 verified; @vueuse/core v13.9.0 confirmed hoisted; bundle sizes measured from installed dist |
+| Features | HIGH table stakes / MEDIUM differentiators | Apple PassKit + Google Wallet + Stocard/FidMe/Barcodes app survey; per-category barcode defaults are inference |
+| Architecture | HIGH | Direct inspection of existing Wallecx + LexTrack codebase; PrimeVue 4 Tabs API confirmed in installed package |
+| Pitfalls | HIGH BR-1/CP-1/FS-2 / MEDIUM FS-1/MR-5 | BR-1 verified JsBarcode issues; CP-1 in PrimeVue docs; FS-2 caniuse + Apple Dev Forums |
+
+Overall confidence: HIGH
+
+Gaps: iOS fullscreen CSS fallback not tested on real hardware - implement and smoke-test, not research further. Per-card-type barcode defaults are industry inference; CODE128 default with user override is the correct hedge.
+
+---
+
+## Sources
+
+- qrcode.vue GitHub https://github.com/scopewu/qrcode.vue
+- JsBarcode GitHub https://github.com/lindell/JsBarcode
+- useFullscreen VueUse docs https://vueuse.org/core/usefullscreen/
+- Apple Wallet PassKit https://developer.apple.com/library/archive/documentation/UserExperience/Conceptual/PassKit_PG/Creating.html
+- Screen Wake Lock API MDN https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API
+- caniuse Wake Lock https://caniuse.com/wake-lock
+- caniuse Fullscreen API https://caniuse.com/fullscreen
+- PrimeVue ColorPicker docs https://primevue.org/colorpicker/
+- PrimeVue issue 8135 https://github.com/primefaces/primevue/issues/8135
+- JsBarcode issues 269 and 212 https://github.com/lindell/JsBarcode/issues/269
+- Scandit barcode type guide https://www.scandit.com/resources/guides/types-of-barcodes-choosing-the-right-barcode/
+- CardPrinting.com barcode types https://www.cardprinting.com/page/common-barcode-types
+- Internal: WallecxApp.vue, LexTrackApp.vue, ManageVaccination.vue, vaccinationMapper.ts, .planning/PROJECT.md, .planning/codebase/CONVENTIONS.md
+
+---
+
