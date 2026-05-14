@@ -4,17 +4,17 @@ milestone: v2.1
 milestone_name: Mobile PWA
 status: in_progress
 stopped_at: ""
-last_updated: "2026-05-14T05:34:30Z"
+last_updated: "2026-05-14T05:39:45Z"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 14 Plan 03 complete. WallecxApp.vue extended with auth resilience (navigator.storage.persist, pb.authStore.isValid check) and SW update toast (useRegisterSW, needRefresh watch).
+**Last updated:** 2026-05-14 — Phase 14 Plan 04 complete. Production build verified: dist/sw.js (53-entry precache) and dist/manifest.webmanifest generated. Workbox fix: globIgnores for about-me-photo (9.85 MB), maximumFileSizeToCacheInBytes raised to 3 MiB for vendor bundle. Phase 14 PWA Foundation complete (4/4 plans).
 
 ## Project Reference
 
@@ -26,9 +26,9 @@ progress:
 ## Current Position
 
 **Milestone:** v2.1 — Mobile PWA (IN PROGRESS)
-**Phase:** Phase 14 — PWA Foundation (3/4 plans complete)
-**Plan:** 14-04 is next (Production build verification and Chrome DevTools PWA-07 installability check)
-**Status:** Executing. Plans 14-01, 14-02, and 14-03 complete.
+**Phase:** Phase 14 — PWA Foundation (4/4 plans complete)
+**Plan:** Phase 14 complete. Next: Phase 15 — Mobile Layouts
+**Status:** Phase 14 complete. Plans 14-01, 14-02, 14-03, and 14-04 complete.
 
 ## Shipped Milestones Summary
 
@@ -64,6 +64,12 @@ progress:
 - **scope: '/' not '/projects/wallecx'.** Scoping to sub-path breaks cross-route navigation within the installed PWA.
 - **Do NOT add `<link rel="manifest">` manually.** vite-plugin-pwa auto-injects it at build time.
 
+### v2.1 PWA Build Decisions (Plan 14-04)
+
+- **globIgnores: ['**/about-me-photo*']** — the about-me home page photo (9.85 MB) is excluded from Workbox precache; not needed offline for Wallecx PWA functionality.
+- **maximumFileSizeToCacheInBytes: 3 MiB** — vendor bundle (2.57 MiB, contains Vue/Pinia/Router) must be precached for app shell offline; 3 MiB limit accommodates it.
+- **Task 2 human-verify auto-approved** — per auto_advance:true config; Chrome DevTools verification instructions documented in 14-04-SUMMARY.md for async follow-up.
+
 ### Open Todos
 
 None.
@@ -90,11 +96,11 @@ Known deferred items at close: 7 (carried from v1.0 close)
 
 ## Session Continuity
 
-**Last session:** 2026-05-14T05:34:30Z
+**Last session:** 2026-05-14T05:39:45Z
 
-**Stopped at:** Plan 14-03 complete (1/1 task committed: 9f0ca79)
+**Stopped at:** Plan 14-04 complete (1/1 task committed: ee379a3; Task 2 checkpoint auto-approved per auto_advance:true)
 
-**Next session entry point:** Execute Plan 14-04 — Production build verification and Chrome DevTools PWA-07 installability check.
+**Next session entry point:** Execute Phase 15 — Mobile Layouts (plans TBD).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

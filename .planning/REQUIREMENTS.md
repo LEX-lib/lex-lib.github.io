@@ -11,13 +11,13 @@ Phase numbering continues from v2.0 (last phase was 13 → v2.1 starts at Phase 
 
 Prerequisites for installability: manifest, icons, service worker, Vercel headers, auth resilience, and update prompt.
 
-- [ ] **PWA-01**: Web App Manifest served with correct MIME type — `name: "Wallecx"`, `short_name: "Wallecx"`, `display: "standalone"`, `theme_color: "#002244"`, `background_color: "#002244"`, `start_url: "/projects/wallecx"`, `scope: "/projects/wallecx"`
-- [ ] **PWA-02**: PWA icons committed to `public/`: `pwa-192x192.png` (purpose: "any"), `pwa-512x512.png` (purpose: "maskable" — safe zone verified), `apple-touch-icon.png` 180×180; all generated via `@vite-pwa/assets-generator`
-- [ ] **PWA-03**: Service worker registered via `vite-plugin-pwa` with `registerType: 'prompt'`, `navigateFallback: '/index.html'` (required for Vue Router HTML5 history offline), all PocketBase API calls `NetworkOnly` (no stale auth or record data served from cache)
-- [ ] **PWA-04**: `vercel.json` sets `Cache-Control: no-cache` for `sw.js` and `*.webmanifest`; includes catch-all SPA rewrite rule so deep-link navigation works on Vercel without a 404
-- [ ] **PWA-05**: `navigator.storage.persist()` called on Wallecx app mount; `pb.authStore.isValid` checked on every WallecxApp.vue `onMounted` — an expired or evicted session redirects to `/login?redirect=/projects/wallecx` with a `vue-sonner` info toast explaining the session expired (guards against iOS 7-day localStorage eviction of PocketBase auth token)
-- [ ] **PWA-06**: When a new service worker is waiting, a non-blocking `vue-sonner` toast appears with a "Refresh" action button; tapping it calls `updateServiceWorker()` and reloads — `registerType` is never `'autoUpdate'` (both CRUD forms have unsaved state that a forced reload would destroy)
-- [ ] **PWA-07**: Lighthouse PWA installability audit score passes all criteria in the production Vercel build: manifest valid, service worker registered, HTTPS, icons present, start_url responds
+- [x] **PWA-01**: Web App Manifest served with correct MIME type — `name: "Wallecx"`, `short_name: "Wallecx"`, `display: "standalone"`, `theme_color: "#002244"`, `background_color: "#002244"`, `start_url: "/projects/wallecx"`, `scope: "/projects/wallecx"`
+- [x] **PWA-02**: PWA icons committed to `public/`: `pwa-192x192.png` (purpose: "any"), `pwa-512x512.png` (purpose: "maskable" — safe zone verified), `apple-touch-icon.png` 180×180; all generated via `@vite-pwa/assets-generator`
+- [x] **PWA-03**: Service worker registered via `vite-plugin-pwa` with `registerType: 'prompt'`, `navigateFallback: '/index.html'` (required for Vue Router HTML5 history offline), all PocketBase API calls `NetworkOnly` (no stale auth or record data served from cache)
+- [x] **PWA-04**: `vercel.json` sets `Cache-Control: no-cache` for `sw.js` and `*.webmanifest`; includes catch-all SPA rewrite rule so deep-link navigation works on Vercel without a 404
+- [x] **PWA-05**: `navigator.storage.persist()` called on Wallecx app mount; `pb.authStore.isValid` checked on every WallecxApp.vue `onMounted` — an expired or evicted session redirects to `/login?redirect=/projects/wallecx` with a `vue-sonner` info toast explaining the session expired (guards against iOS 7-day localStorage eviction of PocketBase auth token)
+- [x] **PWA-06**: When a new service worker is waiting, a non-blocking `vue-sonner` toast appears with a "Refresh" action button; tapping it calls `updateServiceWorker()` and reloads — `registerType` is never `'autoUpdate'` (both CRUD forms have unsaved state that a forced reload would destroy)
+- [x] **PWA-07**: Lighthouse PWA installability audit score passes all criteria in the production Vercel build: manifest valid, service worker registered, HTTPS, icons present, start_url responds
 
 ### Mobile Layouts
 
@@ -82,13 +82,13 @@ Responsive layouts, touch targets, and platform-native feel across all Wallecx s
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWA-01 | Phase 14 | Pending |
-| PWA-02 | Phase 14 | Pending |
-| PWA-03 | Phase 14 | Pending |
-| PWA-04 | Phase 14 | Pending |
-| PWA-05 | Phase 14 | Pending |
-| PWA-06 | Phase 14 | Pending |
-| PWA-07 | Phase 14 | Pending |
+| PWA-01 | Phase 14 | Complete |
+| PWA-02 | Phase 14 | Complete |
+| PWA-03 | Phase 14 | Complete |
+| PWA-04 | Phase 14 | Complete |
+| PWA-05 | Phase 14 | Complete |
+| PWA-06 | Phase 14 | Complete |
+| PWA-07 | Phase 14 | Complete |
 | MOB-01 | Phase 15 | Pending |
 | MOB-02 | Phase 15 | Pending |
 | MOB-03 | Phase 15 | Pending |

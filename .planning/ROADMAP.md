@@ -67,7 +67,7 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 
 **Milestone goal:** Wallecx is installable as a home-screen app on iOS and Android, loads instantly on repeat visits, and is fully usable on a 375px phone viewport with correct touch targets, safe-area insets, and no horizontal scroll.
 
-- [ ] **Phase 14: PWA Foundation** - Install prerequisites: manifest, icons, service worker, Vercel cache headers, auth resilience, and update toast
+- [x] **Phase 14: PWA Foundation** - Install prerequisites: manifest, icons, service worker, Vercel cache headers, auth resilience, and update toast — completed 2026-05-14
 - [ ] **Phase 15: Mobile Layouts** - Responsive grids, 44px touch targets, dvh dialogs, safe-area insets, overscroll lock, and iOS install banner
 
 ## Phase Details
@@ -88,7 +88,7 @@ Plans:
 - [x] 14-01-PLAN.md — Install PWA packages, create vercel.json, create square icon SVG source
 - [x] 14-02-PLAN.md — Generate PWA icon PNGs, configure vite.config.ts VitePWA plugin, add env.d.ts type reference
 - [x] 14-03-PLAN.md — Modify WallecxApp.vue with auth resilience and SW update toast
-- [ ] 14-04-PLAN.md — Production build verification and Chrome DevTools PWA-07 installability check
+- [x] 14-04-PLAN.md — Production build verification and Chrome DevTools PWA-07 installability check
 
 **UI hint**: yes
 
@@ -126,9 +126,9 @@ Plans:
 | 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
-| 14. PWA Foundation | v2.1 | 3/4 | In progress | - |
+| 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Plan 14-03 complete; WallecxApp.vue extended with auth resilience (navigator.storage.persist, pb.authStore.isValid) and SW update toast (useRegisterSW, needRefresh watch)*
+*Last updated: 2026-05-14 — Plan 14-04 complete; Phase 14 PWA Foundation complete (4/4 plans); production build verified, Workbox precache fix applied (globIgnores about-me-photo, 3 MiB limit for vendor bundle)*
