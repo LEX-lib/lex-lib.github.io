@@ -103,7 +103,13 @@ Plans:
   4. Opening a CRUD dialog on an iPhone and tapping into a text field causes the form to scroll within the dialog (not push content off-screen); the Save/Cancel buttons remain reachable without dismissing the keyboard
   5. On a notched iPhone, the Wallecx shell content sits inside the safe area — no text or buttons are hidden behind the notch, Dynamic Island, or home indicator bar
   6. On iOS Safari (not standalone), a dismissible "Add to Home Screen" instruction banner appears once; it does not reappear after dismissal, and it is not shown in standalone mode
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — Viewport meta (viewport-fit=cover, interactive-widget), App.vue top safe-area, WallecxApp.vue bottom/side safe-area + overscroll-none + global dialog CSS override; verify MembershipsTab/VaccinationsTab grid classes
+- [ ] 15-02-PLAN.md — Touch targets on WallecxToolbar.vue, VaccinationGroupPanel.vue, MembershipCard.vue, VaccinationGroupCard.vue
+- [ ] 15-03-PLAN.md — Create PwaInstallBanner.vue (iOS Safari only, localStorage dismiss, Teleport to body); wire into WallecxApp.vue
+
 **UI hint**: yes
 
 ---
@@ -127,8 +133,8 @@ Plans:
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 15. Mobile Layouts | v2.1 | 0/? | Not started | - |
+| 15. Mobile Layouts | v2.1 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Plan 14-04 complete; Phase 14 PWA Foundation complete (4/4 plans); production build verified, Workbox precache fix applied (globIgnores about-me-photo, 3 MiB limit for vendor bundle)*
+*Last updated: 2026-05-14 — Phase 15 Mobile Layouts planned (3 plans, 2 waves); plans 15-01 through 15-03 created*
