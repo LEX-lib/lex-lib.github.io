@@ -68,7 +68,7 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 **Milestone goal:** Wallecx is installable as a home-screen app on iOS and Android, loads instantly on repeat visits, and is fully usable on a 375px phone viewport with correct touch targets, safe-area insets, and no horizontal scroll.
 
 - [x] **Phase 14: PWA Foundation** - Install prerequisites: manifest, icons, service worker, Vercel cache headers, auth resilience, and update toast — completed 2026-05-14
-- [ ] **Phase 15: Mobile Layouts** - Responsive grids, 44px touch targets, dvh dialogs, safe-area insets, overscroll lock, and iOS install banner
+- [x] **Phase 15: Mobile Layouts** - Responsive grids, 44px touch targets, dvh dialogs, safe-area insets, overscroll lock, and iOS install banner — completed 2026-05-14
 
 ## Phase Details
 
@@ -108,7 +108,7 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — Viewport meta (viewport-fit=cover, interactive-widget), App.vue top safe-area, WallecxApp.vue bottom/side safe-area + overscroll-none + global dialog CSS override; verify MembershipsTab/VaccinationsTab grid classes
 - [x] 15-02-PLAN.md — Touch targets on WallecxToolbar.vue, VaccinationGroupPanel.vue, MembershipCard.vue, VaccinationGroupCard.vue
-- [ ] 15-03-PLAN.md — Create PwaInstallBanner.vue (iOS Safari only, localStorage dismiss, Teleport to body); wire into WallecxApp.vue
+- [x] 15-03-PLAN.md — Create PwaInstallBanner.vue (iOS Safari only, localStorage dismiss, Teleport to body); wire into WallecxApp.vue
 
 **UI hint**: yes
 
@@ -133,8 +133,8 @@ Plans:
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 15. Mobile Layouts | v2.1 | 2/3 | In progress | - |
+| 15. Mobile Layouts | v2.1 | 3/3 | Complete | 2026-05-14 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Phase 15 Wave 1 complete; plans 15-01 and 15-02 executed (2/3 plans)*
+*Last updated: 2026-05-14 — Phase 15 Mobile Layouts complete (3/3 plans, 2 waves)*

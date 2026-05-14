@@ -14,7 +14,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 15 Wave 1 complete (15-01 + 15-02 executed). Wave 2: 15-03 (PwaInstallBanner.vue) next.
+**Last updated:** 2026-05-14 — Phase 15 Mobile Layouts complete (3/3 plans, 2 waves). All execution done, proceeding to verification.
 
 ## Project Reference
 
@@ -26,9 +26,9 @@ progress:
 ## Current Position
 
 **Milestone:** v2.1 — Mobile PWA (IN PROGRESS)
-**Phase:** Phase 15 — Mobile Layouts (2/3 plans complete — Wave 2 in progress)
-**Plan:** Wave 1 complete (15-01, 15-02). Wave 2: 15-03 executing.
-**Status:** Phase 15 execution in progress. Plans 15-01 and 15-02 complete. Plan 15-03 next.
+**Phase:** Phase 15 — Mobile Layouts (3/3 plans complete — verifying)
+**Plan:** All plans executed (15-01, 15-02, 15-03). Verification in progress.
+**Status:** Phase 15 execution complete. All plans done, awaiting verification result.
 
 ## Shipped Milestones Summary
 
