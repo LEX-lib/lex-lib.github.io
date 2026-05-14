@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Membership Cards
 status: in_progress
 last_updated: "2026-05-14"
-last_activity: 2026-05-14 — Phase 13 Wave 1 complete. 13-01 (membershipMapper.spec.ts 11 tests, MWRITE-06) and 13-02 (ManageMembership.vue 370 lines, MWRITE-01..05) merged. 24 tests passing. Wave 2 (13-03 MembershipsTab wiring) next.
+last_activity: 2026-05-14 — Phase 13 Wave 2 complete. 13-03 (MembershipDetail.vue emits + MembershipsTab.vue full CRUD wiring) committed. All 24 tests passing. Awaiting human verification checkpoint (browser CRUD flow tests).
 progress:
   total_phases: 14
   completed_phases: 12
@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 13 planned (3/3 plans created and verified). membershipMapper.spec.ts, ManageMembership.vue, MembershipsTab+MembershipDetail wiring. Ready to execute Phase 13.
+**Last updated:** 2026-05-14 — Phase 13 execution complete (3/3 plans committed). 13-01 mapper spec, 13-02 ManageMembership.vue, 13-03 MembershipsTab+MembershipDetail wiring. Awaiting human verification checkpoint.
 
 ## Project Reference
 
@@ -27,10 +27,10 @@ progress:
 ## Current Position
 
 **Milestone:** v2.0 — Membership Cards
-**Phase:** Phase 13 (planned — ready to execute)
-**Plan:** Phase 13 planned (3/3 plans ready); execution next
-**Status:** Phase 13 planned. 3 plans created: 13-01 (membershipMapper.spec.ts), 13-02 (ManageMembership.vue complete dialog), 13-03 (MembershipsTab+MembershipDetail wiring). Verification passed.
-**Last activity:** 2026-05-14 — Phase 13 planned: 3 plans created and verified (MWRITE-01..06 all covered)
+**Phase:** Phase 13 (executed — awaiting human verification)
+**Plan:** Phase 13 complete (3/3 plans executed); human verification checkpoint next
+**Status:** Phase 13 execution complete. 13-01 (membershipMapper.spec.ts 11 tests), 13-02 (ManageMembership.vue 370 lines), 13-03 (MembershipsTab+MembershipDetail CRUD wiring) all committed. 24 tests passing. Awaiting browser verification.
+**Last activity:** 2026-05-14 — Phase 13 executed: 13-03 MembershipsTab write state + MembershipDetail emits committed (908c8cb, ba17bb4)
 
 ## Roadmap Snapshot
 
@@ -184,9 +184,9 @@ Known deferred items at close: 11 (see above)
 
 **Last session:** 2026-05-14
 
-**Stopped at:** Phase 13 planned — 3/3 plans created and verified
+**Stopped at:** Phase 13 Plan 03 — checkpoint:human-verify (browser CRUD flow verification required)
 
-**Next session entry point:** Execute Phase 13 — Write Path: ManageMembership CRUD. Start with `/gsd-execute-phase 13`.
+**Next session entry point:** Run `npm run dev`, navigate to `/projects/wallecx`, complete the 6-step browser verification in 13-03-PLAN.md checkpoint task. Type "approved" to complete Phase 13.
 
 **Files of interest:**
 

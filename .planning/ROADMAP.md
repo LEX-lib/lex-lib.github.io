@@ -53,7 +53,7 @@ Full details: [.planning/milestones/v1.0-ROADMAP.md](.planning/milestones/v1.0-R
 - [x] **Phase 10: Tabs Shell — VaccinationsTab Extraction** — Extract all vaccination logic into VaccinationsTab.vue; WallecxApp.vue becomes a PrimeVue Tabs shell; both tabs navigable with no regression (2/2 plans complete)
 - [x] **Phase 11: Backend + Frontend Foundation** — wallecx_memberships collection with per-user rules; TypeScript types + mapper; barcode library dependencies installed; two-user smoke test (3/3 plans complete)
 - [x] **Phase 12: Read Path — Card Grid, Barcode Display & Detail** — BarcodeDisplay.vue with QR/linear/fallback rendering; MembershipCard.vue coloured tiles; MembershipsTab.vue grid; MembershipDetail.vue with full-screen scan overlay (4/4 plans complete)
-- [ ] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts
+- [x] **Phase 13: Write Path — ManageMembership CRUD** — ManageMembership.vue create/edit dialog with Zod validation; ColorPicker; FileUpload; full delete flow; membershipMapper.spec.ts (3/3 plans complete — awaiting human verification)
 
 ---
 
@@ -467,7 +467,7 @@ Plans:
 Plans:
 - [x] 13-01-PLAN.md — membershipMapper.spec.ts: field-strip + id-refresh contract tests (MWRITE-06)
 - [x] 13-02-PLAN.md — ManageMembership.vue: direct v-model form, ColorPicker, barcode_type Select + conditional field, FileUpload, create/update submit flows (MWRITE-01, MWRITE-02, MWRITE-03, MWRITE-04, MWRITE-05)
-- [ ] 13-03-PLAN.md — MembershipDetail.vue edit/delete emits + MembershipsTab.vue write state wiring + human verification checkpoint (MWRITE-05)
+- [x] 13-03-PLAN.md — MembershipDetail.vue edit/delete emits + MembershipsTab.vue write state wiring + human verification checkpoint (MWRITE-05)
 
 **UI hint**: yes
 
