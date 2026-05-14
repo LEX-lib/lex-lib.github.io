@@ -1,10 +1,11 @@
 ---
 phase: 14
 slug: pwa-foundation
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-14
+reviewed_at: 2026-05-14
 baseline: .planning/phases/03-write-path/03-UI-SPEC.md
 ---
 
