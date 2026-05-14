@@ -82,21 +82,21 @@ Responsive layouts, touch targets, and platform-native feel across all Wallecx s
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWA-01 | Phase 14 | — |
-| PWA-02 | Phase 14 | — |
-| PWA-03 | Phase 14 | — |
-| PWA-04 | Phase 14 | — |
-| PWA-05 | Phase 14 | — |
-| PWA-06 | Phase 14 | — |
-| PWA-07 | Phase 14 | — |
-| MOB-01 | Phase 15 | — |
-| MOB-02 | Phase 15 | — |
-| MOB-03 | Phase 15 | — |
-| MOB-04 | Phase 15 | — |
-| MOB-05 | Phase 15 | — |
-| MOB-06 | Phase 15 | — |
-| MOB-07 | Phase 15 | — |
-| MOB-08 | Phase 15 | — |
+| PWA-01 | Phase 14 | Pending |
+| PWA-02 | Phase 14 | Pending |
+| PWA-03 | Phase 14 | Pending |
+| PWA-04 | Phase 14 | Pending |
+| PWA-05 | Phase 14 | Pending |
+| PWA-06 | Phase 14 | Pending |
+| PWA-07 | Phase 14 | Pending |
+| MOB-01 | Phase 15 | Pending |
+| MOB-02 | Phase 15 | Pending |
+| MOB-03 | Phase 15 | Pending |
+| MOB-04 | Phase 15 | Pending |
+| MOB-05 | Phase 15 | Pending |
+| MOB-06 | Phase 15 | Pending |
+| MOB-07 | Phase 15 | Pending |
+| MOB-08 | Phase 15 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 15 total
@@ -105,3 +105,4 @@ Responsive layouts, touch targets, and platform-native feel across all Wallecx s
 
 ---
 *Requirements defined: 2026-05-14*
+*Traceability updated: 2026-05-14 — phases assigned (14–15)*

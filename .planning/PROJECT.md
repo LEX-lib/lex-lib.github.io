@@ -111,6 +111,19 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | Every JsBarcode() call wrapped in try/catch | JsBarcode has no soft-fail mode; invalid input throws synchronously | ✓ Validated v2.0 |
 | ConfirmDialog kept at WallecxApp.vue shell level | `useConfirm` broadcasts to single app-shell-level instance | ✓ Validated v2.0 |
 
+## Current Milestone: v2.1 Mobile PWA
+
+**Goal:** Wallecx is installable as a home-screen app on iOS and Android, loads instantly on repeat visits, and is fully usable on a 375px phone viewport with correct touch targets, safe-area insets, and no horizontal scroll.
+
+**Target features:**
+- PWA manifest, icons, service worker (vite-plugin-pwa, registerType: 'prompt', NetworkOnly for PocketBase)
+- `vercel.json` cache headers for sw.js and manifest
+- Auth resilience: `navigator.storage.persist()` + `pb.authStore.isValid` check on mount (iOS 7-day eviction guard)
+- SW update toast (non-blocking, user-triggered refresh)
+- Responsive card grids (single-column on mobile), 44px touch targets, 80dvh CRUD dialogs
+- Safe-area insets + `overscroll-behavior: none`
+- iOS Add-to-Home-Screen instruction banner (`PwaInstallBanner.vue`)
+
 ## Shipped Milestones
 
 | Milestone | Phases | Shipped | Archive |
