@@ -6,6 +6,7 @@ import { useRegisterSW } from "virtual:pwa-register/vue";
 import { pb } from "@/lib/pocketbase";
 import VaccinationsTab from "./VaccinationsTab.vue";
 import MembershipsTab from "./MembershipsTab.vue";
+import PwaInstallBanner from './PwaInstallBanner.vue';
 
 const router = useRouter();
 const activeTab = ref<string>("vaccinations");
@@ -95,6 +96,7 @@ onMounted(async () => {
       <ConfirmDialog />
     </template>
   </Card>
+  <PwaInstallBanner />
 </template>
 
 <style>
