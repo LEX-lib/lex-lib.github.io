@@ -4,17 +4,17 @@ milestone: v2.1
 milestone_name: Mobile PWA
 status: in_progress
 stopped_at: ""
-last_updated: "2026-05-14T04:04:19.962Z"
+last_updated: "2026-05-14T05:29:37Z"
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 14 Plan 01 complete. vite-plugin-pwa installed, vercel.json created, wallecx-icon.svg created.
+**Last updated:** 2026-05-14 — Phase 14 Plan 02 complete. PWA icons generated, VitePWA() added to vite.config.ts, env.d.ts type reference added.
 
 ## Project Reference
 
@@ -26,9 +26,9 @@ progress:
 ## Current Position
 
 **Milestone:** v2.1 — Mobile PWA (IN PROGRESS)
-**Phase:** Phase 14 — PWA Foundation (1/4 plans complete)
-**Plan:** 14-02 is next (icon generation + vite.config.ts)
-**Status:** Executing. Plan 14-01 complete.
+**Phase:** Phase 14 — PWA Foundation (2/4 plans complete)
+**Plan:** 14-03 is next (WallecxApp.vue auth resilience + SW update toast)
+**Status:** Executing. Plans 14-01 and 14-02 complete.
 
 ## Shipped Milestones Summary
 
@@ -90,11 +90,11 @@ Known deferred items at close: 7 (carried from v1.0 close)
 
 ## Session Continuity
 
-**Last session:** 2026-05-14T05:24:11Z
+**Last session:** 2026-05-14T05:29:37Z
 
-**Stopped at:** Plan 14-01 complete (3/3 tasks committed: abed8fc, 99866b5, fd7d00a)
+**Stopped at:** Plan 14-02 complete (2/2 tasks committed: 23bd6a1, 4ba2081)
 
-**Next session entry point:** Execute Plan 14-02 — icon generation + vite.config.ts VitePWA plugin + env.d.ts type reference.
+**Next session entry point:** Execute Plan 14-03 — WallecxApp.vue auth resilience (navigator.storage.persist, pb.authStore.isValid check) + SW update toast (useRegisterSW, needRefresh watch).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
