@@ -1,9 +1,64 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import { toast } from "vue-sonner";
+import { useRegisterSW } from "virtual:pwa-register/vue";
+import { pb } from "@/lib/pocketbase";
 import VaccinationsTab from "./VaccinationsTab.vue";
 import MembershipsTab from "./MembershipsTab.vue";
 
+const router = useRouter();
 const activeTab = ref<string>("vaccinations");
+
+// --- PWA-06: SW update prompt ---
+// needRefresh becomes true when a new SW has installed and is waiting to activate.
+// registerType: 'prompt' (vite.config.ts) guarantees this never auto-reloads.
+const { needRefresh, updateServiceWorker } = useRegisterSW();
+
+watch(needRefresh, (val) => {
+  if (!val) return;
+  toast.info("A new version of Wallecx is available.", {
+    duration: Infinity,
+    action: {
+      label: "Refresh",
+      onClick: () => updateServiceWorker(true),
+    },
+    cancel: {
+      label: "Later",
+      onClick: () => {
+        needRefresh.value = false;
+      },
+    },
+  });
+});
+
+// --- PWA-05: Auth resilience + storage persistence ---
+onMounted(async () => {
+  // navigator.storage.persist(): iOS 7-day localStorage eviction mitigation.
+  // Optional-chain guard: navigator.storage is undefined on iOS < 17 and older browsers.
+  // Best-effort only — do NOT show UI based on the return value.
+  if (navigator.storage?.persist) {
+    try {
+      await navigator.storage.persist();
+    } catch {
+      // Silently ignore — graceful degradation
+    }
+  }
+
+  // pb.authStore.isValid: synchronous JWT expiry check (does not hit the network).
+  // This complements the router guard:
+  //   - Router guard checks !!user.value (non-null record in store)
+  //   - This check catches the case where the record is non-null but the token is expired
+  //   - Catches iOS 8-day dormancy scenario where token expires while app is backgrounded
+  // Do NOT use useAuthStore().isLoggedIn here — it checks !!user.value, not token expiry.
+  if (!pb.authStore.isValid) {
+    toast.info("Your session has expired. Please sign in again.");
+    await router.push({
+      name: "login",
+      query: { redirect: "/projects/wallecx" },
+    });
+  }
+});
 </script>
 
 <template>
