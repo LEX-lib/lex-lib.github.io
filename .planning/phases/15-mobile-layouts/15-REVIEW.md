@@ -1,6 +1,6 @@
 ---
 phase: 15-mobile-layouts
-reviewed: 2026-05-14T00:00:00Z
+reviewed: 2026-05-14T12:00:00Z
 depth: standard
 files_reviewed: 8
 files_reviewed_list:
@@ -15,21 +15,23 @@ files_reviewed_list:
 findings:
   critical: 0
   warning: 4
-  info: 3
-  total: 7
+  info: 4
+  total: 8
 status: issues_found
 ---
 
 # Phase 15: Code Review Report
 
-**Reviewed:** 2026-05-14
+**Reviewed:** 2026-05-14 (updated after Plan 15-04 gap closure rewrite)
 **Depth:** standard
 **Files Reviewed:** 8
 **Status:** issues_found
 
 ## Summary
 
-Eight files were reviewed covering the Phase 15 Mobile Layouts work: the HTML entry point, the app shell, and six Wallecx Vue components. No critical security vulnerabilities or data-loss risks were found. UA detection in `PwaInstallBanner.vue` is read-only and contains no XSS vector. The `env()` safe-area calls are syntactically correct. Four warnings require attention before merge: a conflicting `min-height` declaration on `MembershipCard`, a missing `tabindex` on a `role="button"` div in `WallecxToolbar`, a non-scoped style rule in `WallecxApp` that bleeds globally, and a `VaccinationGroupCard` touch-target that does not meet the 44 px minimum at its Card root. Three informational items are also noted.
+Eight files were reviewed covering the Phase 15 Mobile Layouts work: the HTML entry point, the app shell, and six Wallecx Vue components. No critical security vulnerabilities or data-loss risks were found. UA detection in `PwaInstallBanner.vue` is read-only and contains no XSS vector. The `env()` safe-area calls are syntactically correct. Four warnings require attention before merge: a conflicting `min-height` declaration on `MembershipCard`, a missing `tabindex` on a `role="button"` div in `WallecxToolbar`, a non-scoped style rule in `WallecxApp` that bleeds globally, and a `VaccinationGroupCard` touch-target that does not meet the 44 px minimum at its Card root.
+
+`VaccinationGroupPanel.vue` was rewritten in Plan 15-04 to replace a PrimeVue `<DataTable>` (which enforced `min-width: 24rem` = 384px, overflowing a 375px phone drawer) with a `v-for` card list using Tailwind flexbox. The rewrite correctly preserves the component's props and emits contract, adds 44px `min-h` touch targets to all three action buttons, and includes an empty-state message. Two info items apply to the rewritten file: the `listToken` prop remains declared but unused (IN-03, updated — the documenting comment that was present in the old version is no longer present in the new file), and a `!= null` loose-equality guard (IN-04, new finding).
 
 ---
 
@@ -145,16 +147,44 @@ function isIosSafari(): boolean {
 
 ---
 
-### IN-03: `VaccinationGroupPanel.vue` accepts `listToken` prop but does not use it
+### IN-03: `VaccinationGroupPanel.vue` accepts `listToken` prop but does not use it (no documenting comment)
 
-**File:** `src/components/projects/wallecx/VaccinationGroupPanel.vue:6-8`
+**File:** `src/components/projects/wallecx/VaccinationGroupPanel.vue:7`
 
-**Issue:** The `listToken` prop is declared and the comment acknowledges it is unused (`// included for API consistency; unused in Drawer columns`). This is intentional interface consistency. However, TypeScript / vue-tsc will not warn on unused props by default, so there is no compiler safety net if the prop is later removed from the parent without updating this component. This is low risk but worth noting.
+**Issue:** The `listToken` prop is declared in the `defineProps` block but is not referenced anywhere in the script or template. The old version of this file included a comment acknowledging the prop was unused for API consistency (`// included for API consistency; unused in Drawer columns`). The rewritten version (Plan 15-04) omits that comment, leaving no inline documentation for why an apparently-dead prop exists. TypeScript / vue-tsc does not warn on unused props by default, so there is no compiler safety net if the prop is later removed from the parent without updating this component.
 
-**Fix:** No immediate action required. If the prop is never intended to be used, consider removing it from the interface and the parent's binding to keep the contract honest. If it may be needed in the future, the comment is sufficient documentation.
+**Fix:** Either add a clarifying comment to document the intent, or remove the prop from both this component and its parent binding if it is genuinely not needed:
+
+```typescript
+defineProps<{
+  records: Vaccinations[];
+  listToken: string; // included for API consistency with VaccinationGroupCard; unused by the panel itself
+}>();
+```
 
 ---
 
-_Reviewed: 2026-05-14_
+### IN-04: `!= null` loose-equality guard for `dose_number` (new — rewritten file)
+
+**File:** `src/components/projects/wallecx/VaccinationGroupPanel.vue:34`
+
+**Issue:** `v-if="record.dose_number != null"` uses the loose inequality operator `!=`. In this context it is an intentional "nullish" guard — `!= null` evaluates `true` for any value that is neither `null` nor `undefined`, which is the correct idiom when a field can be either. However, the project's ESLint config inherits `@vue/eslint-config-typescript` (which includes `@typescript-eslint/recommended`). If `eqeqeq` is enabled or added in future, this line will produce a lint error. Additionally, if `dose_number` is typed as `number | null` (not `number | null | undefined`) in the `Vaccinations` type, `!== null` would be the more precise and explicit check.
+
+**Fix:** Verify the type of `dose_number` in `src/types/wallecx/vaccinations/types.ts`. If it is `number | null`, prefer strict equality:
+
+```html
+<span v-if="record.dose_number !== null">Dose {{ record.dose_number }}</span>
+```
+
+If it can also be `undefined` (e.g., optional field), the `!= null` idiom is correct — add a comment to make the intent explicit:
+
+```html
+<!-- != null intentionally guards both null and undefined -->
+<span v-if="record.dose_number != null">Dose {{ record.dose_number }}</span>
+```
+
+---
+
+_Reviewed: 2026-05-14 (updated after Plan 15-04 rewrite of VaccinationGroupPanel.vue)_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
