@@ -462,7 +462,12 @@ Plans:
 4. Submitting the form during a slow network fires only one create/update request even on double-click — the form and submit button are disabled by `isSaving` while the request is in-flight.
 5. `npm run test:unit` runs `membershipMapper.spec.ts` and passes — covering field-stripping behaviour and the create-then-update id-refresh sequence with a mocked `pb`.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — membershipMapper.spec.ts: field-strip + id-refresh contract tests (MWRITE-06)
+- [ ] 13-02-PLAN.md — ManageMembership.vue: direct v-model form, ColorPicker, barcode_type Select + conditional field, FileUpload, create/update submit flows (MWRITE-01, MWRITE-02, MWRITE-03, MWRITE-04, MWRITE-05)
+- [ ] 13-03-PLAN.md — MembershipDetail.vue edit/delete emits + MembershipsTab.vue write state wiring + human verification checkpoint (MWRITE-05)
 
 **UI hint**: yes
 
@@ -532,8 +537,8 @@ All 22 v2.0 requirements are mapped to exactly one phase. No orphans.
 | 10. Tabs Shell — VaccinationsTab Extraction | v2.0 | 2/2 | Complete | 2026-05-13 |
 | 11. Backend + Frontend Foundation | v2.0 | 3/3 | Complete | 2026-05-13 |
 | 12. Read Path — Card Grid, Barcode Display & Detail | v2.0 | 4/4 | Complete | 2026-05-13 |
-| 13. Write Path — ManageMembership CRUD | v2.0 | 0/TBD | Not started | - |
+| 13. Write Path — ManageMembership CRUD | v2.0 | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-13 — Phase 12 complete (BarcodeDisplay, MembershipCard, MembershipDetail, MembershipsTab — 4/4 plans)*
+*Last updated: 2026-05-14 — Phase 13 planned: 3 plans created (13-01 membershipMapper.spec.ts, 13-02 ManageMembership.vue, 13-03 MembershipsTab+MembershipDetail wiring)*
