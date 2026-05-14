@@ -6,6 +6,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import Components from "unplugin-vue-components/vite";
 import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import tailwindcss from "@tailwindcss/vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -22,6 +23,61 @@ export default defineConfig({
       resolvers: [PrimeVueResolver()],
     }),
     tailwindcss(),
+    VitePWA({
+      registerType: "prompt",          // LOCKED: never 'autoUpdate' — CRUD forms have unsaved state
+      strategies: "generateSW",        // default; no custom sw.ts needed
+      includeAssets: [
+        "favicon.ico",
+        "apple-touch-icon-180x180.png",
+        "branding_logo.svg",
+      ],
+      manifest: {
+        name: "Wallecx",
+        short_name: "Wallecx",
+        description: "Your personal vaccination and membership card vault",
+        theme_color: "#002244",
+        background_color: "#002244",
+        display: "standalone",
+        scope: "/",                    // LOCKED: scope "/" per STATE.md — NOT "/projects/wallecx"
+        start_url: "/projects/wallecx",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "maskable-icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
+        cleanupOutdatedCaches: true,
+        navigateFallback: "index.html",  // LOCKED: mandatory for SPA offline — no leading slash
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /\/api\/.*/i,
+            handler: "NetworkOnly",       // LOCKED: PocketBase is cross-origin; belt-and-suspenders
+          },
+        ],
+      },
+      devOptions: {
+        enabled: false,                   // SW disabled in dev to avoid stale cache confusion
+        type: "module",
+      },
+    }),
   ],
   resolve: {
     alias: {
