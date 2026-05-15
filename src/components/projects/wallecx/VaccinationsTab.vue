@@ -29,6 +29,13 @@ const searchQuery = ref<string>('');
 const sortMode = ref<string>('type-asc');
 const viewMode = ref<'grid' | 'list'>('grid');
 
+const vaccinationSortOptions = [
+  { value: 'type-asc',  label: 'Type A–Z' },
+  { value: 'type-desc', label: 'Type Z–A' },
+  { value: 'name-asc',  label: 'Name A–Z' },
+  { value: 'name-desc', label: 'Name Z–A' },
+];
+
 // --- GROUPING ---
 interface VaccineGroup {
   vaccineType: string;         // "COVID-19", "Flu", ..., "Uncategorized"
@@ -333,6 +340,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       v-model:search-query="searchQuery"
       v-model:sort-mode="sortMode"
       v-model:view-mode="viewMode"
+      :sort-options="vaccinationSortOptions"
       :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0"
     />
 
