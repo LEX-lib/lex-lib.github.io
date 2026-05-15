@@ -166,7 +166,7 @@ function onUpdated(updatedRecord: Memberships): void {
 
 <template>
   <div>
-    <!-- Header row: Add card button (disabled Phase 13 forward reference) -->
+    <!-- Header row: Add card button -->
     <div class="flex items-center justify-between mb-4">
       <Button
         label="Add card"
@@ -175,6 +175,15 @@ function onUpdated(updatedRecord: Memberships): void {
         @click="openManage(null)"
       />
     </div>
+
+    <!-- Toolbar: search + sort (ORG-01, ORG-02) — always visible -->
+    <WallecxToolbar
+      v-model:search-query="searchQuery"
+      v-model:sort-mode="sortMode"
+      v-model:view-mode="'grid'"
+      :sort-options="membershipSortOptions"
+      :show-toggle="false"
+    />
 
     <!-- Loading state: 3 skeleton tiles matching MembershipCard min-height -->
     <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -208,10 +217,33 @@ function onUpdated(updatedRecord: Memberships): void {
       />
     </div>
 
+    <!-- Empty state: no search results (ORG-01 — records exist but search matches nothing) -->
+    <div
+      v-else-if="displayedMemberships.length === 0 && searchQuery"
+      class="flex flex-col items-center py-12 gap-3"
+    >
+      <iconify-icon
+        icon="mdi:magnify-remove-outline"
+        width="48"
+        height="48"
+        style="color: var(--color-brand-primary)"
+        aria-hidden="true"
+      ></iconify-icon>
+      <p class="text-sm" style="color: var(--color-typo-heading)">
+        No cards match "{{ searchQuery }}"
+      </p>
+      <Button
+        label="Clear search"
+        severity="secondary"
+        size="small"
+        @click="searchQuery = ''"
+      />
+    </div>
+
     <!-- Data state: membership card grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <MembershipCard
-        v-for="record in records"
+        v-for="record in displayedMemberships"
         :key="record.id"
         :record="record"
         @click="openDetail(record)"
