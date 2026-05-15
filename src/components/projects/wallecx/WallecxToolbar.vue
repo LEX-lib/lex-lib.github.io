@@ -4,6 +4,7 @@ withDefaults(
     searchQuery: string;
     sortMode: string;
     viewMode: 'grid' | 'list';
+    sortOptions: { value: string; label: string }[];
     showToggle?: boolean;
   }>(),
   {
@@ -16,13 +17,6 @@ const emit = defineEmits<{
   'update:sortMode': [value: string];
   'update:viewMode': [value: 'grid' | 'list'];
 }>();
-
-const sortOptions = [
-  { value: 'type-asc',  label: 'Type A–Z' },
-  { value: 'type-desc', label: 'Type Z–A' },
-  { value: 'name-asc',  label: 'Name A–Z' },
-  { value: 'name-desc', label: 'Name Z–A' },
-];
 </script>
 
 <template>
