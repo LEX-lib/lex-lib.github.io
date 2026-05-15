@@ -29,15 +29,16 @@ const emit = defineEmits<{
         class="w-full"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
-      <button
+      <InputIcon
         v-if="searchQuery"
-        class="min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer"
-        style="background: none; border: none; padding: 0;"
+        class="pi pi-times cursor-pointer"
+        role="button"
+        tabindex="0"
         aria-label="Clear search"
         @click="emit('update:searchQuery', '')"
-      >
-        <InputIcon class="pi pi-times" />
-      </button>
+        @keydown.enter="emit('update:searchQuery', '')"
+        @keydown.space.prevent="emit('update:searchQuery', '')"
+      />
     </IconField>
     <Select
       :model-value="sortMode"
