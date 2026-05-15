@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
 import type { Memberships } from '@/types/wallecx/memberships/types'
@@ -7,6 +7,7 @@ import MembershipCard from './MembershipCard.vue'
 import MembershipDetail from './MembershipDetail.vue'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
 import ManageMembership from './ManageMembership.vue'
+import WallecxToolbar from './WallecxToolbar.vue'
 
 const records = ref<Memberships[]>([])
 const isLoading = ref(false)
@@ -17,7 +18,75 @@ const showManage = ref<boolean>(false)
 const manageRecord = ref<Memberships | null>(null)
 const confirm = useConfirm()
 
+const SORT_MODE_STORAGE_KEY = 'wallecx:memberships-sort-mode';
+
+const membershipSortOptions = [
+  { value: 'recently-added', label: 'Recently Added' },
+  { value: 'name-asc',       label: 'Name A–Z' },
+  { value: 'issuer-asc',     label: 'Issuer A–Z' },
+  { value: 'expiry-asc',     label: 'Expiry Date' },
+];
+
+const searchQuery = ref<string>('');
+const sortMode = ref<string>('recently-added');
+
+const displayedMemberships = computed<Memberships[]>(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  const filtered = query
+    ? records.value.filter(
+        (r) =>
+          r.card_name.toLowerCase().includes(query) ||
+          (r.issuer ?? '').toLowerCase().includes(query)
+      )
+    : records.value;
+
+  const sorted = [...filtered];
+  switch (sortMode.value) {
+    case 'name-asc':
+      sorted.sort((a, b) =>
+        a.card_name.localeCompare(b.card_name, undefined, { sensitivity: 'base' })
+      );
+      break;
+    case 'issuer-asc':
+      sorted.sort((a, b) =>
+        (a.issuer ?? '').localeCompare(b.issuer ?? '', undefined, { sensitivity: 'base' })
+      );
+      break;
+    case 'expiry-asc':
+      sorted.sort((a, b) => {
+        if (!a.expiry_date && !b.expiry_date) return 0;
+        if (!a.expiry_date) return 1;
+        if (!b.expiry_date) return -1;
+        return a.expiry_date.localeCompare(b.expiry_date);
+      });
+      break;
+    case 'recently-added':
+    default:
+      sorted.sort((a, b) => b.created.localeCompare(a.created));
+      break;
+  }
+
+  return sorted;
+});
+
+watch(sortMode, (next) => {
+  try {
+    sessionStorage.setItem(SORT_MODE_STORAGE_KEY, next);
+  } catch {
+    // sessionStorage write failures are non-fatal
+  }
+});
+
 onMounted(async () => {
+  try {
+    const stored = sessionStorage.getItem(SORT_MODE_STORAGE_KEY);
+    const validModes = membershipSortOptions.map((o) => o.value);
+    if (stored && validModes.includes(stored)) {
+      sortMode.value = stored;
+    }
+  } catch {
+    // sessionStorage may throw in privacy-mode iframes; fall back to default silently
+  }
   isLoading.value = true
   try {
     records.value = await pb
