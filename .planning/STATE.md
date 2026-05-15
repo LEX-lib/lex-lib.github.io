@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Sort and Search for Membership Cards
 status: in_progress
-stopped_at: Defining requirements (2026-05-15)
+stopped_at: Roadmap created (2026-05-15)
 last_updated: "2026-05-15T00:00:00.000Z"
 progress:
   total_phases: 1
@@ -15,21 +15,21 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-15 — Milestone v2.2 started. Requirements defined, roadmap pending.
+**Last updated:** 2026-05-15 — Milestone v2.2 roadmap created. Phase 16 defined, planning next.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v2.2 Sort and Search for Membership Cards — defining roadmap.
+**Current focus:** v2.2 Sort and Search for Membership Cards — Phase 16: Membership Card Toolbar.
 
 ## Current Position
 
 **Milestone:** v2.2 — Sort and Search for Membership Cards (IN PROGRESS)
-**Phase:** Not started (defining requirements)
+**Phase:** Phase 16 — Membership Card Toolbar (Not started)
 **Plan:** —
-**Status:** Defining requirements
+**Status:** Ready for planning
 
 ## Shipped Milestones Summary
 
@@ -72,6 +72,15 @@ progress:
 - **maximumFileSizeToCacheInBytes: 3 MiB** — vendor bundle (2.57 MiB, contains Vue/Pinia/Router) must be precached for app shell offline; 3 MiB limit accommodates it.
 - **Task 2 human-verify auto-approved** — per auto_advance:true config; Chrome DevTools verification instructions documented in 14-04-SUMMARY.md for async follow-up.
 
+### v2.2 Toolbar Implementation Notes
+
+- **Reuse WallecxToolbar.vue** — already implements search + sort + view toggle for VaccinationsTab. Adapt for MembershipsTab via a prop to hide the view toggle (membership cards are always grid-view).
+- **State lives in MembershipsTab.vue** — `searchQuery` ref + `sortMode` ref → `filteredSortedMemberships` computed → passed to card grid. Mirrors the VaccinationsTab pattern.
+- **No new PocketBase queries.** All filtering and sorting is client-side on the already-loaded `memberships` ref.
+- **Sort modes:** Name A–Z, Issuer A–Z, Expiry Date (soonest first; cards without expiry sorted last), Recently Added.
+- **Session retention for sort mode** via `sessionStorage` — same approach as VaccinationsTab.
+- **Empty state** when search matches zero cards — informative message, not a blank area.
+
 ### Open Todos
 
 None.
@@ -102,10 +111,10 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-15T00:00:00.000Z
 
-**Stopped at:** Milestone v2.2 started — requirements defined (ORG-01, ORG-02), roadmap pending
+**Stopped at:** Milestone v2.2 roadmap created — Phase 16 Membership Card Toolbar defined (ORG-01, ORG-02)
 
 **Next session entry point:** Run `/gsd-plan-phase 16` to plan Phase 16: Membership Card Toolbar.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-15 — Milestone v2.2 started; requirements defined*
+*Last updated: 2026-05-15 — v2.2 roadmap created; Phase 16 ready for planning*

@@ -65,3 +65,4 @@ A persistent toolbar above the membership card grid enabling client-side search 
 
 ---
 *Requirements defined: 2026-05-15*
+*Traceability updated: 2026-05-15 — Phase 16 assigned to ORG-01, ORG-02*

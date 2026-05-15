@@ -9,7 +9,8 @@
 - ✅ **v1.1 Vaccine Grouping** — Phases 5–6 (shipped 2026-05-12)
 - ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
 - ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14) — [archive](milestones/v2.0-ROADMAP.md)
-- [ ] **v2.1 Mobile PWA** — Phases 14–15
+- ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
+- [ ] **v2.2 Sort and Search for Membership Cards** — Phase 16
 
 ## Phases
 
@@ -61,14 +62,23 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 
 </details>
 
----
+<details>
+<summary>✅ v2.1 Mobile PWA (Phases 14–15) — SHIPPED 2026-05-14</summary>
 
-## v2.1 Mobile PWA
+- [x] Phase 14: PWA Foundation (4/4 plans) — completed 2026-05-14
+- [x] Phase 15: Mobile Layouts (4/4 plans) — completed 2026-05-14
 
 **Milestone goal:** Wallecx is installable as a home-screen app on iOS and Android, loads instantly on repeat visits, and is fully usable on a 375px phone viewport with correct touch targets, safe-area insets, and no horizontal scroll.
 
-- [x] **Phase 14: PWA Foundation** - Install prerequisites: manifest, icons, service worker, Vercel cache headers, auth resilience, and update toast — completed 2026-05-14
-- [x] **Phase 15: Mobile Layouts** - Responsive grids, 44px touch targets, dvh dialogs, safe-area insets, overscroll lock, and iOS install banner — completed 2026-05-14
+</details>
+
+---
+
+## v2.2 Sort and Search for Membership Cards
+
+**Milestone goal:** Add a persistent toolbar to the Membership Cards tab so users can filter cards in real time by name or issuer and reorder the grid by name, issuer, expiry, or recently added — all as pure client-side computed changes with no new PocketBase queries.
+
+- [ ] **Phase 16: Membership Card Toolbar** - Adapt WallecxToolbar.vue for MembershipsTab — search by name/issuer, sort by four modes, empty state, session-retained sort selection
 
 ## Phase Details
 
@@ -113,6 +123,19 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 16: Membership Card Toolbar
+**Goal**: Users can search and sort the membership card grid in real time using a toolbar adapted from the existing WallecxToolbar.vue — no new PocketBase queries, all filtering and sorting is client-side computed on the already-loaded membership list
+**Depends on**: Phase 15
+**Requirements**: ORG-01, ORG-02
+**Success Criteria** (what must be TRUE):
+  1. Typing into the search input filters the membership card grid in real time — only cards whose name or issuer contains the typed text (case-insensitive) are shown
+  2. Clicking the × button in the search input clears the query and restores the full grid immediately
+  3. When the search term matches no cards, the grid is replaced by an informative empty-state message (not a blank area)
+  4. Selecting a sort mode from the dropdown reorders the grid: Name A–Z, Issuer A–Z, Expiry Date (soonest first with no-expiry cards last), or Recently Added; the selection persists for the current browser session
+**Plans**: TBD
+
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -135,7 +158,8 @@ Plans:
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
+| 16. Membership Card Toolbar | v2.2 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-14 — Phase 15 Mobile Layouts complete (4/4 plans, gap closure UAT-Gap-1 resolved, verification passed)*
+*Last updated: 2026-05-15 — v2.2 roadmap added: Phase 16 Membership Card Toolbar (ORG-01, ORG-02)*
