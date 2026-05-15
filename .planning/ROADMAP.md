@@ -135,7 +135,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Refactor WallecxToolbar (sortOptions becomes required prop); update VaccinationsTab to own vaccinationSortOptions and pass via prop
+- [x] 16-01-PLAN.md — Refactor WallecxToolbar (sortOptions becomes required prop); update VaccinationsTab to own vaccinationSortOptions and pass via prop
 - [ ] 16-02-PLAN.md — Wire MembershipsTab: imports, searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, no-results empty state
 
 **UI hint**: yes
@@ -162,8 +162,8 @@ Plans:
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 16. Membership Card Toolbar | v2.2 | 0/2 | Not started | - |
+| 16. Membership Card Toolbar | v2.2 | 1/2 | In progress | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-15 — Phase 16 plans created: 16-01-PLAN.md, 16-02-PLAN.md*
+*Last updated: 2026-05-15 — Phase 16 Plan 01 complete: WallecxToolbar sortOptions refactored to required prop*
