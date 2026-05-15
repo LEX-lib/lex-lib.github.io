@@ -44,10 +44,13 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ PWA icons: pwa-192x192.png, pwa-512x512.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png in public/ — v2.1
 - ✓ WallecxApp.vue: navigator.storage.persist(), pb.authStore.isValid expiry check + toast + redirect, SW update toast (Refresh/Later) — v2.1
 
-### Active (v3.0 candidates)
+### Active (v2.2)
 
 - [ ] **ORG-01** — Search/filter membership cards by name or issuer (client-side toolbar, same pattern as vaccinations)
 - [ ] **ORG-02** — Sort membership cards by name, issuer, or expiry date
+
+### Future candidates
+
 - [ ] **CONV-01** — JSON export of all membership card records (mirrors vaccination export)
 - [ ] **CONV-03** — Expiry date reminders (requires notification infrastructure)
 - [ ] **SCAN-ADV-01** — PDF417 and Aztec code formats via dynamic `bwip-js` import
@@ -117,18 +120,13 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | Every JsBarcode() call wrapped in try/catch | JsBarcode has no soft-fail mode; invalid input throws synchronously | ✓ Validated v2.0 |
 | ConfirmDialog kept at WallecxApp.vue shell level | `useConfirm` broadcasts to single app-shell-level instance | ✓ Validated v2.0 |
 
-## Current Milestone: v2.1 Mobile PWA
+## Current Milestone: v2.2 Sort and Search for Membership Cards
 
-**Goal:** Wallecx is installable as a home-screen app on iOS and Android, loads instantly on repeat visits, and is fully usable on a 375px phone viewport with correct touch targets, safe-area insets, and no horizontal scroll.
+**Goal:** Add a persistent toolbar to the Membership Cards tab so users can filter cards in real time by name or issuer and reorder the grid by name, issuer, expiry, or recently added — all as pure client-side computed changes with no new PocketBase queries.
 
 **Target features:**
-- PWA manifest, icons, service worker (vite-plugin-pwa, registerType: 'prompt', NetworkOnly for PocketBase)
-- `vercel.json` cache headers for sw.js and manifest
-- Auth resilience: `navigator.storage.persist()` + `pb.authStore.isValid` check on mount (iOS 7-day eviction guard)
-- SW update toast (non-blocking, user-triggered refresh)
-- Responsive card grids (single-column on mobile), 44px touch targets, 80dvh CRUD dialogs
-- Safe-area insets + `overscroll-behavior: none`
-- iOS Add-to-Home-Screen instruction banner (`PwaInstallBanner.vue`)
+- Search input: real-time filter by card name or issuer (case-insensitive partial match, clear button, empty state)
+- Sort dropdown: Name A–Z, Issuer A–Z, Expiry Date (soonest first, no-expiry last), Recently Added
 
 ## Shipped Milestones
 
@@ -138,6 +136,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v1.1 Vaccine Grouping | 5–6 | 2026-05-12 | — |
 | v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 | v2.0 Membership Cards | 10–13 | 2026-05-14 | [v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md) |
+| v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
 
 ---
-*Last updated: 2026-05-14 after v2.0 milestone — Wallecx dual-tab vault (vaccinations + membership cards) shipped.*
+*Last updated: 2026-05-15 — v2.2 Sort and Search for Membership Cards started.*

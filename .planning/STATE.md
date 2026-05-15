@@ -1,35 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Mobile PWA
-status: complete
-stopped_at: Phase 15 fully verified (2026-05-14)
-last_updated: "2026-05-14T11:30:00.000Z"
+milestone: v2.2
+milestone_name: Sort and Search for Membership Cards
+status: in_progress
+stopped_at: Defining requirements (2026-05-15)
+last_updated: "2026-05-15T00:00:00.000Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-14 — Phase 15 Mobile Layouts fully complete (4/4 plans, gap closure Plan 04 executed, verification passed). Milestone v2.1 complete.
+**Last updated:** 2026-05-15 — Milestone v2.2 started. Requirements defined, roadmap pending.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v2.1 Mobile PWA — Phase 15: Mobile Layouts is next.
+**Current focus:** v2.2 Sort and Search for Membership Cards — defining roadmap.
 
 ## Current Position
 
-**Milestone:** v2.1 — Mobile PWA (IN PROGRESS)
-**Phase:** Phase 15 — Mobile Layouts (4/4 plans complete — verified)
-**Plan:** All plans executed (15-01, 15-02, 15-03, 15-04). Verification passed.
-**Status:** Milestone v2.1 complete. All phases and plans done.
+**Milestone:** v2.2 — Sort and Search for Membership Cards (IN PROGRESS)
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
 
 ## Shipped Milestones Summary
 
@@ -39,6 +39,7 @@ progress:
 | v1.1 Vaccine Grouping | 5–6 | 4 | 2026-05-12 |
 | v1.2 Search, Sort & View Toggle | 7–9 | 5 | 2026-05-13 |
 | v2.0 Membership Cards | 10–13 | 12 | 2026-05-14 |
+| v2.1 Mobile PWA | 14–15 | 8 | 2026-05-14 |
 
 ## Accumulated Context
 
@@ -99,12 +100,12 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-14T11:30:00.000Z
+**Last session:** 2026-05-15T00:00:00.000Z
 
-**Stopped at:** Milestone v2.1 complete — all phases and plans verified (2026-05-14)
+**Stopped at:** Milestone v2.2 started — requirements defined (ORG-01, ORG-02), roadmap pending
 
-**Next session entry point:** Milestone v2.1 complete. Start a new milestone or deploy (`/gsd-progress` to review).
+**Next session entry point:** Run `/gsd-plan-phase 16` to plan Phase 16: Membership Card Toolbar.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-14 — Phase 15 gap closure Plan 04 complete; verification passed; milestone v2.1 done*
+*Last updated: 2026-05-15 — Milestone v2.2 started; requirements defined*

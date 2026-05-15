@@ -1,65 +1,42 @@
-# Requirements: Wallecx v2.1 Mobile PWA
+# Requirements: Wallecx v2.2 Sort and Search for Membership Cards
 
-**Defined:** 2026-05-14
-**Core Value:** Wallecx feels like a native wallet app on a phone home screen — installable, fast, and usable on any mobile browser without horizontal scrolling or cramped tap targets.
+**Defined:** 2026-05-15
+**Core Value:** Membership card holders can quickly locate a specific card by typing a name or issuer, and organize the grid to match how they think — without scrolling through an unordered list.
 
-## v2.1 Requirements
+## v2.2 Requirements
 
-Phase numbering continues from v2.0 (last phase was 13 → v2.1 starts at Phase 14).
+Phase numbering continues from v2.1 (last phase was 15 → v2.2 starts at Phase 16).
 
-### PWA Foundation
+### Membership Card Toolbar
 
-Prerequisites for installability: manifest, icons, service worker, Vercel headers, auth resilience, and update prompt.
+A persistent toolbar above the membership card grid enabling client-side search and sort — mirroring the existing vaccination toolbar pattern from Phase 7.
 
-- [x] **PWA-01**: Web App Manifest served with correct MIME type — `name: "Wallecx"`, `short_name: "Wallecx"`, `display: "standalone"`, `theme_color: "#002244"`, `background_color: "#002244"`, `start_url: "/projects/wallecx"`, `scope: "/projects/wallecx"`
-- [x] **PWA-02**: PWA icons committed to `public/`: `pwa-192x192.png` (purpose: "any"), `pwa-512x512.png` (purpose: "maskable" — safe zone verified), `apple-touch-icon.png` 180×180; all generated via `@vite-pwa/assets-generator`
-- [x] **PWA-03**: Service worker registered via `vite-plugin-pwa` with `registerType: 'prompt'`, `navigateFallback: '/index.html'` (required for Vue Router HTML5 history offline), all PocketBase API calls `NetworkOnly` (no stale auth or record data served from cache)
-- [x] **PWA-04**: `vercel.json` sets `Cache-Control: no-cache` for `sw.js` and `*.webmanifest`; includes catch-all SPA rewrite rule so deep-link navigation works on Vercel without a 404
-- [x] **PWA-05**: `navigator.storage.persist()` called on Wallecx app mount; `pb.authStore.isValid` checked on every WallecxApp.vue `onMounted` — an expired or evicted session redirects to `/login?redirect=/projects/wallecx` with a `vue-sonner` info toast explaining the session expired (guards against iOS 7-day localStorage eviction of PocketBase auth token)
-- [x] **PWA-06**: When a new service worker is waiting, a non-blocking `vue-sonner` toast appears with a "Refresh" action button; tapping it calls `updateServiceWorker()` and reloads — `registerType` is never `'autoUpdate'` (both CRUD forms have unsaved state that a forced reload would destroy)
-- [x] **PWA-07**: Lighthouse PWA installability audit score passes all criteria in the production Vercel build: manifest valid, service worker registered, HTTPS, icons present, start_url responds
-
-### Mobile Layouts
-
-Responsive layouts, touch targets, and platform-native feel across all Wallecx screens.
-
-- [ ] **MOB-01**: All Wallecx screens (tabs shell, both card grids, both CRUD dialogs, group detail Drawer, scan overlay, empty states) are fully usable on a 375px-wide viewport without horizontal scroll or content clipping
-- [ ] **MOB-02**: All interactive elements — membership cards, vaccination group cards, toolbar buttons (search clear, sort, view toggle), drawer rows (View/Edit/Delete), dialog action buttons — have a minimum touch target of 44×44px
-- [ ] **MOB-03**: Membership card grid (`MembershipsTab.vue`) uses a single-column layout on viewports < 640px and a 2-column grid on ≥ 640px (same breakpoint as the existing vaccination view toggle grid classes)
-- [ ] **MOB-04**: Vaccination group card grid (`VaccinationsTab.vue`) uses the same single→2-column responsive behaviour as MOB-03; the existing view toggle (sessionStorage) continues to work — mobile default is single-column regardless of toggle state when viewport < 640px
-- [ ] **MOB-05**: CRUD dialogs (`ManageVaccination.vue`, `ManageMembership.vue`) render with `max-height: 80dvh` and `overflow-y: auto` so the full form scrolls within the dialog without being pushed off-screen by the iOS soft keyboard; `interactive-widget=resizes-content` added to the `<meta name="viewport">` tag in `index.html`
-- [ ] **MOB-06**: `viewport-fit=cover` added to `<meta name="viewport">`; WallecxApp.vue shell applies `env(safe-area-inset-top/bottom/left/right)` padding so content is not obscured by device notches or home indicator bars
-- [ ] **MOB-07**: `overscroll-behavior: none` applied to the Wallecx app shell container to prevent the iOS pull-to-refresh gesture from triggering while scrolling card grids or dialogs
-- [ ] **MOB-08**: `PwaInstallBanner.vue` shown in mobile Safari when not already in standalone mode — displays a one-time "Add to Home Screen" instruction (Share → Add to Home Screen) with a dismiss button; dismissed state persisted in `localStorage`; not shown in standalone mode, not shown on non-iOS browsers (Android uses the native `beforeinstallprompt` event instead, surfaced via the `vue-sonner` update toast flow)
+- [ ] **ORG-01**: User can type into a search input to filter the membership card grid in real time by card name or issuer (case-insensitive, partial match); when no cards match, an informative empty-state message replaces the grid; the search can be cleared via a × button
+- [ ] **ORG-02**: User can select a sort mode from a dropdown to reorder the membership card grid; available modes: Name A–Z, Issuer A–Z, Expiry Date (soonest first — cards without an expiry date sorted last), Recently Added; the selected mode is retained for the current session
 
 ---
 
-## Deferred to v3.x
+## Deferred
 
-### UX Enhancements
+### Organisation (deferred from v2.0 backlog)
 
-- **UX-ADV-01**: Bottom sheet refactor for MembershipDetail and VaccinationDetail — native-feeling slide-up panel with drag handle and swipe-down dismiss (major component refactor, deferred after v2.1 validates mobile usage)
-- **UX-ADV-02**: Dark mode selector fix — PrimeVue bug #7465 causes `@media (prefers-color-scheme: dark)` to override `.my-app-dark` class; workaround via `definePreset` token overrides
+- **CONV-01**: JSON export of all membership card records — mirrors the vaccination export; deferred to v3.x
+- **CONV-03**: Expiry date reminders — requires notification infrastructure; deferred
 
-### Notifications
-
-- **NOTIF-01**: Push notification for expiring membership cards (requires server-side subscription storage and trigger — deferred; iOS 16.4+ PWA prerequisite satisfied after v2.1 ships)
-
-### Advanced PWA
-
-- **PWA-ADV-01**: Offline data access for membership and vaccination records (blocked by PocketBase — no offline SDK; would require IndexedDB replica layer)
-- **PWA-ADV-02**: Background Sync for queued CRUD operations (unsupported on iOS Safari entirely)
-- **PWA-ADV-03**: Swipe-to-dismiss gestures on cards and drawers
-
-### Barcode (from v2.0 backlog)
+### Advanced Barcode (deferred from v2.0)
 
 - **SCAN-ADV-01**: PDF417 and Aztec code formats via dynamic `bwip-js` import
 
-### Organisation (from v2.0 backlog)
+### UX Enhancements (deferred from v2.1)
 
-- **ORG-01**: Search/filter membership cards by name or issuer
-- **ORG-02**: Sort membership cards by name, issuer, or expiry date
-- **CONV-01**: JSON export of all membership card records
+- **UX-ADV-01**: Bottom sheet refactor for MembershipDetail and VaccinationDetail
+- **UX-ADV-02**: Dark mode fix (PrimeVue #7465)
+
+### Advanced PWA (deferred from v2.1)
+
+- **PWA-ADV-01**: Offline data access for membership and vaccination records
+- **PWA-ADV-02**: Background Sync for queued CRUD operations
+- **PWA-ADV-03**: Swipe-to-dismiss gestures on cards and drawers
 
 ---
 
@@ -67,14 +44,10 @@ Responsive layouts, touch targets, and platform-native feel across all Wallecx s
 
 | Feature | Reason |
 |---------|--------|
-| Offline data access for PocketBase records | PocketBase has no offline SDK; IndexedDB replica would require a full data-sync layer — out of scope for a personal SPA |
-| Push notifications | Requires server-side subscription storage and trigger infrastructure; deferred to v3.x after installability ships |
-| Swipe gestures (swipe-to-delete, swipe-to-open) | High implementation cost for v2.1; usability improves but is not a blocker for mobile usability |
-| Bottom sheet dialog refactor | Major component change; current PrimeVue Dialog with dvh sizing is acceptable for v2.1 |
-| Dark mode fix (PrimeVue #7465) | Existing Lexarium dark mode limitation; out of Wallecx v2.1 scope |
-| Android install prompt UI | The `beforeinstallprompt` flow is browser-native on Android; no custom UI needed beyond PWA-06 update toast |
-| Apple Wallet / Google Wallet export | Requires server-side certificate signing |
-| Camera barcode scanning | ZXing build cost exceeds benefit for v2.1 |
+| View toggle (grid/list) for membership cards | Not in ORG-01/ORG-02 scope; membership cards are always grid-view |
+| Server-side search/sort | Client-side computed is sufficient for personal vault size; mirrors vaccination approach |
+| Search persistence across sessions | Within-session ref retention is sufficient; cross-session persistence is excess complexity |
+| Push notifications for expiring cards | Requires server-side infrastructure — deferred to v3.x |
 
 ---
 
@@ -82,27 +55,13 @@ Responsive layouts, touch targets, and platform-native feel across all Wallecx s
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PWA-01 | Phase 14 | Complete |
-| PWA-02 | Phase 14 | Complete |
-| PWA-03 | Phase 14 | Complete |
-| PWA-04 | Phase 14 | Complete |
-| PWA-05 | Phase 14 | Complete |
-| PWA-06 | Phase 14 | Complete |
-| PWA-07 | Phase 14 | Complete |
-| MOB-01 | Phase 15 | Pending |
-| MOB-02 | Phase 15 | Pending |
-| MOB-03 | Phase 15 | Pending |
-| MOB-04 | Phase 15 | Pending |
-| MOB-05 | Phase 15 | Pending |
-| MOB-06 | Phase 15 | Pending |
-| MOB-07 | Phase 15 | Pending |
-| MOB-08 | Phase 15 | Pending |
+| ORG-01 | Phase 16 | Pending |
+| ORG-02 | Phase 16 | Pending |
 
 **Coverage:**
-- v2.1 requirements: 15 total
-- Mapped to phases: 15 (100%)
+- v2.2 requirements: 2 total
+- Mapped to phases: 2 (100%)
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-05-14*
-*Traceability updated: 2026-05-14 — phases assigned (14–15)*
+*Requirements defined: 2026-05-15*
