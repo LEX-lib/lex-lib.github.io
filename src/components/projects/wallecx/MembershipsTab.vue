@@ -180,7 +180,7 @@ function onUpdated(updatedRecord: Memberships): void {
     <WallecxToolbar
       v-model:search-query="searchQuery"
       v-model:sort-mode="sortMode"
-      v-model:view-mode="'grid'"
+      :view-mode="'grid'"
       :sort-options="membershipSortOptions"
       :show-toggle="false"
     />
