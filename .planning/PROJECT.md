@@ -43,11 +43,11 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ vite-plugin-pwa: manifest, SW (registerType: 'prompt'), navigateFallback, NetworkOnly for /api/*, vercel.json cache headers — v2.1
 - ✓ PWA icons: pwa-192x192.png, pwa-512x512.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png in public/ — v2.1
 - ✓ WallecxApp.vue: navigator.storage.persist(), pb.authStore.isValid expiry check + toast + redirect, SW update toast (Refresh/Later) — v2.1
+- ✓ WallecxToolbar generic (sortOptions required prop); MembershipsTab search/sort (displayedMemberships computed, sessionStorage persistence, no-results empty state) — v2.2
 
-### Active (v2.2)
+### Active
 
-- [ ] **ORG-01** — Search/filter membership cards by name or issuer (client-side toolbar, same pattern as vaccinations)
-- [ ] **ORG-02** — Sort membership cards by name, issuer, or expiry date
+None — all requirements validated through v2.2.
 
 ### Future candidates
 
@@ -82,14 +82,15 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - Dates: `dayjs` everywhere; PocketBase date filters use `"YYYY-MM-DD"` format
 - File tokens: fetched at view time, not list time; `requestKey` must be distinct per collection to prevent auto-cancel
 
-**Current state (v2.1 complete — all phases done):**
-- ~2,800 LOC TypeScript/Vue across `src/components/projects/wallecx/`
+**Current state (v2.2 complete — all phases done):**
+- ~2,900 LOC TypeScript/Vue across `src/components/projects/wallecx/`
 - 48 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11, × 2 suites in worktrees)
 - Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`
 - Dev deps added in v2.1: `vite-plugin-pwa@^1.3.0`, `workbox-window@^7.4.1`, `workbox-build@^7.4.1`, `@vite-pwa/assets-generator@^1.0.2`
 - Two PocketBase collections: `wallecx_vaccinations` and `wallecx_memberships`, both with 5 per-user access rules
 - PWA: installable, SW precaches 53 entries (3 MiB vendor limit; about-me-photo excluded), vercel.json deployed
 - Mobile layouts complete: grid-cols-1 responsive, 44px touch targets, safe-area insets, dvh dialogs, iOS install banner, VaccinationGroupPanel card list (UAT Gap 1 closed)
+- v2.2: WallecxToolbar generic (sortOptions required prop); MembershipsTab search + sort (displayedMemberships computed, sessionStorage persistence, no-results empty state)
 
 ## Constraints
 
@@ -120,14 +121,6 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | Every JsBarcode() call wrapped in try/catch | JsBarcode has no soft-fail mode; invalid input throws synchronously | ✓ Validated v2.0 |
 | ConfirmDialog kept at WallecxApp.vue shell level | `useConfirm` broadcasts to single app-shell-level instance | ✓ Validated v2.0 |
 
-## Current Milestone: v2.2 Sort and Search for Membership Cards
-
-**Goal:** Add a persistent toolbar to the Membership Cards tab so users can filter cards in real time by name or issuer and reorder the grid by name, issuer, expiry, or recently added — all as pure client-side computed changes with no new PocketBase queries.
-
-**Target features:**
-- Search input: real-time filter by card name or issuer (case-insensitive partial match, clear button, empty state)
-- Sort dropdown: Name A–Z, Issuer A–Z, Expiry Date (soonest first, no-expiry last), Recently Added
-
 ## Shipped Milestones
 
 | Milestone | Phases | Shipped | Archive |
@@ -137,6 +130,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 | v2.0 Membership Cards | 10–13 | 2026-05-14 | [v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md) |
 | v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
+| v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | — |
 
 ---
-*Last updated: 2026-05-15 — v2.2 Sort and Search for Membership Cards started.*
+*Last updated: 2026-05-15 — v2.2 complete. Phase 16 shipped: MembershipsTab search + sort toolbar (ORG-01, ORG-02).*
