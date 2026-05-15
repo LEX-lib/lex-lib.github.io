@@ -10,7 +10,7 @@
 - ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
 - ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14) — [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
-- [ ] **v2.2 Sort and Search for Membership Cards** — Phase 16
+- ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15)
 
 ## Phases
 
@@ -136,7 +136,7 @@ Plans:
 
 Plans:
 - [x] 16-01-PLAN.md — Refactor WallecxToolbar (sortOptions becomes required prop); update VaccinationsTab to own vaccinationSortOptions and pass via prop
-- [ ] 16-02-PLAN.md — Wire MembershipsTab: imports, searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, no-results empty state
+- [x] 16-02-PLAN.md — Wire MembershipsTab: imports, searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, no-results empty state
 
 **UI hint**: yes
 
@@ -162,8 +162,8 @@ Plans:
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 16. Membership Card Toolbar | v2.2 | 1/2 | In progress | - |
+| 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-15 — Phase 16 Plan 01 complete: WallecxToolbar sortOptions refactored to required prop*
+*Last updated: 2026-05-15 — Phase 16 Plan 02 complete: MembershipsTab search/sort wired; milestone v2.2 shipped*

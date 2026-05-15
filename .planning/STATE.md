@@ -2,34 +2,34 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Sort and Search for Membership Cards
-status: in_progress
-stopped_at: Phase 16 Plan 01 complete (2026-05-15)
-last_updated: "2026-05-15T05:48:44Z"
+status: complete
+stopped_at: Phase 16 Plan 02 complete (2026-05-15)
+last_updated: "2026-05-15T08:35:35Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-15 — Phase 16 Plan 01 complete. WallecxToolbar sortOptions refactored to required prop; VaccinationsTab owns vaccinationSortOptions.
+**Last updated:** 2026-05-15 — Phase 16 Plan 02 complete. MembershipsTab wired with search/sort toolbar, displayedMemberships computed, sessionStorage persistence, and no-results empty state. Milestone v2.2 complete.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v2.2 Sort and Search for Membership Cards — Phase 16 Plan 02: MembershipsTab toolbar wiring.
+**Current focus:** v2.2 complete — ORG-01 and ORG-02 delivered.
 
 ## Current Position
 
-**Milestone:** v2.2 — Sort and Search for Membership Cards (IN PROGRESS)
-**Phase:** Phase 16 — Membership Card Toolbar (In progress — 1/2 plans done)
-**Plan:** 16-02
-**Status:** Ready to execute 16-02
+**Milestone:** v2.2 — Sort and Search for Membership Cards (COMPLETE)
+**Phase:** Phase 16 — Membership Card Toolbar (Complete — 2/2 plans done)
+**Plan:** 16-02 (complete)
+**Status:** Milestone v2.2 shipped
 
 ## Shipped Milestones Summary
 
@@ -110,11 +110,11 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-15T05:48:44Z
+**Last session:** 2026-05-15T08:35:35Z
 
-**Stopped at:** Phase 16 Plan 01 complete — WallecxToolbar sortOptions refactored to required prop; VaccinationsTab owns vaccinationSortOptions; type-check passes.
+**Stopped at:** Phase 16 Plan 02 complete — MembershipsTab wired with WallecxToolbar, displayedMemberships computed, sessionStorage persistence for sort mode, no-results empty state; type-check passes. Milestone v2.2 shipped.
 
-**Next session entry point:** Execute Plan 16-02 — wire MembershipsTab with searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, and no-results empty state.
+**Next session entry point:** No active milestone. Next work would be a future milestone (CONV-01 JSON export, CONV-03 expiry reminders, or SCAN-ADV-01 advanced barcodes — all future candidates).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
