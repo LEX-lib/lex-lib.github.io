@@ -132,7 +132,11 @@ Plans:
   2. Clicking the × button in the search input clears the query and restores the full grid immediately
   3. When the search term matches no cards, the grid is replaced by an informative empty-state message (not a blank area)
   4. Selecting a sort mode from the dropdown reorders the grid: Name A–Z, Issuer A–Z, Expiry Date (soonest first with no-expiry cards last), or Recently Added; the selection persists for the current browser session
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Refactor WallecxToolbar (sortOptions becomes required prop); update VaccinationsTab to own vaccinationSortOptions and pass via prop
+- [ ] 16-02-PLAN.md — Wire MembershipsTab: imports, searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, no-results empty state
 
 **UI hint**: yes
 
@@ -158,8 +162,8 @@ Plans:
 | 13. Write Path — ManageMembership CRUD | v2.0 | 3/3 | Complete | 2026-05-14 |
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
-| 16. Membership Card Toolbar | v2.2 | 0/? | Not started | - |
+| 16. Membership Card Toolbar | v2.2 | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-15 — v2.2 roadmap added: Phase 16 Membership Card Toolbar (ORG-01, ORG-02)*
+*Last updated: 2026-05-15 — Phase 16 plans created: 16-01-PLAN.md, 16-02-PLAN.md*
