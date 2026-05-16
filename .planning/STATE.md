@@ -1,9 +1,9 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: Sort and Search for Membership Cards
-status: archived
-stopped_at: v2.2 milestone archived (2026-05-16)
+milestone: v2.3
+milestone_name: UX Polish
+status: defining_requirements
+stopped_at: Milestone v2.3 started — defining requirements
 last_updated: "2026-05-16T00:00:00Z"
 progress:
   total_phases: 1
@@ -15,21 +15,21 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-16 — v2.2 milestone archived. REQUIREMENTS.md removed; fresh requirements needed for next milestone.
+**Last updated:** 2026-05-16 — v2.3 UX Polish milestone started. Defining requirements.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** All milestones through v2.2 shipped and archived. No active milestone.
+**Current focus:** v2.3 — UX Polish (bottom sheet on mobile, dark mode fix, hide view toggle on mobile).
 
 ## Current Position
 
-**Milestone:** v2.2 — Sort and Search for Membership Cards (ARCHIVED)
-**Phase:** Phase 16 — Membership Card Toolbar (Complete — 2/2 plans done)
-**Plan:** 16-02 (complete)
-**Status:** Milestone v2.2 archived — no active milestone
+**Milestone:** v2.3 — UX Polish
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
 
 ## Shipped Milestones Summary
 
@@ -113,10 +113,10 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-16T00:00:00Z
 
-**Stopped at:** v2.2 milestone archived — ROADMAP.md collapsed, REQUIREMENTS.md removed, git tag v2.2 created.
+**Stopped at:** v2.3 milestone started — requirements defined, awaiting roadmap creation.
 
-**Next session entry point:** No active milestone. Run `/gsd-new-milestone` to start the next milestone. Future candidates: CONV-01 (JSON export for membership cards), CONV-03 (expiry reminders), SCAN-ADV-01 (PDF417/Aztec barcodes).
+**Next session entry point:** Run `/gsd-plan-phase 17` (or the phase number assigned by the roadmapper) to start execution.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-16 — v2.2 milestone archived; git tag v2.2 created*
+*Last updated: 2026-05-16 — v2.3 UX Polish milestone started*

@@ -15,6 +15,15 @@ Both record types share the same per-user PocketBase isolation pattern, the same
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
+## Current Milestone: v2.3 UX Polish
+
+**Goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers on mobile, dark mode renders correctly, and the redundant view toggle is removed on small screens.
+
+**Target features:**
+- Bottom sheet on mobile for VaccinationGroupPanel and MembershipDetail (replaces side drawer below 640px)
+- Dark mode fix for PrimeVue #7465
+- Hide WallecxToolbar view toggle on mobile; force list view as default when hidden
+
 ## Requirements
 
 ### Validated
@@ -47,7 +56,9 @@ If everything else fails, these two capabilities must work: the vaccination hist
 
 ### Active
 
-None — all requirements validated through v2.2.
+- [ ] **UX-ADV-01** — Bottom sheet on mobile for VaccinationGroupPanel and MembershipDetail (replaces side drawer below 640px breakpoint)
+- [ ] **UX-ADV-02** — Dark mode fix for PrimeVue #7465 (correct rendering of Wallecx components in dark theme)
+- [ ] **MOB-09** — Hide WallecxToolbar view toggle on mobile viewports (< 640px); force list view as default when toggle is hidden
 
 ### Future candidates
 
@@ -82,7 +93,7 @@ None — all requirements validated through v2.2.
 - Dates: `dayjs` everywhere; PocketBase date filters use `"YYYY-MM-DD"` format
 - File tokens: fetched at view time, not list time; `requestKey` must be distinct per collection to prevent auto-cancel
 
-**Current state (v2.2 complete — all phases done):**
+**Current state (v2.3 started — UX polish milestone):**
 - ~2,900 LOC TypeScript/Vue across `src/components/projects/wallecx/`
 - 48 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11, × 2 suites in worktrees)
 - Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`
@@ -132,5 +143,22 @@ None — all requirements validated through v2.2.
 | v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
 | v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | [v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md) |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-05-15 — v2.2 complete. Phase 16 shipped: MembershipsTab search + sort toolbar (ORG-01, ORG-02).*
+*Last updated: 2026-05-16 — v2.3 started: UX Polish (bottom sheet, dark mode, mobile view toggle).*
