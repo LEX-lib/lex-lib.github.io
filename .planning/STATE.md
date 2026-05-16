@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: ready_to_plan
-stopped_at: Phase 17 ready to plan
+status: ready_to_execute
+stopped_at: Phase 17 planned (3 plans, 2 waves) — ready to execute
 last_updated: "2026-05-16T00:00:00Z"
 progress:
   total_phases: 2
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-16 — v2.3 UX Polish roadmap created. Phase 17 ready to plan.
+**Last updated:** 2026-05-16 — Phase 17 planned (3 plans across 2 waves). Ready to execute.
 
 ## Project Reference
 
@@ -28,8 +28,8 @@ progress:
 
 **Milestone:** v2.3 — UX Polish
 **Phase:** 17 — Mobile Bottom Sheets & View Toggle
-**Plan:** — (not yet planned)
-**Status:** Ready to plan
+**Plan:** 17-01, 17-02, 17-03 (planned, 0/3 executed)
+**Status:** Ready to execute
 
 ```
 v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
@@ -128,8 +128,8 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Stopped at:** v2.3 roadmap created — 2 phases (17–18), 8/8 requirements mapped.
 
-**Next session entry point:** Run `/gsd-plan-phase 17` to plan Phase 17 (Mobile Bottom Sheets & View Toggle).
+**Next session entry point:** Run `/gsd-execute-phase 17` to execute Phase 17 plans (Wave 1: 17-01 foundation → Wave 2: 17-02 + 17-03 in parallel).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-16 — v2.3 roadmap created; Phase 17 ready to plan*
+*Last updated: 2026-05-16 — Phase 17 planned (3 plans, 2 waves); ready to execute*

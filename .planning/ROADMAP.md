@@ -146,7 +146,13 @@ Plans:
   3. The bottom sheet can be dismissed by tapping the backdrop area or a visible close button; the sheet disappears smoothly
   4. On a desktop or tablet (≥ 640px), the vaccination group detail opens as a right-side drawer and the membership card detail opens as a centered dialog — identical to the behaviour before this phase
   5. On a phone (< 640px), the grid/list toggle buttons are not visible in WallecxToolbar; the vaccination tab renders in list layout regardless of any previously stored sessionStorage value
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Create `useIsMobile` composable + add bottom-Drawer 85dvh CSS override (foundation)
+- [ ] 17-02-PLAN.md — `VaccinationsTab.vue`: reactive Drawer position, drag handle pill, `effectiveViewMode`, `showToggle` hidden on mobile (UX-01, UX-03, UX-04, MOB-09)
+- [ ] 17-03-PLAN.md — `MembershipsTab.vue`: `v-if` Dialog / `v-else` Drawer-bottom split with drag handle pill (UX-02, UX-03, UX-04)
+
 **UI hint**: yes
 
 ### Phase 18: Dark Mode Fixes
@@ -183,9 +189,9 @@ Plans:
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
-| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 0/? | Not started | - |
+| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 0/3 | Not started | - |
 | 18. Dark Mode Fixes | v2.3 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-16 — v2.3 roadmap added: Phases 17–18*
+*Last updated: 2026-05-16 — Phase 17 planned (3 plans)*
