@@ -10,7 +10,7 @@
 - ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (shipped 2026-05-13)
 - ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14) — [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
-- ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15)
+- ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
 
 ## Phases
 
@@ -72,13 +72,18 @@ Full details: [milestones/v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md)
 
 </details>
 
----
+<details>
+<summary>✅ v2.2 Sort and Search for Membership Cards (Phase 16) — SHIPPED 2026-05-15</summary>
 
-## v2.2 Sort and Search for Membership Cards
+- [x] Phase 16: Membership Card Toolbar (2/2 plans) — completed 2026-05-15
 
 **Milestone goal:** Add a persistent toolbar to the Membership Cards tab so users can filter cards in real time by name or issuer and reorder the grid by name, issuer, expiry, or recently added — all as pure client-side computed changes with no new PocketBase queries.
 
-- [ ] **Phase 16: Membership Card Toolbar** - Adapt WallecxToolbar.vue for MembershipsTab — search by name/issuer, sort by four modes, empty state, session-retained sort selection
+Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
+
+</details>
+
+---
 
 ## Phase Details
 
@@ -123,23 +128,6 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 16: Membership Card Toolbar
-**Goal**: Users can search and sort the membership card grid in real time using a toolbar adapted from the existing WallecxToolbar.vue — no new PocketBase queries, all filtering and sorting is client-side computed on the already-loaded membership list
-**Depends on**: Phase 15
-**Requirements**: ORG-01, ORG-02
-**Success Criteria** (what must be TRUE):
-  1. Typing into the search input filters the membership card grid in real time — only cards whose name or issuer contains the typed text (case-insensitive) are shown
-  2. Clicking the × button in the search input clears the query and restores the full grid immediately
-  3. When the search term matches no cards, the grid is replaced by an informative empty-state message (not a blank area)
-  4. Selecting a sort mode from the dropdown reorders the grid: Name A–Z, Issuer A–Z, Expiry Date (soonest first with no-expiry cards last), or Recently Added; the selection persists for the current browser session
-**Plans**: 2 plans
-
-Plans:
-- [x] 16-01-PLAN.md — Refactor WallecxToolbar (sortOptions becomes required prop); update VaccinationsTab to own vaccinationSortOptions and pass via prop
-- [x] 16-02-PLAN.md — Wire MembershipsTab: imports, searchQuery/sortMode refs, displayedMemberships computed, sessionStorage persistence, WallecxToolbar in template, no-results empty state
-
-**UI hint**: yes
-
 ---
 
 ## Progress
@@ -166,4 +154,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-15 — Phase 16 Plan 02 complete: MembershipsTab search/sort wired; milestone v2.2 shipped*
+*Last updated: 2026-05-16 — v2.2 milestone archived; Phase 16 details collapsed to archive link*

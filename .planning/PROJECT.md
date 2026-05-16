@@ -130,7 +130,7 @@ None — all requirements validated through v2.2.
 | v1.2 Search, Sort & View Toggle | 7–9 | 2026-05-13 | — |
 | v2.0 Membership Cards | 10–13 | 2026-05-14 | [v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md) |
 | v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
-| v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | — |
+| v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | [v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md) |
 
 ---
 *Last updated: 2026-05-15 — v2.2 complete. Phase 16 shipped: MembershipsTab search + sort toolbar (ORG-01, ORG-02).*
