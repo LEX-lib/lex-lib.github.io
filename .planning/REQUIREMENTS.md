@@ -61,21 +61,21 @@ Fix visual rendering issues caused by PrimeVue #7465 so Wallecx components displ
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UX-01 | — | Pending |
-| UX-02 | — | Pending |
-| UX-03 | — | Pending |
-| UX-04 | — | Pending |
-| DARK-01 | — | Pending |
-| DARK-02 | — | Pending |
-| DARK-03 | — | Pending |
-| MOB-09 | — | Pending |
+| UX-01 | Phase 17 | Pending |
+| UX-02 | Phase 17 | Pending |
+| UX-03 | Phase 17 | Pending |
+| UX-04 | Phase 17 | Pending |
+| DARK-01 | Phase 18 | Pending |
+| DARK-02 | Phase 18 | Pending |
+| DARK-03 | Phase 18 | Pending |
+| MOB-09 | Phase 17 | Pending |
 
 **Coverage:**
 - v2.3 requirements: 8 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 
 *Requirements defined: 2026-05-16*
-*Traceability updated: pending roadmap creation*
+*Traceability updated: 2026-05-16 — roadmap created, all 8 requirements mapped*

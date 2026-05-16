@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: defining_requirements
-stopped_at: Milestone v2.3 started — defining requirements
+status: ready_to_plan
+stopped_at: Phase 17 ready to plan
 last_updated: "2026-05-16T00:00:00Z"
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-16 — v2.3 UX Polish milestone started. Defining requirements.
+**Last updated:** 2026-05-16 — v2.3 UX Polish roadmap created. Phase 17 ready to plan.
 
 ## Project Reference
 
@@ -27,9 +27,14 @@ progress:
 ## Current Position
 
 **Milestone:** v2.3 — UX Polish
-**Phase:** Not started (defining requirements)
-**Plan:** —
-**Status:** Defining requirements
+**Phase:** 17 — Mobile Bottom Sheets & View Toggle
+**Plan:** — (not yet planned)
+**Status:** Ready to plan
+
+```
+v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
+               [  NEXT UP  ] [  QUEUED  ]
+```
 
 ## Shipped Milestones Summary
 
@@ -83,6 +88,14 @@ progress:
 - **Empty state** when search matches zero cards — informative message, not a blank area.
 - **sortOptions is a required prop on WallecxToolbar** — each tab must pass its own sort options array. VaccinationsTab passes `vaccinationSortOptions`; MembershipsTab will pass `membershipSortOptions`. (Established in Plan 16-01.)
 
+### v2.3 Architectural Decisions (pre-planning)
+
+- **Bottom sheet strategy: conditional `position` prop on PrimeVue Drawer.** VaccinationGroupPanel already uses `<Drawer position="right">`; switch to `position="bottom"` below 640px using `useWindowSize` from `@vueuse/core`. MembershipDetail currently uses `<Dialog>`; on mobile replace with `<Drawer position="bottom">` or conditionally render a bottom-anchored `<Drawer>` vs `<Dialog>`.
+- **Reactive breakpoint via `useWindowSize`.** Already available in `@vueuse/core` (no new packages). Derive `const isMobile = computed(() => width.value < 640)`.
+- **MOB-09 via existing `showToggle` prop pattern.** WallecxToolbar already accepts `showToggle`; add a responsive computed to VaccinationsTab that sets `showToggle` to `false` when `isMobile` is true and resets the active view to `'list'` on mount when mobile.
+- **Dark mode fix strategy: scoped CSS variable overrides.** Target `.my-app-dark .p-card`, `.my-app-dark .p-dialog`, `.my-app-dark .p-drawer` etc. with CSS custom property overrides inside each Wallecx component's `<style scoped>`. No new packages required.
+- **No new npm packages unless strictly necessary.** `useWindowSize` and Tailwind `sm:` breakpoints cover all detection needs.
+
 ### Open Todos
 
 None.
@@ -113,10 +126,10 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-16T00:00:00Z
 
-**Stopped at:** v2.3 milestone started — requirements defined, awaiting roadmap creation.
+**Stopped at:** v2.3 roadmap created — 2 phases (17–18), 8/8 requirements mapped.
 
-**Next session entry point:** Run `/gsd-plan-phase 17` (or the phase number assigned by the roadmapper) to start execution.
+**Next session entry point:** Run `/gsd-plan-phase 17` to plan Phase 17 (Mobile Bottom Sheets & View Toggle).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-16 — v2.3 UX Polish milestone started*
+*Last updated: 2026-05-16 — v2.3 roadmap created; Phase 17 ready to plan*

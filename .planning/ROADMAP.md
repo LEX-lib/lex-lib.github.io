@@ -11,6 +11,7 @@
 - ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14) — [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
 - ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
+- 🔄 **v2.3 UX Polish** — Phases 17–18 (in progress)
 
 ## Phases
 
@@ -83,6 +84,13 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 
 </details>
 
+## v2.3 UX Polish
+
+**Milestone goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers/dialogs on mobile, dark mode renders correctly across all Wallecx surfaces, and the redundant view toggle is hidden on small screens with list view as the forced default.
+
+- [ ] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens
+- [ ] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active
+
 ---
 
 ## Phase Details
@@ -128,6 +136,30 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 17: Mobile Bottom Sheets & View Toggle
+**Goal**: On phones (< 640px), the vaccination group detail and membership card detail slide up from the bottom of the screen instead of opening as a side drawer or centered dialog; the grid/list view toggle is hidden and list view is forced as the default
+**Depends on**: Phase 16
+**Requirements**: UX-01, UX-02, UX-03, UX-04, MOB-09
+**Success Criteria** (what must be TRUE):
+  1. On a phone (< 640px), tapping a vaccination group card opens a panel that slides up from the bottom of the screen, showing all records in the group and their edit/delete actions; no right-side drawer appears
+  2. On a phone (< 640px), tapping a membership card opens a detail view that slides up from the bottom of the screen, showing the card details and barcode; no centered modal dialog appears
+  3. The bottom sheet can be dismissed by tapping the backdrop area or a visible close button; the sheet disappears smoothly
+  4. On a desktop or tablet (≥ 640px), the vaccination group detail opens as a right-side drawer and the membership card detail opens as a centered dialog — identical to the behaviour before this phase
+  5. On a phone (< 640px), the grid/list toggle buttons are not visible in WallecxToolbar; the vaccination tab renders in list layout regardless of any previously stored sessionStorage value
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 18: Dark Mode Fixes
+**Goal**: Every Wallecx surface — card grids, dialogs, the group detail panel, the scan overlay, and BarcodeDisplay — renders with the correct dark palette when the `my-app-dark` class is active; no PrimeVue #7465 light-mode bleed is visible
+**Depends on**: Phase 17
+**Requirements**: DARK-01, DARK-02, DARK-03
+**Success Criteria** (what must be TRUE):
+  1. With dark mode active, the vaccination group cards and membership card tiles show dark backgrounds and light text; no white or light-grey card faces are visible in the grid
+  2. With dark mode active, the ManageVaccination dialog, ManageMembership dialog, and the vaccination group detail panel (or bottom sheet on mobile) all render with dark backgrounds, dark form inputs, and legible labels — no white flash or light panel face
+  3. With dark mode active, the full-screen scan overlay renders with a dark background and the barcode/QR code is clearly legible; BarcodeDisplay renders the correct foreground/background contrast without inheriting light-mode PrimeVue variables
+**Plans**: TBD
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -151,7 +183,9 @@ Plans:
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
+| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 0/? | Not started | - |
+| 18. Dark Mode Fixes | v2.3 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-16 — v2.2 milestone archived; Phase 16 details collapsed to archive link*
+*Last updated: 2026-05-16 — v2.3 roadmap added: Phases 17–18*
