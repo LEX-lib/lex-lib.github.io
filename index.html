@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/branding_logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('lexarium:theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = stored || (prefersDark ? 'dark' : 'light');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('my-app-dark');
+          }
+        } catch (e) {
+          // localStorage unavailable (private mode in some browsers); fall back to OS preference
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('my-app-dark');
+          }
+        }
+      })();
+    </script>
+    <meta name="color-scheme" content="light dark" />
 <title>Lexarium - Explore. Experiment. Evolve.</title>
   </head>
   <body>
