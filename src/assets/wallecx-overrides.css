@@ -39,3 +39,18 @@
 .p-drawer-bottom .p-drawer {
   height: 85dvh !important;
 }
+
+/* Phase 18 D-03 fallback: PrimeVue Card visible separation in dark mode.
+ *
+ * Aura's dark color scheme sets `--p-card-background` very close to the page
+ * background (~#0d1117), causing VaccinationGroupCard and MembershipCard tiles
+ * to blend into the page in dark mode — the cards look like one continuous
+ * dark area with text floating on it.
+ *
+ * Lift the card surface and add a subtle border to restore visible separation.
+ * Scoped to `.my-app-dark` so light mode is untouched. */
+.my-app-dark .p-card {
+  --p-card-background: #1a1f2e;
+  --p-card-border-color: #2a3142;
+  border: 1px solid var(--p-card-border-color);
+}
