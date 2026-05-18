@@ -9,6 +9,7 @@ import ManageVaccination from "./ManageVaccination.vue";
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 import WallecxToolbar from './WallecxToolbar.vue';
+import { useIsMobile } from "@/composables/useIsMobile";
 
 const VIEW_MODE_STORAGE_KEY = 'wallecx:view-mode';
 
@@ -28,6 +29,7 @@ const selectedGroup = ref<VaccineGroup | null>(null);
 const searchQuery = ref<string>('');
 const sortMode = ref<string>('type-asc');
 const viewMode = ref<'grid' | 'list'>('grid');
+const isMobile = useIsMobile();
 
 const vaccinationSortOptions = [
   { value: 'type-asc',  label: 'Type A–Z' },
@@ -119,8 +121,13 @@ const displayedGroups = computed<VaccineGroup[]>(() => {
   return [...named, ...uncategorized];
 });
 
+// Phase 17 D-12: read-only layer above viewMode that forces 'list' on mobile.
+// viewMode ref and its sessionStorage watch are unchanged — desktop preference
+// is preserved across resizes (D-13).
+const effectiveViewMode = computed(() => isMobile.value ? 'list' : viewMode.value);
+
 const gridClass = computed(() =>
-  viewMode.value === 'list'
+  effectiveViewMode.value === 'list'
     ? 'grid grid-cols-1 gap-4'
     : 'grid grid-cols-1 sm:grid-cols-2 gap-4',
 );
