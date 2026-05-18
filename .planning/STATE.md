@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: phase_complete_pending_human_uat
-stopped_at: Phase 19 shipped (3/3 tasks, code verification PASS, 4 items pending human runtime UAT)
+status: phase_complete_uat_passed
+stopped_at: Phase 19 shipped + UAT approved; v3.0 25% complete (1/4 phases done)
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
   completed_plans: 1
   percent: 25
@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 19 shipped: inline FOUC script + useTheme composable + NavBar toggle. All static contracts PASS; 4 items routed to human runtime UAT.
+**Last updated:** 2026-05-18 — Phase 19 shipped + UAT approved (no follow-up fixes needed). User noted MonitoX pages not dark — expected, that's Phase 21 scope (THEME-11). Phase 20 (site shell) ready to discuss.
 
 ## Project Reference
 
@@ -27,15 +27,14 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 19 — Theme Infrastructure (complete, pending human UAT)
-**Plan:** 19-01 (3/3 tasks shipped)
-**Status:** Phase 20 ready to discuss after UAT sign-off
+**Phase:** 20 — Site Shell & Non-App Pages (next)
+**Plan:** — (not yet discussed)
+**Status:** Ready to discuss
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [   DONE*  ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
+               [   DONE   ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
 ```
-*Phase 19: code-verified PASS; 4 items pending human runtime UAT (see 19-VERIFICATION.md)
 
 ## Shipped Milestones Summary
 
