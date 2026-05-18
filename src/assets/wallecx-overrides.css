@@ -31,7 +31,11 @@
  * Targeting `.p-drawer-bottom .p-drawer` (not `.p-drawer-bottom` itself) is
  * required because the wrapper has the position class, but the actual panel
  * with the explicit height rule is the inner `.p-drawer` element. The selector
- * also leaves right-position Drawers (desktop VaccinationGroupPanel) untouched. */
+ * also leaves right-position Drawers (desktop VaccinationGroupPanel) untouched.
+ *
+ * `!important` is required because PrimeVue's base stylesheet injects
+ * `.p-drawer-bottom .p-drawer { height: 10rem }` at the same selector
+ * specificity AFTER our override in source order, so it would otherwise win. */
 .p-drawer-bottom .p-drawer {
-  height: 85dvh;
+  height: 85dvh !important;
 }
