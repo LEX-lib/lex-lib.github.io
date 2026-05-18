@@ -13,16 +13,14 @@ const scrollToAboutMe = () => {
   >
     <!-- Decorative background shapes -->
     <div
-      class="absolute top-20 left-10 w-12 h-12 rounded-lg transform rotate-12 blur-sm"
-      style="background-color: rgba(0, 34, 68, 0.12)"
+      class="absolute top-20 left-10 w-12 h-12 rounded-lg transform rotate-12 blur-sm hero-blob-navy-1"
     ></div>
     <div
       class="absolute bottom-20 right-10 w-24 h-24 rounded-full blur-xl"
       style="background-color: rgba(232, 152, 32, 0.15)"
     ></div>
     <div
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-3xl -z-0"
-      style="background-color: rgba(0, 34, 68, 0.05)"
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-3xl -z-0 hero-blob-navy-2"
     ></div>
 
     <div class="container mx-auto px-6 lg:px-12 relative z-10 py-20">
@@ -96,8 +94,7 @@ const scrollToAboutMe = () => {
             style="background-color: rgba(232, 152, 32, 0.12)"
           ></div>
           <div
-            class="absolute top-10 -left-10 w-20 h-20 rounded-full -z-10"
-            style="background-color: rgba(0, 34, 68, 0.08)"
+            class="absolute top-10 -left-10 w-20 h-20 rounded-full -z-10 hero-blob-navy-3"
           ></div>
         </div>
       </div>
@@ -159,6 +156,26 @@ const scrollToAboutMe = () => {
   box-shadow: 0 0 20px rgba(232, 152, 32, 0.35);
 }
 .hero-cta-primary:hover {
-  background-color: color-mix(in srgb, var(--color-brand-accent) 85%, white);
+  background-color: color-mix(in srgb, var(--color-brand-accent) 85%, var(--color-mix-target));
+}
+
+/* Decorative blobs — navy is invisible on dark page; switch to amber per D-06 */
+.hero-blob-navy-1 {
+  background-color: rgba(0, 34, 68, 0.12);
+}
+.hero-blob-navy-2 {
+  background-color: rgba(0, 34, 68, 0.05);
+}
+.hero-blob-navy-3 {
+  background-color: rgba(0, 34, 68, 0.08);
+}
+:global(.my-app-dark) .hero-blob-navy-1 {
+  background-color: rgba(232, 152, 32, 0.18);
+}
+:global(.my-app-dark) .hero-blob-navy-2 {
+  background-color: rgba(232, 152, 32, 0.08);
+}
+:global(.my-app-dark) .hero-blob-navy-3 {
+  background-color: rgba(232, 152, 32, 0.12);
 }
 </style>
