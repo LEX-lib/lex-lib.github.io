@@ -26,6 +26,8 @@
   --color-status-warning: #e89820;
   --color-status-error: #c0392b;
   --color-status-info: #378add;
+
+  --color-mix-target: #ffffff;
 }
 
 /* Dark-mode overrides for custom @theme tokens.
@@ -53,6 +55,8 @@
   --color-typo-body: #cbd5e1;
   --color-typo-muted: #9ca3af;
   --color-typo-link: #f0ab40;
+
+  --color-mix-target: #0d1117;
 }
 
 a {
