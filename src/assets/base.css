@@ -28,6 +28,33 @@
   --color-status-info: #378add;
 }
 
+/* Dark-mode overrides for custom @theme tokens.
+ *
+ * @theme defines the light-mode canonical values; Tailwind v4 generates utility
+ * classes (e.g. text-typo-heading, bg-surface-card) that read these as CSS
+ * variables. Redefining the variables under `.my-app-dark` makes every utility
+ * AND any inline `style="color: var(--color-...)"` reference switch automatically
+ * when the parent app applies the dark-mode class.
+ *
+ * Status colors stay theme-independent (warning/error/success/info read the same
+ * in both themes). */
+.my-app-dark {
+  --color-brand-primary: #7896ba;
+  --color-brand-primary-dark: #3d6a9a;
+  --color-brand-accent: #f0ab40;
+  --color-brand-accent-light: #3a2d10;
+
+  --color-surface-page: #0d1117;
+  --color-surface-card: #1a1a2e;
+  --color-surface-code: #0d1117;
+  --color-surface-divider: #2a3142;
+
+  --color-typo-heading: #f5f7fa;
+  --color-typo-body: #cbd5e1;
+  --color-typo-muted: #9ca3af;
+  --color-typo-link: #f0ab40;
+}
+
 a {
   color: var(--color-typo-link);
   text-decoration: underline;
