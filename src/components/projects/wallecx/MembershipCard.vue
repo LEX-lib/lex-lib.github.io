@@ -11,8 +11,28 @@ const emit = defineEmits<{
   click: []
 }>()
 
+// WCAG luminance-based contrast helper (D-06).
+// Picks "#0d1117" (near-black) for light card_color, "#ffffff" for dark.
+// Threshold 0.5 — perceptual midpoint; documented in 18-CONTEXT.md §Specific Ideas.
+// Input may include or omit a leading "#"; card_color is stored without "#" per STATE.md invariant.
+function pickTextColor(hex: string): string {
+  const c = hex.replace('#', '').toLowerCase()
+  const r = parseInt(c.slice(0, 2), 16) / 255
+  const g = parseInt(c.slice(2, 4), 16) / 255
+  const b = parseInt(c.slice(4, 6), 16) / 255
+  const lin = (v: number) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4))
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  return L > 0.5 ? '#0d1117' : '#ffffff'
+}
+
+const cardBg = computed(() =>
+  props.record.card_color ? '#' + props.record.card_color : '#002244'
+)
+const cardTextColor = computed(() => pickTextColor(cardBg.value))
+
 const tileStyle = computed(() => ({
-  backgroundColor: props.record.card_color ? '#' + props.record.card_color : '#002244'
+  backgroundColor: cardBg.value,
+  color: cardTextColor.value,
 }))
 
 const isExpirySoon = computed<boolean>(() => {
@@ -57,13 +77,13 @@ function displayExpiry(iso: string): string {
     @click="emit('click')"
   >
     <template #content>
-      <!-- Card name — primary, always white text on coloured background -->
-      <p class="text-lg font-bold mb-1" style="color: #ffffff;">
+      <!-- Card name — primary, contrast-aware foreground derived from card_color luminance -->
+      <p class="text-lg font-bold mb-1" :style="{ color: cardTextColor }">
         {{ record.card_name }}
       </p>
 
-      <!-- Issuer — subordinate, white 75% opacity; only when present -->
-      <p v-if="record.issuer" class="text-sm mb-2" style="color: rgba(255,255,255,0.75);">
+      <!-- Issuer — subordinate, contrast-aware foreground at 75% opacity; only when present -->
+      <p v-if="record.issuer" class="text-sm mb-2" :style="{ color: cardTextColor, opacity: 0.75 }">
         {{ record.issuer }}
       </p>
 
@@ -85,7 +105,7 @@ function displayExpiry(iso: string): string {
 
       <!-- Expiry row -->
       <div class="flex items-center gap-2 mt-auto">
-        <p v-if="record.expiry_date" class="text-sm" style="color: rgba(255,255,255,0.85);">
+        <p v-if="record.expiry_date" class="text-sm" :style="{ color: cardTextColor, opacity: 0.85 }">
           Expires: {{ displayExpiry(record.expiry_date) }}
         </p>
         <Badge
