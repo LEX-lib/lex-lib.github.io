@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: ready_to_execute
-stopped_at: Phase 18 planned (1 plan, 4 tasks, 1 wave) — ready to execute
+status: milestone_ready_to_close
+stopped_at: v2.3 complete (Phases 17 & 18 shipped + UAT approved) — ready to archive
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 18 planned (1 plan, 4 tasks). Root fix per official PrimeVue Tailwind dark-mode docs: add `@custom-variant dark` to base.css + add luminance-aware text color to MembershipCard.
+**Last updated:** 2026-05-18 — Phase 18 shipped + UAT approved after 2 follow-up fixes (dark-mode overrides for custom @theme tokens; PrimeVue Card visible separation). v2.3 milestone is now complete.
 
 ## Project Reference
 
@@ -26,14 +26,14 @@ progress:
 
 ## Current Position
 
-**Milestone:** v2.3 — UX Polish
-**Phase:** 18 — Dark Mode Fixes
-**Plan:** 18-01 (4 tasks, 1 wave, 0/4 executed)
-**Status:** Ready to execute
+**Milestone:** v2.3 — UX Polish (complete)
+**Phase:** — (none active; ready to archive milestone)
+**Plan:** — (4/4 plans shipped + UAT approved)
+**Status:** Milestone ready to close via `/gsd-complete-milestone`
 
 ```
 v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
-               [   DONE   ] [  NEXT UP ]
+               [   DONE   ] [   DONE   ]
 ```
 
 ## Shipped Milestones Summary
@@ -125,10 +125,10 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-18T00:00:00Z
 
-**Stopped at:** Phase 17 fully approved — 3/3 plans + 3 follow-up fixes, code + human UAT both PASS.
+**Stopped at:** v2.3 UX Polish milestone complete — Phases 17 & 18 shipped + UAT approved (5 follow-up fixes total across both phases).
 
-**Next session entry point:** Run `/gsd-discuss-phase 18` to begin Phase 18 (Dark Mode Fixes).
+**Next session entry point:** Run `/gsd-complete-milestone` to archive v2.3 and prepare for the next milestone.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-18 — Phase 17 shipped (code-verified); Phase 18 ready to discuss*
+*Last updated: 2026-05-18 — v2.3 complete; ready to archive*

@@ -11,7 +11,7 @@
 - ✅ **v2.0 Membership Cards** — Phases 10–13 (shipped 2026-05-14) — [archive](milestones/v2.0-ROADMAP.md)
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
 - ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
-- 🔄 **v2.3 UX Polish** — Phases 17–18 (in progress)
+- ✅ **v2.3 UX Polish** — Phases 17–18 (shipped 2026-05-18)
 
 ## Phases
 
@@ -89,7 +89,7 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 **Milestone goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers/dialogs on mobile, dark mode renders correctly across all Wallecx surfaces, and the redundant view toggle is hidden on small screens with list view as the forced default.
 
 - [x] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens (code + UAT approved 2026-05-18)
-- [ ] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active
+- [x] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active (code + UAT approved 2026-05-18)
 
 ---
 
@@ -193,8 +193,8 @@ Plans:
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
 | 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
-| 18. Dark Mode Fixes | v2.3 | 0/1 | Planned | - |
+| 18. Dark Mode Fixes | v2.3 | 1/1 | Complete (UAT approved) | 2026-05-18 |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-18 — Phase 18 planned (1 plan, 4 tasks)*
+*Last updated: 2026-05-18 — v2.3 UX Polish complete; ready to archive*
