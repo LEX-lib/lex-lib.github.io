@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: ready_to_execute
-stopped_at: Phase 19 planned (1 plan, 3 tasks) — ready to execute
+status: phase_complete_pending_human_uat
+stopped_at: Phase 19 shipped (3/3 tasks, code verification PASS, 4 items pending human runtime UAT)
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 19 planned (1 plan, 3 tasks): inline FOUC script + useTheme composable + NavBar toggle. Ready to execute.
+**Last updated:** 2026-05-18 — Phase 19 shipped: inline FOUC script + useTheme composable + NavBar toggle. All static contracts PASS; 4 items routed to human runtime UAT.
 
 ## Project Reference
 
@@ -27,14 +27,15 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 19 — Theme Infrastructure
-**Plan:** 19-01 (3 tasks, 1 wave, 0/3 executed)
-**Status:** Ready to execute
+**Phase:** 19 — Theme Infrastructure (complete, pending human UAT)
+**Plan:** 19-01 (3/3 tasks shipped)
+**Status:** Phase 20 ready to discuss after UAT sign-off
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [  NEXT UP  ] [  QUEUED  ] [  QUEUED  ] [  QUEUED  ]
+               [   DONE*  ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
 ```
+*Phase 19: code-verified PASS; 4 items pending human runtime UAT (see 19-VERIFICATION.md)
 
 ## Shipped Milestones Summary
 
