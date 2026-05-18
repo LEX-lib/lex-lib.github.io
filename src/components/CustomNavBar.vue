@@ -88,7 +88,11 @@ const toggle = (event: Event) => {
   <Menubar :model="items">
     <template #start>
       <Button variant="link">
-        <Avatar image="/branding_logo.svg" @click="router.push('/')" />
+        <Avatar
+          image="/branding_logo.svg"
+          class="dark:invert"
+          @click="router.push('/')"
+        />
       </Button>
 
       <!--      <img src="@/assets/branding_logo.svg" alt="Logo" class="logo" />-->
