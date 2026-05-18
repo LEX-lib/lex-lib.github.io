@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: ready_to_execute
-stopped_at: Phase 20 planned (1 plan, 8 tasks) — ready to execute
+status: phase_complete_pending_human_uat
+stopped_at: Phase 20 shipped (8/8 tasks, code PASS, visual UAT pending)
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 20 planned (1 plan, 8 tasks): base.css --color-mix-target var + per-file audit/fix sweep across 7 site-shell components + UAT doc. Ready to execute.
+**Last updated:** 2026-05-18 — Phase 20 shipped (8/8 tasks): base.css --color-mix-target var, per-file dark-mode sweep across 7 site-shell components, NavBar Avatar dark:invert. Code PASS; 5 visual UAT items pending.
 
 ## Project Reference
 
@@ -27,14 +27,15 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 20 — Site Shell & Non-App Pages
-**Plan:** 20-01 (8 tasks, 1 wave, 0/8 executed)
-**Status:** Ready to execute
+**Phase:** 20 — Site Shell & Non-App Pages (complete, pending human UAT)
+**Plan:** 20-01 (8/8 tasks shipped)
+**Status:** Phase 21 ready to discuss after UAT sign-off
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [   DONE   ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
+               [   DONE   ] [   DONE*  ] [  NEXT UP ] [  QUEUED  ]
 ```
+*Phase 20: code-verified PASS; 5 items pending human runtime UAT (see 20-VERIFICATION.md / 20-HUMAN-UAT.md)
 
 ## Shipped Milestones Summary
 
