@@ -198,4 +198,9 @@ import aboutMePhoto from "@/assets/about-me-photo.png";
   color: var(--color-brand-accent) !important;
   background-color: rgba(232, 152, 32, 0.12) !important;
 }
+
+/* Phase 20 dark-mode tuning — amber hover chip alpha bumped for dark visibility (D-08 specificity match) */
+:global(.my-app-dark) .about-social-btn:hover {
+  background-color: rgba(232, 152, 32, 0.18) !important;
+}
 </style>
