@@ -21,20 +21,17 @@
 }
 
 /* Phase 17 D-01, D-02: bottom-anchored Drawer height (mobile bottom sheets).
- * Scoped to `.p-drawer-bottom` so this does NOT apply to right-position Drawers
- * (e.g. desktop VaccinationGroupPanel). PrimeVue Drawer applies a `p-drawer-bottom`
- * class to its wrapper when `position="bottom"`.
  *
- * The wrapper is sized to 85dvh so the sheet always slides up to 85% of the
- * viewport (iOS bottom-sheet pattern). The ~15% remaining viewport stays as a
- * tappable backdrop for dismissal (CONTEXT.md D-01).
+ * PrimeVue's base style sets `.p-drawer-bottom .p-drawer { height: 10rem }`,
+ * which would leave the sheet as a thin 160px strip at the bottom. We override
+ * the inner `.p-drawer` panel to 85dvh so the sheet slides up to 85% of the
+ * viewport (iOS bottom-sheet pattern), leaving ~15% as tappable backdrop
+ * (CONTEXT.md D-01).
  *
- * Without an explicit wrapper height, PrimeVue's bottom Drawer collapses to its
- * intrinsic content size — leaving the sheet anchored as a thin strip at the
- * bottom instead of expanding upward. */
-.p-drawer-bottom {
+ * Targeting `.p-drawer-bottom .p-drawer` (not `.p-drawer-bottom` itself) is
+ * required because the wrapper has the position class, but the actual panel
+ * with the explicit height rule is the inner `.p-drawer` element. The selector
+ * also leaves right-position Drawers (desktop VaccinationGroupPanel) untouched. */
+.p-drawer-bottom .p-drawer {
   height: 85dvh;
-}
-.p-drawer-bottom .p-drawer-content {
-  overflow-y: auto;
 }
