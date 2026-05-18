@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: phase_complete_uat_passed
-stopped_at: Phase 17 shipped (3/3 plans, code + human UAT PASS after 3 follow-up fixes)
+status: ready_to_execute
+stopped_at: Phase 18 planned (1 plan, 4 tasks, 1 wave) — ready to execute
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 3
+  total_plans: 4
   completed_plans: 3
-  percent: 50
+  percent: 75
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 17 fully UAT-approved after 3 follow-up fixes (bottom Drawer wrapper-selector specificity, !important to beat PrimeVue base rule, pill color → Tailwind gray scale).
+**Last updated:** 2026-05-18 — Phase 18 planned (1 plan, 4 tasks). Root fix per official PrimeVue Tailwind dark-mode docs: add `@custom-variant dark` to base.css + add luminance-aware text color to MembershipCard.
 
 ## Project Reference
 
@@ -27,9 +27,9 @@ progress:
 ## Current Position
 
 **Milestone:** v2.3 — UX Polish
-**Phase:** 18 — Dark Mode Fixes (next)
-**Plan:** — (Phase 18 not yet discussed)
-**Status:** Phase 17 complete + UAT approved; Phase 18 ready to discuss
+**Phase:** 18 — Dark Mode Fixes
+**Plan:** 18-01 (4 tasks, 1 wave, 0/4 executed)
+**Status:** Ready to execute
 
 ```
 v2.3 Progress: [ Phase 17 ] [ Phase 18 ]

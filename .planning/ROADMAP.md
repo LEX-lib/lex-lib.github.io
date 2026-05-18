@@ -163,8 +163,11 @@ Plans:
   1. With dark mode active, the vaccination group cards and membership card tiles show dark backgrounds and light text; no white or light-grey card faces are visible in the grid
   2. With dark mode active, the ManageVaccination dialog, ManageMembership dialog, and the vaccination group detail panel (or bottom sheet on mobile) all render with dark backgrounds, dark form inputs, and legible labels — no white flash or light panel face
   3. With dark mode active, the full-screen scan overlay renders with a dark background and the barcode/QR code is clearly legible; BarcodeDisplay renders the correct foreground/background contrast without inheriting light-mode PrimeVue variables
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: yes
+
+Plans:
+- [ ] 18-01-PLAN.md — Tailwind v4 dark-variant alignment + MembershipCard luminance-aware foreground + MembershipDetail card_color audit + 18-HUMAN-UAT.md generation
 
 ---
 
@@ -190,8 +193,8 @@ Plans:
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
 | 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
-| 18. Dark Mode Fixes | v2.3 | 0/? | Not started | - |
+| 18. Dark Mode Fixes | v2.3 | 0/1 | Planned | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-18 — Phase 17 shipped (code-verified); Phase 18 next*
+*Last updated: 2026-05-18 — Phase 18 planned (1 plan, 4 tasks)*
