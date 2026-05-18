@@ -8,6 +8,7 @@ import MembershipDetail from './MembershipDetail.vue'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
 import ManageMembership from './ManageMembership.vue'
 import WallecxToolbar from './WallecxToolbar.vue'
+import { useIsMobile } from '@/composables/useIsMobile'
 
 const records = ref<Memberships[]>([])
 const isLoading = ref(false)
@@ -17,6 +18,7 @@ const fileToken = ref<string>('')
 const showManage = ref<boolean>(false)
 const manageRecord = ref<Memberships | null>(null)
 const confirm = useConfirm()
+const isMobile = useIsMobile()
 
 const SORT_MODE_STORAGE_KEY = 'wallecx:memberships-sort-mode';
 
