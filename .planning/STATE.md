@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: phase_complete_uat_passed
-stopped_at: Phase 19 shipped + UAT approved; v3.0 25% complete (1/4 phases done)
+status: ready_to_execute
+stopped_at: Phase 20 planned (1 plan, 8 tasks) — ready to execute
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 1
+  total_plans: 2
   completed_plans: 1
   percent: 25
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 19 shipped + UAT approved (no follow-up fixes needed). User noted MonitoX pages not dark — expected, that's Phase 21 scope (THEME-11). Phase 20 (site shell) ready to discuss.
+**Last updated:** 2026-05-18 — Phase 20 planned (1 plan, 8 tasks): base.css --color-mix-target var + per-file audit/fix sweep across 7 site-shell components + UAT doc. Ready to execute.
 
 ## Project Reference
 
@@ -27,9 +27,9 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 20 — Site Shell & Non-App Pages (next)
-**Plan:** — (not yet discussed)
-**Status:** Ready to discuss
+**Phase:** 20 — Site Shell & Non-App Pages
+**Plan:** 20-01 (8 tasks, 1 wave, 0/8 executed)
+**Status:** Ready to execute
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]

@@ -204,8 +204,11 @@ Plans:
   3. The blog page renders correctly in dark mode — list view and article view both legible
   4. The login form renders correctly in dark mode — input fields, labels, helper text, and error states all visible
   5. The NavBar renders correctly in dark mode — brand mark, route links, theme toggle, and auth state indicators all visible against the dark background
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: yes
+
+Plans:
+- [ ] 20-01-PLAN.md — Audit + fix dark mode across 7 site shell files (base.css var + HeroSection + AboutMeSection + ProjectsView + Login + Blog/About + NavBar + UAT doc)
 
 ### Phase 21: Mini-App Dark Mode Sweep
 **Goal**: LexTrack, Larga, Gift Exchange, and API Playground all render correctly in dark mode — every screen, dialog, form, table, and integration surface (maps, code blocks) adapts to the dark palette
@@ -257,7 +260,7 @@ Plans:
 | 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
 | 18. Dark Mode Fixes | v2.3 | 1/1 | Complete (UAT approved) | 2026-05-18 |
 | 19. Theme Infrastructure | v3.0 | 0/1 | Not started | - |
-| 20. Site Shell & Non-App Pages | v3.0 | 0/? | Not started | - |
+| 20. Site Shell & Non-App Pages | v3.0 | 0/1 | Not started | - |
 | 21. Mini-App Dark Mode Sweep | v3.0 | 0/? | Not started | - |
 | 22. Wallecx Audit | v3.0 | 0/? | Not started | - |
 
