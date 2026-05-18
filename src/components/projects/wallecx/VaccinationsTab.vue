@@ -427,7 +427,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         <div class="flex flex-col items-center w-full gap-1">
           <div
             v-if="isMobile"
-            class="w-8 h-1 rounded-full bg-surface-300 dark:bg-surface-600"
+            class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600"
             aria-hidden="true"
           ></div>
           <span class="font-semibold">{{ selectedGroup?.vaccineType ?? '' }}</span>

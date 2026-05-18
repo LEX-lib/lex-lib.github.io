@@ -288,7 +288,7 @@ function onUpdated(updatedRecord: Memberships): void {
       <template #header>
         <div class="flex flex-col items-center w-full gap-1">
           <div
-            class="w-8 h-1 rounded-full bg-surface-300 dark:bg-surface-600"
+            class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600"
             aria-hidden="true"
           ></div>
           <span class="font-semibold">Membership Card</span>
