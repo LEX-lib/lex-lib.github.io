@@ -69,10 +69,10 @@ const resolver = ref(
           style="box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25)"
         ></div>
         <div class="mb-6 text-center">
-          <h1 class="text-2xl font-semibold text-black drop-shadow">
+          <h1 class="text-2xl font-semibold text-black dark:text-white drop-shadow">
             Welcome back
           </h1>
-          <p class="mt-1 text-black/80 text-sm">Sign in to continue</p>
+          <p class="mt-1 text-black/80 dark:text-white/80 text-sm">Sign in to continue</p>
         </div>
 
         <Form
@@ -129,7 +129,7 @@ const resolver = ref(
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <Checkbox input-id="remember" v-model="remember" :binary="true" />
-              <label for="remember" class="text-sm text-black/90"
+              <label for="remember" class="text-sm text-black/90 dark:text-white/90"
                 >Remember me</label
               >
             </div>
