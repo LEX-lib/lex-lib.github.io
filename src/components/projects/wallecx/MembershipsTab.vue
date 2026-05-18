@@ -252,8 +252,16 @@ function onUpdated(updatedRecord: Memberships): void {
       />
     </div>
 
-    <!-- MembershipDetail Dialog -->
+    <!-- MembershipDetail wrapper.
+         Phase 17 D-06: desktop renders Dialog, mobile renders bottom Drawer.
+         Phase 17 D-07: 85dvh content cap is applied via `wallecx-overrides.css`
+                        (`.p-drawer-bottom .p-drawer-content` rule).
+         Phase 17 D-08: identical @hide handler on both wrappers; openEdit/openDelete
+                        inside MembershipDetail already close the detail before opening
+                        the manage/confirm dialog (see openEdit fn). -->
+    <!-- Desktop: centered Dialog -->
     <Dialog
+      v-if="!isMobile"
       v-model:visible="showDetail"
       modal
       header="Membership Card"
@@ -269,6 +277,31 @@ function onUpdated(updatedRecord: Memberships): void {
         @delete="openDelete(selectedRecord!)"
       />
     </Dialog>
+
+    <!-- Mobile: bottom Drawer -->
+    <Drawer
+      v-else
+      v-model:visible="showDetail"
+      position="bottom"
+      @hide="selectedRecord = null; fileToken = ''"
+    >
+      <template #header>
+        <div class="flex flex-col items-center w-full gap-1">
+          <div
+            class="w-8 h-1 rounded-full bg-surface-300 dark:bg-surface-600"
+            aria-hidden="true"
+          ></div>
+          <span class="font-semibold">Membership Card</span>
+        </div>
+      </template>
+      <MembershipDetail
+        v-if="selectedRecord"
+        :record="selectedRecord"
+        :token="fileToken"
+        @edit="openEdit(selectedRecord!)"
+        @delete="openDelete(selectedRecord!)"
+      />
+    </Drawer>
 
     <!-- ManageMembership dialog — create and edit (Plan 13-02) -->
     <ManageMembership
