@@ -88,7 +88,7 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 
 **Milestone goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers/dialogs on mobile, dark mode renders correctly across all Wallecx surfaces, and the redundant view toggle is hidden on small screens with list view as the forced default.
 
-- [x] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens (code-verified 2026-05-18; 5 items pending human UAT)
+- [x] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens (code + UAT approved 2026-05-18)
 - [ ] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active
 
 ---
@@ -189,7 +189,7 @@ Plans:
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
-| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (pending human UAT) | 2026-05-18 |
+| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
 | 18. Dark Mode Fixes | v2.3 | 0/? | Not started | - |
 
 ---

@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: phase_complete_pending_human_uat
-stopped_at: Phase 17 shipped (3/3 plans, code verification PASS, 5 items pending human runtime UAT)
+status: phase_complete_uat_passed
+stopped_at: Phase 17 shipped (3/3 plans, code + human UAT PASS after 3 follow-up fixes)
 last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 2
@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 17 shipped. Code verification PASS for all 5 success criteria; 5 items routed to human runtime UAT.
+**Last updated:** 2026-05-18 — Phase 17 fully UAT-approved after 3 follow-up fixes (bottom Drawer wrapper-selector specificity, !important to beat PrimeVue base rule, pill color → Tailwind gray scale).
 
 ## Project Reference
 
@@ -29,13 +29,12 @@ progress:
 **Milestone:** v2.3 — UX Polish
 **Phase:** 18 — Dark Mode Fixes (next)
 **Plan:** — (Phase 18 not yet discussed)
-**Status:** Phase 17 complete (3/3 plans, code-verified); Phase 18 ready to discuss
+**Status:** Phase 17 complete + UAT approved; Phase 18 ready to discuss
 
 ```
 v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
-               [   DONE*  ] [  NEXT UP ]
+               [   DONE   ] [  NEXT UP ]
 ```
-*Phase 17: code-verified PASS; 5 items pending human runtime UAT (see 17-VERIFICATION.md)
 
 ## Shipped Milestones Summary
 
@@ -120,15 +119,13 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
 | verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
 
 | uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 3 pending scenarios (Chrome DevTools PWA install, iOS standalone, offline precache) |
-| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed — 5 mobile runtime scenarios (slide direction, backdrop/close dismiss, desktop parity, resize round-trip, barcode rendering) |
-
-Known deferred items at close: 9 (7 from v1.0 + 1 from Phase 14 + 1 from Phase 17)
+Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
 **Last session:** 2026-05-18T00:00:00Z
 
-**Stopped at:** Phase 17 shipped — 3/3 plans complete, code verification PASS, 5 human runtime UAT items deferred.
+**Stopped at:** Phase 17 fully approved — 3/3 plans + 3 follow-up fixes, code + human UAT both PASS.
 
 **Next session entry point:** Run `/gsd-discuss-phase 18` to begin Phase 18 (Dark Mode Fixes).
 
