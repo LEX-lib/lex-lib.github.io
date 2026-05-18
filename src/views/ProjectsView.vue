@@ -235,4 +235,16 @@ const projects = ref<Project[]>([
   border-color: var(--color-brand-primary-dark) !important;
   transform: translateY(-1px);
 }
+
+/* Phase 20 dark-mode tuning — chip text colors flipped for legibility, alpha bumped */
+:global(.my-app-dark) .projects-tag-wip {
+  background-color: rgba(240, 171, 64, 0.22) !important;
+  border: 1px solid rgba(240, 171, 64, 0.45) !important;
+  color: #fdf3dc !important;
+}
+:global(.my-app-dark) .projects-tag-active {
+  background-color: rgba(26, 124, 69, 0.2) !important;
+  border: 1px solid rgba(26, 124, 69, 0.5) !important;
+  color: #6ee7a4 !important;
+}
 </style>
