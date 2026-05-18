@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
-status: ready_to_execute
-stopped_at: Phase 17 planned (3 plans, 2 waves) — ready to execute
-last_updated: "2026-05-16T00:00:00Z"
+status: phase_complete_pending_human_uat
+stopped_at: Phase 17 shipped (3/3 plans, code verification PASS, 5 items pending human runtime UAT)
+last_updated: "2026-05-18T00:00:00Z"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-16 — Phase 17 planned (3 plans across 2 waves). Ready to execute.
+**Last updated:** 2026-05-18 — Phase 17 shipped. Code verification PASS for all 5 success criteria; 5 items routed to human runtime UAT.
 
 ## Project Reference
 
@@ -27,14 +27,15 @@ progress:
 ## Current Position
 
 **Milestone:** v2.3 — UX Polish
-**Phase:** 17 — Mobile Bottom Sheets & View Toggle
-**Plan:** 17-01, 17-02, 17-03 (planned, 0/3 executed)
-**Status:** Ready to execute
+**Phase:** 18 — Dark Mode Fixes (next)
+**Plan:** — (Phase 18 not yet discussed)
+**Status:** Phase 17 complete (3/3 plans, code-verified); Phase 18 ready to discuss
 
 ```
 v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
-               [  NEXT UP  ] [  QUEUED  ]
+               [   DONE*  ] [  NEXT UP ]
 ```
+*Phase 17: code-verified PASS; 5 items pending human runtime UAT (see 17-VERIFICATION.md)
 
 ## Shipped Milestones Summary
 
@@ -119,17 +120,18 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
 | verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
 
 | uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 3 pending scenarios (Chrome DevTools PWA install, iOS standalone, offline precache) |
+| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed — 5 mobile runtime scenarios (slide direction, backdrop/close dismiss, desktop parity, resize round-trip, barcode rendering) |
 
-Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
+Known deferred items at close: 9 (7 from v1.0 + 1 from Phase 14 + 1 from Phase 17)
 
 ## Session Continuity
 
-**Last session:** 2026-05-16T00:00:00Z
+**Last session:** 2026-05-18T00:00:00Z
 
-**Stopped at:** v2.3 roadmap created — 2 phases (17–18), 8/8 requirements mapped.
+**Stopped at:** Phase 17 shipped — 3/3 plans complete, code verification PASS, 5 human runtime UAT items deferred.
 
-**Next session entry point:** Run `/gsd-execute-phase 17` to execute Phase 17 plans (Wave 1: 17-01 foundation → Wave 2: 17-02 + 17-03 in parallel).
+**Next session entry point:** Run `/gsd-discuss-phase 18` to begin Phase 18 (Dark Mode Fixes).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-16 — Phase 17 planned (3 plans, 2 waves); ready to execute*
+*Last updated: 2026-05-18 — Phase 17 shipped (code-verified); Phase 18 ready to discuss*

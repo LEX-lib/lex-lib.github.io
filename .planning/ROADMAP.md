@@ -88,7 +88,7 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 
 **Milestone goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers/dialogs on mobile, dark mode renders correctly across all Wallecx surfaces, and the redundant view toggle is hidden on small screens with list view as the forced default.
 
-- [ ] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens
+- [x] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens (code-verified 2026-05-18; 5 items pending human UAT)
 - [ ] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active
 
 ---
@@ -149,9 +149,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Create `useIsMobile` composable + add bottom-Drawer 85dvh CSS override (foundation)
-- [ ] 17-02-PLAN.md — `VaccinationsTab.vue`: reactive Drawer position, drag handle pill, `effectiveViewMode`, `showToggle` hidden on mobile (UX-01, UX-03, UX-04, MOB-09)
-- [ ] 17-03-PLAN.md — `MembershipsTab.vue`: `v-if` Dialog / `v-else` Drawer-bottom split with drag handle pill (UX-02, UX-03, UX-04)
+- [x] 17-01-PLAN.md — Create `useIsMobile` composable + add bottom-Drawer 85dvh CSS override (foundation)
+- [x] 17-02-PLAN.md — `VaccinationsTab.vue`: reactive Drawer position, drag handle pill, `effectiveViewMode`, `showToggle` hidden on mobile (UX-01, UX-03, UX-04, MOB-09)
+- [x] 17-03-PLAN.md — `MembershipsTab.vue`: `v-if` Dialog / `v-else` Drawer-bottom split with drag handle pill (UX-02, UX-03, UX-04)
 
 **UI hint**: yes
 
@@ -189,9 +189,9 @@ Plans:
 | 14. PWA Foundation | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 15. Mobile Layouts | v2.1 | 4/4 | Complete | 2026-05-14 |
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
-| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 0/3 | Not started | - |
+| 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (pending human UAT) | 2026-05-18 |
 | 18. Dark Mode Fixes | v2.3 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-16 — Phase 17 planned (3 plans)*
+*Last updated: 2026-05-18 — Phase 17 shipped (code-verified); Phase 18 next*
