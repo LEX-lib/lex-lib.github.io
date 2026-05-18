@@ -11,9 +11,21 @@
  * .p-dialog-content element. A dedicated CSS file imported from the Wallecx
  * entry component is the safest scoping strategy available.
  *
- * Covers: ManageVaccination, ManageMembership, VaccinationDetail, MembershipDetail dialogs.
+ * Covers: ManageVaccination, ManageMembership, VaccinationDetail, MembershipDetail dialogs;
+ *         and the bottom-anchored Drawer used by VaccinationGroupPanel and MembershipDetail
+ *         wrappers on mobile (Phase 17 D-01, D-02).
  */
 .p-dialog-content {
   max-height: 80dvh;
+  overflow-y: auto;
+}
+
+/* Phase 17 D-01, D-02: bottom-anchored Drawer content cap (mobile bottom sheets).
+ * Scoped to `.p-drawer-bottom` so the cap does NOT apply to right-position Drawers
+ * (e.g. desktop VaccinationGroupPanel). PrimeVue Drawer applies a `p-drawer-bottom`
+ * class to its wrapper when `position="bottom"`. Leaves ~15% backdrop visible for
+ * tap-to-dismiss (CONTEXT.md D-01). */
+.p-drawer-bottom .p-drawer-content {
+  max-height: 85dvh;
   overflow-y: auto;
 }
