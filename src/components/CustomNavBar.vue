@@ -2,9 +2,11 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useTheme } from "@/composables/useTheme";
 
 const router = useRouter();
 const auth = useAuthStore();
+const { theme, toggle: toggleTheme } = useTheme();
 
 const items = ref([
   {
@@ -98,6 +100,20 @@ const toggle = (event: Event) => {
 
     <template #end>
       <div class="flex items-center gap-2">
+        <Button
+          variant="text"
+          type="button"
+          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          @click="toggleTheme"
+        >
+          <iconify-icon
+            :icon="theme === 'dark' ? 'mdi:weather-sunny' : 'mdi:weather-night'"
+            width="24"
+            height="24"
+            aria-hidden="true"
+          />
+        </Button>
+
         <Button @click="router.push('/login')" v-if="!auth.isLoggedIn">
           Log In
         </Button>
