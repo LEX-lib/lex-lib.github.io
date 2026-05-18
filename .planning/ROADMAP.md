@@ -188,8 +188,11 @@ Plans:
   2. Clicking the NavBar sun/moon button flips the theme; the `<html>` element's `.my-app-dark` class is added/removed accordingly; the icon updates to reflect the new state
   3. Reloading the page or navigating to a different route preserves the chosen theme
   4. The toggle button is visible and reachable on every route — home, projects, blog, login, and every mini-app
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: yes
+
+Plans:
+- [ ] 19-01-PLAN.md — Inline FOUC script in index.html + useTheme composable (module-singleton Ref, OS listener, localStorage) + NavBar sun/moon toggle button in CustomNavBar #end slot
 
 ### Phase 20: Site Shell & Non-App Pages
 **Goal**: HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, and CustomNavBar render correctly in dark mode — backgrounds, headings, body text, links, buttons, and form fields all have appropriate contrast
@@ -253,7 +256,7 @@ Plans:
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
 | 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
 | 18. Dark Mode Fixes | v2.3 | 1/1 | Complete (UAT approved) | 2026-05-18 |
-| 19. Theme Infrastructure | v3.0 | 0/? | Not started | - |
+| 19. Theme Infrastructure | v3.0 | 0/1 | Not started | - |
 | 20. Site Shell & Non-App Pages | v3.0 | 0/? | Not started | - |
 | 21. Mini-App Dark Mode Sweep | v3.0 | 0/? | Not started | - |
 | 22. Wallecx Audit | v3.0 | 0/? | Not started | - |
