@@ -5,7 +5,7 @@
     <img
       src="@/assets/branding_logo.svg"
       alt="Lexarium"
-      class="w-24 h-24 opacity-60"
+      class="w-24 h-24 opacity-60 dark:opacity-80"
     />
     <h2 class="text-2xl font-bold" style="color: var(--color-typo-heading)">
       Blog coming soon
