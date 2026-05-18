@@ -1,39 +1,39 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.3
-milestone_name: UX Polish
-status: milestone_ready_to_close
-stopped_at: v2.3 complete (Phases 17 & 18 shipped + UAT approved) — ready to archive
+milestone: v3.0
+milestone_name: Site-Wide Dark Mode
+status: ready_to_plan
+stopped_at: v3.0 roadmap created — Phase 19 ready to plan
 last_updated: "2026-05-18T00:00:00Z"
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 18 shipped + UAT approved after 2 follow-up fixes (dark-mode overrides for custom @theme tokens; PrimeVue Card visible separation). v2.3 milestone is now complete.
+**Last updated:** 2026-05-18 — v3.0 Site-Wide Dark Mode milestone started. 4 phases (19–22), 13 requirements mapped. Phase 19 (Theme Infrastructure) ready to plan.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v2.3 — UX Polish (bottom sheet on mobile, dark mode fix, hide view toggle on mobile).
+**Current focus:** v3.0 — Site-Wide Dark Mode (theme infrastructure, full-site sweep, NavBar toggle).
 
 ## Current Position
 
-**Milestone:** v2.3 — UX Polish (complete)
-**Phase:** — (none active; ready to archive milestone)
-**Plan:** — (4/4 plans shipped + UAT approved)
-**Status:** Milestone ready to close via `/gsd-complete-milestone`
+**Milestone:** v3.0 — Site-Wide Dark Mode
+**Phase:** 19 — Theme Infrastructure
+**Plan:** — (not yet planned)
+**Status:** Ready to plan
 
 ```
-v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
-               [   DONE   ] [   DONE   ]
+v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
+               [  NEXT UP  ] [  QUEUED  ] [  QUEUED  ] [  QUEUED  ]
 ```
 
 ## Shipped Milestones Summary
@@ -46,6 +46,7 @@ v2.3 Progress: [ Phase 17 ] [ Phase 18 ]
 | v2.0 Membership Cards | 10–13 | 12 | 2026-05-14 |
 | v2.1 Mobile PWA | 14–15 | 8 | 2026-05-14 |
 | v2.2 Sort and Search for Membership Cards | 16 | 2 | 2026-05-15 |
+| v2.3 UX Polish | 17–18 | 4 | 2026-05-18 |
 
 ## Accumulated Context
 
@@ -125,10 +126,10 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Last session:** 2026-05-18T00:00:00Z
 
-**Stopped at:** v2.3 UX Polish milestone complete — Phases 17 & 18 shipped + UAT approved (5 follow-up fixes total across both phases).
+**Stopped at:** v3.0 Site-Wide Dark Mode milestone started — 4 phases (19–22), 13 requirements mapped; Phase 19 (Theme Infrastructure) ready to plan.
 
-**Next session entry point:** Run `/gsd-complete-milestone` to archive v2.3 and prepare for the next milestone.
+**Next session entry point:** Run `/gsd-discuss-phase 19` (recommended — gather context first) or `/gsd-plan-phase 19` (skip discussion).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-18 — v2.3 complete; ready to archive*
+*Last updated: 2026-05-18 — v3.0 Site-Wide Dark Mode started; Phase 19 ready to plan*

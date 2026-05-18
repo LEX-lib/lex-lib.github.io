@@ -1,8 +1,10 @@
-# Lexarium — Wallecx
+# Lexarium
 
 ## What This Is
 
-Lexarium is a personal Vue 3 SPA portfolio hub deployed on Vercel that hosts multiple mini-apps under `/projects/`. **Wallecx** is a personal records vault built as one of those mini-apps. It currently has two record types:
+Lexarium is a personal Vue 3 SPA portfolio hub deployed on Vercel that hosts multiple mini-apps under `/projects/` (LexTrack, Larga, Gift Exchange, API Playground, Wallecx). v3.0 promotes Lexarium from "individual mini-apps" to a fully themed platform with site-wide dark mode.
+
+**Wallecx**, the largest mini-app, is a personal records vault with two record types:
 
 - **Vaccination records** — text fields (vaccine name, date, dose, lot, location, manufacturer, notes) plus an attached scan/photo of the card
 - **Membership cards** — loyalty, insurance, and ID cards with barcode/QR rendering, a full-screen scan overlay for counter use, and a coloured card grid
@@ -15,14 +17,16 @@ Both record types share the same per-user PocketBase isolation pattern, the same
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
-## Current Milestone: v2.3 UX Polish
+## Current Milestone: v3.0 Site-Wide Dark Mode
 
-**Goal:** Refine the Wallecx mobile experience and visual quality — bottom sheets replace drawers on mobile, dark mode renders correctly, and the redundant view toggle is removed on small screens.
+**Goal:** Every Lexarium surface (home page, projects directory, blog, login, NavBar, and all five mini-apps) renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode (v2.3) to a fully themed platform.
 
 **Target features:**
-- Bottom sheet on mobile for VaccinationGroupPanel and MembershipDetail (replaces side drawer below 640px)
-- Dark mode fix for PrimeVue #7465
-- Hide WallecxToolbar view toggle on mobile; force list view as default when hidden
+- `useTheme` composable: reactive theme state + localStorage persistence + `prefers-color-scheme` detection + applies `.my-app-dark` class to `<html>`
+- NavBar sun/moon toggle button — manual override of OS preference; persists choice to localStorage
+- Site shell + non-app pages dark mode (HomeView/HeroSection/AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar)
+- Mini-app dark mode sweep — LexTrack, Larga, Gift Exchange, API Playground
+- Wallecx audit — confirm Phase 18 dark mode still works correctly with site-wide toggle
 
 ## Requirements
 
@@ -56,9 +60,14 @@ If everything else fails, these two capabilities must work: the vaccination hist
 
 ### Active
 
-- [ ] **UX-ADV-01** — Bottom sheet on mobile for VaccinationGroupPanel and MembershipDetail (replaces side drawer below 640px breakpoint)
-- [ ] **UX-ADV-02** — Dark mode fix for PrimeVue #7465 (correct rendering of Wallecx components in dark theme)
-- [ ] **MOB-09** — Hide WallecxToolbar view toggle on mobile viewports (< 640px); force list view as default when toggle is hidden
+- [ ] **THEME-01** — `useTheme` composable in `src/composables/useTheme.ts` with reactive `Ref<'light' | 'dark'>` state, localStorage persistence under key `lexarium:theme`, `prefers-color-scheme: dark` detection on first visit, applies/removes `.my-app-dark` class to `<html>` on change
+- [ ] **THEME-02** — NavBar sun/moon toggle button in `CustomNavBar.vue`; clicking switches the theme; icon reflects current state
+- [ ] **THEME-03** — Site shell + non-app pages render correctly in dark mode (HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar)
+- [ ] **THEME-04** — LexTrack mini-app renders correctly in dark mode
+- [ ] **THEME-05** — Larga mini-app renders correctly in dark mode
+- [ ] **THEME-06** — Gift Exchange mini-app renders correctly in dark mode
+- [ ] **THEME-07** — API Playground mini-app renders correctly in dark mode
+- [ ] **THEME-08** — Wallecx audit: Phase 18 dark mode still works correctly when toggle is wired up site-wide (no regressions)
 
 ### Future candidates
 
@@ -142,6 +151,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v2.0 Membership Cards | 10–13 | 2026-05-14 | [v2.0-ROADMAP.md](milestones/v2.0-ROADMAP.md) |
 | v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
 | v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | [v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md) |
+| v2.3 UX Polish | 17–18 | 2026-05-18 | — |
 
 ## Evolution
 
@@ -161,4 +171,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-16 — v2.3 started: UX Polish (bottom sheet, dark mode, mobile view toggle).*
+*Last updated: 2026-05-18 — v2.3 shipped; v3.0 started: Site-Wide Dark Mode.*

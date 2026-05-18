@@ -12,6 +12,7 @@
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
 - ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
 - ✅ **v2.3 UX Polish** — Phases 17–18 (shipped 2026-05-18)
+- 🔄 **v3.0 Site-Wide Dark Mode** — Phases 19–22 (in progress)
 
 ## Phases
 
@@ -91,6 +92,15 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 - [x] **Phase 17: Mobile Bottom Sheets & View Toggle** - Replace right drawer and centered dialog with bottom sheets on mobile (< 640px); hide view toggle on small screens (code + UAT approved 2026-05-18)
 - [x] **Phase 18: Dark Mode Fixes** - Fix PrimeVue #7465 light-mode bleed across all Wallecx surfaces when dark theme is active (code + UAT approved 2026-05-18)
 
+## v3.0 Site-Wide Dark Mode
+
+**Milestone goal:** Every Lexarium surface (home page, projects directory, blog, login, NavBar, and all five mini-apps) renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode to a fully themed platform.
+
+- [ ] **Phase 19: Theme Infrastructure** — `useTheme` composable + NavBar sun/moon toggle button + OS-preference detection + localStorage persistence + apply `.my-app-dark` to `<html>`
+- [ ] **Phase 20: Site Shell & Non-App Pages** — HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar render correctly in dark mode
+- [ ] **Phase 21: Mini-App Dark Mode Sweep** — LexTrack, Larga, Gift Exchange, API Playground render correctly in dark mode
+- [ ] **Phase 22: Wallecx Audit** — confirm Phase 18 dark mode still works when toggle is wired up site-wide; fix any regressions
+
 ---
 
 ## Phase Details
@@ -167,7 +177,56 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 18-01-PLAN.md — Tailwind v4 dark-variant alignment + MembershipCard luminance-aware foreground + MembershipDetail card_color audit + 18-HUMAN-UAT.md generation
+- [x] 18-01-PLAN.md — Tailwind v4 dark-variant alignment + MembershipCard luminance-aware foreground + MembershipDetail card_color audit + 18-HUMAN-UAT.md generation
+
+### Phase 19: Theme Infrastructure
+**Goal**: A single source of truth for theme state with OS-preference detection, manual override via a NavBar button, and localStorage persistence; clicking the toggle applies the `.my-app-dark` class to `<html>` and the choice survives reloads
+**Depends on**: Phase 18 (Wallecx dark mode pattern established)
+**Requirements**: THEME-01, THEME-02, THEME-03
+**Success Criteria** (what must be TRUE):
+  1. On first visit (no `lexarium:theme` in localStorage), the active theme matches the OS `prefers-color-scheme` setting
+  2. Clicking the NavBar sun/moon button flips the theme; the `<html>` element's `.my-app-dark` class is added/removed accordingly; the icon updates to reflect the new state
+  3. Reloading the page or navigating to a different route preserves the chosen theme
+  4. The toggle button is visible and reachable on every route — home, projects, blog, login, and every mini-app
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 20: Site Shell & Non-App Pages
+**Goal**: HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, and CustomNavBar render correctly in dark mode — backgrounds, headings, body text, links, buttons, and form fields all have appropriate contrast
+**Depends on**: Phase 19
+**Requirements**: THEME-04, THEME-05, THEME-06, THEME-07, THEME-08
+**Success Criteria** (what must be TRUE):
+  1. With dark mode active, the home page (Hero + About sections) renders with a dark background, light heading text, readable body, and visible call-to-action buttons
+  2. The projects directory shows project tiles with appropriate dark surfaces; tile titles and descriptions are readable
+  3. The blog page renders correctly in dark mode — list view and article view both legible
+  4. The login form renders correctly in dark mode — input fields, labels, helper text, and error states all visible
+  5. The NavBar renders correctly in dark mode — brand mark, route links, theme toggle, and auth state indicators all visible against the dark background
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 21: Mini-App Dark Mode Sweep
+**Goal**: LexTrack, Larga, Gift Exchange, and API Playground all render correctly in dark mode — every screen, dialog, form, table, and integration surface (maps, code blocks) adapts to the dark palette
+**Depends on**: Phase 20
+**Requirements**: THEME-09, THEME-10, THEME-11, THEME-12
+**Success Criteria** (what must be TRUE):
+  1. LexTrack renders correctly in dark mode — task lists, meeting forms, support requests, dialogs, and any tables/charts are readable
+  2. Larga renders correctly in dark mode — Leaflet map controls, geocoder input, route panels, and route list are legible; the map tiles themselves may stay light-mode-styled (out of scope unless Leaflet provides a dark theme)
+  3. Gift Exchange renders correctly in dark mode across all sub-routes (join, draw, manage, result)
+  4. API Playground renders correctly in dark mode — request panel, response display, headers tables; syntax-highlighted body should remain readable
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 22: Wallecx Audit
+**Goal**: Confirm Phase 18's Wallecx dark mode work still holds when the site-wide toggle is wired up; fix any regressions surfaced by the toggle flow (e.g. flash-on-load, route transitions, PWA installed mode)
+**Depends on**: Phase 21
+**Requirements**: THEME-13
+**Success Criteria** (what must be TRUE):
+  1. Toggling dark mode from the NavBar while in `/projects/wallecx` immediately re-themes all Wallecx surfaces; no manual refresh needed
+  2. Navigating away from Wallecx and back preserves the chosen theme; Wallecx renders correctly on return
+  3. Installing Wallecx as a PWA and toggling dark mode behaves identically to the in-browser flow
+  4. BarcodeDisplay still renders black-on-white in both themes (BR-2 invariant preserved)
+**Plans**: TBD
+**UI hint**: yes
 
 ---
 
@@ -194,7 +253,11 @@ Plans:
 | 16. Membership Card Toolbar | v2.2 | 2/2 | Complete | 2026-05-15 |
 | 17. Mobile Bottom Sheets & View Toggle | v2.3 | 3/3 | Complete (UAT approved) | 2026-05-18 |
 | 18. Dark Mode Fixes | v2.3 | 1/1 | Complete (UAT approved) | 2026-05-18 |
+| 19. Theme Infrastructure | v3.0 | 0/? | Not started | - |
+| 20. Site Shell & Non-App Pages | v3.0 | 0/? | Not started | - |
+| 21. Mini-App Dark Mode Sweep | v3.0 | 0/? | Not started | - |
+| 22. Wallecx Audit | v3.0 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-18 — v2.3 UX Polish complete; ready to archive*
+*Last updated: 2026-05-18 — v3.0 Site-Wide Dark Mode started: Phases 19–22, 13/13 requirements mapped*
