@@ -348,7 +348,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       v-model:sort-mode="sortMode"
       v-model:view-mode="viewMode"
       :sort-options="vaccinationSortOptions"
-      :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0"
+      :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0 && !isMobile"
     />
 
     <!-- Loading state: skeleton card grid -->
@@ -412,15 +412,27 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       />
     </div>
 
-    <!-- Drawer for group detail panel (GROUP-06, D-01: slides from right) -->
+    <!-- Drawer for group detail panel.
+         Phase 17 D-04: position is reactive (`bottom` on mobile, `right` on desktop).
+         Phase 17 D-05: drag handle pill renders in custom #header slot only on mobile.
+         :breakpoints removed — superseded by reactive position switch.
+         :style width '30rem' only takes effect in right-position (desktop). -->
     <Drawer
       v-model:visible="showGroupPanel"
-      position="right"
-      :header="selectedGroup?.vaccineType ?? ''"
+      :position="isMobile ? 'bottom' : 'right'"
       :style="{ width: '30rem' }"
-      :breakpoints="{ '641px': '92vw' }"
       @hide="selectedGroup = null"
     >
+      <template #header>
+        <div class="flex flex-col items-center w-full gap-1">
+          <div
+            v-if="isMobile"
+            class="w-8 h-1 rounded-full bg-surface-300 dark:bg-surface-600"
+            aria-hidden="true"
+          ></div>
+          <span class="font-semibold">{{ selectedGroup?.vaccineType ?? '' }}</span>
+        </div>
+      </template>
       <VaccinationGroupPanel
         v-if="selectedGroup"
         :records="selectedGroup.records"
