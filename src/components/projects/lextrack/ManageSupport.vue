@@ -17,9 +17,13 @@ const updateSupport = () => {
   visible.value = false;
 };
 
+// Phase 21-01 refactor: semantic tokens auto-switch via Phase 18's
+// .my-app-dark block in base.css.
 const editorStyle = {
-  toolbar: { class: "bg-gray-700 border-gray-600" },
-  content: { class: "bg-gray-700 border-gray-600 text-white" },
+  toolbar: { class: "bg-surface-card border-surface-divider" },
+  content: {
+    class: "bg-surface-card border-surface-divider text-typo-body",
+  },
 };
 </script>
 
@@ -32,12 +36,12 @@ const editorStyle = {
     :style="{ width: '40vw' }"
     position="right"
   >
-    <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
+    <div class="space-y-4 p-4 bg-surface-page/60 rounded-lg">
       <div>
         <InputText
           v-model="support.title"
           placeholder="Support Title"
-          class="w-full bg-gray-700 text-white"
+          class="w-full bg-surface-card text-typo-body"
         />
       </div>
       <div>
