@@ -207,4 +207,17 @@ function handleRouteClick(routeName: string) {
   height: 70vh;
   width: 100%;
 }
+
+/* Phase 21 / THEME-10 (D-09): Leaflet geocoder input is rendered outside Vue's
+   scoped DOM and ships with a hardcoded light background in
+   `leaflet-control-geocoder/dist/Control.Geocoder.css`. That stylesheet is
+   locked (D-09) — instead we pierce scope with `:global(.my-app-dark)` and
+   substitute dark-aware @theme tokens from base.css so the input stays legible
+   when the site is in dark mode. The map tiles themselves intentionally stay
+   light in both themes (D-07). */
+:global(.my-app-dark) .leaflet-control-geocoder-form input {
+  background-color: var(--color-surface-card);
+  color: var(--color-typo-body);
+  border-color: var(--color-surface-divider);
+}
 </style>
