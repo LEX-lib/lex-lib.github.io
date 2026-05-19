@@ -2045,4 +2045,71 @@ watch(
 ::-webkit-scrollbar-thumb:hover {
   background: #3d5a73;
 }
+
+/* ---------- Phase 21 dark-mode overrides (THEME-12) ----------
+ *
+ * D-15 INVESTIGATION OUTCOME (executor-confirmed): no third-party syntax
+ * highlighter is imported (no Prism / Highlight.js / Shiki / hljs / Monaco /
+ * CodeMirror); the highlightedJson computed is a CUSTOM inline regex →
+ * <span class="json-*"> wrapper sanitized with DOMPurify.
+ *
+ * AUDIT OUTCOME: ApiPlaygroundApp.vue is INTENTIONALLY dark-by-design in
+ * both themes — the entire chrome uses the navy + amber Postman-style
+ * palette (#001122 / #001e3c / #002a52 / #0a3d6b / #e89820), matching the
+ * .json-pre viewer which the plan also exempts ("intentionally dark in
+ * both themes"). The file contains:
+ *   - 0 light-mode chrome surfaces (no #fff / #ffffff / #fafafa / etc.
+ *     used as backgrounds)
+ *   - 0 light Tailwind utilities (bg-white / text-gray-* / border-gray-*)
+ *   - 0 third-party highlighter imports
+ * The only "white" hex literals are rgba(255,255,255,0.05–0.08)
+ * semi-transparent button-hover ADDITIVE highlights on dark surfaces —
+ * those are correct in both themes.
+ *
+ * The overrides below are audit-driven contrast/legibility improvements
+ * under explicit dark mode (NOT a light-mode pairing, which has no
+ * surface to apply to). They sharpen the existing palette when the user
+ * has explicitly opted into dark mode via the NavBar toggle.
+ */
+
+.my-app-dark .api-playground {
+  /* Confirm the navy baseline under explicit dark mode and pin it to the
+     Phase 20 mix target so any global dark-aware blending stays consistent
+     with the rest of the site shell. */
+  background: #001122;
+  color: #d0dbe8;
+}
+
+.my-app-dark .body-label,
+.my-app-dark .kv-head,
+.my-app-dark .auth-label,
+.my-app-dark .json-toolbar-label {
+  /* Section label muted text — bump from #3d5a73 (1.7:1 on #001e3c) to
+     a slightly brighter slate for better label legibility on dark headers. */
+  color: #5a7a9b;
+}
+
+.my-app-dark .response-empty-inner,
+.my-app-dark .auth-empty {
+  /* Empty-state callouts — same brightness bump so the prompts read
+     clearly against the deeper #001122 background. */
+  color: #5a7a9b;
+}
+
+.my-app-dark .url-input::placeholder,
+.my-app-dark .pg-input::placeholder,
+.my-app-dark .kv-input::placeholder,
+.my-app-dark .body-textarea::placeholder {
+  /* Input placeholders — bump from #3d5a73 so empty inputs still hint
+     their expected content without disappearing into the dark surface. */
+  color: #5a7a9b;
+}
+
+.my-app-dark ::-webkit-scrollbar-thumb {
+  /* Slightly more visible scrollbar under explicit dark mode. */
+  background: #0f4a80;
+}
+.my-app-dark ::-webkit-scrollbar-thumb:hover {
+  background: #5a7a9b;
+}
 </style>
