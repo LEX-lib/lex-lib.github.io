@@ -198,15 +198,15 @@ onMounted(() => {
 
 <template>
   <div
-    class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans text-gray-900 perspective-1000"
+    class="min-h-screen bg-gray-50 dark:bg-surface-page flex flex-col items-center justify-center p-4 font-sans text-gray-900 dark:text-typo-heading perspective-1000"
   >
     <div
-      class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden relative z-10"
+      class="max-w-md w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
     >
       <div class="p-8 text-center">
         <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-        <h2 class="text-xl font-semibold text-gray-600 mb-6">Gift Exchange</h2>
-        <p class="text-gray-500 mb-8">
+        <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6">Gift Exchange</h2>
+        <p class="text-gray-500 dark:text-typo-muted mb-8">
           Join the celebration and exchange gifts with your friends!
         </p>
 
@@ -214,17 +214,17 @@ onMounted(() => {
         <div v-if="!isEnrolled">
           <div class="space-y-6 text-left">
             <!-- Enroll Tab -->
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider">
               <h3 class="font-bold text-lg mb-2">New Participant?</h3>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                   >Your Name</label
                 >
                 <input
                   v-model="name"
                   type="text"
                   placeholder="Juan dela Cruz"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
                 />
               </div>
               <button
@@ -237,16 +237,16 @@ onMounted(() => {
             </div>
 
             <div class="relative flex py-2 items-center">
-              <div class="flex-grow border-t border-gray-300"></div>
-              <span class="flex-shrink-0 mx-4 text-gray-400">OR</span>
-              <div class="flex-grow border-t border-gray-300"></div>
+              <div class="flex-grow border-t border-gray-300 dark:border-surface-divider"></div>
+              <span class="flex-shrink-0 mx-4 text-gray-400 dark:text-typo-muted">OR</span>
+              <div class="flex-grow border-t border-gray-300 dark:border-surface-divider"></div>
             </div>
 
             <!-- Login Tab -->
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <div class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider">
               <h3 class="font-bold text-lg mb-2">Already Enrolled?</h3>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                   >Enter Your Code</label
                 >
                 <input
@@ -254,13 +254,13 @@ onMounted(() => {
                   type="text"
                   placeholder="ABCD"
                   maxlength="4"
-                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase tracking-widest text-center font-mono"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase tracking-widest text-center font-mono"
                 />
               </div>
               <button
                 @click="checkStatus"
                 :disabled="loading"
-                class="mt-4 w-full bg-white border-2 border-black text-black font-bold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="mt-4 w-full bg-white dark:bg-surface-card border-2 border-black text-black dark:text-typo-heading font-bold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ loading ? "Checking..." : "Check Status / Draw" }}
               </button>
@@ -272,21 +272,21 @@ onMounted(() => {
         <div v-else>
           <!-- 1. Just Enrolled (Show Code) -->
           <div v-if="generatedCode && !drawnName" class="py-6">
-            <div class="text-green-600 text-5xl mb-4">
+            <div class="text-green-600 dark:text-green-300 text-5xl mb-4">
               <i class="pi pi-check-circle"></i>
             </div>
             <h3 class="text-2xl font-bold mb-2">You are enrolled!</h3>
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 dark:text-typo-body mb-4">
               Save this code. You will need it to draw your gift.
             </p>
 
             <div
-              class="text-5xl font-mono font-bold tracking-widest text-black bg-yellow-100 p-4 rounded-xl border-2 border-yellow-300 mb-6 select-all"
+              class="text-5xl font-mono font-bold tracking-widest text-black dark:text-typo-heading bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-xl border-2 border-yellow-300 dark:border-yellow-700 mb-6 select-all"
             >
               {{ generatedCode }}
             </div>
 
-            <p class="text-sm text-gray-400">
+            <p class="text-sm text-gray-400 dark:text-typo-muted">
               Waiting for the drawing event to start...
             </p>
 
@@ -305,7 +305,7 @@ onMounted(() => {
                   generatedCode = '';
                   userCode = '';
                 "
-                class="text-sm text-gray-500 underline"
+                class="text-sm text-gray-500 dark:text-typo-muted underline"
               >
                 Back to Home
               </button>
@@ -335,17 +335,17 @@ onMounted(() => {
 
                 <!-- Back -->
                 <div
-                  class="flip-card-back absolute w-full h-full backface-hidden bg-white text-black rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-4 border-gold transform-rotate-y-180"
+                  class="flip-card-back absolute w-full h-full backface-hidden bg-white dark:bg-surface-card text-black dark:text-typo-heading rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-4 border-gold transform-rotate-y-180"
                 >
-                  <h3 class="text-xl text-gray-500 mb-2">
+                  <h3 class="text-xl text-gray-500 dark:text-typo-muted mb-2">
                     Hello {{ name }}, you picked:
                   </h3>
                   <div
-                    class="text-3xl font-bold text-black mb-4 p-4 bg-gray-100 rounded-xl w-full"
+                    class="text-3xl font-bold text-black dark:text-typo-heading mb-4 p-4 bg-gray-100 dark:bg-surface-page rounded-xl w-full"
                   >
                     {{ drawnName }}
                   </div>
-                  <p class="text-xs text-gray-400">Shh! Keep it a secret!</p>
+                  <p class="text-xs text-gray-400 dark:text-typo-muted">Shh! Keep it a secret!</p>
                 </div>
               </div>
             </div>
@@ -357,15 +357,15 @@ onMounted(() => {
                 generatedCode = '';
                 userCode = '';
               "
-              class="mt-8 text-sm text-gray-500 underline"
+              class="mt-8 text-sm text-gray-500 dark:text-typo-muted underline"
             >
               Back to Home
             </button>
           </div>
         </div>
 
-        <div class="mt-8 border-t pt-6">
-          <p class="text-sm text-gray-500">
+        <div class="mt-8 border-t dark:border-surface-divider pt-6">
+          <p class="text-sm text-gray-500 dark:text-typo-muted">
             {{ participantsCount }} participants enrolled
           </p>
 
@@ -375,14 +375,14 @@ onMounted(() => {
                 isAdminOpen = !isAdminOpen;
                 if (isAdminOpen) fetchParticipants();
               "
-              class="mt-4 text-xs text-gray-300 hover:text-gray-500 transition-colors"
+              class="mt-4 text-xs text-gray-300 dark:text-typo-muted hover:text-gray-500 dark:hover:text-typo-body transition-colors"
             >
               {{ isAdminOpen ? "Hide Admin" : "Show Admin" }}
             </button>
 
             <div
               v-if="isAdminOpen"
-              class="mt-4 p-4 bg-gray-100 rounded-lg text-left"
+              class="mt-4 p-4 bg-gray-100 dark:bg-surface-page rounded-lg text-left"
             >
               <button
                 @click="generatePairs"
@@ -396,7 +396,7 @@ onMounted(() => {
               <div class="max-h-64 overflow-y-auto text-xs">
                 <table class="w-full">
                   <thead>
-                    <tr class="text-gray-500 border-b">
+                    <tr class="text-gray-500 dark:text-typo-muted border-b dark:border-surface-divider">
                       <th class="pb-1">Name</th>
                       <th class="pb-1">Code</th>
                       <th class="pb-1">Target</th>
@@ -406,11 +406,11 @@ onMounted(() => {
                     <tr
                       v-for="p in participants"
                       :key="p.id"
-                      class="border-b last:border-0"
+                      class="border-b dark:border-surface-divider last:border-0"
                     >
                       <td class="py-1">{{ p.name }}</td>
                       <td class="py-1 font-mono">{{ p.code }}</td>
-                      <td class="py-1 text-gray-600">
+                      <td class="py-1 text-gray-600 dark:text-typo-body">
                         {{ p.drawn_name || "-" }}
                       </td>
                     </tr>
