@@ -91,23 +91,23 @@ onMounted(() => {
 
 <template>
   <div
-    class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans text-gray-900 perspective-1000"
+    class="min-h-screen bg-gray-50 dark:bg-surface-page flex flex-col items-center justify-center p-4 font-sans text-gray-900 dark:text-typo-heading perspective-1000"
   >
     <div
-      class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden relative z-10"
+      class="max-w-md w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
     >
       <div class="p-8 text-center">
         <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-        <h2 class="text-xl font-semibold text-gray-600 mb-6">Draw Your Gift</h2>
+        <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6">Draw Your Gift</h2>
 
         <div v-if="!isLoggedIn">
           <div
-            class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-left space-y-4"
+            class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider text-left space-y-4"
           >
             <h3 class="font-bold text-lg mb-2">Already Enrolled?</h3>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Lobby Code</label
               >
               <input
@@ -115,12 +115,12 @@ onMounted(() => {
                 type="text"
                 placeholder="LOBBY2024"
                 maxlength="10"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase text-center font-mono"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase text-center font-mono"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Your Code</label
               >
               <input
@@ -128,42 +128,42 @@ onMounted(() => {
                 type="text"
                 placeholder="WXYZ"
                 maxlength="4"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase tracking-widest text-center font-mono"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase tracking-widest text-center font-mono"
               />
             </div>
 
             <button
               @click="checkStatus"
               :disabled="loading"
-              class="mt-4 w-full bg-white border-2 border-black text-black font-bold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="mt-4 w-full bg-white dark:bg-surface-card border-2 border-black text-black dark:text-typo-heading font-bold py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ loading ? "Checking..." : "Check Status / Draw" }}
             </button>
           </div>
 
-          <div class="mt-6 text-sm text-gray-500">
+          <div class="mt-6 text-sm text-gray-500 dark:text-typo-muted">
             Don't have a code?
             <RouterLink
               to="/projects/gift-exchange/join"
-              class="underline text-black font-semibold"
+              class="underline text-black dark:text-typo-heading font-semibold"
               >Join here</RouterLink
             >
           </div>
         </div>
 
         <div v-else>
-          <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p class="text-sm text-blue-800">
+          <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p class="text-sm text-blue-800 dark:text-blue-300">
               <strong>Lobby:</strong> {{ lobby.lobby_name }}
             </p>
           </div>
 
           <div v-if="!drawnName" class="py-6">
-            <div class="text-yellow-500 text-5xl mb-4">
+            <div class="text-yellow-500 dark:text-yellow-300 text-5xl mb-4">
               <i class="pi pi-clock"></i>
             </div>
             <h3 class="text-2xl font-bold mb-2">Hello, {{ name }}!</h3>
-            <p class="text-gray-600 mb-6">
+            <p class="text-gray-600 dark:text-typo-body mb-6">
               We are still waiting for the admin to start the drawing.
             </p>
 
@@ -198,17 +198,17 @@ onMounted(() => {
 
                 <!-- Back -->
                 <div
-                  class="flip-card-back absolute w-full h-full backface-hidden bg-white text-black rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-4 border-gold transform-rotate-y-180"
+                  class="flip-card-back absolute w-full h-full backface-hidden bg-white dark:bg-surface-card text-black dark:text-typo-heading rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-4 border-gold transform-rotate-y-180"
                 >
-                  <h3 class="text-xl text-gray-500 mb-2">
+                  <h3 class="text-xl text-gray-500 dark:text-typo-muted mb-2">
                     Hello {{ name }}, you picked:
                   </h3>
                   <div
-                    class="text-3xl font-bold text-black mb-4 p-4 bg-gray-100 rounded-xl w-full"
+                    class="text-3xl font-bold text-black dark:text-typo-heading mb-4 p-4 bg-gray-100 dark:bg-surface-page rounded-xl w-full"
                   >
                     {{ drawnName }}
                   </div>
-                  <p class="text-xs text-gray-400">Shh! Keep it a secret!</p>
+                  <p class="text-xs text-gray-400 dark:text-typo-muted">Shh! Keep it a secret!</p>
                 </div>
               </div>
             </div>
@@ -219,7 +219,7 @@ onMounted(() => {
                 userCode = '';
                 lobbyCode = '';
               "
-              class="mt-8 text-sm text-gray-500 underline"
+              class="mt-8 text-sm text-gray-500 dark:text-typo-muted underline"
             >
               Logout / Enter Different Code
             </button>
