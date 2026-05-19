@@ -137,31 +137,31 @@ onMounted(async () => {
 
 <template>
   <div
-    class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 font-sans text-gray-900"
+    class="min-h-screen bg-gray-50 dark:bg-surface-page flex flex-col items-center justify-center p-4 font-sans text-gray-900 dark:text-typo-heading"
   >
     <div
-      class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden relative z-10"
+      class="max-w-md w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
     >
       <div class="p-8 text-center">
         <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-        <h2 class="text-xl font-semibold text-gray-600 mb-6">
+        <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6">
           Join the Exchange
         </h2>
-        <p class="text-gray-500 mb-8">
+        <p class="text-gray-500 dark:text-typo-muted mb-8">
           Sign up to participate in the gift giving!
         </p>
 
         <!-- Step 1: Enter Lobby Code -->
         <div
           v-if="!lobbyValidated"
-          class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-left"
+          class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider text-left"
         >
           <h3 class="font-bold text-lg mb-2">Enter Lobby Code</h3>
-          <p class="text-sm text-gray-600 mb-3">
+          <p class="text-sm text-gray-600 dark:text-typo-body mb-3">
             Ask your organizer for the lobby code
           </p>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+            <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
               >Lobby Code</label
             >
             <input
@@ -169,7 +169,7 @@ onMounted(async () => {
               type="text"
               placeholder="LOBBY2024"
               maxlength="10"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase text-center font-mono"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all uppercase text-center font-mono"
             />
           </div>
           <button
@@ -183,16 +183,16 @@ onMounted(async () => {
 
         <!-- Step 2: Enrollment Closed -->
         <div v-else-if="enrollmentClosed" class="py-6">
-          <div class="text-red-500 text-5xl mb-4">
+          <div class="text-red-500 dark:text-red-300 text-5xl mb-4">
             <i class="pi pi-lock"></i>
           </div>
           <h3 class="text-2xl font-bold mb-2">Enrollment Closed</h3>
-          <p class="text-gray-600 mb-2">
+          <p class="text-gray-600 dark:text-typo-body mb-2">
             Sorry, enrollment has ended for
             <strong>{{ lobby.lobby_name }}</strong
             >.
           </p>
-          <p class="text-sm text-gray-500 mb-6">
+          <p class="text-sm text-gray-500 dark:text-typo-muted mb-6">
             The drawing has already started or the deadline has passed.
           </p>
 
@@ -202,13 +202,13 @@ onMounted(async () => {
                 lobbyValidated = false;
                 lobbyCode = '';
               "
-              class="flex-1 text-sm text-gray-500 underline"
+              class="flex-1 text-sm text-gray-500 dark:text-typo-muted underline"
             >
               Try Different Lobby
             </button>
             <RouterLink
               to="/projects/gift-exchange/draw"
-              class="flex-1 text-sm text-black font-semibold underline"
+              class="flex-1 text-sm text-black dark:text-typo-heading font-semibold underline"
             >
               Draw Here
             </RouterLink>
@@ -217,8 +217,8 @@ onMounted(async () => {
 
         <!-- Step 3: Enrollment Form -->
         <div v-else-if="!isEnrolled">
-          <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p class="text-sm text-blue-800">
+          <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p class="text-sm text-blue-800 dark:text-blue-300">
               <strong>Lobby:</strong> {{ lobby.lobby_name }}
             </p>
             <button
@@ -226,25 +226,25 @@ onMounted(async () => {
                 lobbyValidated = false;
                 lobbyCode = '';
               "
-              class="text-xs text-blue-600 underline mt-1"
+              class="text-xs text-blue-600 dark:text-blue-400 underline mt-1"
             >
               Change Lobby
             </button>
           </div>
 
           <div
-            class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-left"
+            class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider text-left"
           >
             <h3 class="font-bold text-lg mb-2">New Participant?</h3>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
+              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Your Name</label
               >
               <input
                 v-model="name"
                 type="text"
                 placeholder="Juan dela Cruz"
-                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all"
               />
             </div>
             <button
@@ -256,11 +256,11 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div class="mt-6 text-sm text-gray-500">
+          <div class="mt-6 text-sm text-gray-500 dark:text-typo-muted">
             Already have a code?
             <RouterLink
               to="/projects/gift-exchange/draw"
-              class="underline text-black font-semibold"
+              class="underline text-black dark:text-typo-heading font-semibold"
               >Draw here</RouterLink
             >
           </div>
@@ -268,21 +268,21 @@ onMounted(async () => {
 
         <!-- Step 4: Success -->
         <div v-else class="py-6">
-          <div class="text-green-600 text-5xl mb-4">
+          <div class="text-green-600 dark:text-green-300 text-5xl mb-4">
             <i class="pi pi-check-circle"></i>
           </div>
           <h3 class="text-2xl font-bold mb-2">You are enrolled!</h3>
-          <p class="text-gray-600 mb-4">
+          <p class="text-gray-600 dark:text-typo-body mb-4">
             Save this code. You will need it to draw your gift.
           </p>
 
           <div
-            class="text-5xl font-mono font-bold tracking-widest text-black bg-yellow-100 p-4 rounded-xl border-2 border-yellow-300 mb-6 select-all"
+            class="text-5xl font-mono font-bold tracking-widest text-black dark:text-typo-heading bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-xl border-2 border-yellow-300 dark:border-yellow-700 mb-6 select-all"
           >
             {{ generatedCode }}
           </div>
 
-          <p class="text-sm text-gray-400 mb-6">
+          <p class="text-sm text-gray-400 dark:text-typo-muted mb-6">
             Waiting for the drawing event to start...
           </p>
 
@@ -294,8 +294,8 @@ onMounted(async () => {
           </RouterLink>
         </div>
 
-        <div v-if="lobbyValidated" class="mt-8 border-t pt-6">
-          <p class="text-sm text-gray-500">
+        <div v-if="lobbyValidated" class="mt-8 border-t dark:border-surface-divider pt-6">
+          <p class="text-sm text-gray-500 dark:text-typo-muted">
             {{ participantsCount }} participants enrolled in this lobby
           </p>
         </div>
