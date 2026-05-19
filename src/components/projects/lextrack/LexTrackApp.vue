@@ -44,10 +44,14 @@ const newTask = ref({ name: "", jira: "", desc: "" });
 const newMeeting = ref({ title: "", duration: null, desc: "" });
 const newAdminSupport = ref({ title: "", desc: "" });
 
-// Common styles for the Editor component
+// Common styles for the Editor component.
+// Phase 21-01 refactor: semantic tokens auto-switch via Phase 18's .my-app-dark
+// block in base.css, so a single set of classes covers both themes.
 const editorStyle = {
-  toolbar: { class: "bg-gray-700 border-gray-600" },
-  content: { class: "bg-gray-700 border-gray-600 text-white" },
+  toolbar: { class: "bg-surface-card border-surface-divider" },
+  content: {
+    class: "bg-surface-card border-surface-divider text-typo-body",
+  },
 };
 
 // --- LOGIC ---
@@ -127,39 +131,53 @@ const addAdminSupport = () => {
 </script>
 
 <template>
-  <div class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-4xl bg-gray-800 p-8 rounded-lg shadow-lg">
-      <h1 class="text-3xl font-bold text-center mb-2 text-white">
+  <div
+    class="bg-surface-page min-h-screen flex items-center justify-center p-4"
+  >
+    <div
+      class="w-full max-w-4xl bg-surface-card p-8 rounded-lg shadow-lg"
+    >
+      <h1
+        class="text-3xl font-bold text-center mb-2 text-typo-heading"
+      >
         LexTrack Daily Activities 📝
       </h1>
-      <p class="text-center text-gray-400 mb-6">
+      <p class="text-center text-typo-muted mb-6">
         Select a date to log or view your activities.
       </p>
 
       <!-- Date Selector -->
       <div class="mb-8 max-w-sm mx-auto">
-        <label for="date" class="block text-sm font-medium text-gray-300 mb-2"
+        <label
+          for="date"
+          class="block text-sm font-medium text-typo-body mb-2"
           >Selected Date</label
         >
         <DatePicker
           v-model="selectedDate"
           showIcon
           inputId="date"
-          class="w-full"
+          class="lextrack-datepicker w-full"
           :pt="{
             input: {
-              class: 'w-full bg-gray-700 border-gray-600 text-white rounded-md',
+              class:
+                'w-full bg-surface-card border-surface-divider text-typo-body rounded-md',
             },
-            panel: { class: 'bg-gray-800 border-gray-700' },
+            panel: {
+              class: 'bg-surface-card border-surface-divider',
+            },
           }"
         />
       </div>
 
       <!-- Tabbed Interface for Activities -->
       <TabView
+        class="lextrack-tabview"
         :pt="{
-          nav: { class: 'bg-gray-800 border-b border-gray-700' },
-          navContent: { class: 'bg-gray-800' },
+          nav: {
+            class: 'bg-surface-card border-b border-surface-divider',
+          },
+          navContent: { class: 'bg-surface-card' },
           inkbar: { class: 'bg-indigo-500' },
         }"
       >
@@ -167,24 +185,32 @@ const addAdminSupport = () => {
         <TabPanel
           value="0"
           header="Main Tasks"
-          :pt="{ headerAction: { class: 'bg-gray-800 text-white' } }"
+          :pt="{
+            headerAction: {
+              class: 'bg-surface-card text-typo-heading',
+            },
+          }"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Form for adding a new task -->
-            <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
-              <h3 class="font-bold text-lg text-white">Add New Task</h3>
+            <div
+              class="space-y-4 p-4 bg-surface-page/60 rounded-lg"
+            >
+              <h3 class="font-bold text-lg text-typo-heading">
+                Add New Task
+              </h3>
               <div>
                 <InputText
                   v-model="newTask.name"
                   placeholder="Task Name"
-                  class="w-full bg-gray-700 text-white"
+                  class="w-full bg-surface-card text-typo-body"
                 />
               </div>
               <div>
                 <InputText
                   v-model="newTask.jira"
                   placeholder="Jira Ticket Link"
-                  class="w-full bg-gray-700 text-white"
+                  class="w-full bg-surface-card text-typo-body"
                 />
               </div>
               <div>
@@ -202,28 +228,30 @@ const addAdminSupport = () => {
             </div>
             <!-- List of existing tasks -->
             <div
-              class="space-y-3 p-4 bg-gray-900/50 rounded-lg max-h-96 overflow-y-auto"
+              class="space-y-3 p-4 bg-surface-page/60 rounded-lg max-h-96 overflow-y-auto"
             >
-              <h3 class="font-bold text-lg text-white">
+              <h3 class="font-bold text-lg text-typo-heading">
                 Logged Tasks for Today
               </h3>
-              <div v-if="!tasks.length" class="text-gray-400">
+              <div v-if="!tasks.length" class="text-typo-muted">
                 No tasks logged for this date.
               </div>
               <div
                 v-for="(task, index) in tasks"
                 :key="`task-${index}`"
-                class="bg-gray-700 p-3 rounded-md"
+                class="bg-surface-card border border-surface-divider p-3 rounded-md"
               >
-                <p class="font-bold text-white">{{ task.task_name }}</p>
+                <p class="font-bold text-typo-heading">
+                  {{ task.task_name }}
+                </p>
                 <a
                   :href="task.jira_link"
                   target="_blank"
-                  class="text-sm text-indigo-400 hover:underline truncate"
+                  class="text-sm text-indigo-600 dark:text-indigo-300 hover:underline truncate"
                   >{{ task.jira_link }}</a
                 >
                 <div
-                  class="text-sm text-gray-300 mt-2"
+                  class="text-sm text-typo-body mt-2"
                   v-html="sanitize(task.description)"
                 ></div>
               </div>
@@ -235,17 +263,25 @@ const addAdminSupport = () => {
         <TabPanel
           value="1"
           header="Meetings"
-          :pt="{ headerAction: { class: 'bg-gray-800 text-white' } }"
+          :pt="{
+            headerAction: {
+              class: 'bg-surface-card text-typo-heading',
+            },
+          }"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Form for adding a new meeting -->
-            <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
-              <h3 class="font-bold text-lg text-white">Add New Meeting</h3>
+            <div
+              class="space-y-4 p-4 bg-surface-page/60 rounded-lg"
+            >
+              <h3 class="font-bold text-lg text-typo-heading">
+                Add New Meeting
+              </h3>
               <div>
                 <InputText
                   v-model="newMeeting.title"
                   placeholder="Meeting Title"
-                  class="w-full bg-gray-700 text-white"
+                  class="w-full bg-surface-card text-typo-body"
                 />
               </div>
               <div>
@@ -253,7 +289,7 @@ const addAdminSupport = () => {
                   v-model="newMeeting.duration"
                   placeholder="Duration (minutes)"
                   class="w-full"
-                  inputClass="bg-gray-700 text-white w-full rounded-md"
+                  inputClass="bg-surface-card text-typo-body w-full rounded-md"
                 />
               </div>
               <div>
@@ -271,28 +307,30 @@ const addAdminSupport = () => {
             </div>
             <!-- List of existing meetings -->
             <div
-              class="space-y-3 p-4 bg-gray-900/50 rounded-lg max-h-96 overflow-y-auto"
+              class="space-y-3 p-4 bg-surface-page/60 rounded-lg max-h-96 overflow-y-auto"
             >
-              <h3 class="font-bold text-lg text-white">
+              <h3 class="font-bold text-lg text-typo-heading">
                 Logged Meetings for Today
               </h3>
-              <div v-if="!meetings.length" class="text-gray-400">
+              <div v-if="!meetings.length" class="text-typo-muted">
                 No meetings logged for this date.
               </div>
               <div
                 v-for="(meeting, index) in meetings"
                 :key="`meeting-${index}`"
-                class="bg-gray-700 p-3 rounded-md"
+                class="bg-surface-card border border-surface-divider p-3 rounded-md"
               >
                 <div class="flex justify-between items-center">
-                  <p class="font-bold text-white">{{ meeting.title }}</p>
+                  <p class="font-bold text-typo-heading">
+                    {{ meeting.title }}
+                  </p>
                   <span
-                    class="text-xs bg-gray-600 text-white px-2 py-1 rounded-full"
+                    class="text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 px-2 py-1 rounded-full"
                     >{{ meeting.duration_minutes }} mins</span
                   >
                 </div>
                 <div
-                  class="text-sm text-gray-300 mt-2"
+                  class="text-sm text-typo-body mt-2"
                   v-html="sanitize(meeting.description)"
                 ></div>
               </div>
@@ -304,19 +342,25 @@ const addAdminSupport = () => {
         <TabPanel
           value="2"
           header="Admin Support"
-          :pt="{ headerAction: { class: 'bg-gray-800 text-white' } }"
+          :pt="{
+            headerAction: {
+              class: 'bg-surface-card text-typo-heading',
+            },
+          }"
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Form for adding new admin support -->
-            <div class="space-y-4 p-4 bg-gray-700/50 rounded-lg">
-              <h3 class="font-bold text-lg text-white">
+            <div
+              class="space-y-4 p-4 bg-surface-page/60 rounded-lg"
+            >
+              <h3 class="font-bold text-lg text-typo-heading">
                 Add Admin/Support Task
               </h3>
               <div>
                 <InputText
                   v-model="newAdminSupport.title"
                   placeholder="Task Title"
-                  class="w-full bg-gray-700 text-white"
+                  class="w-full bg-surface-card text-typo-body"
                 />
               </div>
               <div>
@@ -334,20 +378,27 @@ const addAdminSupport = () => {
             </div>
             <!-- List of existing admin supports -->
             <div
-              class="space-y-3 p-4 bg-gray-900/50 rounded-lg max-h-96 overflow-y-auto"
+              class="space-y-3 p-4 bg-surface-page/60 rounded-lg max-h-96 overflow-y-auto"
             >
-              <h3 class="font-bold text-lg text-white">Logged Support Tasks</h3>
-              <div v-if="!adminSupports.length" class="text-gray-400">
+              <h3 class="font-bold text-lg text-typo-heading">
+                Logged Support Tasks
+              </h3>
+              <div
+                v-if="!adminSupports.length"
+                class="text-typo-muted"
+              >
                 No support tasks logged for this date.
               </div>
               <div
                 v-for="(support, index) in adminSupports"
                 :key="`support-${index}`"
-                class="bg-gray-700 p-3 rounded-md"
+                class="bg-surface-card border border-surface-divider p-3 rounded-md"
               >
-                <p class="font-bold text-white">{{ support.title }}</p>
+                <p class="font-bold text-typo-heading">
+                  {{ support.title }}
+                </p>
                 <div
-                  class="text-sm text-gray-300 mt-2"
+                  class="text-sm text-typo-body mt-2"
                   v-html="sanitize(support.description)"
                 ></div>
               </div>
@@ -360,25 +411,37 @@ const addAdminSupport = () => {
 </template>
 
 <style>
-/* PrimeVue custom overrides for dark theme consistency */
-.p-datepicker-header,
-.p-tabview-nav-link {
-  background: #374151 !important;
-  color: #f9fafb !important;
-  border-bottom: 1px solid #4b5563 !important;
+/* PrimeVue overrides for LexTrack.
+ *
+ * Phase 21-01 refactor: the previously hardcoded dark grays
+ * (#374151, #4b5563, #f9fafb) have been replaced with the Phase 18
+ * @theme CSS variables so the overrides auto-switch between light and
+ * dark mode via the .my-app-dark block in base.css.
+ *
+ * The .lextrack-tabview / .lextrack-datepicker scope keeps these rules
+ * from leaking to other mini-apps. */
+.lextrack-datepicker .p-datepicker-header,
+.lextrack-tabview .p-tabview-nav-link {
+  background: var(--color-surface-card) !important;
+  color: var(--color-typo-heading) !important;
+  border-bottom: 1px solid var(--color-surface-divider) !important;
 }
 
-.p-tabview-nav-link.p-highlight {
+.lextrack-tabview .p-tabview-nav-link.p-highlight {
+  color: #4f46e5 !important;
+}
+
+.my-app-dark .lextrack-tabview .p-tabview-nav-link.p-highlight {
   color: #a5b4fc !important;
 }
 
-.p-datepicker-title,
-.p-datepicker-next,
-.p-datepicker-prev {
-  color: #f9fafb !important;
+.lextrack-datepicker .p-datepicker-title,
+.lextrack-datepicker .p-datepicker-next,
+.lextrack-datepicker .p-datepicker-prev {
+  color: var(--color-typo-heading) !important;
 }
 
-.p-datepicker-calendar td > span.p-highlight {
+.lextrack-datepicker .p-datepicker-calendar td > span.p-highlight {
   background: #4f46e5 !important;
   color: #ffffff !important;
 }
