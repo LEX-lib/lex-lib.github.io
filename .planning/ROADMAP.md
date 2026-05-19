@@ -219,8 +219,14 @@ Plans:
   2. Larga renders correctly in dark mode — Leaflet map controls, geocoder input, route panels, and route list are legible; the map tiles themselves may stay light-mode-styled (out of scope unless Leaflet provides a dark theme)
   3. Gift Exchange renders correctly in dark mode across all sub-routes (join, draw, manage, result)
   4. API Playground renders correctly in dark mode — request panel, response display, headers tables; syntax-highlighted body should remain readable
-**Plans**: TBD
+**Plans**: 4 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 21-01-PLAN.md — LexTrack mechanical dark-variant sweep (~53 utilities across 5 files); THEME-09
+- [ ] 21-02-PLAN.md — Larga audit + conditional Leaflet geocoder override (zero-change outcome acceptable); THEME-10
+- [ ] 21-03-PLAN.md — MonitoX (Gift Exchange) mechanical sweep across 4 sub-route files (~103 utilities); THEME-11
+- [ ] 21-04-PLAN.md — API Playground chrome `.my-app-dark` overrides + consolidated 21-HUMAN-UAT.md; THEME-12
 
 ### Phase 22: Wallecx Audit
 **Goal**: Confirm Phase 18's Wallecx dark mode work still holds when the site-wide toggle is wired up; fix any regressions surfaced by the toggle flow (e.g. flash-on-load, route transitions, PWA installed mode)

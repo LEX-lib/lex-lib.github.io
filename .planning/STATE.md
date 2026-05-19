@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: phase_complete_pending_human_uat
-stopped_at: Phase 20 shipped (8/8 tasks, code PASS, visual UAT pending)
-last_updated: "2026-05-18T00:00:00Z"
+status: ready_to_execute
+stopped_at: Phase 21 planned (4 plans, ~14 tasks) — ready to execute
+last_updated: "2026-05-19T00:00:00Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 2
+  completed_phases: 2
+  total_plans: 6
   completed_plans: 2
   percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-18 — Phase 20 shipped (8/8 tasks): base.css --color-mix-target var, per-file dark-mode sweep across 7 site-shell components, NavBar Avatar dark:invert. Code PASS; 5 visual UAT items pending.
+**Last updated:** 2026-05-19 — Phase 21 planned (4 atomic plans, one per mini-app: LexTrack/Larga/MonitoX/API Playground). Plan-checker PASS first iteration. Ready to execute.
 
 ## Project Reference
 
@@ -27,15 +27,14 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 20 — Site Shell & Non-App Pages (complete, pending human UAT)
-**Plan:** 20-01 (8/8 tasks shipped)
-**Status:** Phase 21 ready to discuss after UAT sign-off
+**Phase:** 21 — Mini-App Dark Mode Sweep
+**Plan:** 21-01..04 (4 plans, ~14 tasks total, 0/4 executed)
+**Status:** Ready to execute
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [   DONE   ] [   DONE*  ] [  NEXT UP ] [  QUEUED  ]
+               [   DONE   ] [   DONE   ] [  NEXT UP ] [  QUEUED  ]
 ```
-*Phase 20: code-verified PASS; 5 items pending human runtime UAT (see 20-VERIFICATION.md / 20-HUMAN-UAT.md)
 
 ## Shipped Milestones Summary
 
