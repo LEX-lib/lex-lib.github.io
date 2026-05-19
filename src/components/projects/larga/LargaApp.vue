@@ -215,9 +215,27 @@ function handleRouteClick(routeName: string) {
    substitute dark-aware @theme tokens from base.css so the input stays legible
    when the site is in dark mode. The map tiles themselves intentionally stay
    light in both themes (D-07). */
+:global(.my-app-dark) .leaflet-control-geocoder,
+:global(.my-app-dark) .leaflet-control-geocoder-icon {
+  background-color: var(--color-surface-card);
+}
 :global(.my-app-dark) .leaflet-control-geocoder-form input {
   background-color: var(--color-surface-card);
   color: var(--color-typo-body);
   border-color: var(--color-surface-divider);
+}
+:global(.my-app-dark) .leaflet-control-geocoder-alternatives {
+  background-color: var(--color-surface-card);
+}
+:global(.my-app-dark) .leaflet-control-geocoder-alternatives li {
+  color: var(--color-typo-body);
+  border-bottom-color: var(--color-surface-divider);
+}
+:global(.my-app-dark) .leaflet-control-geocoder-alternatives li:hover,
+:global(.my-app-dark) .leaflet-control-geocoder-selected {
+  background-color: var(--color-surface-page);
+}
+:global(.my-app-dark) .leaflet-control-geocoder-address-context {
+  color: var(--color-typo-muted);
 }
 </style>

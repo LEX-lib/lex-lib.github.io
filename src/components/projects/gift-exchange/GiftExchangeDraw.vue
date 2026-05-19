@@ -170,7 +170,7 @@ onMounted(() => {
             <button
               @click="checkStatus"
               :disabled="loading"
-              class="bg-black text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+              class="bg-black dark:bg-white text-white dark:text-black font-bold py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm"
             >
               {{ loading ? "Checking..." : "Refresh Status" }}
             </button>

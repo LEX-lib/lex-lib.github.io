@@ -230,7 +230,7 @@ onMounted(() => {
               <button
                 @click="enroll"
                 :disabled="loading"
-                class="mt-4 w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="mt-4 w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ loading ? "Processing..." : "Enroll & Get Code" }}
               </button>
@@ -294,7 +294,7 @@ onMounted(() => {
               <button
                 @click="checkStatus"
                 :disabled="loading"
-                class="bg-black text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                class="bg-black dark:bg-white text-white dark:text-black font-bold py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm"
               >
                 {{ loading ? "Checking..." : "Check for Drawing" }}
               </button>
