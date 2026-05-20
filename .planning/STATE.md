@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: ready_to_execute
-stopped_at: Phase 22 planned (1 plan, 2 tasks) — final v3.0 audit, ready to execute
+status: phase_complete_pending_human_uat
+stopped_at: Phase 22 shipped (verification-only, zero source changes) — pending human UAT, then v3.0 milestone close
 last_updated: "2026-05-19T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 85
+  completed_plans: 7
+  percent: 95
 ---
 
 # Project State
 
-**Last updated:** 2026-05-19 — Phase 22 planned (v3.0 milestone closer). Verification-only by default — generates 22-HUMAN-UAT.md (6 regression vectors) + 22-01-SUMMARY.md. Zero Wallecx source changes expected.
+**Last updated:** 2026-05-19 — Phase 22 shipped (verification-only): 22-HUMAN-UAT.md (6 regression vectors) + 22-01-SUMMARY.md. Zero source changes; BR-2 invariant preserved; build green. Pending human UAT to close v3.0.
 
 ## Project Reference
 
@@ -27,9 +27,9 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 22 — Wallecx Audit (v3.0 milestone closer)
-**Plan:** 22-01 (2 tasks, 1 wave, 0/2 executed)
-**Status:** Ready to execute
+**Phase:** 22 — Wallecx Audit (complete, pending human UAT)
+**Plan:** 22-01 (2/2 tasks shipped, zero source changes)
+**Status:** Pending human UAT → then `/gsd-complete-milestone` to close v3.0
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
