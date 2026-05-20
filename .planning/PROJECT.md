@@ -17,16 +17,24 @@ Both record types share the same per-user PocketBase isolation pattern, the same
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
-## Current Milestone: v3.0 Site-Wide Dark Mode
+## Current State
 
-**Goal:** Every Lexarium surface (home page, projects directory, blog, login, NavBar, and all five mini-apps) renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode (v2.3) to a fully themed platform.
+**Latest shipped:** v3.0 Site-Wide Dark Mode (2026-05-19) — Lexarium is now a fully themed platform. Every surface (home, projects, blog, login, NavBar, all 5 mini-apps) renders correctly in light AND dark mode via a NavBar sun/moon toggle with OS-preference-aware first-visit default.
 
-**Target features:**
+**Next milestone:** TBD — start via `/gsd-new-milestone`.
+
+<details>
+<summary>Previous milestone goals (v3.0 — shipped)</summary>
+
+**Goal:** Every Lexarium surface renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode (v2.3) to a fully themed platform.
+
+**Target features (all shipped):**
 - `useTheme` composable: reactive theme state + localStorage persistence + `prefers-color-scheme` detection + applies `.my-app-dark` class to `<html>`
-- NavBar sun/moon toggle button — manual override of OS preference; persists choice to localStorage
+- NavBar sun/moon toggle button
 - Site shell + non-app pages dark mode (HomeView/HeroSection/AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar)
 - Mini-app dark mode sweep — LexTrack, Larga, Gift Exchange, API Playground
-- Wallecx audit — confirm Phase 18 dark mode still works correctly with site-wide toggle
+- Wallecx audit — Phase 18 dark mode survives site-wide toggle wire-up
+</details>
 
 ## Requirements
 
@@ -57,17 +65,16 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ PWA icons: pwa-192x192.png, pwa-512x512.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png in public/ — v2.1
 - ✓ WallecxApp.vue: navigator.storage.persist(), pb.authStore.isValid expiry check + toast + redirect, SW update toast (Refresh/Later) — v2.1
 - ✓ WallecxToolbar generic (sortOptions required prop); MembershipsTab search/sort (displayedMemberships computed, sessionStorage persistence, no-results empty state) — v2.2
+- ✓ Bottom sheet on mobile for VaccinationGroupPanel and MembershipDetail; toolbar view-toggle hidden on mobile with list view forced — v2.3
+- ✓ Wallecx dark mode (PrimeVue #7465 fix via `@custom-variant dark` alignment + custom `@theme` token dark overrides); MembershipCard luminance-aware text color; PrimeVue Card visible separation override — v2.3
+- ✓ `useTheme` composable + NavBar sun/moon toggle + inline FOUC script + localStorage persistence + OS-preference detection — v3.0
+- ✓ Site shell + non-app pages dark mode (HomeView/Hero/About, ProjectsView, BlogView, Login, CustomNavBar) — v3.0
+- ✓ Mini-app dark mode (LexTrack semantic-token refactor, Larga geocoder override, MonitoX sweep, API Playground chrome) — v3.0
+- ✓ Wallecx audit confirmed Phase 18 dark mode survives site-wide toggle wire-up; PWA standalone PASS — v3.0
 
 ### Active
 
-- [ ] **THEME-01** — `useTheme` composable in `src/composables/useTheme.ts` with reactive `Ref<'light' | 'dark'>` state, localStorage persistence under key `lexarium:theme`, `prefers-color-scheme: dark` detection on first visit, applies/removes `.my-app-dark` class to `<html>` on change
-- [ ] **THEME-02** — NavBar sun/moon toggle button in `CustomNavBar.vue`; clicking switches the theme; icon reflects current state
-- [ ] **THEME-03** — Site shell + non-app pages render correctly in dark mode (HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar)
-- [ ] **THEME-04** — LexTrack mini-app renders correctly in dark mode
-- [ ] **THEME-05** — Larga mini-app renders correctly in dark mode
-- [ ] **THEME-06** — Gift Exchange mini-app renders correctly in dark mode
-- [ ] **THEME-07** — API Playground mini-app renders correctly in dark mode
-- [ ] **THEME-08** — Wallecx audit: Phase 18 dark mode still works correctly when toggle is wired up site-wide (no regressions)
+_None — v3.0 just shipped; awaiting next milestone definition via `/gsd-new-milestone`._
 
 ### Future candidates
 
@@ -152,6 +159,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v2.1 Mobile PWA | 14–15 | 2026-05-14 | — |
 | v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | [v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md) |
 | v2.3 UX Polish | 17–18 | 2026-05-18 | — |
+| v3.0 Site-Wide Dark Mode | 19–22 | 2026-05-19 | [v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md) |
 
 ## Evolution
 
@@ -171,4 +179,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-18 — v2.3 shipped; v3.0 started: Site-Wide Dark Mode.*
+*Last updated: 2026-05-19 — v3.0 Site-Wide Dark Mode shipped; awaiting next milestone definition.*

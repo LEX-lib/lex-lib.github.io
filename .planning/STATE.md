@@ -1,44 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Site-Wide Dark Mode
-status: milestone_ready_to_close
-stopped_at: Phase 22 UAT approved on Vercel preview (all 6 vectors PASS); v3.0 ready to archive via /gsd-complete-milestone
+milestone: —
+milestone_name: (awaiting next milestone)
+status: between_milestones
+stopped_at: v3.0 Site-Wide Dark Mode shipped + archived; ready for /gsd-new-milestone
 last_updated: "2026-05-19T00:00:00Z"
 progress:
-  total_phases: 4
-  completed_phases: 2
-  total_plans: 7
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-19 — Phase 22 UAT approved on Vercel preview. All 6 regression vectors PASS (toggle/route/FOUC/bottom-sheets/BR-2/PWA-standalone). v3.0 Site-Wide Dark Mode milestone fully shipped — ready to archive via /gsd-complete-milestone.
+**Last updated:** 2026-05-19 — v3.0 Site-Wide Dark Mode archived. ROADMAP collapsed; v3.0-ROADMAP.md + v3.0-REQUIREMENTS.md created in milestones/; REQUIREMENTS.md deleted (fresh one will be created by next /gsd-new-milestone). Awaiting next milestone scope.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v3.0 — Site-Wide Dark Mode (theme infrastructure, full-site sweep, NavBar toggle).
+**Current focus:** Between milestones — v3.0 shipped; next milestone TBD via `/gsd-new-milestone`.
 
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Milestone:** v3.0 — Site-Wide Dark Mode (complete, all UAT approved)
-**Phase:** — (none active; all 4 phases shipped)
-**Plan:** — (7/7 plans shipped + UAT approved)
-**Status:** Milestone ready to close via `/gsd-complete-milestone`
-
-```
-v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [   DONE   ] [   DONE   ] [   DONE   ] [   DONE   ]
-```
+**Milestone:** — (between milestones)
+**Phase:** — (none active)
+**Plan:** — (none active)
+**Status:** v3.0 archived. Run `/gsd-new-milestone` to define what's next.
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
@@ -57,6 +49,7 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 | v2.1 Mobile PWA | 14–15 | 8 | 2026-05-14 |
 | v2.2 Sort and Search for Membership Cards | 16 | 2 | 2026-05-15 |
 | v2.3 UX Polish | 17–18 | 4 | 2026-05-18 |
+| v3.0 Site-Wide Dark Mode | 19–22 | 7 | 2026-05-19 |
 
 ## Accumulated Context
 
