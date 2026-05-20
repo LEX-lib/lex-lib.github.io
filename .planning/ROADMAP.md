@@ -13,6 +13,7 @@
 - ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
 - ✅ **v2.3 UX Polish** — Phases 17–18 (shipped 2026-05-18)
 - ✅ **v3.0 Site-Wide Dark Mode** — Phases 19–22 (shipped 2026-05-19)
+- 🔄 **v4.0 Daily Expense Tracker** — Phases 23–26 (in progress)
 
 ## Phases
 
@@ -106,6 +107,15 @@ Full details: [milestones/v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md)
 
 </details>
 
+## v4.0 Daily Expense Tracker
+
+**Milestone goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts. Wallecx expands from static personal records (vaccinations, memberships) into time-series spending data.
+
+- [ ] **Phase 23: Backend & Type Foundation** — `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections + Zod schema + expense mapper + TypeScript types
+- [ ] **Phase 24: Write Path — Tab Shell + CRUD** — third tab "Expenses" in `WallecxApp.vue` after Memberships; `ManageExpense.vue` create/edit/delete dialog; user can add custom categories
+- [ ] **Phase 25: Read Path — List View** — sortable/filterable expense list (date / category / amount); date-range filter; client-side description search; receipt photo preview
+- [ ] **Phase 26: Reporting View** — period-tabbed view (Month / Quarter / Year / Custom); grand total; per-category breakdown chart (PrimeVue Chart / Chart.js)
+
 ---
 
 ## Phase Details
@@ -184,6 +194,59 @@ Plans:
 Plans:
 - [x] 18-01-PLAN.md — Tailwind v4 dark-variant alignment + MembershipCard luminance-aware foreground + MembershipDetail card_color audit + 18-HUMAN-UAT.md generation
 
+### Phase 23: Backend & Type Foundation
+**Goal**: `wallecx_expenses` and `wallecx_expense_categories` PocketBase collections exist with correct schemas and per-user access rules; Zod schema, TypeScript types, and the expense mapper match the established Wallecx pattern; default categories are seeded.
+**Depends on**: v3.0 complete
+**Requirements**: EXP-01, EXP-02, EXP-03
+**Success Criteria** (what must be TRUE):
+  1. Two-user smoke test confirms full cross-user isolation on both collections (list, view, create, update, delete)
+  2. A new expense record can be created with required fields (amount, expense_date, category, description) and optional notes + receipt
+  3. Default category set (Food, Transport, Bills, Health, Shopping, Entertainment, Other) is available to every newly authenticated user
+  4. `expenseMapper` correctly strips read-only fields (id, created, updated, collectionId/Name) on write — verified by Vitest spec mirroring `vaccinationMapper.spec.ts` / `membershipMapper.spec.ts`
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 24: Write Path — Tab Shell + CRUD
+**Goal**: A third tab "Expenses" appears in `WallecxApp.vue` after Memberships; `ManageExpense.vue` creates / edits / deletes expense records with Zod validation; users can add a custom category from within the manage flow.
+**Depends on**: Phase 23
+**Requirements**: EXP-04, EXP-05, EXP-06
+**Success Criteria** (what must be TRUE):
+  1. Vaccinations / Memberships / Expenses tab order in `WallecxApp.vue`; switching to Expenses loads the new tab without breaking prior tab state
+  2. Clicking "Add expense" opens `ManageExpense.vue`; a valid entry saves to PocketBase and appears in the user's expense list
+  3. Editing an existing expense updates fields; saving twice quickly does not double-submit (isSaving guard)
+  4. Deleting an expense prompts ConfirmDialog; on confirm, server-first delete is invoked; the local list refreshes
+  5. Selecting "Add new category…" in the category picker creates a new row in `wallecx_expense_categories` for that user only; the new category appears in subsequent expense entries
+  6. Receipt photo upload runs through EXIF strip + browser-image-compression pipeline (same as vaccinations)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 25: Read Path — List View
+**Goal**: `ExpensesTab.vue` shows the authenticated user's expenses sortable by date/category/amount, filterable by category and date range, searchable by description; receipts preview via the existing `AttachmentPreview` component.
+**Depends on**: Phase 24
+**Requirements**: EXP-07, EXP-08, EXP-09, EXP-10
+**Success Criteria** (what must be TRUE):
+  1. List shows newest-first by default; clicking a sort header reorders by category A–Z, amount high-low, or oldest-first
+  2. Sort mode persists in sessionStorage under `wallecx:expense-sort` across reloads
+  3. Category multi-select chip pill filters the list client-side; clearing all chips shows all expenses
+  4. Date-range picker (start + end) filters the list client-side without new PocketBase queries
+  5. Search input filters by description text with the established debounce pattern from `WallecxToolbar`
+  6. Tapping an expense row with a receipt opens `AttachmentPreview` with the appropriate MIME branch (image / PDF / download)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 26: Reporting View
+**Goal**: Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range) shows grand total and per-category breakdown chart; charts use PrimeVue Chart (Chart.js wrapper).
+**Depends on**: Phase 25
+**Requirements**: EXP-11, EXP-12, EXP-13
+**Success Criteria** (what must be TRUE):
+  1. Period tab selector (Month / Quarter / Year / Custom) is visible in the Expenses tab; tab selection changes the underlying period filter
+  2. The grand total figure updates correctly when the period changes; matches the sum of expenses currently in scope
+  3. The per-category chart updates with each period change; categories with zero spend in the period are hidden
+  4. Chart renders correctly in both light and dark mode (inherits theme tokens from v3.0)
+  5. Custom date range — picking arbitrary start and end dates produces the correct subset
+**Plans**: TBD
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -213,7 +276,11 @@ Plans:
 | 20. Site Shell & Non-App Pages | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-18 |
 | 21. Mini-App Dark Mode Sweep | v3.0 | 4/4 | Complete (UAT approved) | 2026-05-19 |
 | 22. Wallecx Audit | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-19 |
+| 23. Backend & Type Foundation | v4.0 | 0/? | Not started | - |
+| 24. Write Path — Tab Shell + CRUD | v4.0 | 0/? | Not started | - |
+| 25. Read Path — List View | v4.0 | 0/? | Not started | - |
+| 26. Reporting View | v4.0 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-19 — v3.0 Site-Wide Dark Mode shipped; ready for next milestone*
+*Last updated: 2026-05-19 — v4.0 Daily Expense Tracker started: Phases 23–26, 13/13 requirements mapped*

@@ -17,11 +17,18 @@ Both record types share the same per-user PocketBase isolation pattern, the same
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
-## Current State
+## Current Milestone: v4.0 Daily Expense Tracker
 
-**Latest shipped:** v3.0 Site-Wide Dark Mode (2026-05-19) — Lexarium is now a fully themed platform. Every surface (home, projects, blog, login, NavBar, all 5 mini-apps) renders correctly in light AND dark mode via a NavBar sun/moon toggle with OS-preference-aware first-visit default.
+**Goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts. Expands Wallecx from static personal records (vaccinations, memberships) into time-series spending data.
 
-**Next milestone:** TBD — start via `/gsd-new-milestone`.
+**Target features:**
+- `wallecx_expenses` PocketBase collection (amount, date, category, description, notes, optional receipt photo) + `wallecx_expense_categories` for user-added categories on top of a default list
+- `ExpensesTab.vue` — third tab in `WallecxApp.vue` after Memberships
+- `ManageExpense.vue` — CRUD dialog matching the existing Wallecx pattern (Zod, EXIF strip, isSaving guard, server-first delete)
+- Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range) showing grand total + per-category breakdown chart (PrimeVue Chart / Chart.js)
+- Default category set: Food, Transport, Bills, Health, Shopping, Entertainment, Other (user can add more)
+
+**Latest shipped:** v3.0 Site-Wide Dark Mode (2026-05-19) — fully themed platform with NavBar toggle, OS-preference detection, and localStorage persistence.
 
 <details>
 <summary>Previous milestone goals (v3.0 — shipped)</summary>
@@ -74,7 +81,18 @@ If everything else fails, these two capabilities must work: the vaccination hist
 
 ### Active
 
-_None — v3.0 just shipped; awaiting next milestone definition via `/gsd-new-milestone`._
+- [ ] **EXP-01** — `wallecx_expenses` PocketBase collection (id, user, amount, expense_date, category, description, notes, receipt) with 5 per-user access rules
+- [ ] **EXP-02** — `wallecx_expense_categories` PocketBase collection seeded with default categories (Food, Transport, Bills, Health, Shopping, Entertainment, Other) + per-user rules so each user can add their own
+- [ ] **EXP-03** — Zod schema + expense mapper + TypeScript types module (`src/types/wallecx/expenses/types.d.ts`)
+- [ ] **EXP-04** — Third tab "Expenses" in `WallecxApp.vue` after Memberships
+- [ ] **EXP-05** — `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, server-first delete, EXIF-stripped receipt photo upload
+- [ ] **EXP-06** — User can add custom categories from within the manage flow
+- [ ] **EXP-07** — `ExpensesTab.vue` list view sortable by date / category / amount; filterable by category and date range
+- [ ] **EXP-08** — Receipt photo preview via existing `AttachmentPreview` component
+- [ ] **EXP-09** — Client-side search by description text (mirrors `WallecxToolbar` search pattern)
+- [ ] **EXP-10** — Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range)
+- [ ] **EXP-11** — Grand total for selected period
+- [ ] **EXP-12** — Per-category breakdown chart (PrimeVue Chart / Chart.js) for selected period
 
 ### Future candidates
 
@@ -179,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 — v3.0 Site-Wide Dark Mode shipped; awaiting next milestone definition.*
+*Last updated: 2026-05-19 — v4.0 Daily Expense Tracker started.*

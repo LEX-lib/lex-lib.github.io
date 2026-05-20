@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: —
-milestone_name: (awaiting next milestone)
-status: between_milestones
-stopped_at: v3.0 Site-Wide Dark Mode shipped + archived; ready for /gsd-new-milestone
+milestone: v4.0
+milestone_name: Daily Expense Tracker
+status: ready_to_plan
+stopped_at: v4.0 roadmap created — Phase 23 ready to discuss/plan
 last_updated: "2026-05-19T00:00:00Z"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -15,22 +15,27 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-19 — v3.0 Site-Wide Dark Mode archived. ROADMAP collapsed; v3.0-ROADMAP.md + v3.0-REQUIREMENTS.md created in milestones/; REQUIREMENTS.md deleted (fresh one will be created by next /gsd-new-milestone). Awaiting next milestone scope.
+**Last updated:** 2026-05-19 — v4.0 Daily Expense Tracker milestone started. 4 phases (23–26), 13 requirements (EXP-01..EXP-13) mapped. Phase 23 ready to discuss.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** Between milestones — v3.0 shipped; next milestone TBD via `/gsd-new-milestone`.
+**Current focus:** v4.0 — Daily Expense Tracker (third Wallecx record type: expenses with period-tabbed reporting and per-category charts).
 
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Milestone:** — (between milestones)
-**Phase:** — (none active)
-**Plan:** — (none active)
-**Status:** v3.0 archived. Run `/gsd-new-milestone` to define what's next.
+**Milestone:** v4.0 — Daily Expense Tracker
+**Phase:** 23 — Backend & Type Foundation (next)
+**Plan:** — (not yet discussed)
+**Status:** Ready to discuss
+
+```
+v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
+               [  NEXT UP  ] [  QUEUED  ] [  QUEUED  ] [  QUEUED  ]
+```
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
