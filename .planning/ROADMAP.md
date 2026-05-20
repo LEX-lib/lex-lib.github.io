@@ -12,7 +12,7 @@
 - ✅ **v2.1 Mobile PWA** — Phases 14–15 (shipped 2026-05-14)
 - ✅ **v2.2 Sort and Search for Membership Cards** — Phase 16 (shipped 2026-05-15) — [archive](milestones/v2.2-ROADMAP.md)
 - ✅ **v2.3 UX Polish** — Phases 17–18 (shipped 2026-05-18)
-- 🔄 **v3.0 Site-Wide Dark Mode** — Phases 19–22 (in progress)
+- ✅ **v3.0 Site-Wide Dark Mode** — Phases 19–22 (shipped 2026-05-19)
 
 ## Phases
 
@@ -96,10 +96,10 @@ Full details: [milestones/v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md)
 
 **Milestone goal:** Every Lexarium surface (home page, projects directory, blog, login, NavBar, and all five mini-apps) renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode to a fully themed platform.
 
-- [ ] **Phase 19: Theme Infrastructure** — `useTheme` composable + NavBar sun/moon toggle button + OS-preference detection + localStorage persistence + apply `.my-app-dark` to `<html>`
-- [ ] **Phase 20: Site Shell & Non-App Pages** — HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar render correctly in dark mode
-- [ ] **Phase 21: Mini-App Dark Mode Sweep** — LexTrack, Larga, Gift Exchange, API Playground render correctly in dark mode
-- [ ] **Phase 22: Wallecx Audit** — confirm Phase 18 dark mode still works when toggle is wired up site-wide; fix any regressions
+- [x] **Phase 19: Theme Infrastructure** — `useTheme` composable + NavBar sun/moon toggle button + OS-preference detection + localStorage persistence + apply `.my-app-dark` to `<html>` (UAT approved 2026-05-18)
+- [x] **Phase 20: Site Shell & Non-App Pages** — HomeView, HeroSection, AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar render correctly in dark mode (UAT approved 2026-05-18)
+- [x] **Phase 21: Mini-App Dark Mode Sweep** — LexTrack, Larga, Gift Exchange, API Playground render correctly in dark mode (UAT approved 2026-05-19 after Larga geocoder + MonitoX black-button follow-ups)
+- [x] **Phase 22: Wallecx Audit** — confirm Phase 18 dark mode still works when toggle is wired up site-wide; fix any regressions (UAT approved 2026-05-19 on Vercel preview)
 
 ---
 
