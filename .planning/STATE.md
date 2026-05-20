@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Daily Expense Tracker
-status: ready_to_plan
-stopped_at: v4.0 roadmap created — Phase 23 ready to discuss/plan
+status: ready_to_execute
+stopped_at: Phase 23 planned (1 plan, 4 tasks — 1 PocketBase admin checkpoint + 3 auto)
 last_updated: "2026-05-19T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 1
   completed_plans: 0
   percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-19 — v4.0 Daily Expense Tracker milestone started. 4 phases (23–26), 13 requirements (EXP-01..EXP-13) mapped. Phase 23 ready to discuss.
+**Last updated:** 2026-05-19 — Phase 23 planned (1 plan, 4 tasks): PocketBase admin checkpoint creates `wallecx_expenses` + `wallecx_expense_categories` collections with 5 per-user rules each; then 3 autonomous tasks create types, Zod schema, currency constant, mapper, and Vitest spec. Plan-checker PASS first iteration.
 
 ## Project Reference
 
@@ -28,9 +28,9 @@ progress:
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
-**Phase:** 23 — Backend & Type Foundation (next)
-**Plan:** — (not yet discussed)
-**Status:** Ready to discuss
+**Phase:** 23 — Backend & Type Foundation
+**Plan:** 23-01 (4 tasks, 1 wave, 0/4 executed)
+**Status:** Ready to execute (requires PocketBase admin access for Task 1)
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]

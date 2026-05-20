@@ -203,7 +203,11 @@ Plans:
   2. A new expense record can be created with required fields (amount, expense_date, category, description) and optional notes + receipt
   3. Default category set (Food, Transport, Bills, Health, Shopping, Entertainment, Other) is available to every newly authenticated user
   4. `expenseMapper` correctly strips read-only fields (id, created, updated, collectionId/Name) on write — verified by Vitest spec mirroring `vaccinationMapper.spec.ts` / `membershipMapper.spec.ts`
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 23-01-PLAN.md — Backend collections + types + Zod schema + currency module + expenseMapper & spec
+
 **UI hint**: no
 
 ### Phase 24: Write Path — Tab Shell + CRUD
