@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: phase_complete_uat_passed
-stopped_at: Phase 21 approved (UAT passed after Larga geocoder + MonitoX black-button follow-ups); LexTrack/API Playground UAT items deferred to revisit
+status: ready_to_execute
+stopped_at: Phase 22 planned (1 plan, 2 tasks) — final v3.0 audit, ready to execute
 last_updated: "2026-05-19T00:00:00Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 6
+  total_plans: 7
   completed_plans: 6
-  percent: 75
+  percent: 85
 ---
 
 # Project State
 
-**Last updated:** 2026-05-19 — Phase 21 approved. Larga geocoder wrapper + MonitoX 6 black-button dark variants fixed in follow-up. LexTrack DatePicker/TabView + API Playground sign-off deferred (revisit if gaps surface during Phase 22 audit).
+**Last updated:** 2026-05-19 — Phase 22 planned (v3.0 milestone closer). Verification-only by default — generates 22-HUMAN-UAT.md (6 regression vectors) + 22-01-SUMMARY.md. Zero Wallecx source changes expected.
 
 ## Project Reference
 
@@ -27,9 +27,9 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 22 — Wallecx Audit (milestone closer, next)
-**Plan:** — (not yet discussed)
-**Status:** Ready to discuss
+**Phase:** 22 — Wallecx Audit (v3.0 milestone closer)
+**Plan:** 22-01 (2 tasks, 1 wave, 0/2 executed)
+**Status:** Ready to execute
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
