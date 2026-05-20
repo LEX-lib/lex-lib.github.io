@@ -237,8 +237,11 @@ Plans:
   2. Navigating away from Wallecx and back preserves the chosen theme; Wallecx renders correctly on return
   3. Installing Wallecx as a PWA and toggling dark mode behaves identically to the in-browser flow
   4. BarcodeDisplay still renders black-on-white in both themes (BR-2 invariant preserved)
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: yes
+
+Plans:
+- [ ] 22-01-PLAN.md — Generate 22-HUMAN-UAT.md 6-vector regression spot-check + 22-01-SUMMARY.md; verification-only, zero Wallecx source changes expected
 
 ---
 
