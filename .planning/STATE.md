@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Site-Wide Dark Mode
-status: phase_complete_pending_human_uat
-stopped_at: Phase 21 shipped (4/4 plans, code PASS, 4 visual UAT items pending)
+status: phase_complete_uat_passed
+stopped_at: Phase 21 approved (UAT passed after Larga geocoder + MonitoX black-button follow-ups); LexTrack/API Playground UAT items deferred to revisit
 last_updated: "2026-05-19T00:00:00Z"
 progress:
   total_phases: 4
@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-19 — Phase 21 shipped (4/4 plans): LexTrack semantic-token refactor (user-approved Option A), Larga Leaflet geocoder override, MonitoX mechanical sweep (~123 pairings), API Playground chrome overrides + consolidated 21-HUMAN-UAT.md. All 4 SCs structurally PASS; visual UAT pending.
+**Last updated:** 2026-05-19 — Phase 21 approved. Larga geocoder wrapper + MonitoX 6 black-button dark variants fixed in follow-up. LexTrack DatePicker/TabView + API Playground sign-off deferred (revisit if gaps surface during Phase 22 audit).
 
 ## Project Reference
 
@@ -27,15 +27,15 @@ progress:
 ## Current Position
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
-**Phase:** 21 — Mini-App Dark Mode Sweep (complete, pending human UAT)
-**Plan:** 21-01..04 (4/4 plans shipped)
-**Status:** Phase 22 (Wallecx audit, milestone closer) ready to discuss after UAT sign-off
+**Phase:** 22 — Wallecx Audit (milestone closer, next)
+**Plan:** — (not yet discussed)
+**Status:** Ready to discuss
 
 ```
 v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
                [   DONE   ] [   DONE   ] [   DONE*  ] [  NEXT UP ]
 ```
-*Phase 21: code-verified PASS; 4 items pending human runtime UAT (see 21-VERIFICATION.md / 21-HUMAN-UAT.md)
+*Phase 21: UAT approved with 2 spot-checks deferred (LexTrack DatePicker/TabView contrast; API Playground sign-off). Revisit if gaps surface during Phase 22 audit.
 
 ## Shipped Milestones Summary
 
