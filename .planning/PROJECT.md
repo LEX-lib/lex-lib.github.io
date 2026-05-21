@@ -81,12 +81,12 @@ If everything else fails, these two capabilities must work: the vaccination hist
 
 ### Active
 
-- [ ] **EXP-01** — `wallecx_expenses` PocketBase collection (id, user, amount, expense_date, category, description, notes, receipt) with 5 per-user access rules
-- [ ] **EXP-02** — `wallecx_expense_categories` PocketBase collection seeded with default categories (Food, Transport, Bills, Health, Shopping, Entertainment, Other) + per-user rules so each user can add their own
-- [ ] **EXP-03** — Zod schema + expense mapper + TypeScript types module (`src/types/wallecx/expenses/types.d.ts`)
-- [ ] **EXP-04** — Third tab "Expenses" in `WallecxApp.vue` after Memberships
-- [ ] **EXP-05** — `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, server-first delete, EXIF-stripped receipt photo upload
-- [ ] **EXP-06** — User can add custom categories from within the manage flow
+- [x] **EXP-01** — `wallecx_expenses` PocketBase collection (id, user, amount, expense_date, category, description, notes, receipt) with 5 per-user access rules — Validated in Phase 23
+- [x] **EXP-02** — `wallecx_expense_categories` PocketBase collection seeded with default categories (Food, Transport, Bills, Health, Shopping, Entertainment, Other) + per-user rules so each user can add their own — Validated in Phase 23
+- [x] **EXP-03** — Zod schema + expense mapper + TypeScript types module (`src/types/wallecx/expenses/types.d.ts`) — Validated in Phase 23
+- [x] **EXP-04** — Third tab "Expenses" in `WallecxApp.vue` after Memberships — Validated in Phase 24
+- [x] **EXP-05** — `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, server-first delete, EXIF-stripped receipt photo upload — Validated in Phase 24
+- [x] **EXP-06** — User can add custom categories from within the manage flow — Validated in Phase 24
 - [ ] **EXP-07** — `ExpensesTab.vue` list view sortable by date / category / amount; filterable by category and date range
 - [ ] **EXP-08** — Receipt photo preview via existing `AttachmentPreview` component
 - [ ] **EXP-09** — Client-side search by description text (mirrors `WallecxToolbar` search pattern)

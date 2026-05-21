@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Daily Expense Tracker
 status: ready_to_plan
-stopped_at: Phase 23 complete (1/1 plans, UAT approved 2026-05-21)
-last_updated: "2026-05-21T00:00:00Z"
+stopped_at: Phase 24 complete (2/2 plans, 2026-05-21)
+last_updated: "2026-05-21T13:25:00Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 25
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-21 — Phase 23 complete. Both PocketBase collections created (wallecx_expenses + wallecx_expense_categories) with verbatim per-user rules, compound indexes, and protected receipt file field. Six source files created: TypeScript types, Zod schemas, currency helper, expenseMapper + Vitest spec (9 new tests, 33 total). Build, type-check, and tests all green. Phase 24 (Write Path — Tab Shell + CRUD) is next.
+**Last updated:** 2026-05-21 — Phase 24 complete. Expenses tab scaffolded into WallecxApp.vue (three-tab shell: Vaccinations / Membership Cards / Expenses). ExpensesTab.vue created with empty state, CRUD wiring, and deleteExpense ready for Phase 25. ManageExpense.vue full CRUD implemented: Zod validation, isSaving guard, lazy category seeding (7 defaults), custom category creation, canvas EXIF strip + browser-image-compression pipeline, Dialog/Drawer mobile split, dark mode CSS. expenseMapper WR-01/WR-02 advisory findings resolved. Build, type-check, and 33 tests green. Phase 25 (Read Path — List View) is next.
 
 ## Project Reference
 
@@ -28,12 +28,12 @@ progress:
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
-**Phase:** 24 — Write Path — Tab Shell + CRUD
-**Status:** Ready to plan (Phase 23 complete)
+**Phase:** 25 — Read Path — List View
+**Status:** Ready to plan (Phase 24 complete)
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
-               [   DONE   ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
+               [   DONE   ] [   DONE   ] [  NEXT UP ] [  QUEUED  ]
 ```
 
 ```
@@ -142,13 +142,13 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-21T00:00:00Z
+**Last session:** 2026-05-21T13:25:00Z
 
-**Stopped at:** Phase 23 (Backend & Type Foundation) complete — both PocketBase collections, 6 source files, 33 Vitest tests, UAT approved.
+**Stopped at:** Phase 24 (Write Path — Tab Shell + CRUD) complete — 2 plans, Expenses tab wired, ManageExpense.vue full CRUD, UAT approved.
 
-**Next session entry point:** Run `/gsd-discuss-phase 24` (recommended — gather context before planning ManageExpense.vue) or `/gsd-plan-phase 24` (skip discussion).
+**Next session entry point:** Run `/gsd-discuss-phase 25` (recommended — discuss read path list view) or `/gsd-plan-phase 25` (skip discussion).
 
-**Code review note:** 3 warnings from Phase 23 review (WR-01: mapper notes key, WR-02: weak test assertion, WR-03: date regex). Run `/gsd-code-review-fix 23` before or alongside Phase 24.
+**Code review note:** 2 warnings from Phase 24 review (WR-01: requestKey collision on create/update mutations, WR-02: isLoadingCategories not guarding initial categories fetch). Run `/gsd-code-review-fix 24` before or alongside Phase 25.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

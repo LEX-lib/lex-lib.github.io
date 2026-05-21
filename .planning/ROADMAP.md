@@ -112,7 +112,7 @@ Full details: [milestones/v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md)
 **Milestone goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts. Wallecx expands from static personal records (vaccinations, memberships) into time-series spending data.
 
 - [x] **Phase 23: Backend & Type Foundation** — `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections + Zod schema + expense mapper + TypeScript types (completed 2026-05-21)
-- [ ] **Phase 24: Write Path — Tab Shell + CRUD** — third tab "Expenses" in `WallecxApp.vue` after Memberships; `ManageExpense.vue` create/edit/delete dialog; user can add custom categories
+- [x] **Phase 24: Write Path — Tab Shell + CRUD** — third tab "Expenses" in `WallecxApp.vue` after Memberships; `ManageExpense.vue` create/edit/delete dialog; user can add custom categories (completed 2026-05-21)
 - [ ] **Phase 25: Read Path — List View** — sortable/filterable expense list (date / category / amount); date-range filter; client-side description search; receipt photo preview
 - [ ] **Phase 26: Reporting View** — period-tabbed view (Month / Quarter / Year / Custom); grand total; per-category breakdown chart (PrimeVue Chart / Chart.js)
 
@@ -221,7 +221,12 @@ Plans:
   4. Deleting an expense prompts ConfirmDialog; on confirm, server-first delete is invoked; the local list refreshes
   5. Selecting "Add new category…" in the category picker creates a new row in `wallecx_expense_categories` for that user only; the new category appears in subsequent expense entries
   6. Receipt photo upload runs through EXIF strip + browser-image-compression pipeline (same as vaccinations)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [x] 24-01-PLAN.md — Tab scaffold: expenseSchema WR-03 fix, ManageExpense.vue stub, ExpensesTab.vue scaffold, WallecxApp.vue third tab
+- [x] 24-02-PLAN.md — Full ManageExpense.vue CRUD: expenseMapper WR-01/WR-02 fixes, form fields, EXIF pipeline, category seeding
+
 **UI hint**: yes
 
 ### Phase 25: Read Path — List View
@@ -281,10 +286,10 @@ Plans:
 | 21. Mini-App Dark Mode Sweep | v3.0 | 4/4 | Complete (UAT approved) | 2026-05-19 |
 | 22. Wallecx Audit | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-19 |
 | 23. Backend & Type Foundation | v4.0 | 1/1 | Complete (UAT approved) | 2026-05-21 |
-| 24. Write Path — Tab Shell + CRUD | v4.0 | 0/? | Not started | - |
+| 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 25. Read Path — List View | v4.0 | 0/? | Not started | - |
 | 26. Reporting View | v4.0 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-21 — Phase 23 complete; Phase 24 (Write Path — Tab Shell + CRUD) is next*
+*Last updated: 2026-05-21 — Phase 24 complete; Phase 25 (Read Path — List View) is next*
