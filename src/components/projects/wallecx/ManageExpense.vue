@@ -235,13 +235,13 @@ async function onSubmit(): Promise<void> {
       const updated = await pb.collection('wallecx_expenses').update<Expenses>(
         record.value.id,
         formData,
-        { requestKey: 'expenses-getFullList' },
+        { requestKey: 'expenses-update' },
       )
       emit('updated', updated)
       toast.success('Expense updated.')
     } else {
       const created = await pb.collection('wallecx_expenses').create<Expenses>(formData, {
-        requestKey: 'expenses-getFullList',
+        requestKey: 'expenses-create',
       })
       emit('created', created)
       toast.success('Expense added.')
