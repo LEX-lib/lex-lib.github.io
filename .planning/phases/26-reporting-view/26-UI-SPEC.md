@@ -1,7 +1,7 @@
 ---
 phase: 26
 slug: reporting-view
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 locked_decisions: 12
