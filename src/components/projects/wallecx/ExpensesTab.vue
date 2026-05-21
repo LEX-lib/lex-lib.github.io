@@ -183,38 +183,130 @@ defineExpose({ deleteExpense })
       <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
     </div>
 
-    <!-- Phase 25 list drop-in point (empty in Phase 24 — no list rendering) -->
-    <div>
-      <!-- Empty state: shown when expenses array is empty and not loading -->
-      <div
-        v-if="expenses.length === 0 && !isLoading"
-        class="flex flex-col items-center py-12 gap-3"
-      >
-        <iconify-icon
-          icon="mdi:cash-multiple"
-          width="48"
-          height="48"
-          style="color: var(--color-brand-primary)"
-          aria-hidden="true"
-        />
-        <p class="text-sm" style="color: var(--color-typo-muted)">
-          No expenses yet — add your first one.
-        </p>
-        <Button
-          label="Add your first expense"
-          icon="pi pi-plus"
-          size="small"
-          @click="openManage(null)"
-        />
-      </div>
+    <!-- Toolbar: search + sort + category MultiSelect + date range — hidden during loading skeleton only -->
+    <ExpensesToolbar
+      v-if="!isLoading"
+      v-model:search-query="searchQuery"
+      v-model:sort-mode="sortMode"
+      v-model:selected-categories="selectedCategories"
+      v-model:date-from="dateFrom"
+      v-model:date-to="dateTo"
+      :sort-options="expenseSortOptions"
+      :category-options="categoryOptions"
+    />
+
+    <!-- STATE 1: Loading — 3 skeleton rows at list-row height (3rem, not card height) -->
+    <div v-if="isLoading" class="flex flex-col gap-1">
+      <Skeleton v-for="i in 3" :key="i" height="3rem" class="w-full rounded" />
     </div>
 
-    <!-- ManageExpense dialog/drawer -->
+    <!-- STATE 2: No records at all (check raw expenses array, not filtered) -->
+    <div
+      v-else-if="expenses.length === 0"
+      class="flex flex-col items-center py-12 gap-3"
+    >
+      <iconify-icon
+        icon="mdi:cash-multiple"
+        width="48"
+        height="48"
+        style="color: var(--color-brand-primary)"
+        aria-hidden="true"
+      />
+      <p class="text-sm font-bold" style="color: var(--color-typo-heading)">
+        No expenses yet.
+      </p>
+      <p class="text-sm" style="color: var(--color-typo-muted)">
+        Add your first expense to start tracking.
+      </p>
+      <Button
+        label="Add expense"
+        icon="pi pi-plus"
+        size="small"
+        @click="openManage(null)"
+      />
+    </div>
+
+    <!-- STATE 3: Records exist but filters/search produce no results -->
+    <div
+      v-else-if="filteredSortedExpenses.length === 0"
+      class="flex flex-col items-center py-12 gap-3"
+    >
+      <iconify-icon
+        icon="mdi:filter-remove-outline"
+        width="48"
+        height="48"
+        style="color: var(--color-brand-primary)"
+        aria-hidden="true"
+      />
+      <p class="text-sm font-bold" style="color: var(--color-typo-heading)">
+        No expenses match your filters.
+      </p>
+      <Button
+        label="Clear filters"
+        severity="secondary"
+        size="small"
+        @click="clearFilters"
+      />
+    </div>
+
+    <!-- STATE 4: Data list — v-for over filteredSortedExpenses -->
+    <div v-else>
+      <ExpenseItem
+        v-for="record in filteredSortedExpenses"
+        :key="record.id"
+        :record="record"
+        @edit="openManage(record)"
+        @delete="deleteExpense(record)"
+        @preview="openReceiptPreview(record)"
+      />
+    </div>
+
+    <!-- ManageExpense dialog/drawer (preserved from Phase 24 stub) -->
     <ManageExpense
       v-model:visible="showManage"
       v-model:record="manageRecord"
       @created="onCreated"
       @updated="onUpdated"
     />
+
+    <!-- Receipt preview: Dialog on desktop, bottom Drawer on mobile -->
+    <Dialog
+      v-if="!isMobile"
+      v-model:visible="showPreview"
+      modal
+      header="Receipt"
+      :style="{ width: '40rem' }"
+      :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
+      @hide="previewRecord = null; previewToken = ''"
+    >
+      <AttachmentPreview
+        v-if="previewRecord"
+        :record="previewRecord"
+        attachment-field="receipt"
+        attachment-name="Receipt"
+        :token="previewToken"
+      />
+    </Dialog>
+
+    <Drawer
+      v-else
+      v-model:visible="showPreview"
+      position="bottom"
+      @hide="previewRecord = null; previewToken = ''"
+    >
+      <template #header>
+        <div class="flex flex-col items-center w-full gap-1">
+          <div class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></div>
+          <span class="font-semibold">Receipt</span>
+        </div>
+      </template>
+      <AttachmentPreview
+        v-if="previewRecord"
+        :record="previewRecord"
+        attachment-field="receipt"
+        attachment-name="Receipt"
+        :token="previewToken"
+      />
+    </Drawer>
   </div>
 </template>
