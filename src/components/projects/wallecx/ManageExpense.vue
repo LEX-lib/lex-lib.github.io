@@ -76,13 +76,14 @@ async function loadCategories(): Promise<void> {
   const userId = pb.authStore.record?.id
   if (!userId) return
 
+  isLoadingCategories.value = true
   try {
     const cats = await pb.collection('wallecx_expense_categories').getFullList<ExpenseCategories>({
       requestKey: 'expense-categories-getFullList',
     })
 
     if (cats.length === 0) {
-      isLoadingCategories.value = true
+      // seeding path — flag already true, no double-set needed
       try {
         await Promise.all(
           DEFAULT_EXPENSE_CATEGORIES.map((name) =>
@@ -93,14 +94,16 @@ async function loadCategories(): Promise<void> {
           requestKey: 'expense-categories-getFullList',
         })
         loadedCategories.value = seeded
-      } finally {
-        isLoadingCategories.value = false
+      } catch {
+        toast.error('Failed to seed categories. Please try again.')
       }
     } else {
       loadedCategories.value = cats
     }
   } catch {
     toast.error('Failed to load categories. Please try again.')
+  } finally {
+    isLoadingCategories.value = false
   }
 }
 
