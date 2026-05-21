@@ -19,10 +19,10 @@
 
 ### Read Path — List View
 
-- [ ] **EXP-07**: `ExpensesTab.vue` list view shows all of the authenticated user's expenses, sortable by date (newest/oldest), category (A–Z), and amount (high/low). Sort mode persists in sessionStorage under `wallecx:expense-sort` (mirrors view-toggle session pattern from Phase 8).
-- [ ] **EXP-08**: Filter by category (multi-select chip pill or dropdown) and by date range (start + end). Filters are client-side computed; no new PocketBase queries.
-- [ ] **EXP-09**: Client-side search by description text (mirrors `WallecxToolbar` search pattern — debounced input filtering the already-loaded expenses list).
-- [ ] **EXP-10**: Receipt photo preview when available via the existing `AttachmentPreview` component (image/PDF/download branching with short-lived view-time tokens — BR-1 from STATE.md).
+- [x] **EXP-07**: `ExpensesTab.vue` list view shows all of the authenticated user's expenses, sortable by date (newest/oldest), category (A–Z), and amount (high/low). Sort mode persists in sessionStorage under `wallecx:expense-sort` (mirrors view-toggle session pattern from Phase 8). — Validated in Phase 25
+- [x] **EXP-08**: Filter by category (multi-select chip pill or dropdown) and by date range (start + end). Filters are client-side computed; no new PocketBase queries. — Validated in Phase 25
+- [x] **EXP-09**: Client-side search by description text (reactive instant filtering — no debounce, matches MembershipsTab/VaccinationsTab since `@vueuse/core` is not installed). — Validated in Phase 25
+- [x] **EXP-10**: Receipt photo preview when available via the existing `AttachmentPreview` component (image/PDF/download branching with short-lived view-time tokens — BR-1 from STATE.md). — Validated in Phase 25
 
 ### Reporting View
 
@@ -79,10 +79,10 @@
 | EXP-04 | Phase 24 | Pending |
 | EXP-05 | Phase 24 | Pending |
 | EXP-06 | Phase 24 | Pending |
-| EXP-07 | Phase 25 | Pending |
-| EXP-08 | Phase 25 | Pending |
-| EXP-09 | Phase 25 | Pending |
-| EXP-10 | Phase 25 | Pending |
+| EXP-07 | Phase 25 | Complete (2026-05-21) |
+| EXP-08 | Phase 25 | Complete (2026-05-21) |
+| EXP-09 | Phase 25 | Complete (2026-05-21) |
+| EXP-10 | Phase 25 | Complete (2026-05-21) |
 | EXP-11 | Phase 26 | Pending |
 | EXP-12 | Phase 26 | Pending |
 | EXP-13 | Phase 26 | Pending |

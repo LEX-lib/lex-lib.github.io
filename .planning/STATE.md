@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: UX Polish
 status: executing
-stopped_at: context exhaustion at 90% (2026-05-21)
-last_updated: "2026-05-21T10:00:25.905Z"
+stopped_at: phase 25 complete; phase 26 queued (2026-05-21)
+last_updated: "2026-05-21T10:15:00.000Z"
 progress:
   total_phases: 27
-  completed_phases: 25
+  completed_phases: 26
   total_plans: 64
-  completed_plans: 63
-  percent: 98
+  completed_plans: 64
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-21 — Phase 25 Plan 01 complete: ExpenseItem.vue + ExpensesToolbar.vue created, type-check clean, committed. Key decision: DatePicker @update:model-value uses instanceof Date cast for TypeScript overload safety. Next: Plan 25-02 (ExpensesTab.vue full wiring).
+**Last updated:** 2026-05-21 — Phase 25 complete: ExpensesTab.vue fully populated with onMounted load, sessionStorage sort persistence, four-transform filter pipeline (search/category/date/sort), two distinct empty states, and receipt preview (Dialog desktop / bottom Drawer mobile). EXP-07/08/09/10 delivered. Type-check + build-only both clean. Next: Phase 26 (Reporting View — EXP-11, EXP-12, EXP-13).
 
 ## Project Reference
 
@@ -28,12 +28,12 @@ progress:
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
-**Phase:** 25 — Read Path — List View
-**Status:** In progress — Plan 01 complete, Plan 02 queued
+**Phase:** 26 — Reporting View
+**Status:** Phase 25 complete (both plans shipped); Phase 26 queued
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
-               [   DONE   ] [   DONE   ] [  NEXT UP ] [  QUEUED  ]
+               [   DONE   ] [   DONE   ] [   DONE   ] [  NEXT UP ]
 ```
 
 ```
@@ -119,6 +119,10 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 ### Phase 25 Decisions
 
 - **DatePicker @update:model-value cast pattern.** PrimeVue DatePicker emits `Date | Date[] | (Date|null)[] | null | undefined`; components that bind to `Date | null` must use `($event instanceof Date ? $event : null)` cast. Established in 25-01 ExpensesToolbar.vue.
+- **categoryOptions must derive from RAW expenses.value array, not from filteredSortedExpenses.** Using the filtered output causes a feedback loop where selected categories disappear from the MultiSelect once they no longer appear in filtered results. Locked in 25-02 ExpensesTab.vue (RESEARCH.md Pitfall 3).
+- **v-if chain order locked: isLoading → raw expenses empty → filtered empty → data list.** If raw expenses array is empty, filteredSortedExpenses is also empty — so the raw-empty check must come first to avoid showing the wrong empty state (RESEARCH.md Pitfall 4).
+- **sessionStorage sort restoration runs BEFORE getFullList in onMounted.** Restoring after the load would cause a flash of the default sort mode before the persisted sort applies.
+- **`requestKey: 'expenses-getFullList'` confirmed distinct.** Verified non-colliding with `'memberships-getFullList'` and `'vaccinations-getFullList'`. STATE.md locked invariant upheld.
 
 ### Open Todos
 
@@ -147,13 +151,13 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-21T10:00:25.891Z
+**Last session:** 2026-05-21T10:15:00.000Z
 
-**Stopped at:** context exhaustion at 90% (2026-05-21)
+**Stopped at:** Phase 25 complete; Phase 26 queued (2026-05-21)
 
-**Next session entry point:** Execute 25-02-PLAN.md — populate ExpensesTab.vue with onMounted load, filteredSortedExpenses computed, full template, receipt preview.
+**Next session entry point:** Plan Phase 26 — Reporting View (period-tabbed totals + per-category breakdown chart via PrimeVue Chart / Chart.js). Requirements: EXP-11, EXP-12, EXP-13.
 
-**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273.
+**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep — unrelated to Phase 25 scope.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

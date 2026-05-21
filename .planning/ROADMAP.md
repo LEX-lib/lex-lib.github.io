@@ -113,7 +113,7 @@ Full details: [milestones/v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md)
 
 - [x] **Phase 23: Backend & Type Foundation** — `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections + Zod schema + expense mapper + TypeScript types (completed 2026-05-21)
 - [x] **Phase 24: Write Path — Tab Shell + CRUD** — third tab "Expenses" in `WallecxApp.vue` after Memberships; `ManageExpense.vue` create/edit/delete dialog; user can add custom categories (completed 2026-05-21)
-- [ ] **Phase 25: Read Path — List View** — sortable/filterable expense list (date / category / amount); date-range filter; client-side description search; receipt photo preview
+- [x] **Phase 25: Read Path — List View** — sortable/filterable expense list (date / category / amount); date-range filter; client-side description search; receipt photo preview (completed 2026-05-21)
 - [ ] **Phase 26: Reporting View** — period-tabbed view (Month / Quarter / Year / Custom); grand total; per-category breakdown chart (PrimeVue Chart / Chart.js)
 
 ---
@@ -292,9 +292,9 @@ Plans:
 | 22. Wallecx Audit | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-19 |
 | 23. Backend & Type Foundation | v4.0 | 1/1 | Complete (UAT approved) | 2026-05-21 |
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
-| 25. Read Path — List View | v4.0 | 0/2 | Ready to execute | - |
+| 25. Read Path — List View | v4.0 | 2/2 | Complete (executed; UAT pending) | 2026-05-21 |
 | 26. Reporting View | v4.0 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-21 — Phase 25 planned; 2 plans in 2 waves*
+*Last updated: 2026-05-21 — Phase 25 complete (Plan 02 shipped ExpensesTab.vue full read path; EXP-07/08/09/10 delivered)*
