@@ -61,9 +61,9 @@ Source: `src/assets/base.css` @theme tokens + `src/assets/main.css` font declara
 | Body (description text) | 14px (`text-sm`) | 400 (regular) | 1.5 | `text-sm`, `color: var(--color-typo-body)` |
 | Label (date + category meta) | 12px (`text-xs`) | 400 (regular) | 1.4 | `text-xs`, `color: var(--color-typo-muted)` |
 | Amount (primary data) | 16px (`text-base`) | 700 (bold) | 1.25 | `text-base font-bold`, `color: var(--color-brand-primary)` |
-| Heading (section title, empty state) | 18px (`text-lg`) | 600 (semibold) | 1.3 | `text-lg font-semibold`, `color: var(--color-typo-heading)` |
+| Heading (section title, empty state) | 18px (`text-lg`) | 700 (bold) | 1.3 | `text-lg font-bold`, `color: var(--color-typo-heading)` |
 
-Weights declared: **400 (regular)** and **700 (bold)**. Heading uses `font-semibold` which maps to 600 via Tailwind's default scale — Rubik has a 500 weight but PrimeVue components in this project consistently use `font-semibold` for headings. This is the established project pattern (two effective weights: 400 regular and 600/700 bold).
+Weights declared: **400 (regular)** and **700 (bold)**. Body and Label roles use 400; Amount and Heading roles use 700. Exactly 2 weights throughout this phase.
 
 ---
 
@@ -101,13 +101,13 @@ Source: `src/assets/base.css` @theme block + `.my-app-dark` overrides.
 
 **Layout (left-to-right flex, `items-center gap-3 py-3 border-b`):**
 
-| Column | Width | Content | Style |
-|--------|-------|---------|-------|
-| Amount | `w-24 shrink-0` (96px) | `formatCurrency(record.amount)` | `text-base font-bold`, `color: var(--color-brand-primary)` |
-| Meta + description | `flex-1 min-w-0` | Line 1: `D MMM YYYY · category` (12px muted) / Line 2: `description` (14px body, truncated) | `text-xs` muted + `text-sm truncate` body |
-| Paperclip icon button | `min-w-[44px] min-h-[44px]` (conditional on `record.receipt`) | `mdi:paperclip` at 20px | `color: var(--color-typo-muted)`; emits `preview` |
-| Pencil icon button | `min-w-[44px] min-h-[44px]` | `mdi:pencil-outline` at 20px | `color: var(--color-typo-muted)`; emits `edit` |
-| Trash icon button | `min-w-[44px] min-h-[44px]` | `mdi:trash-can-outline` at 20px | `color: var(--color-status-error)`; emits `delete` |
+| Column | Width | Content | Style | aria-label |
+|--------|-------|---------|-------|------------|
+| Amount | `w-24 shrink-0` (96px) | `formatCurrency(record.amount)` | `text-base font-bold`, `color: var(--color-brand-primary)` | — |
+| Meta + description | `flex-1 min-w-0` | Line 1: `D MMM YYYY · category` (12px muted) / Line 2: `description` (14px body, truncated) | `text-xs` muted + `text-sm truncate` body | — |
+| Paperclip icon button | `min-w-[44px] min-h-[44px]` (conditional on `record.receipt`) | `mdi:paperclip` at 20px | `color: var(--color-typo-muted)`; emits `preview` | `"View receipt"` |
+| Pencil icon button | `min-w-[44px] min-h-[44px]` | `mdi:pencil-outline` at 20px | `color: var(--color-typo-muted)`; emits `edit` | `"Edit expense"` |
+| Trash icon button | `min-w-[44px] min-h-[44px]` | `mdi:trash-can-outline` at 20px | `color: var(--color-status-error)`; emits `delete` | `"Delete expense"` |
 
 **Props:** `record: Expenses`
 **Emits:** `edit(record: Expenses)`, `delete(record: Expenses)`, `preview(record: Expenses)`
@@ -160,7 +160,7 @@ Condition: `expenses.length === 0 && !isLoading`
 | Element | Spec |
 |---------|------|
 | Icon | `mdi:cash-multiple` at 48×48px, `color: var(--color-brand-primary)` |
-| Heading | `"No expenses yet."` — `text-sm font-semibold`, `color: var(--color-typo-heading)` |
+| Heading | `"No expenses yet."` — `text-sm font-bold`, `color: var(--color-typo-heading)` |
 | Body | `"Add your first expense to start tracking."` — `text-sm`, `color: var(--color-typo-muted)` |
 | CTA button | `"Add expense"` — PrimeVue `Button` size="small", primary severity |
 | Layout | `flex flex-col items-center py-12 gap-3` |
@@ -173,7 +173,7 @@ Condition: `expenses.length > 0 && filteredSortedExpenses.length === 0`
 | Element | Spec |
 |---------|------|
 | Icon | `mdi:filter-remove-outline` at 48×48px, `color: var(--color-brand-primary)` |
-| Heading | `"No expenses match your filters."` — `text-sm font-semibold`, `color: var(--color-typo-heading)` |
+| Heading | `"No expenses match your filters."` — `text-sm font-bold`, `color: var(--color-typo-heading)` |
 | CTA button | `"Clear filters"` — PrimeVue `Button` severity="secondary" size="small" |
 | Layout | `flex flex-col items-center py-12 gap-3` |
 
@@ -182,7 +182,7 @@ Source: CONTEXT.md D-12.
 ### Error state — load failure
 Triggered when `getFullList` throws in `onMounted`.
 
-- `vue-sonner` toast: `toast.error('Failed to load expenses.')` (mirrors MembershipsTab pattern)
+- `vue-sonner` toast: `toast.error('Failed to load expenses. Pull to refresh or reload the page.')` (mirrors MembershipsTab pattern)
 - No inline error UI — toast is sufficient; list remains empty (not loading).
 
 ### Receipt preview flow
@@ -230,13 +230,13 @@ Source: CONTEXT.md D-12; existing stub in `ExpensesTab.vue`; pattern from Member
 | Empty state CTA (no records) | `"Add expense"` |
 | Filter-empty heading | `"No expenses match your filters."` |
 | Filter-empty CTA | `"Clear filters"` |
-| Load error toast | `"Failed to load expenses."` |
+| Load error toast | `"Failed to load expenses. Pull to refresh or reload the page."` |
 | Receipt token error toast | `"Failed to load receipt. Refresh to try again."` |
 | Delete success toast | `"Expense deleted."` |
 | Delete failure toast | `"Failed to delete. Please try again."` |
 | Delete confirmation header | `"Confirm Delete"` |
 | Delete confirmation message | `"Delete this expense? This cannot be undone."` |
-| Delete confirm button | `"Delete"` (severity="danger") |
+| Delete confirm button | `"Delete Expense"` (severity="danger") |
 | Delete cancel button | `"Keep Expense"` (severity="secondary", outlined) |
 | Sort option — newest first | `"Newest First"` |
 | Sort option — oldest first | `"Oldest First"` |
