@@ -6,6 +6,7 @@ import { useRegisterSW } from "virtual:pwa-register/vue";
 import { pb } from "@/lib/pocketbase";
 import VaccinationsTab from "./VaccinationsTab.vue";
 import MembershipsTab from "./MembershipsTab.vue";
+import ExpensesTab from "./ExpensesTab.vue";
 import PwaInstallBanner from './PwaInstallBanner.vue';
 import '@/assets/wallecx-overrides.css';
 
@@ -84,6 +85,10 @@ onMounted(async () => {
             <iconify-icon icon="mdi:card-account-details-outline" width="16" height="16" aria-hidden="true"></iconify-icon>
             Membership Cards
           </Tab>
+          <Tab value="expenses">
+            <iconify-icon icon="mdi:cash-multiple" width="16" height="16" aria-hidden="true"></iconify-icon>
+            Expenses
+          </Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="vaccinations">
@@ -91,6 +96,9 @@ onMounted(async () => {
           </TabPanel>
           <TabPanel value="memberships">
             <MembershipsTab />
+          </TabPanel>
+          <TabPanel value="expenses">
+            <ExpensesTab />
           </TabPanel>
         </TabPanels>
       </Tabs>
