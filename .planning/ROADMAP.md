@@ -243,7 +243,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 25-01-PLAN.md -- Create ExpenseItem.vue (compact list row) and ExpensesToolbar.vue (search + sort + category + date range)
+- [x] 25-01-PLAN.md -- Create ExpenseItem.vue (compact list row) and ExpensesToolbar.vue (search + sort + category + date range)
 - [ ] 25-02-PLAN.md -- Populate ExpensesTab.vue: onMounted load, filteredSortedExpenses, full template
 
 **UI hint**: yes
@@ -292,7 +292,7 @@ Plans:
 | 22. Wallecx Audit | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-19 |
 | 23. Backend & Type Foundation | v4.0 | 1/1 | Complete (UAT approved) | 2026-05-21 |
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
-| 25. Read Path — List View | v4.0 | 0/2 | Not started | - |
+| 25. Read Path — List View | v4.0 | 0/2 | Ready to execute | - |
 | 26. Reporting View | v4.0 | 0/? | Not started | - |
 
 ---

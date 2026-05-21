@@ -8,14 +8,14 @@ last_updated: "2026-05-21T09:13:27.837Z"
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 15
+  total_plans: 17
   completed_plans: 15
-  percent: 100
+  percent: 88
 ---
 
 # Project State
 
-**Last updated:** 2026-05-21 — Phase 24 complete (WR-01/WR-02 code review fixes applied, UAT 3/5 passed, 1 gap deferred to Phase 25). Phase 25 context discussion complete: 18 decisions locked. ExpensesTab.vue gets onMounted getFullList, filteredSortedExpenses computed, new ExpensesToolbar.vue (search+sort+MultiSelect category+DatePicker date range), new ExpenseItem.vue compact list row, receipt paperclip icon → AttachmentPreview flow. Ready to plan Phase 25.
+**Last updated:** 2026-05-21 — Phase 25 Plan 01 complete: ExpenseItem.vue + ExpensesToolbar.vue created, type-check clean, committed. Key decision: DatePicker @update:model-value uses instanceof Date cast for TypeScript overload safety. Next: Plan 25-02 (ExpensesTab.vue full wiring).
 
 ## Project Reference
 
@@ -29,7 +29,7 @@ progress:
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
 **Phase:** 25 — Read Path — List View
-**Status:** Ready to plan (Phase 24 complete)
+**Status:** In progress — Plan 01 complete, Plan 02 queued
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
@@ -116,6 +116,10 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 - **WR-01/WR-02 code review findings (advisory):** `mapToUpdateExpense` includes `notes: undefined` key unconditionally; test uses `toBeUndefined()` instead of `not.toHaveProperty('notes')`. Run `/gsd-code-review-fix 23` before Phase 24 write path uses the mapper.
 - **WR-03 advisory:** `expense_date` regex accepts invalid calendar dates. Add `.refine()` using dayjs before Phase 24.
 
+### Phase 25 Decisions
+
+- **DatePicker @update:model-value cast pattern.** PrimeVue DatePicker emits `Date | Date[] | (Date|null)[] | null | undefined`; components that bind to `Date | null` must use `($event instanceof Date ? $event : null)` cast. Established in 25-01 ExpensesToolbar.vue.
+
 ### Open Todos
 
 None.
@@ -147,9 +151,9 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Stopped at:** context exhaustion at 98% (2026-05-21)
 
-**Next session entry point:** Run `/gsd-plan-phase 25` — context + UI-SPEC ready.
+**Next session entry point:** Execute 25-02-PLAN.md — populate ExpensesTab.vue with onMounted load, filteredSortedExpenses computed, full template, receipt preview.
 
-**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e).
+**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
