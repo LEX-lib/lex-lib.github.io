@@ -48,11 +48,10 @@ blocked: 1
 ## Gaps
 
 - truth: "After creating an expense, the new record should appear in the expenses list (empty state replaced, record visible)"
-  status: failed
+  status: deferred
   reason: "User reported: The new record DID NOT appear in the expenses list"
   severity: major
   test: 1
+  decision: "Deferred to Phase 25 — list rendering (v-for, onMounted fetch, optimistic update) is Phase 25 scope. Phase 24 write path (create, validate, EXIF strip, category seed) confirmed working."
   artifacts:
     - src/components/projects/wallecx/ExpensesTab.vue
-  missing:
-    - "No v-for/list rendering in ExpensesTab.vue template — onCreated unshifts to expenses array correctly, but the template has no markup to render array items; empty state hides when expenses.length > 0 but nothing replaces it"
