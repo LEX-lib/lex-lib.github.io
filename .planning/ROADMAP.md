@@ -111,7 +111,7 @@ Full details: [milestones/v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md)
 
 **Milestone goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts. Wallecx expands from static personal records (vaccinations, memberships) into time-series spending data.
 
-- [ ] **Phase 23: Backend & Type Foundation** — `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections + Zod schema + expense mapper + TypeScript types
+- [x] **Phase 23: Backend & Type Foundation** — `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections + Zod schema + expense mapper + TypeScript types (completed 2026-05-21)
 - [ ] **Phase 24: Write Path — Tab Shell + CRUD** — third tab "Expenses" in `WallecxApp.vue` after Memberships; `ManageExpense.vue` create/edit/delete dialog; user can add custom categories
 - [ ] **Phase 25: Read Path — List View** — sortable/filterable expense list (date / category / amount); date-range filter; client-side description search; receipt photo preview
 - [ ] **Phase 26: Reporting View** — period-tabbed view (Month / Quarter / Year / Custom); grand total; per-category breakdown chart (PrimeVue Chart / Chart.js)
@@ -206,7 +206,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 23-01-PLAN.md — Backend collections + types + Zod schema + currency module + expenseMapper & spec
+- [x] 23-01-PLAN.md — Backend collections + types + Zod schema + currency module + expenseMapper & spec
 
 **UI hint**: no
 
@@ -280,11 +280,11 @@ Plans:
 | 20. Site Shell & Non-App Pages | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-18 |
 | 21. Mini-App Dark Mode Sweep | v3.0 | 4/4 | Complete (UAT approved) | 2026-05-19 |
 | 22. Wallecx Audit | v3.0 | 1/1 | Complete (UAT approved) | 2026-05-19 |
-| 23. Backend & Type Foundation | v4.0 | 0/? | Not started | - |
+| 23. Backend & Type Foundation | v4.0 | 1/1 | Complete (UAT approved) | 2026-05-21 |
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 0/? | Not started | - |
 | 25. Read Path — List View | v4.0 | 0/? | Not started | - |
 | 26. Reporting View | v4.0 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-19 — v4.0 Daily Expense Tracker started: Phases 23–26, 13/13 requirements mapped*
+*Last updated: 2026-05-21 — Phase 23 complete; Phase 24 (Write Path — Tab Shell + CRUD) is next*

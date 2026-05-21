@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Daily Expense Tracker
-status: ready_to_execute
-stopped_at: Phase 23 planned (1 plan, 4 tasks — 1 PocketBase admin checkpoint + 3 auto)
-last_updated: "2026-05-19T00:00:00Z"
+status: ready_to_plan
+stopped_at: Phase 23 complete (1/1 plans, UAT approved 2026-05-21)
+last_updated: "2026-05-21T00:00:00Z"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
 
-**Last updated:** 2026-05-19 — Phase 23 planned (1 plan, 4 tasks): PocketBase admin checkpoint creates `wallecx_expenses` + `wallecx_expense_categories` collections with 5 per-user rules each; then 3 autonomous tasks create types, Zod schema, currency constant, mapper, and Vitest spec. Plan-checker PASS first iteration.
+**Last updated:** 2026-05-21 — Phase 23 complete. Both PocketBase collections created (wallecx_expenses + wallecx_expense_categories) with verbatim per-user rules, compound indexes, and protected receipt file field. Six source files created: TypeScript types, Zod schemas, currency helper, expenseMapper + Vitest spec (9 new tests, 33 total). Build, type-check, and tests all green. Phase 24 (Write Path — Tab Shell + CRUD) is next.
 
 ## Project Reference
 
@@ -28,13 +28,12 @@ progress:
 
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
-**Phase:** 23 — Backend & Type Foundation
-**Plan:** 23-01 (4 tasks, 1 wave, 0/4 executed)
-**Status:** Ready to execute (requires PocketBase admin access for Task 1)
+**Phase:** 24 — Write Path — Tab Shell + CRUD
+**Status:** Ready to plan (Phase 23 complete)
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
-               [  NEXT UP  ] [  QUEUED  ] [  QUEUED  ] [  QUEUED  ]
+               [   DONE   ] [  NEXT UP ] [  QUEUED  ] [  QUEUED  ]
 ```
 
 ```
@@ -105,6 +104,17 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 - **Dark mode fix strategy: scoped CSS variable overrides.** Target `.my-app-dark .p-card`, `.my-app-dark .p-dialog`, `.my-app-dark .p-drawer` etc. with CSS custom property overrides inside each Wallecx component's `<style scoped>`. No new packages required.
 - **No new npm packages unless strictly necessary.** `useWindowSize` and Tailwind `sm:` breakpoints cover all detection needs.
 
+### v4.0 Expense Tracker Foundation (Phase 23)
+
+- **PocketBase listRule returns 200+empty (not 403) for unauthenticated requests.** `@request.auth.id != ""` is a filter expression; when false, all rows are filtered out. A 403 requires `null` rule (admin-only). Data isolation is intact.
+- **@request.data.user on createRule confirmed working.** Both collections use `@request.auth.id != "" && @request.data.user = @request.auth.id`. `@request.body.*` does NOT exist and returns 404.
+- **Locked requestKey names for Phase 24+:** `'expenses-getFullList'` and `'expense-categories-getFullList'` (must not collide with vaccinations/memberships keys).
+- **DEFAULT_EXPENSE_CATEGORIES defined in Phase 23, seeded lazily in Phase 24.** Phase 24's ManageExpense.vue seeds per-user on first dialog open — no PocketBase signup hook.
+- **receipt File field: protected=true.** File URLs require short-lived token; direct URL access without token returns 403.
+- **src/lib/wallecx/ module pattern established.** Non-PocketBase Wallecx utilities (schemas, constants, formatters) live here. Separate from src/lib/pocketbase/.
+- **WR-01/WR-02 code review findings (advisory):** `mapToUpdateExpense` includes `notes: undefined` key unconditionally; test uses `toBeUndefined()` instead of `not.toHaveProperty('notes')`. Run `/gsd-code-review-fix 23` before Phase 24 write path uses the mapper.
+- **WR-03 advisory:** `expense_date` regex accepts invalid calendar dates. Add `.refine()` using dayjs before Phase 24.
+
 ### Open Todos
 
 None.
@@ -132,11 +142,13 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-18T00:00:00Z
+**Last session:** 2026-05-21T00:00:00Z
 
-**Stopped at:** v3.0 Site-Wide Dark Mode milestone started — 4 phases (19–22), 13 requirements mapped; Phase 19 (Theme Infrastructure) ready to plan.
+**Stopped at:** Phase 23 (Backend & Type Foundation) complete — both PocketBase collections, 6 source files, 33 Vitest tests, UAT approved.
 
-**Next session entry point:** Run `/gsd-discuss-phase 19` (recommended — gather context first) or `/gsd-plan-phase 19` (skip discussion).
+**Next session entry point:** Run `/gsd-discuss-phase 24` (recommended — gather context before planning ManageExpense.vue) or `/gsd-plan-phase 24` (skip discussion).
+
+**Code review note:** 3 warnings from Phase 23 review (WR-01: mapper notes key, WR-02: weak test assertion, WR-03: date regex). Run `/gsd-code-review-fix 23` before or alongside Phase 24.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

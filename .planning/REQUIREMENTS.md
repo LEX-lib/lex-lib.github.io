@@ -7,9 +7,9 @@
 
 ### Backend & Type Foundation
 
-- [ ] **EXP-01**: `wallecx_expenses` PocketBase collection with fields: `id` (auto), `user` (relation to users), `amount` (number, decimal, > 0), `expense_date` (date, required), `category` (text, references a name from `wallecx_expense_categories`), `description` (text, short, required), `notes` (text, longer, optional), `receipt` (file, single image, optional). 5 per-user access rules (list, view, create, update, delete) enforcing `@request.auth.id = user.id` server-side.
-- [ ] **EXP-02**: `wallecx_expense_categories` PocketBase collection with fields: `id`, `user` (relation; null/empty for default seeded categories OR seeded as one row per default category per user — TBD in discuss-phase), `name` (text, required, unique within user). Seeded defaults: Food, Transport, Bills, Health, Shopping, Entertainment, Other. Per-user rules allow each user to add their own categories without affecting other users.
-- [ ] **EXP-03**: TypeScript types in `src/types/wallecx/expenses/types.d.ts` (extending PocketBase `RecordModel`); Zod schema for write-path validation; `expenseMapper.ts` matching the existing `vaccinationMapper`/`membershipMapper` pattern (strip read-only fields on write, id-refresh contract).
+- [x] **EXP-01**: `wallecx_expenses` PocketBase collection with fields: `id` (auto), `user` (relation to users), `amount` (number, decimal, > 0), `expense_date` (date, required), `category` (text, references a name from `wallecx_expense_categories`), `description` (text, short, required), `notes` (text, longer, optional), `receipt` (file, single image, optional). 5 per-user access rules (list, view, create, update, delete) enforcing `@request.auth.id = user.id` server-side. — Validated Phase 23
+- [x] **EXP-02**: `wallecx_expense_categories` PocketBase collection with fields: `id`, `user` (relation), `name` (text, required, unique within user via compound index). DEFAULT_EXPENSE_CATEGORIES constant defined (Food, Transport, Bills, Health, Shopping, Entertainment, Other); lazy per-user seeding is Phase 24. 5 per-user rules. — Validated Phase 23
+- [x] **EXP-03**: TypeScript types in `src/types/wallecx/expenses/types.d.ts` (extending PocketBase `RecordModel`); Zod schema for write-path validation; `expenseMapper.ts` matching the existing `vaccinationMapper`/`membershipMapper` pattern (strip read-only fields on write, id-refresh contract). 9 Vitest tests pass. — Validated Phase 23
 
 ### Write Path — Tab Shell + CRUD
 
@@ -73,9 +73,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EXP-01 | Phase 23 | Pending |
-| EXP-02 | Phase 23 | Pending |
-| EXP-03 | Phase 23 | Pending |
+| EXP-01 | Phase 23 | Complete (2026-05-21) |
+| EXP-02 | Phase 23 | Complete (2026-05-21) |
+| EXP-03 | Phase 23 | Complete (2026-05-21) |
 | EXP-04 | Phase 24 | Pending |
 | EXP-05 | Phase 24 | Pending |
 | EXP-06 | Phase 24 | Pending |
