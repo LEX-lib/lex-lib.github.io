@@ -244,7 +244,7 @@ Plans:
 
 Plans:
 - [x] 25-01-PLAN.md -- Create ExpenseItem.vue (compact list row) and ExpensesToolbar.vue (search + sort + category + date range)
-- [ ] 25-02-PLAN.md -- Populate ExpensesTab.vue: onMounted load, filteredSortedExpenses, full template
+- [x] 25-02-PLAN.md -- Populate ExpensesTab.vue: onMounted load, filteredSortedExpenses, full template
 
 **UI hint**: yes
 
