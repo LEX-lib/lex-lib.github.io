@@ -197,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-19 — v4.0 Daily Expense Tracker started.*
+*Last updated: 2026-05-21 — Phase 23 complete. wallecx_expenses + wallecx_expense_categories collections live; TypeScript types, Zod schemas, currency helper, expenseMapper established. Phase 24 (Write Path) is next.*
