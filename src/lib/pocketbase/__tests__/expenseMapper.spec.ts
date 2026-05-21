@@ -59,7 +59,7 @@ describe("mapToUpdateExpense preserves writable fields", () => {
   it("drops notes when undefined", () => {
     const minimal = makeExpense({ notes: undefined });
     const minimalPayload = mapToUpdateExpense(minimal);
-    expect(minimalPayload.notes).toBeUndefined();
+    expect(minimalPayload).not.toHaveProperty("notes");
   });
 
   it("handles fractional amount values without loss of precision (2 decimal places)", () => {
