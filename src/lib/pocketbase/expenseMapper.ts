@@ -25,6 +25,6 @@ export function mapToUpdateExpense(record: Expenses): {
     expense_date: record.expense_date,
     category: record.category,
     description: record.description,
-    notes: record.notes,
+    ...(record.notes !== undefined ? { notes: record.notes } : {}),
   };
 }
