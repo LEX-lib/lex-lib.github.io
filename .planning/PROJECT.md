@@ -87,9 +87,9 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - [x] **EXP-04** — Third tab "Expenses" in `WallecxApp.vue` after Memberships — Validated in Phase 24
 - [x] **EXP-05** — `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, server-first delete, EXIF-stripped receipt photo upload — Validated in Phase 24
 - [x] **EXP-06** — User can add custom categories from within the manage flow — Validated in Phase 24
-- [ ] **EXP-07** — `ExpensesTab.vue` list view sortable by date / category / amount; filterable by category and date range
-- [ ] **EXP-08** — Receipt photo preview via existing `AttachmentPreview` component
-- [ ] **EXP-09** — Client-side search by description text (mirrors `WallecxToolbar` search pattern)
+- [x] **EXP-07** — `ExpensesTab.vue` list view sortable by date / category / amount; filterable by category and date range — Validated in Phase 25
+- [x] **EXP-08** — Receipt photo preview via existing `AttachmentPreview` component — Validated in Phase 25
+- [x] **EXP-09** — Client-side search by description text (reactive instant filtering; `@vueuse/core` not installed) — Validated in Phase 25
 - [ ] **EXP-10** — Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range)
 - [ ] **EXP-11** — Grand total for selected period
 - [ ] **EXP-12** — Per-category breakdown chart (PrimeVue Chart / Chart.js) for selected period
@@ -197,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-21 — Phase 23 complete. wallecx_expenses + wallecx_expense_categories collections live; TypeScript types, Zod schemas, currency helper, expenseMapper established. Phase 24 (Write Path) is next.*
+*Last updated: 2026-05-21 — Phase 25 complete. ExpensesTab.vue read path shipped: sortable/filterable/searchable list with receipt preview (Dialog desktop / bottom Drawer mobile). EXP-07/08/09 validated. Phase 26 (Reporting View — period tabs + charts) is next.*
