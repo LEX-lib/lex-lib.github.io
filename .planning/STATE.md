@@ -147,7 +147,7 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 **Stopped at:** context exhaustion at 98% (2026-05-21)
 
-**Next session entry point:** Run `/gsd-plan-phase 25` — context ready, 18 decisions locked.
+**Next session entry point:** Run `/gsd-plan-phase 25` — context + UI-SPEC ready.
 
 **Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e).
 
