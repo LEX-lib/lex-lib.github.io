@@ -7,8 +7,8 @@
 
 ### Code Quality
 
-- [ ] **CQ-01**: Expense date field rejects invalid calendar dates (e.g. Feb 31, Apr 31) with a clear validation error
-- [ ] **CQ-02**: `mapToUpdateExpense` omits the `notes` key entirely when notes is undefined; mapper test asserts `not.toHaveProperty('notes')`
+- [x] **CQ-01**: Expense date field rejects invalid calendar dates (e.g. Feb 31, Apr 31) with a clear validation error
+- [x] **CQ-02**: `mapToUpdateExpense` omits the `notes` key entirely when notes is undefined; mapper test asserts `not.toHaveProperty('notes')`
 
 ### Data Export
 
@@ -51,8 +51,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CQ-01 | Phase 27 | Pending |
-| CQ-02 | Phase 27 | Pending |
+| CQ-01 | Phase 27 | Complete (verified 2026-05-22) |
+| CQ-02 | Phase 27 | Complete (verified 2026-05-22) |
 | EXPORT-01 | Phase 27 | Pending |
 | EXPORT-02 | Phase 27 | Pending |
 | RPT-01 | Phase 28 | Pending |
