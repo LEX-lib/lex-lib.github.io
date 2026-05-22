@@ -1,5 +1,28 @@
 # Milestones
 
+## v4.0 — Daily Expense Tracker
+
+**Shipped:** 2026-05-22
+**Phases:** 23–26 (4 phases, 9 plans)
+**Timeline:** 2026-05-20 → 2026-05-22 (2 days)
+**Requirements:** 13/13 shipped
+
+### Delivered
+
+1. `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections with per-user rules, Zod schema, expenseMapper, and 9 Vitest tests — EXP-01/02/03 foundation complete
+2. Third "Expenses" tab in WallecxApp.vue; `ManageExpense.vue` CRUD dialog with Zod, isSaving guard, EXIF-stripped receipt upload, custom category seeding, and Dialog/Drawer mobile split — EXP-04/05/06
+3. Sortable/filterable/searchable expense list (5 sort modes, category multi-select, date-range picker, instant description search) with receipt preview via AttachmentPreview — EXP-07/08/09/10
+4. `ExpensesListView.vue` extracted as a sibling view; `ExpensesTab.vue` refactored to thin data-owning shell — establishes parent-shell + child-view SFC split pattern for future Wallecx tabs
+5. `period.ts` dayjs helper + `useChartTheme` dark-mode composable (MutationObserver on html element) + 8 CSS chart palette tokens — chart infrastructure reusable across future visualizations
+6. `ExpensesReportsView.vue` — period selector (Month/Quarter/Year/Custom), Grand Total hero, horizontal bar chart with dark-mode reactivity, prefers-reduced-motion gate, sessionStorage period persistence — EXP-11/12/13
+
+### Known deferred items at close: 39 (8 carried from prior closes + 31 at v4.0 — see STATE.md Deferred Items)
+
+**Archive:** [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
+**Requirements:** [milestones/v4.0-REQUIREMENTS.md](milestones/v4.0-REQUIREMENTS.md)
+
+---
+
 ## v3.0 — Site-Wide Dark Mode
 
 **Shipped:** 2026-05-19

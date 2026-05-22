@@ -2,46 +2,38 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Daily Expense Tracker
-status: executing
-stopped_at: phase 26 plan 02 complete; plan 03 queued (2026-05-22)
-last_updated: "2026-05-22T01:44:49Z"
+status: milestone-archived
+stopped_at: v4.0 archived 2026-05-22; ready for /gsd-new-milestone
+last_updated: "2026-05-22T05:00:00Z"
 progress:
   total_phases: 27
-  completed_phases: 26
-  total_plans: 67
-  completed_plans: 66
-  percent: 99
+  completed_phases: 27
+  total_plans: 68
+  completed_plans: 68
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-22 — Phase 26 Plan 02 complete (Wave 2 refactor): ExpensesTab.vue reduced from 313 to 161 lines and now acts as a thin shell (data load + ManageExpense + AttachmentPreview dialogs + delete + preview handlers); Phase 25 list logic extracted verbatim into new sibling ExpensesListView.vue (186 lines) which owns 5 filter/sort refs, categoryOptions, filteredSortedExpenses, clearFilters, sessionStorage 'wallecx:expense-sort' persistence with VALID_SORT_MODES whitelist; props { expenses, isLoading } down + 4 events (edit/delete/preview/request-add-expense) up. Phase 25 invariants all preserved: requestKey 'expenses-getFullList', defineExpose({ deleteExpense }), ConfirmDialog at WallecxApp shell level, no @vueuse/core. Type-check + build-only + 49 unit tests all green. Zero user-visible behavior change vs. Phase 25. Next: Plan 26-03 (Wave 3 — ExpensesReportsView.vue + sub-tab wiring).
+**Last updated:** 2026-05-22 — Phase 26 Plan 03 complete (Wave 3 — Reports sub-tab delivery). ExpensesReportsView.vue created (324 lines): PrimeVue Tabs (scrollable) period selector with 4 tabs (This Month / This Quarter / This Year / Custom), inline From/To DatePickers for custom range with role='alert' validation, Grand Total hero ('Total spend — {periodName}' with U+2013 en-dash + bold brand-primary formatCurrency), per-category horizontal bar chart (PrimeVue Chart indexAxis: 'y', palette cycled via paletteColors[i % 8], minBarLength: 20, currency tooltip + tick formatters), 4-state mutually-exclusive v-if chain (loading → invalid range → empty period → data), reactive dark-mode palette via useChartTheme refs (Chart re-renders automatically on .my-app-dark toggle), prefers-reduced-motion gate on animation.duration, sessionStorage persistence (3 keys with isValidPeriod whitelist + YYYY-MM-DD strings for custom range), Math.max(220, n*36) chart height, role='img' + aria-label, 44px touch targets. ExpensesTab.vue extended (161 → 196 lines, +35): SubTab union type + activeSubTab ref, PrimeVue Tabs wrapper hosting List + Reports TabPanels, both views consume same :expenses + :is-loading (single getFullList preserved), both 'request-add-expense' route to openManage(null), scoped :deep sub-tab CSS for visual nesting under WallecxApp top-level Tabs. Phase 26 complete. **Milestone v4.0 complete** — Phases 23 (backend foundation), 24 (write path), 25 (read path), 26 (reporting) all shipped. Type-check + 49 unit tests green (re-verified post-Windows-restart). Next: `/gsd-complete-milestone` to archive v4.0.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
-**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.
-**Current focus:** v4.0 — Daily Expense Tracker (third Wallecx record type: expenses with period-tabbed reporting and per-category charts).
+**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
+**Current focus:** Planning next milestone — run `/gsd-new-milestone` to define v4.x or v5.0 goals.
 
 ## Current Position
 
-**Milestone:** v3.0 — Site-Wide Dark Mode
-**Milestone:** v4.0 — Daily Expense Tracker
-**Phase:** 26 — Reporting View
-**Status:** Phase 26 Plans 01 + 02 complete (Wave 1 foundation + Wave 2 refactor shipped); Plan 03 queued
+**Milestone:** v4.0 — Daily Expense Tracker (ARCHIVED 2026-05-22)
+**Status:** All 27 phases shipped; all 4 v4.0 phases (23–26) complete; milestone archived
+**Next:** `/gsd-new-milestone` to define next milestone goals
 
 ```
-v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26      ]
-               [   DONE   ] [   DONE   ] [   DONE   ] [ 2/3 — IN PROG ]
+v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
+               [  ARCHIVED ] [  ARCHIVED ] [  ARCHIVED ] [  ARCHIVED ]
 ```
-
-```
-v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
-               [   DONE   ] [   DONE   ] [   DONE*  ] [  NEXT UP ]
-```
-
-*Phase 21: UAT approved with 2 spot-checks deferred (LexTrack DatePicker/TabView contrast; API Playground sign-off). Revisit if gaps surface during Phase 22 audit.
 
 ## Shipped Milestones Summary
 
@@ -124,6 +116,19 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 - **sessionStorage sort restoration runs BEFORE getFullList in onMounted.** Restoring after the load would cause a flash of the default sort mode before the persisted sort applies.
 - **`requestKey: 'expenses-getFullList'` confirmed distinct.** Verified non-colliding with `'memberships-getFullList'` and `'vaccinations-getFullList'`. STATE.md locked invariant upheld.
 
+### Phase 26 Decisions (Plan 03 — Wave 3 Reports view + sub-tab wiring)
+
+- **Period selector uses PrimeVue Tabs (scrollable), NOT SelectButton.** Tabs is the established PrimeVue pattern for mutually-exclusive horizontal options and the `scrollable` prop handles narrow-viewport overflow gracefully when the 4 period tabs + inline custom-range DatePickers compete for width.
+- **Custom From/To persisted as YYYY-MM-DD strings, not Date objects or ISO datetimes.** Keeps sessionStorage timezone-stable; rehydrated via `dayjs(stored, 'YYYY-MM-DD').toDate()` in onMounted.
+- **Chart palette is fully reactive via useChartTheme refs (no manual remount on dark-mode toggle).** All chart colors (palette + axis + grid + muted + heading + surface + divider) live inside the `chartOptions` computed; PrimeVue Chart's deep-watch on options re-renders the chart automatically when `.my-app-dark` flips on `<html>`. Plan 26-01's MutationObserver-based composable design proves itself here.
+- **prefers-reduced-motion → animation.duration: 0 (else 200ms).** Read via `window.matchMedia('(prefers-reduced-motion: reduce)').matches` inline in a `reducedMotion` computed — no @vueuse/core dependency added.
+- **Chart container height = `Math.max(220, n_categories * 36)`.** Prevents single-category state from collapsing to one thick bar; gives 8-category state breathing room.
+- **Invalid custom range (From > To) is a soft state.** Period selector stays interactive, chart + Grand Total hide, inline `role='alert'` message appears below DatePickers in `var(--color-status-error)`. No toast, no dialog.
+- **Sub-tab persistence intentionally OUT of scope.** UI-SPEC defers `activeSubTab` persistence; no sessionStorage key added. List is always default on tab entry. May be added later if user feedback warrants.
+- **No explicit Chart import in ExpensesReportsView.vue.** PrimeVueResolver auto-imports it; chart.js@^4.5.1 from Plan 26-01 is the runtime dep PrimeVue dynamically imports at mount.
+- **Scoped `:deep(.wallecx-sub-tabs .p-tablist .p-tab)` sets sub-tab visual nesting.** `min-height: 44px` + `padding: 0 0.75rem` gives a visual cue that this Tabs is nested under the parent WallecxApp top-level Tabs. No global CSS change.
+- **Both sibling views consume the same `:expenses` + `:is-loading` from the shell.** Single `getFullList` call with locked requestKey `'expenses-getFullList'` preserved — Reports view does NOT make its own PocketBase queries. Filtering by period is fully client-side via YYYY-MM-DD string comparison on the already-loaded expenses array.
+
 ### Phase 26 Decisions (Plan 02 — Wave 2 refactor)
 
 - **Parent-shell + child-view SFC split established for Wallecx tabs.** ExpensesTab is now a thin parent shell that owns data (expenses ref, isLoading), CRUD operations (deleteExpense, openManage, onCreated, onUpdated), and modal/preview UI (ManageExpense dialog, AttachmentPreview Dialog/Drawer with token gate). ExpensesListView is the child sibling view that owns view-specific UI state (5 filter/sort refs, sessionStorage sort persistence, 4-state template) and emits semantic intent events (edit, delete, preview, request-add-expense) back up to the shell. Plan 26-03 will use the same pattern to add ExpensesReportsView as a second sibling view, with the sub-tab toggle living in the shell.
@@ -164,15 +169,44 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
 | uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 3 pending scenarios (Chrome DevTools PWA install, iOS standalone, offline precache) |
 Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
+Items acknowledged and deferred at v4.0 milestone close on 2026-05-22:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 10: 10-HUMAN-UAT.md | partial — 2 pending scenarios |
+| uat_gap | Phase 11: 11-HUMAN-UAT.md | partial — 1 pending scenario |
+| uat_gap | Phase 12: 12-HUMAN-UAT.md | partial — 6 pending scenarios |
+| uat_gap | Phase 18: 18-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 20: 20-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 21: 21-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 22: 22-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 23: 23-HUMAN-UAT.md | partial — 0 pending (file format) |
+| uat_gap | Phase 24: 24-HUMAN-UAT.md | partial — 0 pending (file format) |
+| uat_gap | Phase 25: 25-HUMAN-UAT.md | partial — 7 pending scenarios |
+| verification_gap | Phase 10: 10-VERIFICATION.md | human_needed |
+| verification_gap | Phase 11: 11-VERIFICATION.md | human_needed |
+| verification_gap | Phase 12: 12-VERIFICATION.md | human_needed |
+| verification_gap | Phase 13: 13-VERIFICATION.md | human_needed |
+| verification_gap | Phase 14: 14-VERIFICATION.md | human_needed |
+| verification_gap | Phase 16: 16-VERIFICATION.md | human_needed |
+| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed |
+| verification_gap | Phase 18: 18-VERIFICATION.md | human_needed |
+| verification_gap | Phase 19: 19-VERIFICATION.md | human_needed |
+| verification_gap | Phase 20: 20-VERIFICATION.md | human_needed |
+| verification_gap | Phase 21: 21-VERIFICATION.md | human_needed |
+| verification_gap | Phase 23: 23-VERIFICATION.md | human_needed |
+| verification_gap | Phase 24: 24-VERIFICATION.md | human_needed |
+| verification_gap | Phase 25: 25-VERIFICATION.md | human_needed |
+| context_question | Phase 26: 26-CONTEXT.md | 3 questions (answered by shipped implementation) |
+Known deferred items at v4.0 close: 39 (8 carried from prior closes + 31 new at v4.0)
+
 ## Session Continuity
 
-**Last session:** 2026-05-22T01:44:49Z
+**Last session:** 2026-05-22 — v4.0 milestone archived via `/gsd-complete-milestone`
 
-**Stopped at:** Phase 26 Plan 02 complete (Wave 2 refactor shipped); Plan 03 queued (2026-05-22)
+**Stopped at:** v4.0 milestone archived. MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md updated. milestones/v4.0-ROADMAP.md + v4.0-REQUIREMENTS.md created. REQUIREMENTS.md removed. Git tag v4.0 created.
 
-**Next session entry point:** Execute Plan 26-03 (Wave 3 — ExpensesReportsView.vue + List/Reports sub-tab wiring inside ExpensesTab.vue). The shell + sibling-view architecture is in place: ExpensesReportsView will be a second sibling consuming the same `:expenses` and `:is-loading` props from the shell. All Wave 1 artifacts (chart.js@^4.5.1, --color-chart-1..8 CSS tokens, period.ts, useChartTheme.ts) remain ready for consumption.
-
-**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Phase 26-01 commits: 0a31a10 (chart.js + palette), 6e8617d (period.test RED), ce7e04e (period.ts GREEN), d5edb49 (useChartTheme). Phase 26-02 commits: bcf4568 (extract ExpensesListView.vue), 42ed8ea (refactor ExpensesTab.vue to shell). Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep.
+**Next session entry point:** Run `/gsd-new-milestone` to define next milestone goals (v4.x or v5.0).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

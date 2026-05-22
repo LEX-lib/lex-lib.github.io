@@ -4,12 +4,13 @@
 
 Lexarium is a personal Vue 3 SPA portfolio hub deployed on Vercel that hosts multiple mini-apps under `/projects/` (LexTrack, Larga, Gift Exchange, API Playground, Wallecx). v3.0 promotes Lexarium from "individual mini-apps" to a fully themed platform with site-wide dark mode.
 
-**Wallecx**, the largest mini-app, is a personal records vault with two record types:
+**Wallecx**, the largest mini-app, is a personal records vault with three record types:
 
-- **Vaccination records** — text fields (vaccine name, date, dose, lot, location, manufacturer, notes) plus an attached scan/photo of the card
+- **Vaccination records** — text fields (vaccine name, date, dose, lot, location, manufacturer, notes) plus an attached scan/photo of the card; grouped by vaccine type with search, sort, and view toggle
 - **Membership cards** — loyalty, insurance, and ID cards with barcode/QR rendering, a full-screen scan overlay for counter use, and a coloured card grid
+- **Expenses** — daily expense logging with category, description, receipt photo, and period-tabbed reporting (month / quarter / year / custom) with per-category breakdown charts
 
-Both record types share the same per-user PocketBase isolation pattern, the same CRUD dialog + Zod validation + mapper architecture, and live in the same tabbed shell at `/projects/wallecx`.
+All three record types share the same per-user PocketBase isolation pattern, the same CRUD dialog + Zod validation + mapper architecture, and live in the same tabbed shell at `/projects/wallecx`.
 
 ## Core Value
 
@@ -17,30 +18,21 @@ Both record types share the same per-user PocketBase isolation pattern, the same
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
-## Current Milestone: v4.0 Daily Expense Tracker
+## Current State: v4.0 Shipped — Planning Next Milestone
 
-**Goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts. Expands Wallecx from static personal records (vaccinations, memberships) into time-series spending data.
-
-**Target features:**
-- `wallecx_expenses` PocketBase collection (amount, date, category, description, notes, optional receipt photo) + `wallecx_expense_categories` for user-added categories on top of a default list
-- `ExpensesTab.vue` — third tab in `WallecxApp.vue` after Memberships
-- `ManageExpense.vue` — CRUD dialog matching the existing Wallecx pattern (Zod, EXIF strip, isSaving guard, server-first delete)
-- Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range) showing grand total + per-category breakdown chart (PrimeVue Chart / Chart.js)
-- Default category set: Food, Transport, Bills, Health, Shopping, Entertainment, Other (user can add more)
-
-**Latest shipped:** v3.0 Site-Wide Dark Mode (2026-05-19) — fully themed platform with NavBar toggle, OS-preference detection, and localStorage persistence.
+**Latest shipped:** v4.0 Daily Expense Tracker (2026-05-22) — third Wallecx record type added; Wallecx now covers vaccinations, membership cards, and daily expenses with period-tabbed reporting and per-category charts.
 
 <details>
-<summary>Previous milestone goals (v3.0 — shipped)</summary>
+<summary>v4.0 milestone goal (shipped 2026-05-22)</summary>
 
-**Goal:** Every Lexarium surface renders correctly in dark mode, with a manual NavBar toggle and an OS-preference-aware first-visit default. Marks the shift from Wallecx-only dark mode (v2.3) to a fully themed platform.
+**Goal:** Add a third Wallecx record type — expenses — with daily logging, period-tabbed reporting (month / quarter / year / custom), and per-category breakdown charts.
 
-**Target features (all shipped):**
-- `useTheme` composable: reactive theme state + localStorage persistence + `prefers-color-scheme` detection + applies `.my-app-dark` class to `<html>`
-- NavBar sun/moon toggle button
-- Site shell + non-app pages dark mode (HomeView/HeroSection/AboutMeSection, ProjectsView, BlogView, Login, CustomNavBar)
-- Mini-app dark mode sweep — LexTrack, Larga, Gift Exchange, API Playground
-- Wallecx audit — Phase 18 dark mode survives site-wide toggle wire-up
+**Shipped:**
+- `wallecx_expenses` + `wallecx_expense_categories` PocketBase collections with per-user rules, Zod schema, expenseMapper (9 Vitest tests)
+- `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, EXIF-stripped receipt upload, custom category seeding
+- `ExpensesTab.vue` list view: sortable/filterable/searchable, sessionStorage sort persistence, receipt preview via AttachmentPreview
+- `ExpensesReportsView.vue`: period selector (Month/Quarter/Year/Custom), Grand Total hero, horizontal bar chart, dark-mode reactive via useChartTheme, prefers-reduced-motion support
+- Parent-shell + child-view SFC split pattern (ExpensesTab → ExpensesListView + ExpensesReportsView) established for future tabs
 </details>
 
 ## Requirements
@@ -78,24 +70,24 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ Site shell + non-app pages dark mode (HomeView/Hero/About, ProjectsView, BlogView, Login, CustomNavBar) — v3.0
 - ✓ Mini-app dark mode (LexTrack semantic-token refactor, Larga geocoder override, MonitoX sweep, API Playground chrome) — v3.0
 - ✓ Wallecx audit confirmed Phase 18 dark mode survives site-wide toggle wire-up; PWA standalone PASS — v3.0
+- ✓ `wallecx_expenses` collection (7 fields, 5 per-user rules); `wallecx_expense_categories` collection; Zod schema + expenseMapper + 9 Vitest tests — v4.0
+- ✓ Third "Expenses" tab in WallecxApp.vue; `ManageExpense.vue` CRUD with Zod, isSaving guard, EXIF-stripped receipt upload, Dialog/Drawer mobile split, custom category seeding — v4.0
+- ✓ ExpensesTab.vue list view: sortable (5 modes, sessionStorage), category multi-select filter, date-range filter, description search; receipt preview via AttachmentPreview — v4.0
+- ✓ Parent-shell + child-view SFC split (ExpensesTab → ExpensesListView + ExpensesReportsView); single getFullList call preserved — v4.0
+- ✓ `period.ts` dayjs helper (quarterOfYear plugin); `useChartTheme` composable (MutationObserver dark-mode reactive); 8 CSS chart palette tokens — v4.0
+- ✓ `ExpensesReportsView.vue`: period selector (Month/Quarter/Year/Custom), Grand Total hero, horizontal bar chart (Chart.js via PrimeVue), dark-mode reactive, prefers-reduced-motion, sessionStorage persistence — v4.0
 
 ### Active
 
-- [x] **EXP-01** — `wallecx_expenses` PocketBase collection (id, user, amount, expense_date, category, description, notes, receipt) with 5 per-user access rules — Validated in Phase 23
-- [x] **EXP-02** — `wallecx_expense_categories` PocketBase collection seeded with default categories (Food, Transport, Bills, Health, Shopping, Entertainment, Other) + per-user rules so each user can add their own — Validated in Phase 23
-- [x] **EXP-03** — Zod schema + expense mapper + TypeScript types module (`src/types/wallecx/expenses/types.d.ts`) — Validated in Phase 23
-- [x] **EXP-04** — Third tab "Expenses" in `WallecxApp.vue` after Memberships — Validated in Phase 24
-- [x] **EXP-05** — `ManageExpense.vue` CRUD dialog with Zod safeParse, isSaving guard, server-first delete, EXIF-stripped receipt photo upload — Validated in Phase 24
-- [x] **EXP-06** — User can add custom categories from within the manage flow — Validated in Phase 24
-- [x] **EXP-07** — `ExpensesTab.vue` list view sortable by date / category / amount; filterable by category and date range — Validated in Phase 25
-- [x] **EXP-08** — Receipt photo preview via existing `AttachmentPreview` component — Validated in Phase 25
-- [x] **EXP-09** — Client-side search by description text (reactive instant filtering; `@vueuse/core` not installed) — Validated in Phase 25
-- [ ] **EXP-10** — Period-tabbed reporting view (This Month / This Quarter / This Year / Custom range)
-- [ ] **EXP-11** — Grand total for selected period
-- [ ] **EXP-12** — Per-category breakdown chart (PrimeVue Chart / Chart.js) for selected period
+No active requirements — next milestone not yet planned. See `/gsd-new-milestone` to define v4.x or v5.0 goals.
 
 ### Future candidates
 
+- [ ] **EXP-ADV-01** — Budget tracking per category (monthly/yearly targets with actual-vs-budget reporting)
+- [ ] **EXP-ADV-02** — Recurring expenses (mark as recurring; auto-create future entries)
+- [ ] **EXP-ADV-03** — Multi-currency support (currency field + FX conversion at report time)
+- [ ] **EXP-ADV-04** — Period-over-period comparison (this month vs last; quarter-over-quarter delta)
+- [ ] **EXP-ADV-07** — Expense JSON export (batch with CONV-01 vaccination/membership exports)
 - [ ] **CONV-01** — JSON export of all membership card records (mirrors vaccination export)
 - [ ] **CONV-03** — Expiry date reminders (requires notification infrastructure)
 - [ ] **SCAN-ADV-01** — PDF417 and Aztec code formats via dynamic `bwip-js` import
@@ -127,15 +119,16 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - Dates: `dayjs` everywhere; PocketBase date filters use `"YYYY-MM-DD"` format
 - File tokens: fetched at view time, not list time; `requestKey` must be distinct per collection to prevent auto-cancel
 
-**Current state (v2.3 started — UX polish milestone):**
-- ~2,900 LOC TypeScript/Vue across `src/components/projects/wallecx/`
-- 48 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11, × 2 suites in worktrees)
-- Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`
-- Dev deps added in v2.1: `vite-plugin-pwa@^1.3.0`, `workbox-window@^7.4.1`, `workbox-build@^7.4.1`, `@vite-pwa/assets-generator@^1.0.2`
-- Two PocketBase collections: `wallecx_vaccinations` and `wallecx_memberships`, both with 5 per-user access rules
-- PWA: installable, SW precaches 53 entries (3 MiB vendor limit; about-me-photo excluded), vercel.json deployed
-- Mobile layouts complete: grid-cols-1 responsive, 44px touch targets, safe-area insets, dvh dialogs, iOS install banner, VaccinationGroupPanel card list (UAT Gap 1 closed)
-- v2.2: WallecxToolbar generic (sortOptions required prop); MembershipsTab search + sort (displayedMemberships computed, sessionStorage persistence, no-results empty state)
+**Current state (v4.0 shipped — planning next milestone):**
+- ~4,800 LOC TypeScript/Vue across `src/components/projects/wallecx/`
+- 49 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11, expenseMapper.spec.ts × 9, period.test.ts × 16)
+- Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`, `chart.js@^4.5.1`
+- Dev deps: `vite-plugin-pwa@^1.3.0`, `workbox-window@^7.4.1`, `workbox-build@^7.4.1`, `@vite-pwa/assets-generator@^1.0.2`
+- Three PocketBase collections: `wallecx_vaccinations`, `wallecx_memberships`, `wallecx_expenses` + `wallecx_expense_categories`
+- Three-tab shell: Vaccinations / Memberships / Expenses; parent-shell + child-view SFC split pattern established
+- PWA: installable, SW precaches 53 entries (3 MiB vendor limit), vercel.json deployed
+- Mobile layouts: grid-cols-1 responsive, 44px touch targets, safe-area insets, bottom sheets (mobile), iOS install banner
+- Dark mode: site-wide via useTheme composable + .my-app-dark on html; all Wallecx surfaces correct including charts via useChartTheme
 
 ## Constraints
 
@@ -165,6 +158,12 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | iOS fullscreen via viewport overlay, not Fullscreen API | `requestFullscreen()` unsupported on non-video elements iOS < 26 | ✓ Validated v2.0 |
 | Every JsBarcode() call wrapped in try/catch | JsBarcode has no soft-fail mode; invalid input throws synchronously | ✓ Validated v2.0 |
 | ConfirmDialog kept at WallecxApp.vue shell level | `useConfirm` broadcasts to single app-shell-level instance | ✓ Validated v2.0 |
+| category stored as denormalized Text (not Relation) | Prevents retroactive history rewrite when a category is renamed | ✓ Validated v4.0 |
+| DEFAULT_EXPENSE_CATEGORIES seeded lazily on first dialog open | No PocketBase signup hook needed; seeding in ManageExpense.vue on first open | ✓ Validated v4.0 |
+| Period selector uses PrimeVue Tabs (scrollable) | Established PrimeVue pattern for mutually-exclusive options; scrollable handles narrow-viewport overflow | ✓ Validated v4.0 |
+| Chart palette fully reactive via useChartTheme refs | MutationObserver on html element reads CSS vars; PrimeVue Chart's deep-watch re-renders automatically on .my-app-dark toggle | ✓ Validated v4.0 |
+| dayjs Q-format template literal (not format token) | quarterOfYear plugin patches .quarter() accessors but NOT format() grammar — `Q${now.quarter()} ${now.format('YYYY')}` required | ✓ Validated v4.0 |
+| Parent-shell + child-view SFC split for ExpensesTab | Shell owns data + dialogs; sibling views (ExpensesListView, ExpensesReportsView) own view-specific UI state and emit intent events | ✓ Validated v4.0 |
 
 ## Shipped Milestones
 
@@ -178,6 +177,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v2.2 Sort and Search for Membership Cards | 16 | 2026-05-15 | [v2.2-ROADMAP.md](milestones/v2.2-ROADMAP.md) |
 | v2.3 UX Polish | 17–18 | 2026-05-18 | — |
 | v3.0 Site-Wide Dark Mode | 19–22 | 2026-05-19 | [v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md) |
+| v4.0 Daily Expense Tracker | 23–26 | 2026-05-22 | [v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md) |
 
 ## Evolution
 
@@ -197,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-21 — Phase 25 complete. ExpensesTab.vue read path shipped: sortable/filterable/searchable list with receipt preview (Dialog desktop / bottom Drawer mobile). EXP-07/08/09 validated. Phase 26 (Reporting View — period tabs + charts) is next.*
+*Last updated: 2026-05-22 after v4.0 milestone — Daily Expense Tracker shipped. All 13 EXP requirements validated. Wallecx now has three record types with period-tabbed reporting and dark-mode-reactive charts.*
