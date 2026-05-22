@@ -8,6 +8,7 @@ import { useIsMobile } from '@/composables/useIsMobile'
 import ManageExpense from './ManageExpense.vue'
 import AttachmentPreview from './AttachmentPreview.vue'
 import ExpensesListView from './ExpensesListView.vue'
+import ExpensesReportsView from './ExpensesReportsView.vue'
 
 const expenses = ref<Expenses[]>([])
 const isLoading = ref(false)
@@ -20,6 +21,11 @@ const isMobile = useIsMobile()
 const showPreview = ref(false)
 const previewRecord = ref<Expenses | null>(null)
 const previewToken = ref<string>('')
+
+// Sub-tab routing — D-26-1: List (Phase 25) | Reports (Phase 26)
+// Default 'list'; persistence across sessions deferred (UI-SPEC §Sub-tab persistence: out of scope).
+type SubTab = 'list' | 'reports'
+const activeSubTab = ref<SubTab>('list')
 
 async function openReceiptPreview(record: Expenses): Promise<void> {
   try {
@@ -99,15 +105,32 @@ defineExpose({ deleteExpense })
       <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
     </div>
 
-    <!-- Delegated list view — receives expenses + isLoading as props; re-emits row actions -->
-    <ExpensesListView
-      :expenses="expenses"
-      :is-loading="isLoading"
-      @edit="openManage"
-      @delete="deleteExpense"
-      @preview="openReceiptPreview"
-      @request-add-expense="openManage(null)"
-    />
+    <!-- Sub-tab shell: List (Phase 25) | Reports (Phase 26 EXP-11/12/13) -->
+    <Tabs v-model:value="activeSubTab" class="wallecx-sub-tabs">
+      <TabList>
+        <Tab value="list">List</Tab>
+        <Tab value="reports">Reports</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel value="list">
+          <ExpensesListView
+            :expenses="expenses"
+            :is-loading="isLoading"
+            @edit="openManage"
+            @delete="deleteExpense"
+            @preview="openReceiptPreview"
+            @request-add-expense="openManage(null)"
+          />
+        </TabPanel>
+        <TabPanel value="reports">
+          <ExpensesReportsView
+            :expenses="expenses"
+            :is-loading="isLoading"
+            @request-add-expense="openManage(null)"
+          />
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
 
     <!-- ManageExpense dialog/drawer (preserved from Phase 24/25) -->
     <ManageExpense
@@ -158,3 +181,16 @@ defineExpose({ deleteExpense })
     </Drawer>
   </div>
 </template>
+
+<style scoped>
+/*
+ * Sub-tab differentiation — UI-SPEC §Sub-tab shell:
+ * Same PrimeVue Tabs component + same Aura active-tab underline as the parent
+ * WallecxApp top-level Tabs; perceptual nesting depth comes from tighter
+ * horizontal padding on the Tab triggers (no icons on sub-tabs; structural cue).
+ */
+:deep(.wallecx-sub-tabs .p-tablist .p-tab) {
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+}
+</style>
