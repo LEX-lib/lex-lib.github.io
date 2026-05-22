@@ -51,20 +51,20 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CQ-01 | — | Pending |
-| CQ-02 | — | Pending |
-| EXPORT-01 | — | Pending |
-| EXPORT-02 | — | Pending |
-| RPT-01 | — | Pending |
-| RPT-02 | — | Pending |
-| RPT-03 | — | Pending |
-| QA-01 | — | Pending |
+| CQ-01 | Phase 27 | Pending |
+| CQ-02 | Phase 27 | Pending |
+| EXPORT-01 | Phase 27 | Pending |
+| EXPORT-02 | Phase 27 | Pending |
+| RPT-01 | Phase 28 | Pending |
+| RPT-02 | Phase 28 | Pending |
+| RPT-03 | Phase 29 | Pending |
+| QA-01 | Phase 30 | Pending |
 
 **Coverage:**
 - v4.1 requirements: 8 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 8 ⚠️
+- Mapped to phases: 8 (100%)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-22*
-*Last updated: 2026-05-22 after milestone v4.1 definition*
+*Last updated: 2026-05-22 — traceability updated after v4.1 roadmap creation (phases 27–30)*

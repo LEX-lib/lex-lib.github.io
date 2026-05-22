@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Gap Resolution & Feature Completeness
-status: defining-requirements
-stopped_at: v4.1 started 2026-05-22; requirements defined, roadmap pending
+status: roadmap-created
+stopped_at: v4.1 roadmap created 2026-05-22; ready to plan Phase 27
 last_updated: "2026-05-22T00:00:00Z"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-22 — Phase 26 Plan 03 complete (Wave 3 — Reports sub-tab delivery). ExpensesReportsView.vue created (324 lines): PrimeVue Tabs (scrollable) period selector with 4 tabs (This Month / This Quarter / This Year / Custom), inline From/To DatePickers for custom range with role='alert' validation, Grand Total hero ('Total spend — {periodName}' with U+2013 en-dash + bold brand-primary formatCurrency), per-category horizontal bar chart (PrimeVue Chart indexAxis: 'y', palette cycled via paletteColors[i % 8], minBarLength: 20, currency tooltip + tick formatters), 4-state mutually-exclusive v-if chain (loading → invalid range → empty period → data), reactive dark-mode palette via useChartTheme refs (Chart re-renders automatically on .my-app-dark toggle), prefers-reduced-motion gate on animation.duration, sessionStorage persistence (3 keys with isValidPeriod whitelist + YYYY-MM-DD strings for custom range), Math.max(220, n*36) chart height, role='img' + aria-label, 44px touch targets. ExpensesTab.vue extended (161 → 196 lines, +35): SubTab union type + activeSubTab ref, PrimeVue Tabs wrapper hosting List + Reports TabPanels, both views consume same :expenses + :is-loading (single getFullList preserved), both 'request-add-expense' route to openManage(null), scoped :deep sub-tab CSS for visual nesting under WallecxApp top-level Tabs. Phase 26 complete. **Milestone v4.0 complete** — Phases 23 (backend foundation), 24 (write path), 25 (read path), 26 (reporting) all shipped. Type-check + 49 unit tests green (re-verified post-Windows-restart). Next: `/gsd-complete-milestone` to archive v4.0.
+**Last updated:** 2026-05-22 — v4.1 roadmap created. Phases 27–30 defined (8 requirements, 100% coverage). Phase 27: Code Quality & Exports (CQ-01, CQ-02, EXPORT-01, EXPORT-02). Phase 28: Budget Tracking (RPT-01, RPT-02). Phase 29: Period Comparison (RPT-03). Phase 30: UAT Sweep (QA-01).
 
 ## Project Reference
 
@@ -27,13 +27,17 @@ progress:
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Defining requirements; roadmap not yet created
-**Phase:** Not started (defining requirements)
+**Status:** Roadmap created; ready to plan Phase 27
+**Phase:** Not started (phase 27 up next)
 **Plan:** —
-**Last activity:** 2026-05-22 — Milestone v4.1 started
+**Last activity:** 2026-05-22 — v4.1 roadmap created (phases 27–30)
 
 ```
-v4.1 Progress: [ Roadmap pending ]
+v4.1 Progress: [__________] 0% (0/4 phases)
+Phase 27: Code Quality & Exports     [ ] Not started
+Phase 28: Budget Tracking            [ ] Not started
+Phase 29: Period Comparison          [ ] Not started
+Phase 30: UAT Sweep                  [ ] Not started
 ```
 
 ## Shipped Milestones Summary
@@ -48,18 +52,19 @@ v4.1 Progress: [ Roadmap pending ]
 | v2.2 Sort and Search for Membership Cards | 16 | 2 | 2026-05-15 |
 | v2.3 UX Polish | 17–18 | 4 | 2026-05-18 |
 | v3.0 Site-Wide Dark Mode | 19–22 | 7 | 2026-05-19 |
+| v4.0 Daily Expense Tracker | 23–26 | 9 | 2026-05-22 |
 
 ## Accumulated Context
 
 ### Architectural Invariants (locked)
 
 - **Mini-app, not separate deployment.** Wallecx ships as a Lexarium mini-app at `/projects/wallecx`.
-- **Specific collections, not polymorphic vault.** Each record type has its own PocketBase collection (`wallecx_vaccinations`, `wallecx_memberships`).
+- **Specific collections, not polymorphic vault.** Each record type has its own PocketBase collection (`wallecx_vaccinations`, `wallecx_memberships`, `wallecx_expenses`).
 - **Server-side per-user isolation is the auth boundary.** All five PocketBase rules enforce ownership; the route guard is UX only.
 - **Tab shell, not sub-routes.** PrimeVue Tabs with string-typed `activeTab`; each tab owns its own state; no new Pinia store.
 - **Direct v-model refs for ManageMembership.vue.** PrimeVue ColorPicker issue #8135 — controlled system ignores initial value. This is the established pattern for membership write path.
 - **ConfirmDialog at WallecxApp.vue shell level only.** `useConfirm` broadcasts to single app-shell-level instance; not duplicated in tab components.
-- **requestKey per collection.** `'memberships-getFullList'` and `'vaccinations-getFullList'` (or equivalent) must stay distinct to prevent PocketBase auto-cancel.
+- **requestKey per collection.** `'memberships-getFullList'` and `'vaccinations-getFullList'` and `'expenses-getFullList'` must stay distinct to prevent PocketBase auto-cancel.
 - **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
 - **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
@@ -106,8 +111,8 @@ v4.1 Progress: [ Roadmap pending ]
 - **DEFAULT_EXPENSE_CATEGORIES defined in Phase 23, seeded lazily in Phase 24.** Phase 24's ManageExpense.vue seeds per-user on first dialog open — no PocketBase signup hook.
 - **receipt File field: protected=true.** File URLs require short-lived token; direct URL access without token returns 403.
 - **src/lib/wallecx/ module pattern established.** Non-PocketBase Wallecx utilities (schemas, constants, formatters) live here. Separate from src/lib/pocketbase/.
-- **WR-01/WR-02 code review findings (advisory):** `mapToUpdateExpense` includes `notes: undefined` key unconditionally; test uses `toBeUndefined()` instead of `not.toHaveProperty('notes')`. Run `/gsd-code-review-fix 23` before Phase 24 write path uses the mapper.
-- **WR-03 advisory:** `expense_date` regex accepts invalid calendar dates. Add `.refine()` using dayjs before Phase 24.
+- **WR-01/WR-02 code review findings (advisory):** `mapToUpdateExpense` includes `notes: undefined` key unconditionally; test uses `toBeUndefined()` instead of `not.toHaveProperty('notes')`. Carried into Phase 27 (CQ-02).
+- **WR-03 advisory:** `expense_date` regex accepts invalid calendar dates. Add `.refine()` using dayjs before Phase 24. Carried into Phase 27 (CQ-01).
 
 ### Phase 25 Decisions
 
@@ -144,6 +149,13 @@ v4.1 Progress: [ Roadmap pending ]
 - **MutationObserver attaches to `document.documentElement`, not `document.body`.** Project's `useTheme.ts` puts `.my-app-dark` on `<html>`. The UI-SPEC sample code observing `<body>` was wrong for this project. `useChartTheme` defensively observes both elements at negligible cost.
 - **Chart palette is fully CSS-resident (16 tokens).** `--color-chart-1..8` declared in BOTH the `@theme` block (light) AND the `.my-app-dark` block (dark) in `src/assets/base.css`. The `useChartTheme` composable just re-reads via `getComputedStyle` on class mutation — no JS palette lookup table. Bars auto-swap colors on dark-mode toggle.
 - **chart.js installed as runtime dep (NOT devDep).** PrimeVue 4.3.x performs dynamic `import('chart.js/auto')` at component mount; without the package the import silently resolves to nothing and the chart never renders (no error, no warning). PrimeVue does NOT declare chart.js as a peer dep.
+
+### v4.1 Phase 27 Pre-Planning Notes
+
+- **JSON export pattern reference: vaccination export (v1.0).** Same shape: fetch all user records, `JSON.stringify(records, null, 2)`, create Blob, anchor download. Memberships and expenses follow this pattern.
+- **CQ-01 implementation:** Add `.refine((val) => dayjs(val, 'YYYY-MM-DD', true).isValid(), { message: 'Invalid calendar date' })` to the `expense_date` Zod field in the expense schema. The `strict: true` argument to `dayjs()` enforces calendar validity (Feb 31 rejected).
+- **CQ-02 implementation:** In `mapToUpdateExpense`, change the notes field from unconditional `notes: record.notes` to a conditional spread: `...(record.notes !== undefined && { notes: record.notes })`. Update the test assertion from `expect(result.notes).toBeUndefined()` to `expect(result).not.toHaveProperty('notes')`.
+- **Budget collection requestKey:** Use `'expense-budgets-getFullList'` to stay consistent with locked requestKey naming convention.
 
 ### Open Todos
 
@@ -201,14 +213,16 @@ Items acknowledged and deferred at v4.0 milestone close on 2026-05-22:
 | context_question | Phase 26: 26-CONTEXT.md | 3 questions (answered by shipped implementation) |
 Known deferred items at v4.0 close: 39 (8 carried from prior closes + 31 new at v4.0)
 
+Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
+
 ## Session Continuity
 
-**Last session:** 2026-05-22 — v4.0 milestone archived via `/gsd-complete-milestone`
+**Last session:** 2026-05-22 — v4.1 roadmap created
 
-**Stopped at:** v4.0 milestone archived. MILESTONES.md, PROJECT.md, ROADMAP.md, STATE.md updated. milestones/v4.0-ROADMAP.md + v4.0-REQUIREMENTS.md created. REQUIREMENTS.md removed. Git tag v4.0 created.
+**Stopped at:** v4.1 roadmap written. ROADMAP.md, STATE.md, REQUIREMENTS.md updated with phases 27–30 and full traceability.
 
-**Next session entry point:** Run `/gsd-new-milestone` to define next milestone goals (v4.x or v5.0).
+**Next session entry point:** Run `/gsd-plan-phase 27` to start planning Phase 27: Code Quality & Exports.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-22 — v4.1 Gap Resolution & Feature Completeness started*
+*Last updated: 2026-05-22 — v4.1 roadmap created; phases 27–30 defined*
