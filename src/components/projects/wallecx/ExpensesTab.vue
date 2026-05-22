@@ -149,21 +149,18 @@ async function exportJson(): Promise<void> {
 
 <template>
   <div>
-    <!-- Header row: section title + Add Expense + Download records buttons -->
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold" style="color: var(--color-typo-heading)">Expenses</h2>
-      <div class="flex gap-2">
-        <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
-        <Button
-          label="Download records"
-          icon="pi pi-download"
-          severity="secondary"
-          size="small"
-          :disabled="isExporting"
-          :loading="isExporting"
-          @click="exportJson"
-        />
-      </div>
+    <!-- Header row: action buttons -->
+    <div class="flex gap-2 justify-end mb-4">
+      <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
+      <Button
+        label="Download records"
+        icon="pi pi-download"
+        severity="secondary"
+        size="small"
+        :disabled="isExporting"
+        :loading="isExporting"
+        @click="exportJson"
+      />
     </div>
 
     <!-- Sub-tab shell: List (Phase 25) | Reports (Phase 26 EXP-11/12/13) -->
