@@ -18,9 +18,20 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
 
-## Current State: v4.0 Shipped — Planning Next Milestone
+## Current State: v4.1 in Progress
 
 **Latest shipped:** v4.0 Daily Expense Tracker (2026-05-22) — third Wallecx record type added; Wallecx now covers vaccinations, membership cards, and daily expenses with period-tabbed reporting and per-category charts.
+
+## Current Milestone: v4.1 Gap Resolution & Feature Completeness
+
+**Goal:** Close deferred technical debt, add missing JSON exports, extend the expense tracker with budget and period-over-period comparison reporting, and verify untested UAT scenarios across past phases.
+
+**Target features:**
+- Code quality fixes — WR-01/02 (mapToUpdateExpense notes field + test assertion), WR-03 (expense_date calendar validation with dayjs .refine())
+- JSON exports — CONV-01 membership card export; EXP-ADV-07 expense export (mirrors vaccination export from v1.0)
+- Budget tracking — EXP-ADV-01: per-category monthly/yearly targets with actual-vs-budget reporting in Reports tab
+- Period-over-period comparison — EXP-ADV-04: this month vs last month, this quarter vs last quarter delta in Reports tab
+- UAT sweep — structured pass over phases 10–25 untested scenarios with regression fixes
 
 <details>
 <summary>v4.0 milestone goal (shipped 2026-05-22)</summary>
@@ -77,9 +88,15 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ `period.ts` dayjs helper (quarterOfYear plugin); `useChartTheme` composable (MutationObserver dark-mode reactive); 8 CSS chart palette tokens — v4.0
 - ✓ `ExpensesReportsView.vue`: period selector (Month/Quarter/Year/Custom), Grand Total hero, horizontal bar chart (Chart.js via PrimeVue), dark-mode reactive, prefers-reduced-motion, sessionStorage persistence — v4.0
 
-### Active
+### Active (v4.1)
 
-No active requirements — next milestone not yet planned. See `/gsd-new-milestone` to define v4.x or v5.0 goals.
+- [ ] **WR-01/02** — Fix `mapToUpdateExpense` to omit `notes` key when undefined; update test assertion to `not.toHaveProperty`
+- [ ] **WR-03** — Add dayjs `.refine()` to `expense_date` Zod schema to reject invalid calendar dates (e.g. Feb 31)
+- [ ] **CONV-01** — JSON export of all membership card records (mirrors vaccination export)
+- [ ] **EXP-ADV-07** — JSON export of all expense records (mirrors vaccination export pattern)
+- [ ] **EXP-ADV-01** — Per-category budget targets (monthly/yearly) with actual-vs-budget reporting in ExpensesReportsView
+- [ ] **EXP-ADV-04** — Period-over-period comparison reporting (this month vs last month, this quarter vs last quarter delta)
+- [ ] **UAT-SWEEP-01** — Structured UAT pass across phases 10–25 untested scenarios; fix regressions found
 
 ### Future candidates
 
@@ -197,4 +214,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-22 after v4.0 milestone — Daily Expense Tracker shipped. All 13 EXP requirements validated. Wallecx now has three record types with period-tabbed reporting and dark-mode-reactive charts.*
+*Last updated: 2026-05-22 — v4.1 Gap Resolution & Feature Completeness milestone started. 7 active requirements: 2 code quality fixes, 2 JSON exports, 2 expense reporting extensions, 1 UAT sweep.*

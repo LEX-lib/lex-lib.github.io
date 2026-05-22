@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Daily Expense Tracker
-status: milestone-archived
-stopped_at: v4.0 archived 2026-05-22; ready for /gsd-new-milestone
-last_updated: "2026-05-22T05:00:00Z"
+milestone: v4.1
+milestone_name: Gap Resolution & Feature Completeness
+status: defining-requirements
+stopped_at: v4.1 started 2026-05-22; requirements defined, roadmap pending
+last_updated: "2026-05-22T00:00:00Z"
 progress:
-  total_phases: 27
-  completed_phases: 27
-  total_plans: 68
-  completed_plans: 68
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -22,17 +22,18 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** Planning next milestone — run `/gsd-new-milestone` to define v4.x or v5.0 goals.
+**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Run `/gsd-plan-phase 27` to start planning Phase 27.
 
 ## Current Position
 
-**Milestone:** v4.0 — Daily Expense Tracker (ARCHIVED 2026-05-22)
-**Status:** All 27 phases shipped; all 4 v4.0 phases (23–26) complete; milestone archived
-**Next:** `/gsd-new-milestone` to define next milestone goals
+**Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
+**Status:** Defining requirements; roadmap not yet created
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Last activity:** 2026-05-22 — Milestone v4.1 started
 
 ```
-v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
-               [  ARCHIVED ] [  ARCHIVED ] [  ARCHIVED ] [  ARCHIVED ]
+v4.1 Progress: [ Roadmap pending ]
 ```
 
 ## Shipped Milestones Summary
@@ -210,4 +211,4 @@ Known deferred items at v4.0 close: 39 (8 carried from prior closes + 31 new at 
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-18 — v3.0 Site-Wide Dark Mode started; Phase 19 ready to plan*
+*Last updated: 2026-05-22 — v4.1 Gap Resolution & Feature Completeness started*
