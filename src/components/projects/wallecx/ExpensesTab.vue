@@ -5,6 +5,7 @@ import { pb } from '@/lib/pocketbase'
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
 import { useIsMobile } from '@/composables/useIsMobile'
+import dayjs from 'dayjs'
 import ManageExpense from './ManageExpense.vue'
 import AttachmentPreview from './AttachmentPreview.vue'
 import ExpensesListView from './ExpensesListView.vue'
@@ -16,6 +17,7 @@ const showManage = ref(false)
 const manageRecord = ref<Expenses | null>(null)
 const confirm = useConfirm()
 const isMobile = useIsMobile()
+const isExporting = ref(false)
 
 // Receipt preview state (stays in the shell — Reports sub-tab in Plan 26-03 does NOT use this)
 const showPreview = ref(false)
@@ -95,14 +97,73 @@ function deleteExpense(record: Expenses) {
 
 // Phase 24 invariant: expose deleteExpense for parent (WallecxApp) inspection / future test hooks.
 defineExpose({ deleteExpense })
+
+async function exportJson(): Promise<void> {
+  if (isExporting.value) return
+  const userId = pb.authStore.record?.id
+  if (!userId) {
+    toast.error("Session expired. Please log in again.")
+    return
+  }
+  isExporting.value = true
+  try {
+    const allRecords = await pb
+      .collection("wallecx_expenses")
+      .getFullList<Expenses>({
+        sort: "-expense_date,-created",
+        requestKey: "expenses-export",
+      })
+    const exportPayload = {
+      exported_at: new Date().toISOString(),
+      record_count: allRecords.length,
+      records: allRecords.map((r) => ({
+        id: r.id,
+        amount: r.amount,
+        expense_date: r.expense_date,
+        category: r.category,
+        description: r.description,
+        notes: r.notes ?? null,
+        receipt_url: r.receipt ? pb.files.getURL(r, r.receipt) : null,
+        created: r.created,
+        updated: r.updated,
+      })),
+    }
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = `wallecx-expenses-${dayjs().format("YYYY-MM-DD")}.json`
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    URL.revokeObjectURL(url)
+    toast.success("Expenses exported.")
+  } catch (e: unknown) {
+    toast.error("Export failed. Please try again.")
+    console.error("ExpensesTab: exportJson failed", e)
+  } finally {
+    isExporting.value = false
+  }
+}
 </script>
 
 <template>
   <div>
-    <!-- Header row: section title + Add Expense button (unchanged from Phase 25) -->
+    <!-- Header row: section title + Add Expense + Download records buttons -->
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold" style="color: var(--color-typo-heading)">Expenses</h2>
-      <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
+      <div class="flex gap-2">
+        <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
+        <Button
+          label="Download records"
+          icon="pi pi-download"
+          severity="secondary"
+          size="small"
+          :disabled="isExporting"
+          :loading="isExporting"
+          @click="exportJson"
+        />
+      </div>
     </div>
 
     <!-- Sub-tab shell: List (Phase 25) | Reports (Phase 26 EXP-11/12/13) -->

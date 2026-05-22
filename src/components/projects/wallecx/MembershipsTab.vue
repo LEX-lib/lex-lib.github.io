@@ -9,6 +9,7 @@ import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-reso
 import ManageMembership from './ManageMembership.vue'
 import WallecxToolbar from './WallecxToolbar.vue'
 import { useIsMobile } from '@/composables/useIsMobile'
+import dayjs from 'dayjs'
 
 const records = ref<Memberships[]>([])
 const isLoading = ref(false)
@@ -19,6 +20,7 @@ const showManage = ref<boolean>(false)
 const manageRecord = ref<Memberships | null>(null)
 const confirm = useConfirm()
 const isMobile = useIsMobile()
+const isExporting = ref(false)
 
 const SORT_MODE_STORAGE_KEY = 'wallecx:memberships-sort-mode';
 
@@ -164,18 +166,78 @@ function onUpdated(updatedRecord: Memberships): void {
   const idx = records.value.findIndex((r) => r.id === updatedRecord.id)
   if (idx !== -1) records.value[idx] = updatedRecord
 }
+
+async function exportJson(): Promise<void> {
+  if (isExporting.value) return
+  const userId = pb.authStore.record?.id
+  if (!userId) {
+    toast.error("Session expired. Please log in again.")
+    return
+  }
+  isExporting.value = true
+  try {
+    const allRecords = await pb
+      .collection("wallecx_memberships")
+      .getFullList<Memberships>({
+        sort: "-created",
+        requestKey: "memberships-export",
+      })
+    const exportPayload = {
+      exported_at: new Date().toISOString(),
+      record_count: allRecords.length,
+      records: allRecords.map((r) => ({
+        id: r.id,
+        card_name: r.card_name,
+        issuer: r.issuer ?? null,
+        card_number: r.card_number ?? null,
+        card_color: r.card_color ?? null,
+        expiry_date: r.expiry_date ?? null,
+        notes: r.notes ?? null,
+        card_image_url: r.card_image ? pb.files.getURL(r, r.card_image) : null,
+        created: r.created,
+        updated: r.updated,
+      })),
+    }
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = `wallecx-memberships-${dayjs().format("YYYY-MM-DD")}.json`
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    URL.revokeObjectURL(url)
+    toast.success("Membership cards exported.")
+  } catch (e: unknown) {
+    toast.error("Export failed. Please try again.")
+    console.error("MembershipsTab: exportJson failed", e)
+  } finally {
+    isExporting.value = false
+  }
+}
 </script>
 
 <template>
   <div>
-    <!-- Header row: Add card button -->
+    <!-- Header row: Add card + Download records buttons -->
     <div class="flex items-center justify-between mb-4">
-      <Button
-        label="Add card"
-        icon="pi pi-plus"
-        size="small"
-        @click="openManage(null)"
-      />
+      <div class="flex gap-2">
+        <Button
+          label="Add card"
+          icon="pi pi-plus"
+          size="small"
+          @click="openManage(null)"
+        />
+        <Button
+          label="Download records"
+          icon="pi pi-download"
+          severity="secondary"
+          size="small"
+          :disabled="isExporting"
+          :loading="isExporting"
+          @click="exportJson"
+        />
+      </div>
     </div>
 
     <!-- Toolbar: search + sort (ORG-01, ORG-02) — always visible -->
