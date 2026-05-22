@@ -258,7 +258,10 @@ Plans:
   3. The per-category chart updates with each period change; categories with zero spend in the period are hidden
   4. Chart renders correctly in both light and dark mode (inherits theme tokens from v3.0)
   5. Custom date range — picking arbitrary start and end dates produces the correct subset
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 26-01-PLAN.md — Install chart.js, declare chart palette CSS tokens (light + dark), create period.ts helper (with quarterOfYear plugin) + useChartTheme composable
+  - [ ] 26-02-PLAN.md — Refactor ExpensesTab.vue to thin shell; extract Phase 25 list logic into new ExpensesListView.vue sibling
+  - [ ] 26-03-PLAN.md — Create ExpensesReportsView.vue (period selector + Grand Total + horizontal bar chart + states); wire List/Reports sub-tabs into ExpensesTab.vue
 **UI hint**: yes
 
 ---
