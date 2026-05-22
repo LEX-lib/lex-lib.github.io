@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Daily Expense Tracker
 status: executing
-stopped_at: phase 26 plan 01 complete; plans 02 + 03 queued (2026-05-22)
-last_updated: "2026-05-22T01:34:33Z"
+stopped_at: phase 26 plan 02 complete; plan 03 queued (2026-05-22)
+last_updated: "2026-05-22T01:44:49Z"
 progress:
   total_phases: 27
   completed_phases: 26
   total_plans: 67
-  completed_plans: 65
-  percent: 97
+  completed_plans: 66
+  percent: 99
 ---
 
 # Project State
 
-**Last updated:** 2026-05-22 — Phase 26 Plan 01 complete (Wave 1 foundation): chart.js@^4.5.1 installed, 8 chart palette CSS tokens declared in @theme + .my-app-dark, src/lib/wallecx/period.ts created with quarterOfYear plugin registration + 16 Vitest assertions, src/composables/useChartTheme.ts created with MutationObserver on document.documentElement. Type-check + build + tests all green. Next: Plan 26-02 (Wave 2 — ExpensesTab shell refactor + ExpensesListView extraction) then Plan 26-03 (Wave 3 — ExpensesReportsView + sub-tab wiring).
+**Last updated:** 2026-05-22 — Phase 26 Plan 02 complete (Wave 2 refactor): ExpensesTab.vue reduced from 313 to 161 lines and now acts as a thin shell (data load + ManageExpense + AttachmentPreview dialogs + delete + preview handlers); Phase 25 list logic extracted verbatim into new sibling ExpensesListView.vue (186 lines) which owns 5 filter/sort refs, categoryOptions, filteredSortedExpenses, clearFilters, sessionStorage 'wallecx:expense-sort' persistence with VALID_SORT_MODES whitelist; props { expenses, isLoading } down + 4 events (edit/delete/preview/request-add-expense) up. Phase 25 invariants all preserved: requestKey 'expenses-getFullList', defineExpose({ deleteExpense }), ConfirmDialog at WallecxApp shell level, no @vueuse/core. Type-check + build-only + 49 unit tests all green. Zero user-visible behavior change vs. Phase 25. Next: Plan 26-03 (Wave 3 — ExpensesReportsView.vue + sub-tab wiring).
 
 ## Project Reference
 
@@ -29,11 +29,11 @@ progress:
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
 **Phase:** 26 — Reporting View
-**Status:** Phase 26 Plan 01 complete (Wave 1 foundation shipped); Plans 02 + 03 queued
+**Status:** Phase 26 Plans 01 + 02 complete (Wave 1 foundation + Wave 2 refactor shipped); Plan 03 queued
 
 ```
 v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26      ]
-               [   DONE   ] [   DONE   ] [   DONE   ] [ 1/3 — IN PROG ]
+               [   DONE   ] [   DONE   ] [   DONE   ] [ 2/3 — IN PROG ]
 ```
 
 ```
@@ -124,6 +124,14 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 - **sessionStorage sort restoration runs BEFORE getFullList in onMounted.** Restoring after the load would cause a flash of the default sort mode before the persisted sort applies.
 - **`requestKey: 'expenses-getFullList'` confirmed distinct.** Verified non-colliding with `'memberships-getFullList'` and `'vaccinations-getFullList'`. STATE.md locked invariant upheld.
 
+### Phase 26 Decisions (Plan 02 — Wave 2 refactor)
+
+- **Parent-shell + child-view SFC split established for Wallecx tabs.** ExpensesTab is now a thin parent shell that owns data (expenses ref, isLoading), CRUD operations (deleteExpense, openManage, onCreated, onUpdated), and modal/preview UI (ManageExpense dialog, AttachmentPreview Dialog/Drawer with token gate). ExpensesListView is the child sibling view that owns view-specific UI state (5 filter/sort refs, sessionStorage sort persistence, 4-state template) and emits semantic intent events (edit, delete, preview, request-add-expense) back up to the shell. Plan 26-03 will use the same pattern to add ExpensesReportsView as a second sibling view, with the sub-tab toggle living in the shell.
+- **Props are unwrapped in setup — child uses `props.expenses` (no `.value`).** Confirmed via working type-check that categoryOptions and filteredSortedExpenses computeds dereference `props.expenses` directly, matching Vue 3 Composition API behavior where defineProps returns a reactive proxy whose property reads track reactively without `.value`.
+- **sessionStorage persistence belongs with the state owner.** Sort mode persistence (`wallecx:expense-sort` + VALID_SORT_MODES whitelist + read in onMounted + write in watch) moved entirely to ExpensesListView in this refactor. The shell does not touch sort state, simplifying Plan 26-03 (which will add period state, NOT sort state, to ExpensesReportsView).
+- **Receipt preview state stays in the shell, not the list view.** Even though preview is triggered by a list-row paperclip click, the showPreview/previewRecord/previewToken state and Dialog/Drawer rendering live in ExpensesTab. This avoids re-extraction when Plan 26-03 introduces ExpensesReportsView (which does NOT need receipt preview).
+- **All Phase 25 user-visible copy preserved verbatim.** Every string (`'No expenses yet.'`, `'No expenses match your filters.'`, `'Add expense'`, `'Clear filters'`, delete confirmation header/body/labels, error toasts) and every visual element (mdi:cash-multiple, mdi:filter-remove-outline icons, py-12 spacing, Skeleton h=3rem) carried across the refactor without edit. Zero visual diff target met.
+
 ### Phase 26 Decisions (Plan 01 — Wave 1 foundation)
 
 - **dayjs format token `Q` is NOT extended by the quarterOfYear plugin.** Despite plan + RESEARCH.md asserting that `now.format('[Q]Q YYYY')` would produce "Q2 2026", empirically (Node REPL after `dayjs.extend(quarterOfYear)`) it produces "QQ 2026" — the plugin patches `.quarter()` / `.startOf('quarter')` / `.endOf('quarter')` accessors but does NOT extend `format()` token grammar. Use `` `Q${now.quarter()} ${now.format('YYYY')}` `` template literal instead. Locked in `src/lib/wallecx/period.ts` `formatPeriodLabel` with an inline NOTE comment.
@@ -158,13 +166,13 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-22T01:34:33Z
+**Last session:** 2026-05-22T01:44:49Z
 
-**Stopped at:** Phase 26 Plan 01 complete (Wave 1 foundation shipped); Plans 02 + 03 queued (2026-05-22)
+**Stopped at:** Phase 26 Plan 02 complete (Wave 2 refactor shipped); Plan 03 queued (2026-05-22)
 
-**Next session entry point:** Execute Plan 26-02 (Wave 2 — ExpensesTab.vue thin-shell refactor + ExpensesListView.vue sibling extraction). Then Plan 26-03 (Wave 3 — ExpensesReportsView.vue + sub-tab wiring). All Wave 1 artifacts (chart.js@^4.5.1, --color-chart-1..8 CSS tokens, period.ts, useChartTheme.ts) are ready for downstream consumption.
+**Next session entry point:** Execute Plan 26-03 (Wave 3 — ExpensesReportsView.vue + List/Reports sub-tab wiring inside ExpensesTab.vue). The shell + sibling-view architecture is in place: ExpensesReportsView will be a second sibling consuming the same `:expenses` and `:is-loading` props from the shell. All Wave 1 artifacts (chart.js@^4.5.1, --color-chart-1..8 CSS tokens, period.ts, useChartTheme.ts) remain ready for consumption.
 
-**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Phase 26-01 commits: 0a31a10 (chart.js + palette), 6e8617d (period.test RED), ce7e04e (period.ts GREEN), d5edb49 (useChartTheme). Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep.
+**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Phase 26-01 commits: 0a31a10 (chart.js + palette), 6e8617d (period.test RED), ce7e04e (period.ts GREEN), d5edb49 (useChartTheme). Phase 26-02 commits: bcf4568 (extract ExpensesListView.vue), 42ed8ea (refactor ExpensesTab.vue to shell). Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
