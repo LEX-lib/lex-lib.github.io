@@ -219,25 +219,23 @@ async function exportJson(): Promise<void> {
 
 <template>
   <div>
-    <!-- Header row: Add card + Download records buttons -->
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex gap-2">
-        <Button
-          label="Add card"
-          icon="pi pi-plus"
-          size="small"
-          @click="openManage(null)"
-        />
-        <Button
-          label="Download records"
-          icon="pi pi-download"
-          severity="secondary"
-          size="small"
-          :disabled="isExporting"
-          :loading="isExporting"
-          @click="exportJson"
-        />
-      </div>
+    <!-- Header row: Download + Add buttons -->
+    <div class="flex gap-2 justify-center sm:justify-end mb-4">
+      <Button
+        label="Download records"
+        icon="pi pi-download"
+        severity="secondary"
+        size="small"
+        :disabled="isExporting"
+        :loading="isExporting"
+        @click="exportJson"
+      />
+      <Button
+        label="Add card"
+        icon="pi pi-plus"
+        size="small"
+        @click="openManage(null)"
+      />
     </div>
 
     <!-- Toolbar: search + sort (ORG-01, ORG-02) — always visible -->

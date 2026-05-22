@@ -322,24 +322,22 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
 <template>
   <div>
     <!-- Header row: Download + Add buttons -->
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex gap-2">
-        <Button
-          label="Download records"
-          icon="pi pi-download"
-          size="small"
-          severity="secondary"
-          :disabled="isExporting"
-          :loading="isExporting"
-          @click="exportJson"
-        />
-        <Button
-          label="Add vaccination"
-          icon="pi pi-plus"
-          size="small"
-          @click="openManage(null)"
-        />
-      </div>
+    <div class="flex gap-2 justify-center sm:justify-end mb-4">
+      <Button
+        label="Download records"
+        icon="pi pi-download"
+        size="small"
+        severity="secondary"
+        :disabled="isExporting"
+        :loading="isExporting"
+        @click="exportJson"
+      />
+      <Button
+        label="Add vaccination"
+        icon="pi pi-plus"
+        size="small"
+        @click="openManage(null)"
+      />
     </div>
 
     <!-- Toolbar: search + sort (SEARCH-01, SORT-01) — always visible -->
