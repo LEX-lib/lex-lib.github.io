@@ -1,7 +1,8 @@
 ---
 phase: 27
 slug: code-quality-exports
-status: draft
+status: approved
+reviewed_at: 2026-05-22T00:00:00Z
 shadcn_initialized: false
 preset: none
 created: 2026-05-22
@@ -58,9 +59,10 @@ Exceptions:
 | Body | 16px | 400 (regular) | 1.5 | `var(--color-typo-body)` / `text-base` |
 | Label | 14px | 400 (regular) | 1.5 | `var(--color-typo-muted)` / `text-sm` |
 | Heading | 18px | 600 (semibold) | 1.2 | `text-lg font-semibold` + `var(--color-typo-heading)` |
-| Button label | 14px | 500 (medium) | — | PrimeVue Button internal; `size="small"` |
 
 > Source: `ExpensesTab.vue:104` — `class="text-lg font-semibold" style="color: var(--color-typo-heading)"` established pattern. `src/assets/main.css` — body at weight 400, font-family Rubik.
+
+*PrimeVue Button `size="small"` renders at 14px / weight 500 (Aura internal — not a project-level declaration).*
 
 Phase 27 adds no new typographic elements. The "Download records" button label uses PrimeVue's internal Button typography at `size="small"`, consistent with all other action buttons in Wallecx.
 
