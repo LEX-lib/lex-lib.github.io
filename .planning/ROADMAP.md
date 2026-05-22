@@ -259,7 +259,7 @@ Plans:
   4. Chart renders correctly in both light and dark mode (inherits theme tokens from v3.0)
   5. Custom date range — picking arbitrary start and end dates produces the correct subset
 **Plans**: 3 plans
-  - [ ] 26-01-PLAN.md — Install chart.js, declare chart palette CSS tokens (light + dark), create period.ts helper (with quarterOfYear plugin) + useChartTheme composable
+  - [x] 26-01-PLAN.md — Install chart.js, declare chart palette CSS tokens (light + dark), create period.ts helper (with quarterOfYear plugin) + useChartTheme composable
   - [ ] 26-02-PLAN.md — Refactor ExpensesTab.vue to thin shell; extract Phase 25 list logic into new ExpensesListView.vue sibling
   - [ ] 26-03-PLAN.md — Create ExpensesReportsView.vue (period selector + Grand Total + horizontal bar chart + states); wire List/Reports sub-tabs into ExpensesTab.vue
 **UI hint**: yes
@@ -296,7 +296,7 @@ Plans:
 | 23. Backend & Type Foundation | v4.0 | 1/1 | Complete (UAT approved) | 2026-05-21 |
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 25. Read Path — List View | v4.0 | 2/2 | Complete (executed; UAT pending) | 2026-05-21 |
-| 26. Reporting View | v4.0 | 0/? | Not started | - |
+| 26. Reporting View | v4.0 | 1/3 | In progress | - |
 
 ---
 *Roadmap created: 2026-05-10*

@@ -1,21 +1,21 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.3
-milestone_name: UX Polish
+milestone: v4.0
+milestone_name: Daily Expense Tracker
 status: executing
-stopped_at: phase 25 complete; phase 26 queued (2026-05-21)
-last_updated: "2026-05-21T10:15:00.000Z"
+stopped_at: phase 26 plan 01 complete; plans 02 + 03 queued (2026-05-22)
+last_updated: "2026-05-22T01:34:33Z"
 progress:
   total_phases: 27
   completed_phases: 26
-  total_plans: 64
-  completed_plans: 64
-  percent: 100
+  total_plans: 67
+  completed_plans: 65
+  percent: 97
 ---
 
 # Project State
 
-**Last updated:** 2026-05-21 — Phase 25 complete: ExpensesTab.vue fully populated with onMounted load, sessionStorage sort persistence, four-transform filter pipeline (search/category/date/sort), two distinct empty states, and receipt preview (Dialog desktop / bottom Drawer mobile). EXP-07/08/09/10 delivered. Type-check + build-only both clean. Next: Phase 26 (Reporting View — EXP-11, EXP-12, EXP-13).
+**Last updated:** 2026-05-22 — Phase 26 Plan 01 complete (Wave 1 foundation): chart.js@^4.5.1 installed, 8 chart palette CSS tokens declared in @theme + .my-app-dark, src/lib/wallecx/period.ts created with quarterOfYear plugin registration + 16 Vitest assertions, src/composables/useChartTheme.ts created with MutationObserver on document.documentElement. Type-check + build + tests all green. Next: Plan 26-02 (Wave 2 — ExpensesTab shell refactor + ExpensesListView extraction) then Plan 26-03 (Wave 3 — ExpensesReportsView + sub-tab wiring).
 
 ## Project Reference
 
@@ -29,11 +29,11 @@ progress:
 **Milestone:** v3.0 — Site-Wide Dark Mode
 **Milestone:** v4.0 — Daily Expense Tracker
 **Phase:** 26 — Reporting View
-**Status:** Phase 25 complete (both plans shipped); Phase 26 queued
+**Status:** Phase 26 Plan 01 complete (Wave 1 foundation shipped); Plans 02 + 03 queued
 
 ```
-v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26 ]
-               [   DONE   ] [   DONE   ] [   DONE   ] [  NEXT UP ]
+v4.0 Progress: [ Phase 23 ] [ Phase 24 ] [ Phase 25 ] [ Phase 26      ]
+               [   DONE   ] [   DONE   ] [   DONE   ] [ 1/3 — IN PROG ]
 ```
 
 ```
@@ -124,6 +124,13 @@ v3.0 Progress: [ Phase 19 ] [ Phase 20 ] [ Phase 21 ] [ Phase 22 ]
 - **sessionStorage sort restoration runs BEFORE getFullList in onMounted.** Restoring after the load would cause a flash of the default sort mode before the persisted sort applies.
 - **`requestKey: 'expenses-getFullList'` confirmed distinct.** Verified non-colliding with `'memberships-getFullList'` and `'vaccinations-getFullList'`. STATE.md locked invariant upheld.
 
+### Phase 26 Decisions (Plan 01 — Wave 1 foundation)
+
+- **dayjs format token `Q` is NOT extended by the quarterOfYear plugin.** Despite plan + RESEARCH.md asserting that `now.format('[Q]Q YYYY')` would produce "Q2 2026", empirically (Node REPL after `dayjs.extend(quarterOfYear)`) it produces "QQ 2026" — the plugin patches `.quarter()` / `.startOf('quarter')` / `.endOf('quarter')` accessors but does NOT extend `format()` token grammar. Use `` `Q${now.quarter()} ${now.format('YYYY')}` `` template literal instead. Locked in `src/lib/wallecx/period.ts` `formatPeriodLabel` with an inline NOTE comment.
+- **MutationObserver attaches to `document.documentElement`, not `document.body`.** Project's `useTheme.ts` puts `.my-app-dark` on `<html>`. The UI-SPEC sample code observing `<body>` was wrong for this project. `useChartTheme` defensively observes both elements at negligible cost.
+- **Chart palette is fully CSS-resident (16 tokens).** `--color-chart-1..8` declared in BOTH the `@theme` block (light) AND the `.my-app-dark` block (dark) in `src/assets/base.css`. The `useChartTheme` composable just re-reads via `getComputedStyle` on class mutation — no JS palette lookup table. Bars auto-swap colors on dark-mode toggle.
+- **chart.js installed as runtime dep (NOT devDep).** PrimeVue 4.3.x performs dynamic `import('chart.js/auto')` at component mount; without the package the import silently resolves to nothing and the chart never renders (no error, no warning). PrimeVue does NOT declare chart.js as a peer dep.
+
 ### Open Todos
 
 None.
@@ -151,13 +158,13 @@ Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
 
 ## Session Continuity
 
-**Last session:** 2026-05-21T10:15:00.000Z
+**Last session:** 2026-05-22T01:34:33Z
 
-**Stopped at:** Phase 25 complete; Phase 26 queued (2026-05-21)
+**Stopped at:** Phase 26 Plan 01 complete (Wave 1 foundation shipped); Plans 02 + 03 queued (2026-05-22)
 
-**Next session entry point:** Plan Phase 26 — Reporting View (period-tabbed totals + per-category breakdown chart via PrimeVue Chart / Chart.js). Requirements: EXP-11, EXP-12, EXP-13.
+**Next session entry point:** Execute Plan 26-02 (Wave 2 — ExpensesTab.vue thin-shell refactor + ExpensesListView.vue sibling extraction). Then Plan 26-03 (Wave 3 — ExpensesReportsView.vue + sub-tab wiring). All Wave 1 artifacts (chart.js@^4.5.1, --color-chart-1..8 CSS tokens, period.ts, useChartTheme.ts) are ready for downstream consumption.
 
-**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep — unrelated to Phase 25 scope.
+**Code review note:** Phase 24 WR-01 + WR-02 fixed and committed (fa5e94e). Phase 25 CONTEXT.md committed (fa5e94e). Phase 25-01 complete: e05b206 + a8cf273. Phase 25-02 complete: 5c80775 + 77ad1db. Phase 26-01 commits: 0a31a10 (chart.js + palette), 6e8617d (period.test RED), ce7e04e (period.ts GREEN), d5edb49 (useChartTheme). Pre-existing lint warning in VaccinationDetail.vue (`'props' is assigned a value but never used`) deferred to maintenance sweep.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
