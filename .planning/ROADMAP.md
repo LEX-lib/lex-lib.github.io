@@ -127,7 +127,7 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
 
 ### v4.1 Gap Resolution & Feature Completeness (Phases 27–30) — IN PROGRESS
 
-- [ ] **Phase 27: Code Quality & Exports** - Fix two deferred code quality issues and add JSON export to Memberships and Expenses tabs
+- [x] **Phase 27: Code Quality & Exports** - Fix two deferred code quality issues and add JSON export to Memberships and Expenses tabs (completed 2026-05-22)
 - [ ] **Phase 28: Budget Tracking** - New wallecx_expense_budgets collection + actual-vs-budget reporting in Reports tab
 - [ ] **Phase 29: Period Comparison** - Extend ExpensesReportsView with period-over-period comparison section
 - [ ] **Phase 30: UAT Sweep** - Structured UAT pass over phases 10–25 untested scenarios with regression fixes
@@ -148,9 +148,9 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
   5. Both export downloads work in dark mode and on mobile viewport
 **Plans**: 3 plans
 Plans:
-- [ ] 27-01-PLAN.md — Verify CQ-01 & CQ-02 via test suite run; mark complete in REQUIREMENTS.md
-- [ ] 27-02-PLAN.md — Add memberships JSON export (MembershipsTab.vue)
-- [ ] 27-03-PLAN.md — Add expenses JSON export (ExpensesTab.vue)
+- [x] 27-01-PLAN.md — Verify CQ-01 & CQ-02 via test suite run; mark complete in REQUIREMENTS.md
+- [x] 27-02-PLAN.md — Add memberships JSON export (MembershipsTab.vue)
+- [x] 27-03-PLAN.md — Add expenses JSON export (ExpensesTab.vue)
 **UI hint**: yes
 
 ### Phase 28: Budget Tracking
@@ -223,7 +223,7 @@ Plans:
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 25. Read Path — List View | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 26. Reporting View | v4.0 | 3/3 | Complete (UAT approved) | 2026-05-22 |
-| 27. Code Quality & Exports | v4.1 | 0/3 | Not started | — |
+| 27. Code Quality & Exports | v4.1 | 3/3 | Complete (UAT approved) | 2026-05-22 |
 | 28. Budget Tracking | v4.1 | 0/? | Not started | — |
 | 29. Period Comparison | v4.1 | 0/? | Not started | — |
 | 30. UAT Sweep | v4.1 | 0/? | Not started | — |
