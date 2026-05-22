@@ -28,6 +28,7 @@
     "@vueuse/motion": "^3.0.3",
     "axios": "^1.13.6",
     "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.1",
     "dayjs": "^1.11.18",
     "dompurify": "^3.3.3",
     "iconify-icon": "^3.0.0",
