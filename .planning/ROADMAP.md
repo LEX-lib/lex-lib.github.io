@@ -146,7 +146,11 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
   3. User can click a Download JSON button on the Memberships tab and receive a valid JSON file containing all their membership card records
   4. User can click a Download JSON button on the Expenses tab and receive a valid JSON file containing all their expense records
   5. Both export downloads work in dark mode and on mobile viewport
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 27-01-PLAN.md — Verify CQ-01 & CQ-02 via test suite run; mark complete in REQUIREMENTS.md
+- [ ] 27-02-PLAN.md — Add memberships JSON export (MembershipsTab.vue)
+- [ ] 27-03-PLAN.md — Add expenses JSON export (ExpensesTab.vue)
 **UI hint**: yes
 
 ### Phase 28: Budget Tracking
@@ -219,11 +223,11 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
 | 24. Write Path — Tab Shell + CRUD | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 25. Read Path — List View | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 26. Reporting View | v4.0 | 3/3 | Complete (UAT approved) | 2026-05-22 |
-| 27. Code Quality & Exports | v4.1 | 0/? | Not started | — |
+| 27. Code Quality & Exports | v4.1 | 0/3 | Not started | — |
 | 28. Budget Tracking | v4.1 | 0/? | Not started | — |
 | 29. Period Comparison | v4.1 | 0/? | Not started | — |
 | 30. UAT Sweep | v4.1 | 0/? | Not started | — |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-22 — v4.1 Gap Resolution & Feature Completeness roadmap created. Phases 27–30 defined (8 requirements, 100% coverage).*
+*Last updated: 2026-05-22 — Phase 27 planned: 3 plans across 2 waves (CQ-01/CQ-02 verification + memberships export + expenses export).*
