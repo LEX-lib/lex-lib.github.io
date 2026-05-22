@@ -322,8 +322,9 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
 <template>
   <div>
     <!-- Header row: Download + Add buttons -->
-    <div class="flex gap-2 justify-center sm:justify-end mb-4">
+    <div class="flex gap-2 mb-4 sm:justify-end">
       <Button
+        class="flex-1 sm:flex-none"
         label="Download records"
         icon="pi pi-download"
         size="small"
@@ -333,6 +334,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
         @click="exportJson"
       />
       <Button
+        class="flex-1 sm:flex-none"
         label="Add vaccination"
         icon="pi pi-plus"
         size="small"

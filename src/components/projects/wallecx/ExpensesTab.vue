@@ -150,8 +150,9 @@ async function exportJson(): Promise<void> {
 <template>
   <div>
     <!-- Header row: Download + Add buttons -->
-    <div class="flex gap-2 justify-center sm:justify-end mb-4">
+    <div class="flex gap-2 mb-4 sm:justify-end">
       <Button
+        class="flex-1 sm:flex-none"
         label="Download records"
         icon="pi pi-download"
         severity="secondary"
@@ -160,7 +161,13 @@ async function exportJson(): Promise<void> {
         :loading="isExporting"
         @click="exportJson"
       />
-      <Button label="Add Expense" icon="pi pi-plus" size="small" @click="openManage(null)" />
+      <Button
+        class="flex-1 sm:flex-none"
+        label="Add Expense"
+        icon="pi pi-plus"
+        size="small"
+        @click="openManage(null)"
+      />
     </div>
 
     <!-- Sub-tab shell: List (Phase 25) | Reports (Phase 26 EXP-11/12/13) -->
