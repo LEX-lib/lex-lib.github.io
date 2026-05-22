@@ -12,8 +12,8 @@
 
 ### Data Export
 
-- [ ] **EXPORT-01**: User can download all membership card records as a single JSON file from the Memberships tab
-- [ ] **EXPORT-02**: User can download all expense records as a single JSON file from the Expenses tab
+- [x] **EXPORT-01**: User can download all membership card records as a single JSON file from the Memberships tab
+- [x] **EXPORT-02**: User can download all expense records as a single JSON file from the Expenses tab
 
 ### Expense Reports
 
@@ -53,8 +53,8 @@
 |-------------|-------|--------|
 | CQ-01 | Phase 27 | Complete (verified 2026-05-22) |
 | CQ-02 | Phase 27 | Complete (verified 2026-05-22) |
-| EXPORT-01 | Phase 27 | Pending |
-| EXPORT-02 | Phase 27 | Pending |
+| EXPORT-01 | Phase 27 | Complete (verified 2026-05-22) |
+| EXPORT-02 | Phase 27 | Complete (verified 2026-05-22) |
 | RPT-01 | Phase 28 | Pending |
 | RPT-02 | Phase 28 | Pending |
 | RPT-03 | Phase 29 | Pending |
