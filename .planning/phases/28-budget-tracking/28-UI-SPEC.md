@@ -1,7 +1,8 @@
 ---
 phase: 28
 slug: budget-tracking
-status: draft
+status: approved
+reviewed_at: 2026-05-23
 shadcn_initialized: false
 preset: none
 created: 2026-05-23
@@ -53,20 +54,28 @@ Exceptions:
 
 | Role | Size | Weight | Line Height | Token |
 |------|------|--------|-------------|-------|
-| Body | 14px (`text-sm`) | 400 (regular) | 1.5 | `--color-typo-body` |
-| Label | 14px (`text-sm`) | 400 (regular) | 1.4 | `--color-typo-heading` |
-| Heading / Section title | 16px (`text-base`) | 600 (semibold, `font-semibold`) | 1.2 | `--color-typo-heading` |
+| Body | 14px (`text-sm`) | 400 (regular, `font-normal`) | 1.5 | `--color-typo-body` |
+| Label | 14px (`text-sm`) | 400 (regular, `font-normal`) | 1.4 | `--color-typo-heading` |
+| Heading / Section title | 16px (`text-base`) | 700 (bold, `font-bold`) | 1.2 | `--color-typo-heading` |
 | Display / Grand total hero | 30px (`text-3xl`) | 700 (bold, `font-bold`) | 1.2 | `--color-brand-primary` |
 
 All font-family: `"Rubik", sans-serif` via `--font-family` CSS variable.
 
 Notes:
 - Chart axis tick labels: 12px / weight 400 — `font: { family: 'Rubik', size: 12, weight: '400' }` (existing pattern from ExpensesReportsView, unchanged).
-- Badge text (Under/Over): 12px (`text-xs`) / weight 500 (`font-medium`) — distinguishable from body but smaller than label.
+- Badge text (Under/Over): 12px (`text-xs`) / weight 400 (`font-normal`) — `text-xs` size already differentiates badge from body; no separate weight needed.
 - Category name in budget row: 14px / weight 400 — matches body.
 - Muted helper copy: 14px / weight 400 / `--color-typo-muted`.
 
 > Source: ManageExpense.vue (text-sm labels), ExpensesReportsView.vue (text-3xl grand total, text-sm body), base.css typo tokens
+
+---
+
+## Visual Hierarchy
+
+Primary focal point: Grand Total hero (30px, `--color-brand-primary`) — dominant visual anchor of STATE 4.
+
+All other elements (section heading, budget rows, badges, chart) are subordinate to this anchor and use smaller sizes or muted colors.
 
 ---
 
@@ -104,11 +113,11 @@ No destructive action color needed in this phase (budget save/delete does not us
 - PrimeVue `Dialog`, modal, `:style="{ width: '40vw' }"`, `:breakpoints="{ '960px': '75vw', '641px': '92vw' }"`
 - Header text: "Manage Budgets"
 - `:closable="!isSaving"`
-- Content: scrollable category list + sticky "Save" button at bottom
+- Content: scrollable category list + sticky "Save Budgets" button at bottom
 
 **Layout — Mobile (Drawer):**
 - PrimeVue `Drawer`, `position="bottom"`, `:show-close-icon="!isSaving"`
-- Custom `#header` slot: drag handle (`w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600`) + "Manage Budgets" title (`font-semibold`)
+- Custom `#header` slot: drag handle (`w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600`) + "Manage Budgets" title (`font-bold`)
 - Content: same form as dialog
 
 **Category row structure (one per category):**
@@ -124,7 +133,7 @@ No destructive action color needed in this phase (budget save/delete does not us
 - Pre-population: when dialog opens, seed `amount` and `budget_type` from matching budget record; default `budget_type` = `'monthly'` for rows with no existing record
 
 **Save button:**
-- `<Button type="button" fluid label="Save" :loading="isSaving" :disabled="isSaving" />` at bottom of form
+- `<Button type="button" fluid label="Save Budgets" :loading="isSaving" :disabled="isSaving" />` at bottom of form
 - Triggers upsert loop (create / update / delete per row)
 
 **Post-save:**
@@ -158,7 +167,7 @@ No destructive action color needed in this phase (budget save/delete does not us
 
 **"Budget vs Actual" section (D-04):**
 - Rendered with `v-if="visibleBudgets.length > 0"` — entirely absent when period is `this-quarter` or `custom`, or when no matching budgets exist
-- Section heading: "Budget vs Actual", `text-base font-semibold`, color `var(--color-typo-heading)`, `mt-6 mb-3`
+- Section heading: "Budget vs Actual", `text-base font-bold`, color `var(--color-typo-heading)`, `mt-6 mb-3`
 - One row per category that has a budget for the active period type
 
 **Budget row structure:**
@@ -172,7 +181,7 @@ No destructive action color needed in this phase (budget save/delete does not us
 - Actual amount row: `flex items-center justify-between mt-1`
   - Left: `formatCurrency(actual)`, `text-xs`, color `var(--color-typo-muted)`
   - Right: badge (see below)
-- Badge: `text-xs font-medium px-2 py-0.5 rounded-full`
+- Badge: `text-xs font-normal px-2 py-0.5 rounded-full`
   - "Under by X": background tint of success color; text copy `Under by {{ formatCurrency(budget - actual) }}`; `style="background-color: color-mix(in srgb, var(--color-status-success) 15%, transparent); color: var(--color-status-success)"`
   - "Over by X": background tint of error color; text copy `Over by {{ formatCurrency(actual - budget) }}`; `style="background-color: color-mix(in srgb, var(--color-status-error) 15%, transparent); color: var(--color-status-error)"`
   - Exactly on budget: badge text "On budget", success color treatment
@@ -193,7 +202,7 @@ No destructive action color needed in this phase (budget save/delete does not us
 | Dialog/Drawer opens | `watch(visible)` fires; local rows array seeded from `:budgets` prop — pre-fills amount and budget_type per category |
 | User edits InputNumber | Updates local row state only; no immediate PocketBase call |
 | User toggles Monthly/Yearly | Updates `budget_type` on local row state only |
-| "Save" button click | Triggers upsert loop; `isSaving = true`; button shows loading spinner; closable = false |
+| "Save Budgets" button click | Triggers upsert loop; `isSaving = true`; button shows loading spinner; closable = false |
 | Save succeeds | `toast.success('Budgets saved.')`; emits `'saved'`; `visible = false` |
 | Save fails (any error) | `toast.error('Failed to save budgets. Please try again.')`; dialog stays open; `isSaving = false` |
 | User clears an amount to 0 or blank | Treated as "no budget" on save — deletes existing record or skips |
@@ -222,7 +231,7 @@ No destructive action color needed in this phase (budget save/delete does not us
 |---------|------|
 | Primary CTA (open budget management) | "Manage Budgets" |
 | Dialog/Drawer header | "Manage Budgets" |
-| Save button | "Save" |
+| Save button | "Save Budgets" |
 | Section heading | "Budget vs Actual" |
 | Under budget badge | "Under by [formatted amount]" |
 | Over budget badge | "Over by [formatted amount]" |
