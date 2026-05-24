@@ -2,6 +2,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import dayjs from 'dayjs'
 import type { Expenses } from '@/types/wallecx/expenses/types'
+import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
+import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
+import { toast } from 'vue-sonner'
+import { pb } from '@/lib/pocketbase'
+import ManageBudget from './ManageBudget.vue'
 import { formatCurrency } from '@/lib/wallecx/currency'
 import {
   getPeriodRange,
@@ -16,11 +21,13 @@ import { useChartTheme } from '@/composables/useChartTheme'
 
 const props = defineProps<{
   expenses: Expenses[]
+  budgets: ExpenseBudget[]
   isLoading: boolean
 }>()
 
 const emit = defineEmits<{
   'request-add-expense': []
+  'budgets-saved': []
 }>()
 
 // Period state
@@ -81,6 +88,85 @@ const categoryTotals = computed<{ category: string; total: number }[]>(() => {
 const periodNameLabel = computed(() =>
   formatPeriodLabel(period.value, customFrom.value, customTo.value),
 )
+
+// === Phase 28 — Budget vs Actual integration ===
+
+// ManageBudget dialog state (lazy categories load on click — see openManageBudgets)
+const showManageBudget = ref(false)
+const budgetCategories = ref<ExpenseCategories[]>([])
+const isLoadingCategories = ref(false)
+
+// Period-gated budgets (CONTEXT.md D-07/D-08/D-09)
+const visibleBudgets = computed<ExpenseBudget[]>(() => {
+  if (period.value === 'this-month') {
+    return props.budgets.filter((b) => b.budget_type === 'monthly')
+  }
+  if (period.value === 'this-year') {
+    return props.budgets.filter((b) => b.budget_type === 'yearly')
+  }
+  return []  // this-quarter and custom: section hidden entirely (D-09)
+})
+
+// Actual spend per category from the existing categoryTotals computed (period-filtered already)
+function actualFor(category: string): number {
+  return categoryTotals.value.find((c) => c.category === category)?.total ?? 0
+}
+
+function badgeLabel(b: ExpenseBudget): string {
+  const actual = actualFor(b.category)
+  if (actual > b.amount) return `Over by ${formatCurrency(actual - b.amount)}`
+  if (actual < b.amount) return `Under by ${formatCurrency(b.amount - actual)}`
+  return 'On budget'
+}
+
+function badgeStyle(b: ExpenseBudget): { backgroundColor: string; color: string } {
+  const actual = actualFor(b.category)
+  const isOver = actual > b.amount
+  const token = isOver ? 'var(--color-status-error)' : 'var(--color-status-success)'
+  return {
+    backgroundColor: `color-mix(in srgb, ${token} 15%, transparent)`,
+    color: token,
+  }
+}
+
+function progressFillStyle(b: ExpenseBudget): { width: string; backgroundColor: string } {
+  const actual = actualFor(b.category)
+  const isOver = actual > b.amount
+  // Defensive guard: if budget amount is 0 the bar fills to 0 (already filtered upstream by upsert
+  // delete-on-zero, but cheap to defend here).
+  const pct = b.amount > 0 ? Math.min(100, (actual / b.amount) * 100) : 0
+  return {
+    width: pct + '%',
+    backgroundColor: isOver ? 'var(--color-status-error)' : 'var(--color-status-success)',
+  }
+}
+
+// Open Manage Budgets — load categories on demand (matches ManageExpense.vue's lazy-load pattern)
+async function openManageBudgets(): Promise<void> {
+  await loadCategoriesForBudget()
+  showManageBudget.value = true
+}
+
+async function loadCategoriesForBudget(): Promise<void> {
+  isLoadingCategories.value = true
+  try {
+    budgetCategories.value = await pb
+      .collection('wallecx_expense_categories')
+      .getFullList<ExpenseCategories>({
+        requestKey: 'expense-categories-getFullList',  // shared with ManageExpense.vue — safe per RESEARCH Q2
+      })
+  } catch (e: unknown) {
+    toast.error('Failed to load categories. Please try again.')
+    console.error('ExpensesReportsView: loadCategoriesForBudget failed', e)
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+function onBudgetsSaved(): void {
+  emit('budgets-saved')
+  showManageBudget.value = false
+}
 
 // Reduced-motion detection (UI-SPEC §Accessibility Contract → Reduced motion)
 const reducedMotion = computed(() =>
@@ -287,7 +373,7 @@ watch(period, (next) => {
       />
     </div>
 
-    <!-- STATE 4: Grand Total hero + horizontal bar chart -->
+    <!-- STATE 4: Grand Total hero + horizontal bar chart + Budget vs Actual section -->
     <template v-else>
       <div class="flex flex-col items-center gap-1 my-6">
         <span class="text-sm" style="color: var(--color-typo-muted)">
@@ -297,6 +383,21 @@ watch(period, (next) => {
           {{ formatCurrency(grandTotal) }}
         </span>
       </div>
+
+      <!-- Phase 28 — Manage Budgets entry (D-01, UI-SPEC); STATE 4 only -->
+      <div class="flex justify-end mb-4">
+        <Button
+          label="Manage Budgets"
+          icon="pi pi-sliders-h"
+          severity="secondary"
+          size="small"
+          class="min-h-[44px]"
+          :loading="isLoadingCategories"
+          :disabled="isLoadingCategories"
+          @click="openManageBudgets"
+        />
+      </div>
+
       <div
         class="w-full"
         :style="{ height: chartHeightPx + 'px' }"
@@ -305,7 +406,55 @@ watch(period, (next) => {
       >
         <Chart type="bar" :data="chartData" :options="chartOptions" class="w-full h-full" />
       </div>
+
+      <!-- Phase 28 — Budget vs Actual section (D-04/D-05/D-06/D-07/D-08/D-09) -->
+      <div v-if="visibleBudgets.length > 0" class="mt-6">
+        <h3
+          class="text-base font-bold mb-3"
+          style="color: var(--color-typo-heading)"
+        >
+          Budget vs Actual
+        </h3>
+        <div
+          v-for="b in visibleBudgets"
+          :key="b.id"
+          class="mb-4"
+          :aria-label="`Budget for ${b.category}: ${formatCurrency(b.amount)} budget, ${formatCurrency(actualFor(b.category))} actual, ${actualFor(b.category) > b.amount ? 'over' : 'under'}`"
+        >
+          <div class="text-sm mb-1" style="color: var(--color-typo-heading)">
+            {{ b.category }}
+          </div>
+          <div
+            class="w-full h-2 rounded-full"
+            style="background-color: var(--color-surface-divider)"
+          >
+            <div
+              class="h-2 rounded-full transition-all"
+              :style="progressFillStyle(b)"
+            />
+          </div>
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-xs" style="color: var(--color-typo-muted)">
+              {{ formatCurrency(actualFor(b.category)) }}
+            </span>
+            <span
+              class="text-xs font-normal px-2 py-0.5 rounded-full"
+              :style="badgeStyle(b)"
+            >
+              {{ badgeLabel(b) }}
+            </span>
+          </div>
+        </div>
+      </div>
     </template>
+
+    <!-- Phase 28 — ManageBudget modal (Dialog/Drawer split internally) -->
+    <ManageBudget
+      v-model:visible="showManageBudget"
+      :categories="budgetCategories"
+      :budgets="budgets"
+      @saved="onBudgetsSaved"
+    />
   </div>
 </template>
 
