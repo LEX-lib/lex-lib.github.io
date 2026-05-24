@@ -15,26 +15,26 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-22 — Phase 27 complete (UAT approved). CQ-01, CQ-02, EXPORT-01, EXPORT-02 all verified. Code review found 2 advisories (WR-01: export re-fetches instead of using in-memory list; WR-02: delete error swallowed). Next: Phase 28 — Budget Tracking.
+**Last updated:** 2026-05-24 — Phase 28 planned (3 plans across 3 waves). RPT-01/RPT-02 covered. Ready to execute.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 27 complete. Next: Phase 28 — Budget Tracking.
+**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 28 planned, ready to execute.
 
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Phase 27 complete — advancing to Phase 28
-**Phase:** 28 (not started)
-**Last activity:** 2026-05-22 — Phase 27 complete (UAT approved)
+**Status:** Phase 28 planned — ready to execute (3 plans, 3 waves)
+**Phase:** 28 (planned)
+**Last activity:** 2026-05-24 — Phase 28 plans created and verified
 
 ```
 v4.1 Progress: [##________] 25% (1/4 phases)
 Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
-Phase 28: Budget Tracking            [ ] Not started
+Phase 28: Budget Tracking            [~] Planned (0/3 plans)
 Phase 29: Period Comparison          [ ] Not started
 Phase 30: UAT Sweep                  [ ] Not started
 ```
@@ -220,7 +220,7 @@ Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
 **Stopped at:** context exhaustion at 90% (2026-05-22)
 
-**Next session entry point:** Run `/gsd-discuss-phase 28` or `/gsd-plan-phase 28` to start Phase 28: Budget Tracking.
+**Next session entry point:** Run `/gsd-execute-phase 28` to execute Phase 28: Budget Tracking (3 plans across 3 waves).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
