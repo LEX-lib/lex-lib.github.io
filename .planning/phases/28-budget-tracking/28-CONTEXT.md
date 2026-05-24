@@ -34,7 +34,7 @@ Add per-category budget targets (stored in PocketBase, per-user isolated) and wi
 ### Claude's Discretion
 
 - **Budget type per category:** Each category independently toggles between Monthly and Yearly in the management dialog. Not a global mode — one category can be monthly, another yearly.
-- **Collection schema:** `wallecx_expense_budgets` with fields: `user` (relation, required), `category` (text, required), `budget_type` (text: `'monthly'` | `'yearly'`), `amount` (number). One record per category per user. PocketBase rules follow the standard per-user isolation pattern (`@request.auth.id != "" && @request.data.user = @request.auth.id`).
+- **Collection schema:** `wallecx_expense_budgets` with fields: `user` (relation, required), `category` (text, required), `budget_type` (text: `'monthly'` | `'yearly'`), `amount` (number). One record per category per user. PocketBase rules follow the standard per-user isolation pattern (`@request.auth.id != "" && @request.body.user = @request.auth.id`).
 - **Budget data ownership:** ExpensesTab.vue loads budgets in `onMounted` (second `getFullList` call, requestKey `'expense-budgets-getFullList'`), passes as `:budgets` prop to ExpensesReportsView. Child views do not make their own PocketBase calls (consistent with established shell pattern).
 - **requestKey:** `'expense-budgets-getFullList'` — pre-locked in STATE.md pre-planning notes.
 - **Mapper + types:** Follow `expenseMapper.ts` / `src/types/wallecx/expenses/types.d.ts` patterns. New files: `src/types/wallecx/expense-budgets/types.d.ts` + `src/lib/pocketbase/expenseBudgetMapper.ts`.
@@ -77,7 +77,7 @@ Add per-category budget targets (stored in PocketBase, per-user isolated) and wi
 ### Established Patterns
 - Shell-owns-data: ExpensesTab.vue fetches `expenses` once; child views receive `:expenses` prop. Same pattern for budgets — tab fetches, ReportsView receives `:budgets`.
 - Dialog/Drawer split: `v-if="!isMobile"` Dialog + `v-else` Drawer. Pattern from ExpensesTab receipt preview.
-- Per-user PocketBase collection rules: `@request.auth.id != "" && @request.data.user = @request.auth.id` (createRule), `user = @request.auth.id` (listRule/viewRule/updateRule/deleteRule).
+- Per-user PocketBase collection rules: `@request.auth.id != "" && @request.body.user = @request.auth.id` (createRule), `user = @request.auth.id` (listRule/viewRule/updateRule/deleteRule).
 - sessionStorage for view state persistence (non-fatal try/catch pattern from ExpensesListView/ExpensesReportsView).
 - `requestKey` must be distinct per collection (locked STATE.md invariant).
 

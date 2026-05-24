@@ -39,7 +39,7 @@ The primary implementation risk is the upsert pattern for budget saves: the Mana
 **Claude's Discretion**
 - Budget type per category: each category independently toggles Monthly/Yearly in the dialog. Not a global mode.
 - Collection schema: `wallecx_expense_budgets` fields: `user` (relation, required), `category` (text, required), `budget_type` (text: `'monthly'` | `'yearly'`), `amount` (number). One record per category per user.
-- PocketBase rules: `@request.auth.id != "" && @request.data.user = @request.auth.id` (createRule), `user = @request.auth.id` (list/view/update/deleteRule).
+- PocketBase rules: `@request.auth.id != "" && @request.body.user = @request.auth.id` (createRule), `user = @request.auth.id` (list/view/update/deleteRule).
 - Budget data ownership: ExpensesTab.vue loads budgets in `onMounted`, passes as `:budgets` prop to ExpensesReportsView.
 - requestKey: `'expense-budgets-getFullList'`
 - Mapper + types: follow expenseMapper.ts / expenses/types.d.ts patterns. New: `src/types/wallecx/expense-budgets/types.d.ts` + `src/lib/pocketbase/expenseBudgetMapper.ts`.
@@ -508,7 +508,7 @@ export function mapToUpdateExpense(record: Expenses): { ... } {
 ### PocketBase per-user rules (reference for wallecx_expense_budgets collection)
 ```
 // Source: STATE.md §Architectural Invariants [VERIFIED]
-// createRule: @request.auth.id != "" && @request.data.user = @request.auth.id
+// createRule: @request.auth.id != "" && @request.body.user = @request.auth.id
 // listRule:   user = @request.auth.id
 // viewRule:   user = @request.auth.id
 // updateRule: user = @request.auth.id
@@ -595,7 +595,7 @@ Step 2.6: SKIPPED — this phase makes no changes beyond the existing project te
 |---------------|---------|-----------------|
 | V2 Authentication | no | Auth is handled by the existing PocketBase auth guard |
 | V3 Session Management | no | Session managed by PocketBase SDK + existing auth store |
-| V4 Access Control | yes | PocketBase per-user rules: `user = @request.auth.id` on list/view/update/delete; `@request.auth.id != "" && @request.data.user = @request.auth.id` on create |
+| V4 Access Control | yes | PocketBase per-user rules: `user = @request.auth.id` on list/view/update/delete; `@request.auth.id != "" && @request.body.user = @request.auth.id` on create |
 | V5 Input Validation | yes | Budget `amount` must be positive number; `budget_type` must be `'monthly'` or `'yearly'`; `category` must be non-empty string. Client-side validation in save handler; PocketBase field types enforce server-side. |
 | V6 Cryptography | no | No encryption needed for budget amounts |
 
@@ -604,10 +604,10 @@ Step 2.6: SKIPPED — this phase makes no changes beyond the existing project te
 | Pattern | STRIDE | Standard Mitigation |
 |---------|--------|---------------------|
 | User A reads User B's budgets | Information Disclosure | PocketBase listRule `user = @request.auth.id` filters at query time — enforced server-side [VERIFIED: STATE.md invariant] |
-| User A creates budget assigned to User B's user ID | Tampering | PocketBase createRule `@request.data.user = @request.auth.id` blocks cross-user creates [VERIFIED: STATE.md + memory MEMORY.md PocketBase v0.29.x syntax note] |
+| User A creates budget assigned to User B's user ID | Tampering | PocketBase createRule `@request.body.user = @request.auth.id` blocks cross-user creates [VERIFIED: STATE.md + memory MEMORY.md PocketBase v0.29.x syntax note] |
 | Invalid budget_type value stored | Tampering | PocketBase text field + client-side TypeScript type narrowing; consider adding PocketBase field-level enum validation |
 
-**PocketBase rule syntax note:** Per project MEMORY.md, `@request.data.user` (not `@request.body.user`) is the correct v0.29.x syntax for createRule. Rule violations return 404, not 403. [VERIFIED: MEMORY.md]
+**PocketBase rule syntax note:** Per project MEMORY.md, `@request.body.user` (not `@request.body.user`) is the correct v0.29.x syntax for createRule. Rule violations return 404, not 403. [VERIFIED: MEMORY.md]
 
 ---
 

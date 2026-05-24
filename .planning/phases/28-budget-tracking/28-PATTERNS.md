@@ -591,13 +591,13 @@ if (!userId) {
 
 Server-side PocketBase rules for `wallecx_expense_budgets` (per CONTEXT.md "Claude's Discretion" + MEMORY.md PocketBase v0.29.x note):
 ```
-createRule: @request.auth.id != "" && @request.data.user = @request.auth.id
+createRule: @request.auth.id != "" && @request.body.user = @request.auth.id
 listRule:   user = @request.auth.id
 viewRule:   user = @request.auth.id
 updateRule: user = @request.auth.id
 deleteRule: user = @request.auth.id
 ```
-**Note:** Use `@request.data.user` (NOT `@request.body.user`) per project MEMORY.md PocketBase v0.29.x rule syntax. Rule violations return 404, not 403.
+**Note:** Use `@request.body.user` (NOT `@request.data.user`) per PocketBase v0.29.3 syntax. The deprecated `@request.data.user` form causes create requests to return 403.
 
 ### Toast Notifications
 

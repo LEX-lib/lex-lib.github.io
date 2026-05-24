@@ -15,7 +15,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-24 — Phase 28 planned (3 plans across 3 waves). RPT-01/RPT-02 covered. Ready to execute.
+**Last updated:** 2026-05-24 — Phase 28 execution started. Wave 1: Plan 28-01 (PocketBase collection setup + types/mapper).
 
 ## Project Reference
 
@@ -27,14 +27,14 @@ progress:
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Phase 28 planned — ready to execute (3 plans, 3 waves)
-**Phase:** 28 (planned)
-**Last activity:** 2026-05-24 — Phase 28 plans created and verified
+**Status:** Phase 28 in progress — executing Wave 1 (Plan 28-01)
+**Phase:** 28 (in progress)
+**Last activity:** 2026-05-24 — Phase 28 execution started
 
 ```
 v4.1 Progress: [##________] 25% (1/4 phases)
 Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
-Phase 28: Budget Tracking            [~] Planned (0/3 plans)
+Phase 28: Budget Tracking            [>] In progress (0/3 plans)
 Phase 29: Period Comparison          [ ] Not started
 Phase 30: UAT Sweep                  [ ] Not started
 ```
@@ -105,7 +105,7 @@ Phase 30: UAT Sweep                  [ ] Not started
 ### v4.0 Expense Tracker Foundation (Phase 23)
 
 - **PocketBase listRule returns 200+empty (not 403) for unauthenticated requests.** `@request.auth.id != ""` is a filter expression; when false, all rows are filtered out. A 403 requires `null` rule (admin-only). Data isolation is intact.
-- **@request.data.user on createRule confirmed working.** Both collections use `@request.auth.id != "" && @request.data.user = @request.auth.id`. `@request.body.*` does NOT exist and returns 404.
+- **@request.body.user on createRule is the correct v0.29.3 syntax.** Use `@request.auth.id != "" && @request.body.user = @request.auth.id` on createRule. The deprecated `@request.data.user` form causes create requests to return 403. Confirmed against the live PocketBase 0.29.3 instance in Phase 28. (Earlier note that claimed the opposite was incorrect — superseded.)
 - **Locked requestKey names for Phase 24+:** `'expenses-getFullList'` and `'expense-categories-getFullList'` (must not collide with vaccinations/memberships keys).
 - **DEFAULT_EXPENSE_CATEGORIES defined in Phase 23, seeded lazily in Phase 24.** Phase 24's ManageExpense.vue seeds per-user on first dialog open — no PocketBase signup hook.
 - **receipt File field: protected=true.** File URLs require short-lived token; direct URL access without token returns 403.
