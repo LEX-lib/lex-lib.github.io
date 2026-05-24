@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
 import type { Expenses } from '@/types/wallecx/expenses/types'
+import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
 import { useIsMobile } from '@/composables/useIsMobile'
 import dayjs from 'dayjs'
@@ -18,6 +19,22 @@ const manageRecord = ref<Expenses | null>(null)
 const confirm = useConfirm()
 const isMobile = useIsMobile()
 const isExporting = ref(false)
+
+// Phase 28 — budgets owned by the shell (CONTEXT.md "Budget data ownership"); passed to Reports view.
+const budgets = ref<ExpenseBudget[]>([])
+
+async function loadBudgets(): Promise<void> {
+  try {
+    budgets.value = await pb
+      .collection('wallecx_expense_budgets')
+      .getFullList<ExpenseBudget>({
+        requestKey: 'expense-budgets-getFullList',  // STATE.md invariant — distinct key
+      })
+  } catch (e: unknown) {
+    toast.error('Failed to refresh budgets. Please reload the page.')
+    console.error('ExpensesTab: loadBudgets failed', e)
+  }
+}
 
 // Receipt preview state (stays in the shell — Reports sub-tab in Plan 26-03 does NOT use this)
 const showPreview = ref(false)
@@ -49,6 +66,12 @@ onMounted(async () => {
       .getFullList<Expenses>({
         sort: '-expense_date,-created',
         requestKey: 'expenses-getFullList',  // STATE.md: must not collide with other collection keys
+      })
+    // Phase 28 — second fetch for budgets. Distinct requestKey per RESEARCH.md Pitfall 1.
+    budgets.value = await pb
+      .collection('wallecx_expense_budgets')
+      .getFullList<ExpenseBudget>({
+        requestKey: 'expense-budgets-getFullList',
       })
   } catch (e: unknown) {
     toast.error('Failed to load expenses. Pull to refresh or reload the page.')
@@ -190,8 +213,10 @@ async function exportJson(): Promise<void> {
         <TabPanel value="reports">
           <ExpensesReportsView
             :expenses="expenses"
+            :budgets="budgets"
             :is-loading="isLoading"
             @request-add-expense="openManage(null)"
+            @budgets-saved="loadBudgets"
           />
         </TabPanel>
       </TabPanels>
