@@ -89,6 +89,104 @@ const periodNameLabel = computed(() =>
   formatPeriodLabel(period.value, customFrom.value, customTo.value),
 )
 
+// === Phase 29 — Period Comparison (D-01 through D-07) ===
+
+interface ComparisonResult {
+  direction: 'up' | 'down' | 'flat'
+  absoluteDelta: number
+  percentage: number | null  // null when previous period had $0 spend (D-05)
+  previousLabel: 'last month' | 'last quarter'
+}
+
+// Previous-period boundary. Inline derivation per 29-PATTERNS.md Unit 1 Option A —
+// period.ts exposes no `lastMonthStart`/`lastQuarterEnd` helper, and a single
+// 8-line computed is lower friction than adding a new helper + tests.
+// dayjs `quarterOfYear` plugin is already active via the transitive period.ts import.
+const previousPeriodRange = computed<{ from: dayjs.Dayjs; to: dayjs.Dayjs } | null>(() => {
+  if (period.value === 'this-month') {
+    const lastMonth = dayjs().subtract(1, 'month')
+    return { from: lastMonth.startOf('month'), to: lastMonth.endOf('month') }
+  }
+  if (period.value === 'this-quarter') {
+    const lastQuarter = dayjs().subtract(1, 'quarter')
+    return { from: lastQuarter.startOf('quarter'), to: lastQuarter.endOf('quarter') }
+  }
+  return null  // this-year and custom: comparison hidden per D-01
+})
+
+// Previous-period total — same YYYY-MM-DD string-comparison idiom as `periodExpenses`
+// (Phase 26 invariant — client-side filter on already-loaded props.expenses, no new PocketBase query).
+const previousPeriodTotal = computed<number>(() => {
+  const range = previousPeriodRange.value
+  if (!range) return 0
+  const fromStr = range.from.format('YYYY-MM-DD')
+  const toStr = range.to.format('YYYY-MM-DD')
+  return props.expenses
+    .filter((e) => e.expense_date >= fromStr && e.expense_date <= toStr)
+    .reduce((sum, e) => sum + e.amount, 0)
+})
+
+// Period-gated comparison payload. Returns null for excluded periods (D-01) or
+// when both periods are zero (D-07). Mirrors Phase 28 `visibleBudgets` gating shape.
+const visibleComparison = computed<ComparisonResult | null>(() => {
+  if (previousPeriodRange.value === null) return null  // year + custom hidden (D-01)
+  if (grandTotal.value === 0 && previousPeriodTotal.value === 0) return null  // D-07
+  const previousLabel: 'last month' | 'last quarter' =
+    period.value === 'this-month' ? 'last month' : 'last quarter'
+  const delta = grandTotal.value - previousPeriodTotal.value
+  let direction: 'up' | 'down' | 'flat'
+  if (delta > 0) direction = 'up'
+  else if (delta < 0) direction = 'down'
+  else direction = 'flat'
+  // Percentage: null when previous was 0 (D-05); otherwise rounded to whole integer.
+  const percentage = previousPeriodTotal.value === 0
+    ? null
+    : Math.round((delta / previousPeriodTotal.value) * 100)
+  return {
+    direction,
+    absoluteDelta: Math.abs(delta),
+    percentage,
+    previousLabel,
+  }
+})
+
+function comparisonColor(c: ComparisonResult): string {
+  if (c.direction === 'up') return 'var(--color-status-error)'
+  if (c.direction === 'down') return 'var(--color-status-success)'
+  return 'var(--color-typo-muted)'
+}
+
+function comparisonArrow(c: ComparisonResult): string {
+  if (c.direction === 'up') return '↑'
+  if (c.direction === 'down') return '↓'
+  return '—'
+}
+
+function comparisonText(c: ComparisonResult): string {
+  if (c.direction === 'flat') {
+    return `— No change vs ${c.previousLabel}`
+  }
+  const arrow = comparisonArrow(c)
+  const absStr = formatCurrency(c.absoluteDelta)
+  if (c.percentage === null) {
+    // Zero prior period: omit percentage, append "(no prior spend)" — D-05
+    return `${arrow} ${absStr} vs ${c.previousLabel} (no prior spend)`
+  }
+  // U+2212 minus for negative percentage (29-PATTERNS.md anti-pattern #6 — NOT ASCII hyphen-minus).
+  const sign = c.percentage >= 0 ? '+' : '−'
+  const pctStr = `${sign}${Math.abs(c.percentage)}%`
+  return `${arrow} ${absStr} (${pctStr}) vs ${c.previousLabel}`
+}
+
+function comparisonAriaLabel(c: ComparisonResult): string {
+  if (c.direction === 'flat') return `Spending unchanged versus ${c.previousLabel}`
+  const directionWord = c.direction === 'up' ? 'up' : 'down'
+  if (c.percentage === null) {
+    return `Spending ${directionWord} ${formatCurrency(c.absoluteDelta)} versus ${c.previousLabel}, no prior spending to compare`
+  }
+  return `Spending ${directionWord} ${Math.abs(c.percentage)} percent versus ${c.previousLabel}`
+}
+
 // === Phase 28 — Budget vs Actual integration ===
 
 // ManageBudget dialog state (lazy categories load on click — see openManageBudgets)
