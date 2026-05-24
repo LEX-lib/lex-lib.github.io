@@ -4,38 +4,38 @@ milestone: v4.1
 milestone_name: Gap Resolution & Feature Completeness
 status: in_progress
 last_updated: "2026-05-25T00:00:00.000Z"
-last_activity: 2026-05-25 — Phase 28 complete (code verified; 9 UAT scenarios deferred to 28-HUMAN-UAT.md)
+last_activity: 2026-05-25 — Phase 29 complete (code verified; 7 UAT scenarios deferred to 29-HUMAN-UAT.md)
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 50
+  completed_phases: 3
+  total_plans: 7
+  completed_plans: 7
+  percent: 75
 ---
 
 # Project State
 
-**Last updated:** 2026-05-25 — Phase 28 complete (3/3 plans shipped, 18/18 code must-haves verified, 9 UAT scenarios deferred). Ready for Phase 29.
+**Last updated:** 2026-05-25 — Phase 29 complete (1/1 plan shipped, 11/11 code must-haves verified, 7 UAT scenarios deferred). Ready for Phase 30 (final v4.1 phase).
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 29 next (period comparison).
+**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 30 next (UAT sweep across phases 10–25).
 
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Phase 28 complete — ready for Phase 29
-**Phase:** 29 (not started)
-**Last activity:** 2026-05-25 — Phase 28 complete
+**Status:** Phase 29 complete — ready for Phase 30
+**Phase:** 30 (not started)
+**Last activity:** 2026-05-25 — Phase 29 complete
 
 ```
-v4.1 Progress: [#####_____] 50% (2/4 phases)
+v4.1 Progress: [#######___] 75% (3/4 phases)
 Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
 Phase 28: Budget Tracking            [x] Complete (2026-05-25)
-Phase 29: Period Comparison          [ ] Not started
+Phase 29: Period Comparison          [x] Complete (2026-05-25)
 Phase 30: UAT Sweep                  [ ] Not started
 ```
 
@@ -149,6 +149,16 @@ Phase 30: UAT Sweep                  [ ] Not started
 - **Chart palette is fully CSS-resident (16 tokens).** `--color-chart-1..8` declared in BOTH the `@theme` block (light) AND the `.my-app-dark` block (dark) in `src/assets/base.css`. The `useChartTheme` composable just re-reads via `getComputedStyle` on class mutation — no JS palette lookup table. Bars auto-swap colors on dark-mode toggle.
 - **chart.js installed as runtime dep (NOT devDep).** PrimeVue 4.3.x performs dynamic `import('chart.js/auto')` at component mount; without the package the import silently resolves to nothing and the chart never renders (no error, no warning). PrimeVue does NOT declare chart.js as a peer dep.
 
+### v4.1 Phase 29 Decisions (Period Comparison)
+
+- **Inline period comparison line pattern.** Single `<div v-if="visibleComparison !== null">` rendered between Grand Total hero and Manage Budgets button inside STATE 4 of ExpensesReportsView.vue. Format: `{arrow} ${absolute} ({±%}) vs last {period}`. Single helper-driven render — no separate component.
+- **Period coverage: Month + Quarter only.** `visibleComparison` returns null for `this-year` and `custom` (mirrors Phase 28 D-09 hiding pattern — DOM absent, not just hidden). Year/custom extension deferred.
+- **Inline dayjs subtraction for prior-period boundaries.** `previousPeriodRange` uses inline `dayjs().subtract(1, 'month'|'quarter').startOf().endOf()` — no new helpers added to `src/lib/wallecx/period.ts`. `dayjs.quarterOfYear` plugin is transitively active via period.ts module-top extension; no re-extend needed.
+- **Color semantics for delta: error=overspending, success=underspending, muted=flat.** `comparisonColor` maps direction to `var(--color-status-error/success/typo-muted)`. Consistent with Phase 28 Budget vs Actual color mapping — single mental model across the Reports view.
+- **Typography: U+2212 minus character (−) for negative percentage.** NOT ASCII hyphen-minus (-). Locked in line 176 of ExpensesReportsView.vue.
+- **Zero prior period → omit percentage, append "(no prior spend)".** `percentage: null` branch in ComparisonResult; comparisonText renders absolute-only string. No `+Infinity%` or fake `+100%`.
+- **Accessibility: role="status" + semantic aria-label.** `comparisonAriaLabel` renders "Spending up 23 percent versus last month" (semantic English words; not Unicode arrows in screen-reader copy).
+
 ### v4.1 Phase 28 Decisions (Budget Tracking)
 
 - **Mapper documentation pattern.** `src/lib/pocketbase/expenseBudgetMapper.ts` exports `mapToUpdateExpenseBudget` but ManageBudget.vue builds PATCH payloads inline (bulk upsert with per-row `{ category, budget_type, amount }`). The mapper exists primarily as docblock documentation of the locked requestKey `'expense-budgets-getFullList'`. Future single-record budget readers (none planned yet) may adopt it.
@@ -227,9 +237,9 @@ Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
 **Last session:** 2026-05-25T00:00:00.000Z
 
-**Stopped at:** Phase 28 complete — ready for Phase 29
+**Stopped at:** Phase 29 complete — ready for Phase 30 (final v4.1 phase)
 
-**Next session entry point:** Run `/gsd-discuss-phase 29` (or `/gsd-next`) to start Phase 29: Period Comparison.
+**Next session entry point:** Run `/gsd-discuss-phase 30` (or `/gsd-next`) to start Phase 30: UAT Sweep across phases 10–25.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

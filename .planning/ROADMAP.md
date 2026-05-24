@@ -129,7 +129,7 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
 
 - [x] **Phase 27: Code Quality & Exports** - Fix two deferred code quality issues and add JSON export to Memberships and Expenses tabs (completed 2026-05-22)
 - [x] **Phase 28: Budget Tracking** - New wallecx_expense_budgets collection + actual-vs-budget reporting in Reports tab (completed 2026-05-25)
-- [ ] **Phase 29: Period Comparison** - Extend ExpensesReportsView with period-over-period comparison section
+- [x] **Phase 29: Period Comparison** - Extend ExpensesReportsView with period-over-period comparison section (completed 2026-05-25)
 - [ ] **Phase 30: UAT Sweep** - Structured UAT pass over phases 10–25 untested scenarios with regression fixes
 
 ---
@@ -179,7 +179,9 @@ Plans:
   2. When viewing This Quarter, a comparison section shows last quarter's total and the delta
   3. The comparison is calculated client-side from the already-loaded expenses array (no new PocketBase queries)
   4. A positive delta (spending more) and negative delta (spending less) are visually distinguished
-**Plans**: TBD
+**Plans**: 1 plan (1 complete)
+Plans:
+- [x] 29-01-PLAN.md — Add period comparison computeds, helpers, and inline template section in ExpensesReportsView.vue
 **UI hint**: yes
 
 ### Phase 30: UAT Sweep
@@ -234,4 +236,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-25 — Phase 28 complete: 3 plans shipped (PocketBase collection + types/mapper foundation → ManageBudget.vue → ExpensesTab/ExpensesReportsView integration). 18/18 code must-haves verified; 9 human-UAT scenarios deferred to 28-HUMAN-UAT.md.*
+*Last updated: 2026-05-25 — Phase 29 complete: period-over-period comparison line in ExpensesReportsView.vue. 11/11 code must-haves verified; 7 UAT scenarios deferred to 29-HUMAN-UAT.md. v4.1 progress: 75% (3/4 phases).*

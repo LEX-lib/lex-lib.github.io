@@ -19,7 +19,7 @@
 
 - [x] **RPT-01**: User can set a monthly or yearly budget target per expense category (stored in PocketBase, per-user isolation) (Phase 28; 9 UAT scenarios deferred to 28-HUMAN-UAT.md)
 - [x] **RPT-02**: User can view actual-vs-budget reporting for each category in the Reports tab (budget bar + actual + over/under indicator) (Phase 28; 9 UAT scenarios deferred to 28-HUMAN-UAT.md)
-- [ ] **RPT-03**: User can view a period-over-period comparison in the Reports tab (this month vs last month, this quarter vs last quarter, with delta)
+- [x] **RPT-03**: User can view a period-over-period comparison in the Reports tab (this month vs last month, this quarter vs last quarter, with delta) (Phase 29; 7 UAT scenarios deferred to 29-HUMAN-UAT.md)
 
 ### Quality Assurance
 
@@ -57,7 +57,7 @@
 | EXPORT-02 | Phase 27 | Complete (verified 2026-05-22) |
 | RPT-01 | Phase 28 | Complete (code verified 2026-05-25; 9 UAT items deferred) |
 | RPT-02 | Phase 28 | Complete (code verified 2026-05-25; 9 UAT items deferred) |
-| RPT-03 | Phase 29 | Pending |
+| RPT-03 | Phase 29 | Complete (code verified 2026-05-25; 7 UAT items deferred) |
 | QA-01 | Phase 30 | Pending |
 
 **Coverage:**
