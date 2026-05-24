@@ -482,6 +482,21 @@ watch(period, (next) => {
         </span>
       </div>
 
+      <!-- Phase 29 — Period-over-period comparison line (D-01 through D-07) -->
+      <div
+        v-if="visibleComparison !== null"
+        class="flex justify-center mt-1 mb-4"
+        role="status"
+        :aria-label="comparisonAriaLabel(visibleComparison)"
+      >
+        <span
+          class="text-sm font-medium"
+          :style="{ color: comparisonColor(visibleComparison) }"
+        >
+          {{ comparisonText(visibleComparison) }}
+        </span>
+      </div>
+
       <!-- Phase 28 — Manage Budgets entry (D-01, UI-SPEC); STATE 4 only -->
       <div class="flex justify-end mb-4">
         <Button
