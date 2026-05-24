@@ -163,7 +163,11 @@ Plans:
   3. Budget targets are stored in PocketBase and survive page refresh (per-user isolation — one user cannot see another's budgets)
   4. The Reports tab shows each category's actual spend alongside its budget target with a visual over/under indicator
   5. A category with no budget set is shown without a budget bar (no placeholder clutter)
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 28-01-PLAN.md — PocketBase wallecx_expense_budgets collection (human checkpoint) + ExpenseBudget type + expenseBudgetMapper
+- [ ] 28-02-PLAN.md — ManageBudget.vue (Dialog/Drawer split + upsert loop save handler)
+- [ ] 28-03-PLAN.md — Wire shell fetch into ExpensesTab + Budget vs Actual section in ExpensesReportsView + human verify
 **UI hint**: yes
 
 ### Phase 29: Period Comparison
@@ -224,10 +228,10 @@ Plans:
 | 25. Read Path — List View | v4.0 | 2/2 | Complete (UAT approved) | 2026-05-21 |
 | 26. Reporting View | v4.0 | 3/3 | Complete (UAT approved) | 2026-05-22 |
 | 27. Code Quality & Exports | v4.1 | 3/3 | Complete (UAT approved) | 2026-05-22 |
-| 28. Budget Tracking | v4.1 | 0/? | Not started | — |
+| 28. Budget Tracking | v4.1 | 0/3 | Not started | — |
 | 29. Period Comparison | v4.1 | 0/? | Not started | — |
 | 30. UAT Sweep | v4.1 | 0/? | Not started | — |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-22 — Phase 27 planned: 3 plans across 2 waves (CQ-01/CQ-02 verification + memberships export + expenses export).*
+*Last updated: 2026-05-24 — Phase 28 planned: 3 plans across 3 sequential waves (PocketBase collection + types/mapper foundation → ManageBudget.vue → ExpensesTab/ExpensesReportsView integration + human verify).*
