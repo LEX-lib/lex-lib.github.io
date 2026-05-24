@@ -128,7 +128,7 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
 ### v4.1 Gap Resolution & Feature Completeness (Phases 27–30) — IN PROGRESS
 
 - [x] **Phase 27: Code Quality & Exports** - Fix two deferred code quality issues and add JSON export to Memberships and Expenses tabs (completed 2026-05-22)
-- [ ] **Phase 28: Budget Tracking** - New wallecx_expense_budgets collection + actual-vs-budget reporting in Reports tab
+- [x] **Phase 28: Budget Tracking** - New wallecx_expense_budgets collection + actual-vs-budget reporting in Reports tab (completed 2026-05-25)
 - [ ] **Phase 29: Period Comparison** - Extend ExpensesReportsView with period-over-period comparison section
 - [ ] **Phase 30: UAT Sweep** - Structured UAT pass over phases 10–25 untested scenarios with regression fixes
 
@@ -163,11 +163,11 @@ Plans:
   3. Budget targets are stored in PocketBase and survive page refresh (per-user isolation — one user cannot see another's budgets)
   4. The Reports tab shows each category's actual spend alongside its budget target with a visual over/under indicator
   5. A category with no budget set is shown without a budget bar (no placeholder clutter)
-**Plans**: 3 plans
+**Plans**: 3 plans (3 complete)
 Plans:
-- [ ] 28-01-PLAN.md — PocketBase wallecx_expense_budgets collection (human checkpoint) + ExpenseBudget type + expenseBudgetMapper
-- [ ] 28-02-PLAN.md — ManageBudget.vue (Dialog/Drawer split + upsert loop save handler)
-- [ ] 28-03-PLAN.md — Wire shell fetch into ExpensesTab + Budget vs Actual section in ExpensesReportsView + human verify
+- [x] 28-01-PLAN.md — PocketBase wallecx_expense_budgets collection (human checkpoint) + ExpenseBudget type + expenseBudgetMapper
+- [x] 28-02-PLAN.md — ManageBudget.vue (Dialog/Drawer split + upsert loop save handler)
+- [x] 28-03-PLAN.md — Wire shell fetch into ExpensesTab + Budget vs Actual section in ExpensesReportsView + human verify
 **UI hint**: yes
 
 ### Phase 29: Period Comparison
@@ -234,4 +234,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-24 — Phase 28 planned: 3 plans across 3 sequential waves (PocketBase collection + types/mapper foundation → ManageBudget.vue → ExpensesTab/ExpensesReportsView integration + human verify).*
+*Last updated: 2026-05-25 — Phase 28 complete: 3 plans shipped (PocketBase collection + types/mapper foundation → ManageBudget.vue → ExpensesTab/ExpensesReportsView integration). 18/18 code must-haves verified; 9 human-UAT scenarios deferred to 28-HUMAN-UAT.md.*

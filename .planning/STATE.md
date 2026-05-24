@@ -3,38 +3,38 @@ gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Gap Resolution & Feature Completeness
 status: in_progress
-last_updated: "2026-05-22T00:00:00.000Z"
-last_activity: 2026-05-22 — Phase 27 complete (UAT approved)
+last_updated: "2026-05-25T00:00:00.000Z"
+last_activity: 2026-05-25 — Phase 28 complete (code verified; 9 UAT scenarios deferred to 28-HUMAN-UAT.md)
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 25
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 50
 ---
 
 # Project State
 
-**Last updated:** 2026-05-24 — Phase 28 execution started. Wave 1: Plan 28-01 (PocketBase collection setup + types/mapper).
+**Last updated:** 2026-05-25 — Phase 28 complete (3/3 plans shipped, 18/18 code must-haves verified, 9 UAT scenarios deferred). Ready for Phase 29.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 28 planned, ready to execute.
+**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 29 next (period comparison).
 
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Phase 28 in progress — executing Wave 1 (Plan 28-01)
-**Phase:** 28 (in progress)
-**Last activity:** 2026-05-24 — Phase 28 execution started
+**Status:** Phase 28 complete — ready for Phase 29
+**Phase:** 29 (not started)
+**Last activity:** 2026-05-25 — Phase 28 complete
 
 ```
-v4.1 Progress: [##________] 25% (1/4 phases)
+v4.1 Progress: [#####_____] 50% (2/4 phases)
 Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
-Phase 28: Budget Tracking            [>] In progress (0/3 plans)
+Phase 28: Budget Tracking            [x] Complete (2026-05-25)
 Phase 29: Period Comparison          [ ] Not started
 Phase 30: UAT Sweep                  [ ] Not started
 ```
@@ -149,6 +149,15 @@ Phase 30: UAT Sweep                  [ ] Not started
 - **Chart palette is fully CSS-resident (16 tokens).** `--color-chart-1..8` declared in BOTH the `@theme` block (light) AND the `.my-app-dark` block (dark) in `src/assets/base.css`. The `useChartTheme` composable just re-reads via `getComputedStyle` on class mutation — no JS palette lookup table. Bars auto-swap colors on dark-mode toggle.
 - **chart.js installed as runtime dep (NOT devDep).** PrimeVue 4.3.x performs dynamic `import('chart.js/auto')` at component mount; without the package the import silently resolves to nothing and the chart never renders (no error, no warning). PrimeVue does NOT declare chart.js as a peer dep.
 
+### v4.1 Phase 28 Decisions (Budget Tracking)
+
+- **Mapper documentation pattern.** `src/lib/pocketbase/expenseBudgetMapper.ts` exports `mapToUpdateExpenseBudget` but ManageBudget.vue builds PATCH payloads inline (bulk upsert with per-row `{ category, budget_type, amount }`). The mapper exists primarily as docblock documentation of the locked requestKey `'expense-budgets-getFullList'`. Future single-record budget readers (none planned yet) may adopt it.
+- **Bulk-upsert UI pattern: Promise.all over rows, delete-on-zero.** ManageBudget.vue iterates `localRows` and dispatches concurrent create/update/delete via `Promise.all`. Blank-or-zero amount on an existing record triggers delete; non-zero on new triggers create; non-zero on existing triggers update. Partial failure is accepted (parent re-fetches on 'saved' to reflect actual server state).
+- **Shell-owns-data invariant applied to budgets.** ExpensesTab.vue owns the `budgets` ref and `loadBudgets` helper. ExpensesReportsView accepts `:budgets` prop and emits `'budgets-saved'`. ManageBudget.vue receives both `:categories` and `:budgets` as props and does NOT fetch.
+- **Period-gated visibleBudgets pattern.** Budget vs Actual section uses `v-if="visibleBudgets.length > 0"` with a computed that returns monthly budgets for `this-month`, yearly for `this-year`, and `[]` for `this-quarter`/`custom`. Section is entirely absent from DOM (not just hidden) for non-applicable periods.
+- **Manage Budgets button placement: STATE 4 only.** Button lives inside `<template v-else>` (chart rendering state) so it's hidden during loading, invalid range, and empty period states.
+- **Categories lazy-loaded on Manage Budgets click.** ExpensesReportsView fetches `wallecx_expense_categories` with `requestKey: 'expense-categories-getFullList'` (shared with ManageExpense.vue, safe per RESEARCH Q2) only when the user clicks the button — not on view mount.
+
 ### v4.1 Phase 27 Pre-Planning Notes
 
 - **JSON export pattern reference: vaccination export (v1.0).** Same shape: fetch all user records, `JSON.stringify(records, null, 2)`, create Blob, anchor download. Memberships and expenses follow this pattern.
@@ -216,11 +225,11 @@ Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
 ## Session Continuity
 
-**Last session:** 2026-05-22T07:57:18.715Z
+**Last session:** 2026-05-25T00:00:00.000Z
 
-**Stopped at:** context exhaustion at 90% (2026-05-22)
+**Stopped at:** Phase 28 complete — ready for Phase 29
 
-**Next session entry point:** Run `/gsd-execute-phase 28` to execute Phase 28: Budget Tracking (3 plans across 3 waves).
+**Next session entry point:** Run `/gsd-discuss-phase 29` (or `/gsd-next`) to start Phase 29: Period Comparison.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
