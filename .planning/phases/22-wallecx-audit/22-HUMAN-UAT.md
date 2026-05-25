@@ -200,3 +200,34 @@ Per D-05, BarcodeDisplay constants are an absolute hard lock — any deviation i
 ---
 
 *Phase 22 Plan 01 UAT — generated per 22-CONTEXT D-01 (6-vector spot-check) and D-08 (deliverables list). Format mirrors `21-HUMAN-UAT.md`.*
+
+---
+
+## Phase 30 UAT Results
+
+**Date executed:** 2026-05-25 (Phase 30 sweep)
+**Overall:** ✓ PASS (with V6 deferred)
+
+| Vector | Description | Result | Notes |
+|--------|-------------|--------|-------|
+| Pre-flight | NavBar toggle + hard refresh + localStorage | passed | Phase 19 toggle infrastructure intact |
+| V1 | Toggle interaction mid-Wallecx + dialog open (SC-1) | passed | Dialog body re-paints live; no white flash |
+| V2 | Route transitions theme persistence (SC-2) | passed | Theme survives Vue Router navigation; no FOUC on re-entry |
+| V3 | FOUC on hard reload while dark (SC-2) | passed | Inline FOUC script fires before Vue mounts |
+| V4 | Bottom sheets in dark mode (SC-1) | passed | Drag pill swaps `bg-gray-600` ↔ `bg-gray-300` on live toggle |
+| V5 | BarcodeDisplay BR-2 invariant (SC-4) | **passed** | **BR-2 holds** — barcode #000000 on #ffffff in both themes |
+| V6 | PWA standalone install + toggle + re-open (SC-3) | **deferred** | Requires PWA install flow — defer to future cycle (per Phase 30 CONTEXT D-08: deferred-with-reason acceptable) |
+
+### Failures
+None — V6 explicitly deferred, not failed.
+
+### Critical Findings
+- **BR-2 invariant verified** — no regression to `BARCODE_FOREGROUND` / `BARCODE_BACKGROUND` constants
+- Phase 19 NavBar toggle still drives Phase 18 `.my-app-dark` overrides correctly
+
+### Sign-off
+- Approved by: Phase 30 sweep (user-driven)
+- Date: 2026-05-25
+- Overall result: ✓ PASS (V6 deferred to future cycle)
+- Critical findings: none
+- Opportunistic fix needed: None

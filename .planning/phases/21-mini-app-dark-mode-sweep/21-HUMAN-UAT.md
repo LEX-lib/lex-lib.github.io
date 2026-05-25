@@ -237,3 +237,25 @@ If anything fails the above, file a finding with:
 ---
 
 *Phase 21 UAT generated as the last deliverable of plan 21-04 per D-21 (consolidated phase-level UAT doc covering all 4 mini-apps).*
+
+---
+
+## Phase 30 UAT Results
+
+**Date executed:** 2026-05-25 (Phase 30 sweep)
+**Overall:** ✓ PASS
+
+| § | Mini-app | Requirement | Result | Notes |
+|---|----------|-------------|--------|-------|
+| §1 | LexTrack | THEME-09 | passed | Semantic badges theme-independent (D-13); indigo accent shifts to light variant in dark; Editor/DatePicker adapt |
+| §2 | Larga | THEME-10 | passed | Geocoder dark override fires (D-09); OSM map tiles stay light in dark mode (D-07 intentional) |
+| §3 | Gift Exchange / MonitoX | THEME-11 | passed | All sub-routes render correctly in light + dark |
+| §4 | API Playground | THEME-12 | passed | Request/response panels themed correctly |
+
+### Failures
+None — all 4 mini-apps pass.
+
+### Sign-off
+- Tester: Phase 30 sweep (user-driven)
+- Date: 2026-05-25
+- Overall: ✓ PASS

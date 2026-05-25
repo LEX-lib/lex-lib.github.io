@@ -204,3 +204,34 @@ Use this as a quick visual reference while sweeping. If you see any of the follo
 
 *Phase 18 Plan 01 UAT — generated from `18-CONTEXT.md` D-10 and D-11, and `REQUIREMENTS.md` DARK-01/02/03.*
 *Override rules are NOT pre-listed here per D-03 — overrides are added only if UAT reveals bleed that D-01 alone doesn't fix.*
+
+---
+
+## Phase 30 UAT Results
+
+**Date executed:** 2026-05-25 (Phase 30 sweep)
+**Overall:** ✓ PASS
+
+| Section | Total | Passed | Failed | Skipped | Notes |
+|---------|-------|--------|--------|---------|-------|
+| §2 Pre-flight | 3 | 3 | 0 | 0 | `@custom-variant dark` rule confirmed in place |
+| §3 Component sweep (15 Wallecx components × 3 viewports) | 15 | 15 | 0 | 0 | All components render correctly across light/dark/375px |
+| §4 DARK-01 card grids (vaccination groups + membership tiles) | 8 | 8 | 0 | 0 | Luminance helper applied correctly; no white card faces |
+| §5 DARK-02 dialogs + drawers | 13 | 13 | 0 | 0 | All dialogs/drawers themed correctly; drag pills dark grey; ColorPicker swatch visible |
+| §6 DARK-03 scan overlay + barcode (BR-2 invariant) | 5 | 5 | 0 | 0 | **BR-2 invariant holds** — barcode strokes #000000 on #ffffff in BOTH themes |
+| §7 Mobile 375px sweep | 6 | 6 | 0 | 0 | Drag pills dark grey; no horizontal scroll; dialogs respect 80dvh cap |
+
+### Failures
+None — all 50 section-level checks pass.
+
+### Critical Findings
+- **BR-2 invariant verified** — barcode foreground/background constants preserved; no regression
+- No DARK-01/02/03 regressions detected
+- No D-05 violations (user-chosen `card_color` is theme-independent and not mutated)
+
+### Sign-off
+- Tester: Phase 30 sweep (user-driven)
+- Date: 2026-05-25
+- Overall result: ✓ PASS
+- Components sweep complete (15/15): YES
+- Recommended follow-up: None — ship as-is

@@ -79,3 +79,26 @@ If any of the following are observed, file a finding in `20-UAT-FINDINGS.md` and
 
 **Tester:** _________________
 **Date:** _________________
+
+---
+
+## Phase 30 UAT Results
+
+**Date executed:** 2026-05-25 (Phase 30 sweep)
+**Overall:** ✓ PASS
+
+| SC | Surface | Requirement | Result | Notes |
+|----|---------|-------------|--------|-------|
+| SC-1 | Home (Hero + AboutMe) | THEME-04 | passed | Hero name + body legible; CTAs themed; amber blobs visible in dark |
+| SC-2 | ProjectsView | THEME-05 | passed | Tiles render; WIP tag uses LIGHT amber text in dark (no invisible-on-invisible failure) |
+| SC-3 | BlogView | THEME-06 | passed | Logo opacity swap (60% light / 80% dark) verified; heading + subtitle readable |
+| SC-4 | Login | THEME-07 | passed | Glass card themes correctly; h1 white in dark; gradients visible; error states legible |
+| SC-5 | CustomNavBar | THEME-08 | passed | Avatar inverts in dark; toggle flips immediately; theme persists on reload; profile dropdown works |
+
+### Failures
+None — all 5 SCs pass across both viewports + both themes.
+
+### Sign-off
+- Tester: Phase 30 sweep (user-driven)
+- Date: 2026-05-25
+- Overall: ✓ PASS — no critical findings, no findings file needed
