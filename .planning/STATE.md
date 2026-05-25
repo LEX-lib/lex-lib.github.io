@@ -1,43 +1,41 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.1
-milestone_name: Gap Resolution & Feature Completeness
-status: completed
-stopped_at: v4.1 milestone complete
-last_updated: "2026-05-25T06:49:28.395Z"
-last_activity: 2026-05-25
+milestone: v4.2
+milestone_name: Budget Recovery & Hardening
+status: in_progress
+stopped_at: defining requirements
+last_updated: "2026-05-25T07:00:00.000Z"
+last_activity: 2026-05-25 — v4.2 milestone started; defining requirements
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
-  percent: 100
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-25 — v4.1 milestone COMPLETE. Phase 30 UAT sweep finished (80/82 scenarios passed, 1 deferred, 0 failed). Ready for /gsd-complete-milestone to archive v4.1 and start v4.2.
+**Last updated:** 2026-05-25 — v4.2 Budget Recovery & Hardening milestone started. Two surgical fixes for a production runtime error discovered post-v4.1 ship: `wallecx_expense_budgets` PocketBase collection missing (Phase 28-01 trust-based checkpoint never landed) + misleading toast copy from shared try/catch in ExpensesTab.vue.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.1 complete. Next: /gsd-complete-milestone to archive v4.1 and roadmap v4.2 (if planned).
+**Current focus:** v4.2 — Budget Recovery & Hardening (surgical). Fix the production 404 and decouple budgets fetch.
 
 ## Current Position
 
-**Milestone:** v4.1 — Gap Resolution & Feature Completeness (COMPLETE 2026-05-25)
-**Status:** v4.1 milestone complete
-**Phase:** all v4.1 phases shipped
-**Last activity:** 2026-05-25
+**Milestone:** v4.2 — Budget Recovery & Hardening (STARTED 2026-05-25)
+**Status:** Defining requirements
+**Phase:** 31 (not started)
+**Last activity:** 2026-05-25 — v4.2 milestone started
 
 ```
-v4.1 Progress: [##########] 100% (4/4 phases)
-Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
-Phase 28: Budget Tracking            [x] Complete (2026-05-25)
-Phase 29: Period Comparison          [x] Complete (2026-05-25)
-Phase 30: UAT Sweep                  [x] Complete (2026-05-25)
+v4.2 Progress: [__________] 0% (0/2 phases)
+Phase 31: Re-create wallecx_expense_budgets PB collection (BUG-01)   [ ] Not started
+Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [ ] Not started
 ```
 
 ## Shipped Milestones Summary
@@ -53,6 +51,7 @@ Phase 30: UAT Sweep                  [x] Complete (2026-05-25)
 | v2.3 UX Polish | 17–18 | 4 | 2026-05-18 |
 | v3.0 Site-Wide Dark Mode | 19–22 | 7 | 2026-05-19 |
 | v4.0 Daily Expense Tracker | 23–26 | 9 | 2026-05-22 |
+| v4.1 Gap Resolution & Feature Completeness | 27–30 | 15 | 2026-05-25 |
 
 ## Accumulated Context
 
@@ -249,12 +248,12 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-25T00:00:00.000Z
+**Last session:** 2026-05-25T07:00:00.000Z
 
-**Stopped at:** v4.1 milestone complete
+**Stopped at:** v4.2 milestone started — requirements + roadmap defined
 
-**Next session entry point:** Run `/gsd-complete-milestone` to archive v4.1, OR `/gsd-new-milestone` to start v4.2.
+**Next session entry point:** Run `/gsd-discuss-phase 31` (or `/gsd-next`) to start Phase 31: Re-create wallecx_expense_budgets PocketBase collection.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-25 — v4.1 milestone shipped + archived; 6 known deferred items recorded*
+*Last updated: 2026-05-25 — v4.2 Budget Recovery & Hardening milestone started; 2 BUG requirements; Phase 31 + 32 scoped*

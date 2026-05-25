@@ -18,11 +18,38 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 If everything else fails, these capabilities must work: the vaccination history list (with attachment preview), the membership card grid (with barcode scan overlay), and the expenses list with reporting + budget comparison.
 
-## Current State: v4.1 Shipped — Planning Next Milestone
+## Current State: v4.2 in Progress — Budget Recovery & Hardening
 
 **Latest shipped:** v4.1 Gap Resolution & Feature Completeness (2026-05-25) — closed deferred code-quality items (WR-01/02/03), added JSON exports for memberships and expenses, shipped budget tracking (Manage Budgets dialog + actual-vs-budget reports) and period-over-period comparison line, then ran a structured UAT sweep over 8 phases (80/82 in-scope scenarios passed, BR-2 barcode invariant verified twice, regression floor of 49/49 tests intact).
 
-Wallecx is now feature-complete for personal records vault + expense tracking + budget tracking + period comparison. No active milestone — next milestone TBD via `/gsd-new-milestone`.
+**v4.2 in progress** — production runtime regression discovered after v4.1 ship: `wallecx_expense_budgets` PocketBase collection was never actually created (Phase 28-01 Task 1 was a trust-based human-action checkpoint with no code-level verification). The Expenses → Reports tab fires a `ClientResponseError 404: Missing collection context` on every mount, and the shared try/catch in `ExpensesTab.vue` surfaces it as a misleading `"Failed to load expenses..."` toast.
+
+## Current Milestone: v4.2 Budget Recovery & Hardening (surgical)
+
+**Goal:** Eliminate the `404 Missing collection context` error on the Expenses → Reports tab by ensuring the `wallecx_expense_budgets` PocketBase collection exists, and harden the ExpensesTab fetch so a missing budgets collection no longer fires misleading toast copy or blocks expenses from loading.
+
+**Target features:**
+- Re-create the `wallecx_expense_budgets` PocketBase collection per the Phase 28-01 spec (4 fields, 5 rules using v0.29.3 `@request.body.user` createRule syntax) and verify it's reachable from the app
+- Decouple the budgets fetch from the expenses fetch in `ExpensesTab.vue` onMounted — independent try/catches, accurate toast copy (`'Failed to load budgets.'` distinct from `'Failed to load expenses.'`), graceful degradation when budgets collection is missing
+
+**Key context:**
+- Discovered post-v4.1 because Phase 28-01 Task 1 was trust-based (no automated verification). Runtime fetch was the first place the gap surfaced.
+- Deferred to a future milestone (v4.3 likely): code-level collection health check on app boot, plus walking through Phase 28 + 29 deferred UAT scenarios (16 total) for final budget tracking + period comparison validation.
+
+<details>
+<summary>v4.1 milestone goal (shipped 2026-05-25)</summary>
+
+**Goal:** Close deferred technical debt, add missing JSON exports, extend the expense tracker with budget and period-over-period comparison reporting, and verify untested UAT scenarios across past phases.
+
+**Shipped:**
+- CQ-01 expense_date calendar refinement; CQ-02 conditional notes spread on mapToUpdateExpense
+- EXPORT-01 memberships JSON export; EXPORT-02 expenses JSON export
+- `wallecx_expense_budgets` collection (per-user, monthly/yearly enum) + ExpenseBudget types + expenseBudgetMapper (RPT-01 data foundation) — NOTE: production PB collection was never actually created; v4.2 closes this gap
+- `ManageBudget.vue` bulk-upsert modal (Dialog/Drawer + Promise.all create/update/delete-on-zero)
+- ExpensesReportsView Budget vs Actual section + Manage Budgets button (RPT-01 + RPT-02 end-to-end)
+- ExpensesReportsView inline period-over-period comparison line (RPT-03 — Month + Quarter coverage; error/success color tokens; zero-prior graceful handling; U+2212 minus)
+- Phase 30 UAT sweep: 80/82 scenarios passed across 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25); 1 deferred (PWA standalone install needs install flow); 0 regressions
+</details>
 
 <details>
 <summary>v4.1 milestone goal (shipped 2026-05-25)</summary>
@@ -102,9 +129,10 @@ Wallecx is now feature-complete for personal records vault + expense tracking + 
 - ✓ ExpensesReportsView inline period-over-period comparison line in STATE 4 between Grand Total and Manage Budgets button — Month + Quarter coverage; color-coded direction (error red = overspending, success green = underspending); `↑ $230 (+23%) vs last month` format; honest zero-prior handling (omit %, append "no prior spend"); U+2212 minus — v4.1
 - ✓ Structured Phase 30 UAT sweep over 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25) — 80/82 scenarios passed, 1 deferred (PWA standalone install), 0 regressions; BR-2 barcode invariant verified twice — v4.1
 
-### Active
+### Active (v4.2)
 
-(none — v4.1 milestone shipped; next milestone TBD via `/gsd-new-milestone`)
+- [ ] **BUG-01** — Re-create `wallecx_expense_budgets` PocketBase collection (4 fields: user, category, budget_type pattern `^(monthly|yearly)$`, amount min 0; 5 rules with v0.29.3 `@request.body.user` createRule); verify reachability via a code-side smoke read from the app
+- [ ] **BUG-02** — Decouple budgets fetch from expenses fetch in `ExpensesTab.vue` onMounted; independent try/catches with accurate toast copy; expenses load even if budgets collection is missing; Reports tab degrades gracefully (Budget vs Actual section already auto-hides when budgets array is empty per Phase 28 D-09)
 
 ### Future candidates
 
@@ -233,4 +261,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-25 — v4.1 milestone shipped (4 phases, 15 plans, 7 requirements validated). Wallecx now feature-complete for personal records + expense tracking + budget tracking + period comparison. 9 milestones shipped to date. Next milestone TBD via `/gsd-new-milestone`.*
+*Last updated: 2026-05-25 — v4.2 Budget Recovery & Hardening started. 2 active requirements: BUG-01 (re-create wallecx_expense_budgets PB collection) and BUG-02 (decoupled budgets fetch in ExpensesTab.vue). Discovered after v4.1 ship: trust-based Phase 28-01 Task 1 checkpoint never landed the collection in production PB.*
