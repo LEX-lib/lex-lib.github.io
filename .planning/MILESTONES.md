@@ -1,5 +1,29 @@
 # Milestones
 
+## v4.1 — Gap Resolution & Feature Completeness
+
+**Shipped:** 2026-05-25
+**Phases:** 27–30 (4 phases, 15 plans)
+**Timeline:** 2026-05-22 → 2026-05-25 (4 days)
+**Requirements:** 7/7 shipped (CQ-01, CQ-02, EXPORT-01, EXPORT-02, RPT-01, RPT-02, RPT-03, QA-01)
+
+### Delivered
+
+1. Fixed two deferred Phase 23 code-quality items: `expense_date` Zod refinement now blocks invalid calendar dates (Feb 31, Apr 31) via `dayjs(val, 'YYYY-MM-DD', true).isValid()`; `mapToUpdateExpense` notes field now uses conditional spread so missing notes produce no `notes` key on PATCH (verified via `not.toHaveProperty`) — CQ-01, CQ-02
+2. One-click JSON download buttons on Memberships and Expenses tabs — fetch all user records, `JSON.stringify(records, null, 2)`, blob download. Mirrors the v1.0 vaccination export pattern — EXPORT-01, EXPORT-02
+3. `wallecx_expense_budgets` PocketBase collection (per-user isolation, monthly/yearly enum) + ExpenseBudget TypeScript types + expenseBudgetMapper documenting the locked `expense-budgets-getFullList` requestKey — RPT-01 data foundation
+4. `ManageBudget.vue` bulk-upsert modal (Dialog desktop / Drawer mobile) with per-category amount + Monthly/Yearly toggle, Promise.all create/update/delete-on-zero loop, watch(visible) pre-population, auth-null guard — RPT-01 UI half
+5. ExpensesTab shell wires budgets fetch through to ExpensesReportsView; Reports view renders period-gated Budget vs Actual section (this-month: monthly budgets; this-year: yearly; hidden for quarter/custom per D-09) with progress bars + Under/Over/On budget badges — RPT-01 + RPT-02 end-to-end
+6. Inline period-over-period comparison line in `ExpensesReportsView.vue` STATE 4 (between Grand Total hero and Manage Budgets button): `↑ $230 (+23%) vs last month` — Month + Quarter coverage; color-coded direction (error red = overspending, success green = underspending); honest zero-prior handling (omit percentage, append "no prior spend"); U+2212 minus character — RPT-03
+7. Structured UAT sweep across 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25) — 80/82 in-scope scenarios passed, 1 deferred (PWA standalone install needs install flow), 0 regressions. BR-2 barcode-black-on-white invariant verified twice (Phase 18 §6 + Phase 22 V5). Regression floor (49/49 Vitest tests) intact throughout — QA-01
+
+### Known deferred items at close: 6 (3 new UAT — Phase 28/29 just-shipped scenarios + Phase 22 V6 PWA; 3 verification gaps for Phase 27/28/29 — see STATE.md Deferred Items)
+
+**Archive:** [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
+**Requirements:** [milestones/v4.1-REQUIREMENTS.md](milestones/v4.1-REQUIREMENTS.md)
+
+---
+
 ## v4.0 — Daily Expense Tracker
 
 **Shipped:** 2026-05-22

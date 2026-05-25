@@ -2,9 +2,10 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Gap Resolution & Feature Completeness
-status: complete
-last_updated: "2026-05-25T00:00:00.000Z"
-last_activity: 2026-05-25 — v4.1 milestone complete (Phase 30 UAT sweep: 80/82 passed, 1 deferred, 0 failed)
+status: completed
+stopped_at: v4.1 milestone complete
+last_updated: "2026-05-25T06:49:28.395Z"
+last_activity: 2026-05-25
 progress:
   total_phases: 4
   completed_phases: 4
@@ -27,9 +28,9 @@ progress:
 ## Current Position
 
 **Milestone:** v4.1 — Gap Resolution & Feature Completeness (COMPLETE 2026-05-25)
-**Status:** v4.1 milestone complete — ready for milestone close
+**Status:** v4.1 milestone complete
 **Phase:** all v4.1 phases shipped
-**Last activity:** 2026-05-25 — Phase 30 UAT sweep complete
+**Last activity:** 2026-05-25
 
 ```
 v4.1 Progress: [##########] 100% (4/4 phases)
@@ -233,6 +234,19 @@ Known deferred items at v4.0 close: 39 (8 carried from prior closes + 31 new at 
 
 Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
+Items acknowledged and deferred at v4.1 milestone close on 2026-05-25:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 28: 28-HUMAN-UAT.md | partial — 9 pending scenarios (just-shipped budget tracking UAT; out of Phase 30 scope per ROADMAP) |
+| uat_gap | Phase 29: 29-HUMAN-UAT.md | partial — 7 pending scenarios (just-shipped period comparison UAT; out of Phase 30 scope) |
+| uat_gap | Phase 22: 22-HUMAN-UAT.md V6 | deferred — PWA standalone install + toggle (needs install flow) |
+| verification_gap | Phase 27: 27-VERIFICATION.md | human_needed (sweep approved 2026-05-22 via 27-HUMAN-UAT.md) |
+| verification_gap | Phase 28: 28-VERIFICATION.md | human_needed (9 UAT items already deferred in 28-HUMAN-UAT.md) |
+| verification_gap | Phase 29: 29-VERIFICATION.md | human_needed (7 UAT items already deferred in 29-HUMAN-UAT.md) |
+
+Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previously-deferred Phase 00/08/14 carry forward). Phase 30 resolved 80/82 in-scope scenarios from earlier milestones.
+
 ## Session Continuity
 
 **Last session:** 2026-05-25T00:00:00.000Z
@@ -243,4 +257,4 @@ Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-22 — v4.1 roadmap created; phases 27–30 defined*
+*Last updated: 2026-05-25 — v4.1 milestone shipped + archived; 6 known deferred items recorded*

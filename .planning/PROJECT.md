@@ -14,24 +14,30 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 ## Core Value
 
-**Each authenticated user can save, retrieve, and display their own vaccination records and membership/loyalty cards — without ever losing access to them.**
+**Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.**
 
-If everything else fails, these two capabilities must work: the vaccination history list (with attachment preview), and the membership card grid (with barcode scan overlay).
+If everything else fails, these capabilities must work: the vaccination history list (with attachment preview), the membership card grid (with barcode scan overlay), and the expenses list with reporting + budget comparison.
 
-## Current State: v4.1 in Progress
+## Current State: v4.1 Shipped — Planning Next Milestone
 
-**Latest shipped:** v4.0 Daily Expense Tracker (2026-05-22) — third Wallecx record type added; Wallecx now covers vaccinations, membership cards, and daily expenses with period-tabbed reporting and per-category charts.
+**Latest shipped:** v4.1 Gap Resolution & Feature Completeness (2026-05-25) — closed deferred code-quality items (WR-01/02/03), added JSON exports for memberships and expenses, shipped budget tracking (Manage Budgets dialog + actual-vs-budget reports) and period-over-period comparison line, then ran a structured UAT sweep over 8 phases (80/82 in-scope scenarios passed, BR-2 barcode invariant verified twice, regression floor of 49/49 tests intact).
 
-## Current Milestone: v4.1 Gap Resolution & Feature Completeness
+Wallecx is now feature-complete for personal records vault + expense tracking + budget tracking + period comparison. No active milestone — next milestone TBD via `/gsd-new-milestone`.
+
+<details>
+<summary>v4.1 milestone goal (shipped 2026-05-25)</summary>
 
 **Goal:** Close deferred technical debt, add missing JSON exports, extend the expense tracker with budget and period-over-period comparison reporting, and verify untested UAT scenarios across past phases.
 
-**Target features:**
-- Code quality fixes — WR-01/02 (mapToUpdateExpense notes field + test assertion), WR-03 (expense_date calendar validation with dayjs .refine())
-- JSON exports — CONV-01 membership card export; EXP-ADV-07 expense export (mirrors vaccination export from v1.0)
-- Budget tracking — EXP-ADV-01: per-category monthly/yearly targets with actual-vs-budget reporting in Reports tab
-- Period-over-period comparison — EXP-ADV-04: this month vs last month, this quarter vs last quarter delta in Reports tab
-- UAT sweep — structured pass over phases 10–25 untested scenarios with regression fixes
+**Shipped:**
+- CQ-01 expense_date calendar refinement; CQ-02 conditional notes spread on mapToUpdateExpense
+- EXPORT-01 memberships JSON export; EXPORT-02 expenses JSON export
+- `wallecx_expense_budgets` collection (per-user, monthly/yearly enum) + ExpenseBudget types + expenseBudgetMapper (RPT-01 data foundation)
+- `ManageBudget.vue` bulk-upsert modal (Dialog/Drawer + Promise.all create/update/delete-on-zero)
+- ExpensesReportsView Budget vs Actual section + Manage Budgets button (RPT-01 + RPT-02 end-to-end)
+- ExpensesReportsView inline period-over-period comparison line (RPT-03 — Month + Quarter coverage; error/success color tokens; zero-prior graceful handling; U+2212 minus)
+- Phase 30 UAT sweep: 80/82 scenarios passed across 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25); 1 deferred (PWA standalone install needs install flow); 0 regressions
+</details>
 
 <details>
 <summary>v4.0 milestone goal (shipped 2026-05-22)</summary>
@@ -87,27 +93,30 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - ✓ Parent-shell + child-view SFC split (ExpensesTab → ExpensesListView + ExpensesReportsView); single getFullList call preserved — v4.0
 - ✓ `period.ts` dayjs helper (quarterOfYear plugin); `useChartTheme` composable (MutationObserver dark-mode reactive); 8 CSS chart palette tokens — v4.0
 - ✓ `ExpensesReportsView.vue`: period selector (Month/Quarter/Year/Custom), Grand Total hero, horizontal bar chart (Chart.js via PrimeVue), dark-mode reactive, prefers-reduced-motion, sessionStorage persistence — v4.0
+- ✓ CQ-01 expense_date Zod refinement using `dayjs(val, 'YYYY-MM-DD', true).isValid()` to reject invalid calendar dates (Feb 31, Apr 31) — v4.1
+- ✓ CQ-02 `mapToUpdateExpense` notes field uses conditional spread; PATCH payload omits `notes` key when undefined (verified via `not.toHaveProperty`) — v4.1
+- ✓ EXPORT-01 Memberships JSON export button; EXPORT-02 Expenses JSON export button (mirrors v1.0 vaccination export pattern) — v4.1
+- ✓ `wallecx_expense_budgets` PocketBase collection (per-user, monthly/yearly enum, `@request.body.user` create rule); ExpenseBudget TypeScript types + AddExpenseBudget helper; `expenseBudgetMapper.ts` documenting locked `expense-budgets-getFullList` requestKey — v4.1
+- ✓ `ManageBudget.vue` bulk-upsert modal (Dialog desktop / Drawer mobile) with per-category amount + Monthly/Yearly toggle, Promise.all create/update/delete-on-zero loop, watch(visible) pre-population, auth-null guard — v4.1
+- ✓ ExpensesTab shell fetches budgets and passes through; ExpensesReportsView renders period-gated Budget vs Actual section (monthly for this-month, yearly for this-year, hidden for quarter/custom) with progress bars + Under/Over/On budget badges, plus Manage Budgets button entry — v4.1
+- ✓ ExpensesReportsView inline period-over-period comparison line in STATE 4 between Grand Total and Manage Budgets button — Month + Quarter coverage; color-coded direction (error red = overspending, success green = underspending); `↑ $230 (+23%) vs last month` format; honest zero-prior handling (omit %, append "no prior spend"); U+2212 minus — v4.1
+- ✓ Structured Phase 30 UAT sweep over 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25) — 80/82 scenarios passed, 1 deferred (PWA standalone install), 0 regressions; BR-2 barcode invariant verified twice — v4.1
 
-### Active (v4.1)
+### Active
 
-- [ ] **WR-01/02** — Fix `mapToUpdateExpense` to omit `notes` key when undefined; update test assertion to `not.toHaveProperty`
-- [ ] **WR-03** — Add dayjs `.refine()` to `expense_date` Zod schema to reject invalid calendar dates (e.g. Feb 31)
-- [ ] **CONV-01** — JSON export of all membership card records (mirrors vaccination export)
-- [ ] **EXP-ADV-07** — JSON export of all expense records (mirrors vaccination export pattern)
-- [ ] **EXP-ADV-01** — Per-category budget targets (monthly/yearly) with actual-vs-budget reporting in ExpensesReportsView
-- [ ] **EXP-ADV-04** — Period-over-period comparison reporting (this month vs last month, this quarter vs last quarter delta)
-- [ ] **UAT-SWEEP-01** — Structured UAT pass across phases 10–25 untested scenarios; fix regressions found
+(none — v4.1 milestone shipped; next milestone TBD via `/gsd-new-milestone`)
 
 ### Future candidates
 
-- [ ] **EXP-ADV-01** — Budget tracking per category (monthly/yearly targets with actual-vs-budget reporting)
 - [ ] **EXP-ADV-02** — Recurring expenses (mark as recurring; auto-create future entries)
 - [ ] **EXP-ADV-03** — Multi-currency support (currency field + FX conversion at report time)
-- [ ] **EXP-ADV-04** — Period-over-period comparison (this month vs last; quarter-over-quarter delta)
-- [ ] **EXP-ADV-07** — Expense JSON export (batch with CONV-01 vaccination/membership exports)
-- [ ] **CONV-01** — JSON export of all membership card records (mirrors vaccination export)
+- [ ] **EXP-ADV-05** — Year-over-year period comparison (extend RPT-03 to this-year vs last-year; trivial dayjs.subtract('year') extension)
+- [ ] **EXP-ADV-06** — Custom-range period comparison (same-length preceding window for Custom periods)
+- [ ] **EXP-ADV-08** — Multi-period trend / sparkline (visualize last N periods inline near the Grand Total)
 - [ ] **CONV-03** — Expiry date reminders (requires notification infrastructure)
 - [ ] **SCAN-ADV-01** — PDF417 and Aztec code formats via dynamic `bwip-js` import
+- [ ] **PWA-UAT-01** — PWA standalone install + toggle + re-open verification (deferred from Phase 22 V6)
+- [ ] **UAT-RESIDUAL-01** — Walk through Phase 28 + Phase 29 deferred UAT scenarios (16 scenarios from v4.1)
 
 ### Out of Scope
 
@@ -136,16 +145,17 @@ If everything else fails, these two capabilities must work: the vaccination hist
 - Dates: `dayjs` everywhere; PocketBase date filters use `"YYYY-MM-DD"` format
 - File tokens: fetched at view time, not list time; `requestKey` must be distinct per collection to prevent auto-cancel
 
-**Current state (v4.0 shipped — planning next milestone):**
-- ~4,800 LOC TypeScript/Vue across `src/components/projects/wallecx/`
+**Current state (v4.1 shipped — planning next milestone):**
+- ~5,200 LOC TypeScript/Vue across `src/components/projects/wallecx/` (v4.1 added ~410 lines: ManageBudget 240, ExpensesReportsView Phase 28+29 additions, ExpensesTab budget fetch + JSON exports, mappers)
 - 49 Vitest tests passing (vaccinationMapper.spec.ts × 10, guard.spec.ts × 3, membershipMapper.spec.ts × 11, expenseMapper.spec.ts × 9, period.test.ts × 16)
 - Runtime deps: `qrcode.vue@^3.9.1`, `jsbarcode@^3.12.3`, `browser-image-compression@^2.0.2`, `vue-pdf-embed@^2.1.4`, `chart.js@^4.5.1`
 - Dev deps: `vite-plugin-pwa@^1.3.0`, `workbox-window@^7.4.1`, `workbox-build@^7.4.1`, `@vite-pwa/assets-generator@^1.0.2`
-- Three PocketBase collections: `wallecx_vaccinations`, `wallecx_memberships`, `wallecx_expenses` + `wallecx_expense_categories`
-- Three-tab shell: Vaccinations / Memberships / Expenses; parent-shell + child-view SFC split pattern established
-- PWA: installable, SW precaches 53 entries (3 MiB vendor limit), vercel.json deployed
+- Four PocketBase collections: `wallecx_vaccinations`, `wallecx_memberships`, `wallecx_expenses`, `wallecx_expense_categories`, `wallecx_expense_budgets`
+- Three-tab shell: Vaccinations / Memberships / Expenses; Expenses tab has List + Reports sub-tabs; parent-shell + child-view SFC split pattern established
+- Reports view: period selector → Grand Total hero → period-over-period comparison line (v4.1 RPT-03) → Manage Budgets button → chart → Budget vs Actual section (v4.1 RPT-01/02)
+- PWA: installable, SW precaches, vercel.json deployed
 - Mobile layouts: grid-cols-1 responsive, 44px touch targets, safe-area insets, bottom sheets (mobile), iOS install banner
-- Dark mode: site-wide via useTheme composable + .my-app-dark on html; all Wallecx surfaces correct including charts via useChartTheme
+- Dark mode: site-wide via useTheme composable + .my-app-dark on html; all Wallecx surfaces correct including charts via useChartTheme; BR-2 barcode invariant (black-on-white in both themes) reverified in v4.1 Phase 30 sweep
 
 ## Constraints
 
@@ -181,6 +191,14 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | Chart palette fully reactive via useChartTheme refs | MutationObserver on html element reads CSS vars; PrimeVue Chart's deep-watch re-renders automatically on .my-app-dark toggle | ✓ Validated v4.0 |
 | dayjs Q-format template literal (not format token) | quarterOfYear plugin patches .quarter() accessors but NOT format() grammar — `Q${now.quarter()} ${now.format('YYYY')}` required | ✓ Validated v4.0 |
 | Parent-shell + child-view SFC split for ExpensesTab | Shell owns data + dialogs; sibling views (ExpensesListView, ExpensesReportsView) own view-specific UI state and emit intent events | ✓ Validated v4.0 |
+| PocketBase v0.29.3 createRule uses `@request.body.user` (NOT deprecated `@request.data.user`) | Confirmed against live PB instance during Phase 28; deprecated syntax causes create to return 403 | ✓ Validated v4.1 |
+| `wallecx_expense_budgets` requestKey is `'expense-budgets-getFullList'` (locked invariant) | Must stay distinct from `expenses-getFullList`, `expense-categories-getFullList`, `vaccinations-getFullList`, `memberships-getFullList` to prevent PocketBase auto-cancel | ✓ Validated v4.1 |
+| Bulk-upsert with Promise.all create/update/delete-on-zero | ManageBudget.vue dispatches concurrent writes per row; partial-failure acceptable for non-critical personal data; parent re-fetches on 'saved' to reflect actual server state | ✓ Validated v4.1 |
+| Period-gated UI sections use `v-if` (DOM absent, not just hidden) | Phase 28 D-09 + Phase 29 D-01 — Budget vs Actual and period-comparison line both follow this pattern; non-applicable periods produce zero-length collections that collapse the section entirely | ✓ Validated v4.1 |
+| Status color tokens map to value judgment: error=overspending, success=underspending, muted=neutral | Single mental model across Reports view (Budget vs Actual + period comparison) — red signals overspend, green signals underspend | ✓ Validated v4.1 |
+| U+2212 minus character (−) for negative percentages, not ASCII hyphen-minus | Typographic correctness; locked in ExpensesReportsView Phase 29 helper | ✓ Validated v4.1 |
+| Period comparison covers Month + Quarter only (Year + Custom hidden) | Roadmap-strict scope; year/custom deferred (EXP-ADV-05/06) to keep RPT-03 surface area minimal | ✓ Validated v4.1 |
+| Phase 30 UAT sweep as one-plan-per-phase | 8 plans (30-01..30-08), each with checkpoint:human-verify + result-recording task; failures batch-handled at end via gap-closure fix plans | ✓ Validated v4.1 (0 failures actually needed — sweep was clean) |
 
 ## Shipped Milestones
 
@@ -195,6 +213,7 @@ If everything else fails, these two capabilities must work: the vaccination hist
 | v2.3 UX Polish | 17–18 | 2026-05-18 | — |
 | v3.0 Site-Wide Dark Mode | 19–22 | 2026-05-19 | [v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md) |
 | v4.0 Daily Expense Tracker | 23–26 | 2026-05-22 | [v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md) |
+| v4.1 Gap Resolution & Feature Completeness | 27–30 | 2026-05-25 | [v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md) |
 
 ## Evolution
 
@@ -214,4 +233,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-22 — v4.1 Gap Resolution & Feature Completeness milestone started. 7 active requirements: 2 code quality fixes, 2 JSON exports, 2 expense reporting extensions, 1 UAT sweep.*
+*Last updated: 2026-05-25 — v4.1 milestone shipped (4 phases, 15 plans, 7 requirements validated). Wallecx now feature-complete for personal records + expense tracking + budget tracking + period comparison. 9 milestones shipped to date. Next milestone TBD via `/gsd-new-milestone`.*
