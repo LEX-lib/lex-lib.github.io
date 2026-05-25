@@ -2,41 +2,41 @@
 gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: Gap Resolution & Feature Completeness
-status: in_progress
+status: complete
 last_updated: "2026-05-25T00:00:00.000Z"
-last_activity: 2026-05-25 — Phase 29 complete (code verified; 7 UAT scenarios deferred to 29-HUMAN-UAT.md)
+last_activity: 2026-05-25 — v4.1 milestone complete (Phase 30 UAT sweep: 80/82 passed, 1 deferred, 0 failed)
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 75
+  completed_phases: 4
+  total_plans: 15
+  completed_plans: 15
+  percent: 100
 ---
 
 # Project State
 
-**Last updated:** 2026-05-25 — Phase 29 complete (1/1 plan shipped, 11/11 code must-haves verified, 7 UAT scenarios deferred). Ready for Phase 30 (final v4.1 phase).
+**Last updated:** 2026-05-25 — v4.1 milestone COMPLETE. Phase 30 UAT sweep finished (80/82 scenarios passed, 1 deferred, 0 failed). Ready for /gsd-complete-milestone to archive v4.1 and start v4.2.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.1 — Gap Resolution & Feature Completeness. Phase 30 next (UAT sweep across phases 10–25).
+**Current focus:** v4.1 complete. Next: /gsd-complete-milestone to archive v4.1 and roadmap v4.2 (if planned).
 
 ## Current Position
 
-**Milestone:** v4.1 — Gap Resolution & Feature Completeness (STARTED 2026-05-22)
-**Status:** Phase 29 complete — ready for Phase 30
-**Phase:** 30 (not started)
-**Last activity:** 2026-05-25 — Phase 29 complete
+**Milestone:** v4.1 — Gap Resolution & Feature Completeness (COMPLETE 2026-05-25)
+**Status:** v4.1 milestone complete — ready for milestone close
+**Phase:** all v4.1 phases shipped
+**Last activity:** 2026-05-25 — Phase 30 UAT sweep complete
 
 ```
-v4.1 Progress: [#######___] 75% (3/4 phases)
+v4.1 Progress: [##########] 100% (4/4 phases)
 Phase 27: Code Quality & Exports     [x] Complete (2026-05-22)
 Phase 28: Budget Tracking            [x] Complete (2026-05-25)
 Phase 29: Period Comparison          [x] Complete (2026-05-25)
-Phase 30: UAT Sweep                  [ ] Not started
+Phase 30: UAT Sweep                  [x] Complete (2026-05-25)
 ```
 
 ## Shipped Milestones Summary
@@ -237,9 +237,9 @@ Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
 
 **Last session:** 2026-05-25T00:00:00.000Z
 
-**Stopped at:** Phase 29 complete — ready for Phase 30 (final v4.1 phase)
+**Stopped at:** v4.1 milestone complete
 
-**Next session entry point:** Run `/gsd-discuss-phase 30` (or `/gsd-next`) to start Phase 30: UAT Sweep across phases 10–25.
+**Next session entry point:** Run `/gsd-complete-milestone` to archive v4.1, OR `/gsd-new-milestone` to start v4.2.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*

@@ -23,7 +23,7 @@
 
 ### Quality Assurance
 
-- [ ] **QA-01**: UAT scenarios from phases 10–25 with unknown or partial status are executed; regressions found are fixed
+- [x] **QA-01**: UAT scenarios from phases 10–25 with unknown or partial status are executed; regressions found are fixed (Phase 30: 80/82 scenarios passed across 8 phases; 1 deferred — PWA standalone install; 0 regressions found)
 
 ## Future Requirements
 
@@ -58,7 +58,7 @@
 | RPT-01 | Phase 28 | Complete (code verified 2026-05-25; 9 UAT items deferred) |
 | RPT-02 | Phase 28 | Complete (code verified 2026-05-25; 9 UAT items deferred) |
 | RPT-03 | Phase 29 | Complete (code verified 2026-05-25; 7 UAT items deferred) |
-| QA-01 | Phase 30 | Pending |
+| QA-01 | Phase 30 | Complete (80/82 passed 2026-05-25; 1 deferred — PWA standalone install) |
 
 **Coverage:**
 - v4.1 requirements: 8 total

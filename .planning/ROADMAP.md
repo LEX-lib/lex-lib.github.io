@@ -125,12 +125,12 @@ Full details: [milestones/v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md)
 
 </details>
 
-### v4.1 Gap Resolution & Feature Completeness (Phases 27–30) — IN PROGRESS
+### v4.1 Gap Resolution & Feature Completeness (Phases 27–30) — COMPLETE
 
 - [x] **Phase 27: Code Quality & Exports** - Fix two deferred code quality issues and add JSON export to Memberships and Expenses tabs (completed 2026-05-22)
 - [x] **Phase 28: Budget Tracking** - New wallecx_expense_budgets collection + actual-vs-budget reporting in Reports tab (completed 2026-05-25)
 - [x] **Phase 29: Period Comparison** - Extend ExpensesReportsView with period-over-period comparison section (completed 2026-05-25)
-- [ ] **Phase 30: UAT Sweep** - Structured UAT pass over phases 10–25 untested scenarios with regression fixes
+- [x] **Phase 30: UAT Sweep** - Structured UAT pass over phases 10–25 untested scenarios with regression fixes (completed 2026-05-25)
 
 ---
 
@@ -194,7 +194,16 @@ Plans:
   3. UAT scenarios for Phase 25 (7 pending) are executed and marked pass or fail
   4. Any scenario that fails results in a regression fix committed before the phase is marked complete
   5. All 49+ existing Vitest tests remain green after any regression fixes
-**Plans**: TBD
+**Plans**: 8 plans (8 complete)
+Plans:
+- [x] 30-01-PLAN.md — Phase 10 UAT (2/2 passed)
+- [x] 30-02-PLAN.md — Phase 11 UAT (1/1 passed — PocketBase schema)
+- [x] 30-03-PLAN.md — Phase 12 UAT (6/6 passed)
+- [x] 30-04-PLAN.md — Phase 18 UAT (50/50 passed, BR-2 invariant holds)
+- [x] 30-05-PLAN.md — Phase 20 UAT (5/5 passed)
+- [x] 30-06-PLAN.md — Phase 21 UAT (4/4 passed)
+- [x] 30-07-PLAN.md — Phase 22 UAT (6/7 passed, 1 deferred PWA standalone)
+- [x] 30-08-PLAN.md — Phase 25 UAT (7/7 passed — archived path)
 
 ---
 
@@ -236,4 +245,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-25 — Phase 29 complete: period-over-period comparison line in ExpensesReportsView.vue. 11/11 code must-haves verified; 7 UAT scenarios deferred to 29-HUMAN-UAT.md. v4.1 progress: 75% (3/4 phases).*
+*Last updated: 2026-05-25 — Phase 30 complete: UAT sweep across 8 in-scope phases. 80/82 scenarios passed (1 deferred PWA standalone). 49/49 tests green. v4.1 milestone complete; ready for milestone close.*
