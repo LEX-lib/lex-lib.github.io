@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Budget Recovery & Hardening
 status: in_progress
-stopped_at: defining requirements
-last_updated: "2026-05-25T07:00:00.000Z"
-last_activity: 2026-05-25 — v4.2 milestone started; defining requirements
+stopped_at: Phase 31 context gathered
+last_updated: "2026-05-25T08:30:00.000Z"
+last_activity: 2026-05-25 — Phase 31 context gathered; 13 implementation decisions locked
 progress:
   total_phases: 2
   completed_phases: 0
@@ -248,11 +248,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-25T07:00:00.000Z
+**Last session:** 2026-05-25T08:30:00.000Z
 
-**Stopped at:** v4.2 milestone started — requirements + roadmap defined
+**Stopped at:** Phase 31 context gathered (13 decisions captured in 31-CONTEXT.md)
 
-**Next session entry point:** Run `/gsd-discuss-phase 31` (or `/gsd-next`) to start Phase 31: Re-create wallecx_expense_budgets PocketBase collection.
+**Next session entry point:** Run `/gsd-plan-phase 31` to plan Phase 31: Re-create wallecx_expense_budgets PocketBase collection. Resume file: `.planning/phases/31-recreate-budgets-collection/31-CONTEXT.md`
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
