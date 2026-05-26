@@ -1,433 +1,553 @@
-# Pitfalls Research — Wallecx v2.0 Membership Cards
+# Domain Pitfalls — v4.3 Wallecx Mobile Optimization
 
-**Domain:** Barcode/QR rendering + fullscreen scan display + second PocketBase record type + hex colour picker in Vue 3 SPA.
-**Researched:** 2026-05-13
-**Confidence:** HIGH for barcode-library behaviour and PrimeVue ColorPicker (verified against official docs and GitHub issue tracker), HIGH for Wake Lock API (MDN + caniuse.com), MEDIUM for fullscreen iOS behaviour (community reports + Apple forums), MEDIUM for PocketBase multi-collection patterns (official docs + community discussions).
+**Domain:** Adding mobile-grade polish to an existing Vue 3 + PrimeVue 4 + Tailwind v4 + PocketBase + vite-plugin-pwa app
+**Researched:** 2026-05-26
+**Scope:** v4.3 — layout & touch targets, mobile performance, forms & dialogs on small screens, PWA install + standalone polish
+**Confidence overall:** HIGH (most pitfalls verified against either codebase grep, PrimeVue 4 docs, vite-plugin-pwa docs, MDN CanIUse, or recent iOS Safari / Chromium release notes)
 
-> This document covers NEW pitfalls introduced by the v2.0 membership-cards milestone. Pitfalls already solved in the vaccination records slice (per-user isolation, save-loop, EXIF GPS, isSaving guard, filter injection, v-html) are **not** repeated here — they are addressed patterns that must be carried forward into the new `wallecx_memberships` collection using the same conventions.
+> Mental model for this milestone: this is a **modification** milestone, not a greenfield build. Most pitfalls below are about regressing something that already works (BR-2 barcode, NetworkOnly PocketBase, requestKey isolation, registerType: 'prompt', card_color contract) while reshuffling layout for small screens. Treat invariants from STATE.md as load-bearing — the most expensive bug in v4.3 will be silently undoing one of them, not failing to ship a new feature.
 
 ---
 
-## Section 1: Barcode Rendering Pitfalls
+## Critical Pitfalls
 
-### BR-1: JsBarcode throws an uncaught exception on invalid input, crashing the component
+Mistakes that cause production-visible defects, lost user data, regress a locked invariant, or require a follow-up bug-fix milestone (v4.4).
 
-**What goes wrong:**
-JsBarcode validates barcode values against format-specific rules before rendering. If the value fails validation — wrong length for EAN-13, non-numeric characters in a numeric-only format, characters outside the Code39 charset — it throws a synchronous `Error` with message like `"[value] is not a valid input for [format]"`. Because the throw happens inside a Vue `onMounted` or watcher callback where the template has already rendered the `<svg>` element, Vue catches it in the component lifecycle but the error propagates to the global error handler (if one exists) or silently swallows it (if not). The user sees a blank barcode area with no explanation.
+### Pitfall C-1: registerType drift from `'prompt'` to `'autoUpdate'`
 
-**Why it happens:**
-JsBarcode was designed for Node.js and browser scripting, not reactive frameworks. It has no "soft fail" mode — it either renders or throws. Vue 3 `watch` callbacks do not automatically catch synchronous exceptions from the watched handler; the exception surfaces as an unhandled promise rejection only when the watcher is async.
-
-Specific format constraints that bite real users:
-- **EAN-13**: must be exactly 13 digits; the 13th is a checksum digit JsBarcode validates. A 12-digit retail barcode (EAN-12 / UPC-A) throws unless the checksum digit is appended.
-- **Code39**: uppercase letters, digits, and `- . $ / + % SPACE` only. Lowercase letters throw. Asterisks (`*`) are the start/stop symbol — if a user's card value includes a `*` it throws.
-- **Code128**: accepts any ASCII but length matters; extremely long values can produce SVGs wider than the viewport without throwing, just silently rendering off-screen.
-- **ITF** (Interleaved 2 of 5): must have an even number of digits; an odd-length numeric string throws.
-
+**Category:** PWA install + standalone polish
+**What goes wrong:** A well-meaning refactor of `vite.config.ts` (e.g. "let's auto-update the SW so the install prompt UX is cleaner") flips `registerType: 'prompt'` to `'autoUpdate'`. Next deploy, any user with an open ManageExpense / ManageVaccination / ManageMembership / ManageBudget dialog containing unsaved input gets a silent SW reload that destroys their input mid-typing.
+**Why it happens:** `'autoUpdate'` looks simpler in docs and removes the "Update available — Refresh / Later" toast. Reviewers without milestone context don't see the connection to unsaved CRUD state.
+**Consequences:** Silent data loss in the middle of a save. Indistinguishable from a browser crash to the user. No telemetry — they just lose what they typed.
 **Prevention:**
-1. Wrap every JsBarcode render call in `try/catch`. On catch, set a `barcodeError: string | null` reactive ref and render a fallback UI (the plain card number in large text) instead of the SVG.
-2. Add client-side pre-validation in the `ManageMembership.vue` form using Zod: `z.string().regex(/^\d{13}$/)` for EAN-13, `z.string().regex(/^[A-Z0-9\-\.\$\/\+\% ]+$/)` for Code39. Show inline field errors before the user hits save.
-3. The fallback must be a visible element, not an empty `<div>`. Render the card number as large plain text with a "Barcode unavailable" caption.
-4. Never pass an empty string to JsBarcode — check `barcodeValue.trim() !== ''` before calling.
-
-**Phase assignment:** Phase implementing barcode rendering (MembershipCard component). The try/catch fallback must be present from day one — it cannot be added later after users have saved invalid-format values.
+- Lock `registerType: 'prompt'` in `vite.config.ts` with an inline comment (already present: `// LOCKED: never 'autoUpdate' — CRUD forms have unsaved state`). Do NOT remove that comment during v4.3.
+- Add a guard test: any PR that touches `vite.config.ts` PWA block must keep the LOCKED comment AND `registerType: "prompt"`.
+- REQUIREMENTS.md non-functional: **NFR-PWA-AUTOUPDATE — `registerType` must remain `'prompt'`. Any phase touching `vite.config.ts` MUST preserve the LOCKED comment.**
+**Detection:** Open ManageExpense, start typing, deploy a no-op change, watch input wiped without a "Refresh / Later" toast = regression.
+**Owner phase:** PWA polish phase (the one touching `vite.config.ts`, manifest, install banner).
 
 ---
 
-### BR-2: QR code renders invisibly on dark card backgrounds — contrast failure
+### Pitfall C-2: BR-2 barcode invariant regression via mobile CSS sweep
 
-**What goes wrong:**
-QR codes rendered with `qrcode.vue` or similar libraries default to black-on-white (`#000000` on `#ffffff`). When the card's `card_color` is a dark colour (navy, charcoal, dark green), the developer may try to match the QR code's foreground/background to the card palette. Dark-on-dark QR codes fail to scan: most phone scanner algorithms require a minimum contrast ratio of 3:1 between modules and background; effective scanning requires 4.5:1 or higher. Even if the code is technically visible to the human eye, the camera sensor may not capture sufficient contrast under overhead fluorescent lighting.
-
-Additionally, QR codes rendered with a red or orange foreground colour fail on some cameras because the sensor struggles to distinguish red wavelengths as "dark" — the camera sees a red module as too bright and loses the pattern.
-
-**Why it happens:**
-The card colour controls the visual identity of the card tile; it is tempting to style the barcode to match. The standard says barcode foreground must be dark relative to background — not relative to the card's accent colour.
-
+**Category:** Mobile layout pitfalls (PrimeVue + Tailwind v4)
+**What goes wrong:** A mobile dark-mode override sweep adds `.my-app-dark .barcode-display { background: var(--color-surface-card); color: var(--color-typo-body); }` (looks "correct" for dark mode). Now the barcode SVG renders cream-on-navy instead of black-on-white → most barcode scanners (1D, especially Code128/EAN-13) cannot read it. Same regression possible via aggressive `*:not(.barcode-display)` selectors or Tailwind theme tokens applied too globally.
+**Why it happens:** Mobile sweep + dark-mode polish frequently happen in the same pass. The BR-2 invariant (barcode stays black-on-white in BOTH themes) is the kind of contract you only remember when you read the v2.0/v3.0 archives.
+**Consequences:** Memberships unusable at checkout counter for any user on dark mode — directly hits Core Value ("membership card grid with barcode scan overlay"). Already verified twice in v4.1 Phase 30 sweep; regressing it in v4.3 is a milestone-level failure.
 **Prevention:**
-1. Always render QR codes and linear barcodes with a **white background panel** (`#ffffff`) and **black foreground** (`#000000`), regardless of the card's `card_color`. Wrap the SVG/canvas in a `rounded-md bg-white p-2` container.
-2. Never expose `colorDark` / `colorLight` props to end users. The barcode rendering is a functional element, not a design element.
-3. Explicitly prohibit red, orange, and warm-light foreground values in the barcode renderer props — use constants `BARCODE_FOREGROUND = '#000000'` and `BARCODE_BACKGROUND = '#ffffff'` with no overrides from card data.
-4. In fullscreen scan mode, add extra white padding around the barcode (quiet zone) — QR code specs require 4 module-widths of quiet zone; most library defaults provide this but verify it isn't clipped by the card layout.
-
-**Phase assignment:** Phase implementing barcode rendering and fullscreen scan view.
+- Add a Vitest/Playwright snapshot guarding `BarcodeDisplay.vue` SVG `fill` / `background` after every CSS change in v4.3.
+- Wallecx UAT script for every v4.3 layout phase: open scan overlay on iPhone in dark mode and visually confirm white background + black bars.
+- REQUIREMENTS.md non-functional: **NFR-BR-2-PRESERVED — BarcodeDisplay must render black bars on white background in BOTH themes AND in PWA standalone AND at all v4.3 test viewports (390/360/768).** Verify in the same UAT pass as v4.1 Phase 30.
+**Detection:** Visual diff on `BarcodeDisplay` SVG; failed scan in counter test.
+**Owner phase:** Layout & touch-target audit phase (touches Memberships) AND PWA standalone phase (re-verify in installed mode).
 
 ---
 
-### BR-3: Bundle size spike from including all JsBarcode format encoders
+### Pitfall C-3: PocketBase auto-cancel via duplicated `requestKey` from new mobile path
 
-**What goes wrong:**
-The standard JsBarcode import (`import JsBarcode from 'jsbarcode'`) loads all supported barcode formats: Code128, Code39, EAN, UPC, ITF, Pharmacode, Codabar, MSI — totalling approximately 47 kB minified / 11 kB gzipped. For a Vite/rolldown build the tree-shaker can only eliminate JsBarcode encoders if the library provides named ESM exports, which the current JsBarcode release (`3.11.6`) does not — it ships a UMD bundle that treats the whole library as one chunk. The result is the full 47 kB is always bundled even if only Code128 is used.
-
-For QR codes, `qrcode` (the underlying library for `qrcode.vue`) adds approximately 40 kB minified / 15 kB gzipped.
-
-Combined: approximately 26 kB gzipped added to the Wallecx chunk if both are imported eagerly.
-
-**Why it happens:**
-Wallecx is a mini-app under `/projects/wallecx`. If the barcode/QR libraries are imported at the top of `WallecxApp.vue` or `MembershipCard.vue`, Vite bundles them into the Wallecx route chunk, which is already lazy-loaded from the router. The size hit is confined to the Wallecx chunk, not the global bundle — but it still affects Wallecx first-load time on slow mobile connections.
-
+**Category:** Mobile performance + project-specific
+**What goes wrong:** A new mobile-only code path (e.g. a "swipe to refresh" gesture on ExpensesListView, or an `IntersectionObserver`-based lazy fetch when the Reports tab scrolls into view) calls `pb.collection('wallecx_expenses').getFullList({ requestKey: 'expenses-getFullList' })` while a previous in-flight call is still pending. PocketBase SDK **auto-cancels** the earlier request because the keys match → list renders empty or stale, toast fires, user sees "Failed to load expenses" on a healthy network.
+**Why it happens:** STATE.md locks requestKeys per collection (`expenses-getFullList`, `expense-budgets-getFullList`, etc.) under the assumption of one-call-per-mount. Mobile patterns (pull-to-refresh, tab re-entry, focus-back-from-background) introduce N-calls-per-mount and break that assumption.
+**Consequences:** Intermittent empty states on mobile that are impossible to reproduce on desktop. Mirrors v4.2 BUG-02 in symptom (misleading toast + empty list) but root cause is different.
 **Prevention:**
-1. Keep the barcode/QR imports inside the `MembershipCard.vue` component (or a dedicated `MembershipBarcode.vue` subcomponent) so Vite can split them into a sub-chunk. Since `WallecxApp.vue` lazy-loads `MembershipCard.vue` only when the Memberships tab is active, there is a natural split point.
-2. Use `defineAsyncComponent(() => import('./MembershipBarcode.vue'))` for the barcode subcomponent with a `<Skeleton>` loading slot — this defers the ~26 kB until the user first navigates to the memberships tab.
-3. For JsBarcode, prefer format-specific imports if the library ever ships per-format ESM: `import { CODE128 } from 'jsbarcode/src/barcodes/CODE128'`. For now, import the full library but keep it isolated to the barcode component.
-4. Run `npm run build` and check the Rollup chunk report after adding the libraries. Anything over 50 kB gzipped for the Wallecx chunk warrants attention.
-
-**Phase assignment:** Phase implementing membership card grid and barcode rendering.
+- Any new mobile interaction that triggers a refetch must EITHER reuse the existing call site (debounced) OR use a distinct `requestKey` (`'expenses-pull-to-refresh'`, etc.).
+- Document new requestKeys in STATE.md `Architectural Invariants` the moment they ship.
+- Code-review rule: `grep -r "requestKey:" src/components/projects/wallecx/` must show 1 caller per key (or N callers all using the same fetch helper).
+- REQUIREMENTS.md non-functional: **NFR-REQUESTKEY-UNIQUE — each PocketBase requestKey is owned by exactly one call site (or one helper). New mobile fetch paths require a new requestKey.**
+**Detection:** Network panel shows `?cancel=true` 200s; UI shows empty/stale list with no error in console.
+**Owner phase:** Mobile performance phase (lazy-loading work) AND any layout phase that adds a refresh affordance.
 
 ---
 
-### BR-4: `qrcode.vue` Canvas vs SVG — canvas fails in strict CSP environments
+### Pitfall C-4: 100vh / `h-screen` measuring wrong on iOS Safari and Chrome on Android
 
-**What goes wrong:**
-`qrcode.vue` offers both `QrcodeCanvas` (renders to `<canvas>`) and `QrcodeSvg` (renders to inline SVG). If the existing Lexarium `index.html` CSP includes `default-src 'self'` without explicitly allowing `blob:` or if canvas-to-blob operations are restricted, `QrcodeCanvas` may fail silently. Additionally, canvas-rendered QR codes cannot be right-click-saved as images in some browsers.
-
-SVG QR codes are preferable because they are resolution-independent (crisp on high-DPI screens), scale correctly in fullscreen mode without pixelation, and are not affected by canvas CSP restrictions.
-
+**Category:** Mobile layout (Tailwind v4)
+**What goes wrong:** A bottom sheet, scan overlay, sticky action bar, or the Wallecx shell uses `h-screen` (Tailwind v4 → `height: 100vh`) or raw `100vh`. On iOS Safari and Android Chrome, `100vh` is the **largest** viewport (URL bar collapsed), so the layout overflows by ~70–100px when the URL bar is showing — the bottom of the view (notably the sticky action bar on dialogs and the scan overlay's "Close" button) sits below the URL bar and is unreachable.
+**Why it happens:** Browser legacy behavior; well known but easy to ship in scoped styles a reviewer doesn't scrutinize. Reduced-motion overlays and full-screen scan overlay use 100vh historically.
+**Consequences:** Scan overlay Close button unreachable → user has to force-quit to exit a frozen full-screen state. Sticky action bar (Save / Delete) on Drawer offscreen → cannot save.
 **Prevention:**
-1. Use `QrcodeSvg` (or the `render-as="svg"` prop) for all QR code rendering. Do not use canvas for QR codes in this project.
-2. For JsBarcode (linear barcodes), the library renders to SVG by default when passed an `<svg>` element reference — prefer SVG over canvas here too.
-3. SVG output scales perfectly to fullscreen without blur. Canvas at standard DPI appears pixelated when scaled up in fullscreen mode.
-4. Verify the existing CSP in `index.html` does not need updating for SVG inline rendering (it does not — inline SVG is part of the HTML document and covered by `default-src 'self'`).
+- Replace **all** `h-screen` / `100vh` in `src/components/projects/wallecx/` with `100dvh` (dynamic viewport) where available, with `100svh` fallback ladder, e.g. `height: 100dvh; height: 100svh;` or Tailwind v4's `h-dvh` / `h-svh` arbitrary classes.
+- `100dvh` is supported in iOS Safari 15.4+ and Chrome 108+ (both well below current iOS Safari ~17–18 and Chromium ~120+).
+- Audit pass before milestone close: `grep -rn "100vh\|h-screen" src/components/projects/wallecx/` must return 0 (or every hit annotated as intentional).
+**Detection:** Open scan overlay on iPhone with URL bar visible; the close icon is below the URL bar.
+**Owner phase:** Layout & touch-target audit phase.
 
-**Phase assignment:** Phase implementing barcode rendering.
+**Confidence:** HIGH — `dvh`/`svh`/`lvh` shipped in Safari 15.4 (March 2022) and Chrome 108 (Nov 2022); current iOS Safari ≥17 and Chrome ≥120 in v4.3 test viewports support both.
 
 ---
 
-### BR-5: Watcher-driven barcode re-render fires before the SVG element mounts
+### Pitfall C-5: iOS auto-zoom on form focus because input font-size < 16px
 
-**What goes wrong:**
-A common pattern is to `watch(barcodeValue, () => JsBarcode('#barcode-svg', barcodeValue.value, options))`. If the component conditionally renders the `<svg id="barcode-svg">` element (e.g., inside a `v-if="barcodeValue"`), the watcher may fire before the DOM element exists on the first render cycle. `document.querySelector('#barcode-svg')` returns `null`, and JsBarcode receives `null` — throwing a second type of error distinct from the invalid-input error.
-
-**Why it happens:**
-Vue 3's reactivity updates the DOM asynchronously. A synchronous watcher fires before the `v-if` branch has had a chance to insert the element. Using `{ immediate: true }` on the watcher without `nextTick` guarantees is the most common trigger.
-
+**Category:** Forms & dialogs on small screens
+**What goes wrong:** iOS Safari auto-zooms the viewport when an input/select/textarea with `font-size < 16px` receives focus. The page then never zooms back, leaving labels and the Save button misaligned or offscreen. Grep against the current ManageExpense.vue shows `class="text-sm"` on labels and surrounding spans (Tailwind v4 `text-sm = 0.875rem = 14px`). **The actual `<InputText>` / `<InputNumber>` / `<DatePicker>` / `<Select>` / `<MultiSelect>` / `<Textarea>` font-size is inherited from PrimeVue's Aura preset** — verify per-component before assuming. But any mobile pass that adds `text-sm` to the actual input element (not just the label) is a trap.
+**Why it happens:** `text-sm` looks right on desktop, the iOS zoom only triggers on focus on real device, and DevTools mobile emulator does NOT reproduce auto-zoom.
+**Consequences:** Forms feel broken on every iPhone; users cannot easily see the field they're typing into. Affects all four CRUD dialogs (ManageVaccination, ManageMembership, ManageExpense, ManageBudget).
 **Prevention:**
-1. Use `templateRef` (`const svgRef = useTemplateRef<SVGElement>('barcode-svg')`) and render JsBarcode against the ref, not a DOM query. The ref is `null` until mount, which you can check.
-2. Wrap the JsBarcode call in `nextTick` when triggered by a watcher: `watch(barcodeValue, async () => { await nextTick(); if (svgRef.value) JsBarcode(svgRef.value, ...); })`.
-3. Alternatively, use `onMounted` + `watch` without `{ immediate: true }`: `onMounted(() => renderBarcode())` + `watch(barcodeValue, renderBarcode)`. This avoids the race entirely.
-4. For `qrcode.vue`, the `QrcodeSvg` component handles its own reactive re-rendering via props — no manual DOM manipulation needed; this pitfall only applies to direct JsBarcode usage.
+- Add a scoped CSS guard at `WallecxApp.vue` shell level: `@media (max-width: 640px) { .p-inputtext, .p-inputnumber-input, .p-textarea, .p-select-label, .p-multiselect-label, .p-datepicker-input { font-size: 16px !important; } }`. The `!important` is justified — it must beat any inherited `text-sm`.
+- Lint/grep rule before milestone close: `grep -rn "text-xs\|text-sm" src/components/projects/wallecx/Manage*.vue` — every match on an input element must be replaced or overridden.
+- Alternative belt-and-suspenders: `<meta name="viewport" content="... user-scalable=no">` is **NOT acceptable** (a11y regression — users cannot zoom). Use font-size, not viewport lockdown.
+- REQUIREMENTS.md non-functional: **NFR-IOS-NO-ZOOM — All form inputs in v4.3 must render at ≥16px on mobile viewports to prevent iOS auto-zoom-on-focus.**
+**Detection:** Open ManageExpense on iPhone, tap Amount field, page zooms in and never zooms back. Verify on real device — DevTools emulator does not reproduce this.
+**Owner phase:** Forms & dialogs on small screens phase.
 
-**Phase assignment:** Phase implementing barcode rendering in card components.
+**Confidence:** HIGH — documented WebKit behavior since iOS 4; survives in iOS 18.
 
 ---
 
-## Section 2: Fullscreen Scan Display Pitfalls
+### Pitfall C-6: Workbox `maximumFileSizeToCacheInBytes: 3 MiB` silently skips bigger files
 
-### FS-1: Screen dims and locks during barcode scan — the Wake Lock API is required
-
-**What goes wrong:**
-A user opens the fullscreen scan overlay, holds the phone up to the counter scanner, and the screen auto-dims (5–15 seconds on iOS/Android defaults) or locks (30–60 seconds). The barcode disappears. The user has to unlock, navigate back, and try again. In a queue at a pharmacy or transport gate, this is a significant UX failure.
-
-**Why it happens:**
-Phone OS screen timeout applies to web pages including PWA fullscreen views. There is no CSS or HTML attribute to prevent dimming. The JavaScript `Screen Wake Lock API` (`navigator.wakeLock.request('screen')`) is the only browser-native solution.
-
-**Browser support as of 2026-05:**
-- Chrome (Android): supported since Chrome 84
-- Safari (iOS): supported since iOS 16.4 — but **a bug broke Wake Lock in installed PWA mode until iOS 18.4** (Apple fixed in March 2025). In iOS 18.4+ it works correctly.
-- Firefox: supported since Firefox 126
-- The API is available in **secure contexts only** (HTTPS) — Vercel deployments satisfy this.
-
+**Category:** PWA install + standalone + mobile performance
+**What goes wrong:** v2.1 locked `maximumFileSizeToCacheInBytes: 3 * 1024 * 1024` in `vite.config.ts` to accommodate the 2.57 MiB vendor bundle. If v4.3 adds a chart enhancement, a list virtualization library, or a new PrimeVue auto-imported component that pushes any single chunk over 3 MiB, **Workbox silently skips precaching it** — the chunk is missing offline, the app shell breaks in standalone mode after first launch with intermittent ChunkLoadError on subsequent visits.
+**Why it happens:** Workbox logs a warning during build (`Skipping precaching of "<path>" because it exceeds maximumFileSizeToCacheInBytes`), but the warning is buried in `npm run build` output and the build SUCCEEDS. PWA still installs. The failure mode is days later when a user is offline.
+**Consequences:** Standalone PWA broken offline for any user who installed before the deploy and has no network during a session that needs the over-3-MiB chunk. v2.1 D-09 invariant violated.
 **Prevention:**
-1. In the fullscreen scan overlay `onMounted`, call `navigator.wakeLock.request('screen')` inside a `try/catch`. Store the sentinel: `const wakeLock = ref<WakeLockSentinel | null>(null)`.
-2. Release the wake lock in `onUnmounted` and when the overlay closes: `wakeLock.value?.release()`.
-3. The wake lock is auto-released when the tab becomes hidden (user switches apps). Re-acquire it on `visibilitychange`: `document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeLock.value = await navigator.wakeLock.request('screen'); })`.
-4. Guard with feature detection: `if ('wakeLock' in navigator)` — do not throw if unsupported (older iOS Safari 16.3 and below).
-5. Do **not** rely on Wake Lock to also increase brightness — the API prevents dimming but cannot force maximum brightness. Inform users via a tooltip: "Keep screen bright for best scanning."
+- Add a build-time assertion in CI / `npm run build` that the largest chunk in `dist/assets` does not exceed `3 * 1024 * 1024 - safety_margin (e.g. 200 KiB)`.
+- Build log scan: `npm run build 2>&1 | grep -i "exceeds\|skipping"` must produce 0 matches in v4.3.
+- Mobile performance phase: budget the bundle BEFORE adding anything new. If a new lib pushes a chunk close to 3 MiB, split it or lazy-load it via dynamic import; do NOT raise the cap (the higher the cap, the slower the first PWA install on cellular).
+- REQUIREMENTS.md non-functional: **NFR-PWA-PRECACHE-FITS — all chunks listed in `dist/manifest.json` must fit under the configured precache cap; build must verify.**
+**Detection:** `dist/assets/*.js` file size > 3 MiB; build warning about precache skip; offline standalone test shows ChunkLoadError.
+**Owner phase:** Mobile performance phase.
 
-**Phase assignment:** Phase implementing fullscreen scan overlay.
+**Confidence:** HIGH — verified in Workbox 7.x docs; same root cause as v2.1 D-09's reason for the 3 MiB cap.
 
 ---
 
-### FS-2: The Fullscreen API does not work on iPhones — use a viewport overlay instead
+### Pitfall C-7: PocketBase `getList()` (with totalItems) regression introduced by mobile pagination
 
-**What goes wrong:**
-`document.documentElement.requestFullscreen()` works on Android Chrome and desktop browsers. On iPhone (all iOS versions before iOS 26), the Fullscreen API is **not supported for non-video elements**. Calling `requestFullscreen()` on an iPhone returns a rejected promise or `undefined`. As of iOS 26 (September 2025), Safari added support — but devices on iOS 17/18 will remain on the old behaviour for years.
-
-**Why it happens:**
-Apple historically restricted the Fullscreen API on iPhone to video elements only. iPad had limited support with vendor prefixes (`webkitRequestFullscreen`). The restriction existed from iOS 12 through iOS 18, affecting the majority of current real-world devices.
-
+**Category:** Project-specific + mobile performance
+**What goes wrong:** Mobile performance phase decides "the expenses list has 300 rows, let's paginate" and switches a call from `getFullList()` to `getList(page, perPage)`. On the v0.29.x PocketBase instance with `@request.auth.id != "" && user = @request.auth.id`-shaped listRules (all five `wallecx_*` collections), the totalItems COUNT path returns **400 Something went wrong** (D-31-B in STATE.md).
+**Why it happens:** Pagination is the textbook answer to "list is big on mobile"; reviewers who didn't ship v4.2 won't know D-31-B exists.
+**Consequences:** Expenses tab broken on mobile. Same toast as BUG-02. Visible in production.
 **Prevention:**
-1. Do not implement the fullscreen scan view via the Fullscreen API. Instead, implement it as a `position: fixed; inset: 0; z-index: 9999` overlay div that covers the entire viewport. This works identically on all devices.
-2. Use Tailwind classes: `fixed inset-0 z-50 bg-black flex flex-col items-center justify-center`.
-3. Set `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (already present in most Vite-generated `index.html` files) to cover the notch area on iPhone.
-4. The status bar will still be visible on iPhone in a browser tab — this is expected and acceptable. The QR/barcode can still be scanned with the status bar present.
-5. If targeting installed PWA mode (Add to Home Screen), add `"display": "standalone"` to the web app manifest to get near-fullscreen on both iOS and Android.
-6. Lock orientation to landscape is also not reliably possible (Screen Orientation API not supported on iOS Safari) — design the scan overlay to work in both portrait and landscape.
-
-**Phase assignment:** Phase implementing fullscreen scan overlay.
+- Pin D-31-B in REQUIREMENTS.md as a constraint: **CON-PB-COUNT-BUG — `getList()` without `skipTotal: true` is broken on `wallecx_*` collections in PB v0.29.x. Use `getFullList()` (default) or `getList(p, pp, { skipTotal: true })`. Never read `totalItems` from these collections.**
+- Code-review rule: any new `getList(` call against `wallecx_*` must include `{ skipTotal: true }` OR be rejected.
+- Prefer client-side virtualization (vue-virtual-scroller, @tanstack/virtual) over server-side pagination for v4.3 — keeps the single-`getFullList`-per-mount invariant intact.
+**Detection:** 400 response in Network panel against `/api/collections/wallecx_*/records` with `page=1&perPage=N`.
+**Owner phase:** Mobile performance phase (list virtualization).
 
 ---
 
-### FS-3: Screen brightness cannot be increased via web APIs — manual instruction required
+### Pitfall C-8: PWA manifest `start_url` mismatch breaks installed PWA
 
-**What goes wrong:**
-The user is in a dimly-lit store. The QR code needs maximum screen brightness to scan reliably. Web browsers have no API to programmatically set or increase screen brightness — the W3C Screen Brightness API is proposed (`WICG/proposals#17`) but not implemented in any browser as of 2026. Wake Lock prevents dimming but cannot go above the user's current brightness setting.
+**Category:** PWA install + standalone polish
+**What goes wrong:** Current `start_url: "/projects/wallecx"` with `scope: "/"` is correct. If v4.3 changes `scope` to `/projects/wallecx` (looks "more scoped"), navigation to `/projects/wallecx/expenses-sub-route` (if one were ever added) or to `/login` after auth expiry breaks — the PWA window cannot navigate out of scope and either opens an external browser or shows a blank screen.
+**Why it happens:** "Scope to the mini-app" looks correct in PWA tutorials.
+**Consequences:** Installed PWA loses login redirect, loses cross-route nav.
+**Prevention:** STATE.md already locks `scope: '/'`. Re-affirm in v4.3 REQUIREMENTS.md.
+- REQUIREMENTS.md: **CON-PWA-SCOPE — `scope: '/'` is mandatory and must not be narrowed.**
+**Detection:** Auth expires in standalone PWA → redirect to `/login` opens external browser tab.
+**Owner phase:** PWA polish phase.
 
-**Why it happens:**
-Brightness control is considered a sensitive hardware API and has not been standardised for web access.
+---
 
+## Moderate Pitfalls
+
+Defects that ship intermittently or are easy to QA-catch but require rework.
+
+### Pitfall M-1: `env(safe-area-inset-*)` ignored on `position: fixed` without `viewport-fit=cover`
+
+**Category:** Mobile layout / PWA standalone
+**What goes wrong:** Sticky action bars, the install banner, and bottom-anchored Drawers use `padding-bottom: env(safe-area-inset-bottom)`. On iOS in standalone mode, the inset is only non-zero when the meta tag includes `viewport-fit=cover`. Current `index.html` has it (`viewport-fit=cover, interactive-widget=resizes-content`) — good. But if a phase strips/rewrites that meta during a mobile polish pass, all safe-area math becomes zero and content sits under the home-indicator bar.
+**Why it happens:** Easy to miss in meta-tag refactors.
 **Prevention:**
-1. Display a persistent "Tip" message in the fullscreen overlay: "For best scanning: increase your screen brightness in Settings." Use a dismissible `Message` component from PrimeVue.
-2. Set the fullscreen overlay background to pure black (`#000000`) everywhere except the white barcode panel — the contrast makes the barcode panel appear brighter to the scanner.
-3. Use `QrcodeSvg` / SVG barcodes (not canvas) — SVG renders crisply at any DPI and does not have the slight gamma shift that canvas exhibits on OLED screens.
-4. Do not promise "auto-brightness" in marketing copy or UI strings.
+- Lock the viewport meta in `index.html` with an inline comment: `<!-- viewport-fit=cover REQUIRED for env(safe-area-inset-*) to be non-zero -->`.
+- v4.3 UAT: home-indicator visible distance below buttons in standalone mode on iPhone with notch / dynamic island.
+- REQUIREMENTS.md: **CON-VIEWPORT-FIT — index.html viewport meta must include `viewport-fit=cover`.**
 
-**Phase assignment:** Phase implementing fullscreen scan overlay.
+**Confidence:** HIGH — Apple Human Interface Guidelines + WebKit blog 2017.
 
 ---
 
-### FS-4: Tap to exit fullscreen conflicts with tap to copy card number
+### Pitfall M-2: `interactive-widget=resizes-content` Android keyboard behavior surprises
 
-**What goes wrong:**
-The fullscreen overlay has a "tap anywhere to close" gesture. The card also shows the card number which should be tappable to copy to clipboard. These two interactions conflict: tapping the card number both copies it AND closes the overlay.
-
+**Category:** Forms & dialogs on small screens
+**What goes wrong:** Current meta tag includes `interactive-widget=resizes-content` (Chromium 108+). Android Chrome on form focus now **resizes the layout viewport** rather than overlaying the virtual keyboard. A `position: fixed` sticky action bar implemented assuming overlay behavior will now jump up into the visual region above the keyboard (correct, intended) — but a Drawer bottom-sheet with a fixed-height inner scroll container can collapse to 0 height because the parent viewport shrank.
+**Why it happens:** Drawer height set via `100dvh` minus a fixed handle, no `min-height` floor.
 **Prevention:**
-1. Use an explicit close button (X icon, top-right corner, large tap target: `min-h-[44px] min-w-[44px]`) rather than "tap anywhere to close."
-2. If a background-tap-to-close gesture is desired, attach it only to the background overlay element (not the card content area), using `@click.self` on the outer div.
-3. The copy-to-clipboard button should call `event.stopPropagation()` to prevent bubbling to any parent tap handlers.
+- Bottom-sheet Drawer pattern: use `max-height: 90dvh; min-height: 320px; height: auto;` not a fixed `height`.
+- Test: open ManageExpense on Drawer (mobile), tap Description field, keyboard opens → Save button must remain visible above keyboard, Drawer body must remain scrollable.
 
-**Phase assignment:** Phase implementing fullscreen scan overlay.
+**Confidence:** MEDIUM — `interactive-widget` is Chromium-only; iOS Safari uses the legacy overlay model. Behavior diverges across platforms; test both.
 
 ---
 
-### FS-5: Fullscreen overlay stacking context interferes with PrimeVue Dialog z-index
+### Pitfall M-3: PrimeVue Drawer `position="bottom"` swipe-to-close conflict with internal scroll
 
-**What goes wrong:**
-PrimeVue Dialogs use `z-index: 1100` (Aura theme default). If the fullscreen overlay is rendered at `z-index: 9999` inside a `<Teleport to="body">`, the stacking works. But if the overlay is a sibling inside the same Vue component tree without a `<Teleport>`, it may be clipped by a parent `overflow: hidden` or `transform` — both of which create a new stacking context that traps the `z-index`.
-
+**Category:** Forms & dialogs / Mobile layout
+**What goes wrong:** PrimeVue 4 Drawer with `position="bottom"` accepts swipe-down-on-handle to dismiss. If ManageExpense's Drawer body contains a scrollable form, a downward swipe inside the form sometimes dismisses the Drawer when the form is already scrolled to top — destroying unsaved input.
+**Why it happens:** Drawer swipe handler doesn't always check scroll-at-top before dismissing.
 **Prevention:**
-1. Always render the fullscreen scan overlay via `<Teleport to="body">`. This ensures it is a direct child of `<body>` and participates in the root stacking context.
-2. Set `z-index` to at least `1200` to clear PrimeVue's Dialog layer.
-3. Test on mobile: PrimeVue's Drawer and Dialog components add CSS transforms for their slide/fade animations which create stacking contexts — the overlay must be teleported to escape them.
+- Pattern: when `position="bottom"` on a Drawer with a form inside, set `:modal="true"` and `:dismissable-mask="false"` AND ensure the Drawer handle is the only swipe-dismiss target (verify in PrimeVue 4 source). If swipe-down dismissal cannot be restricted to the handle, override `@hide` with a confirmation dialog (`useConfirm`) when the form is dirty.
+- v4.3 UAT scenario: open ManageExpense (mobile), type into a field, swipe down on Drawer body → must NOT lose input.
+- REQUIREMENTS.md: **NFR-DRAWER-DIRTY-GUARD — Mobile Drawer dismissal must not silently destroy unsaved CRUD form state.**
 
-**Phase assignment:** Phase implementing fullscreen scan overlay.
+**Confidence:** MEDIUM — verify against PrimeVue 4 Drawer docs and source before phase planning.
 
 ---
 
-## Section 3: Multi-Record-Type Pitfalls
+### Pitfall M-4: PrimeVue MultiSelect chips overflow horizontally on narrow viewports
 
-### MR-1: Component name collision between Vaccination and Membership components
-
-**What goes wrong:**
-`unplugin-vue-components` auto-imports and globally registers every `.vue` file under `src/components/`. When adding membership card components alongside vaccination components in `src/components/projects/wallecx/`, generic names like `ManageRecord.vue`, `RecordCard.vue`, or `RecordDetail.vue` will collide if there is any vaccination component with a similar name — or worse, will shadow PrimeVue components (`Card`, `Dialog`, `Button`).
-
-The existing PITFALLS.md (v1.0) already documents this for vaccination components. Adding a second record type doubles the surface area.
-
-**Why it happens:**
-All Wallecx subcomponents share the same global namespace via `unplugin-vue-components`. The plugin resolves conflicts by "last registered wins" — alphabetical file discovery order — so `ManageRecord.vue` for memberships silently overrides the vaccination `ManageVaccination.vue` if they are resolved in the same namespace.
-
+**Category:** Forms & dialogs / Mobile layout
+**What goes wrong:** ExpensesListView's category MultiSelect uses chip display. With 5+ categories selected on a 360px viewport, chips overflow the trigger button horizontally → horizontal scroll appears at page level. Hits Wallecx "no horizontal scroll" rule.
+**Why it happens:** PrimeVue MultiSelect chip default behavior.
 **Prevention:**
-1. Prefix all membership components with `Membership`: `MembershipCard.vue`, `ManageMembership.vue`, `MembershipDetail.vue`, `MembershipBarcode.vue`, `MembershipScanOverlay.vue`.
-2. Keep the tab-navigation host in `WallecxApp.vue` — do not create a separate `MembershipApp.vue` that duplicates the auth/toolbar/drawer pattern.
-3. After adding membership components, verify `components.d.ts` (the auto-generated file) to confirm no membership component name shadows a PrimeVue component or a vaccination component.
-4. Run `git diff components.d.ts` after each new component addition as a sanity check.
+- Use `:max-selected-labels="2"` + `selectedItemsLabel="{0} categories"` to cap chip render.
+- OR set `display="comma"` on mobile via responsive prop.
+- Scoped CSS guard: `.p-multiselect-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }` inside `@media (max-width: 640px)`.
 
-**Phase assignment:** Phase implementing membership card list (first component added).
+**Confidence:** HIGH — PrimeVue 4 docs.
 
 ---
 
-### MR-2: Forgetting to replicate per-user isolation rules on the new collection
+### Pitfall M-5: PrimeVue DatePicker mobile UX — calendar overflow + touch targets
 
-**What goes wrong:**
-The `wallecx_vaccinations` collection has correct per-user server-side rules (`user = @request.auth.id` in every rule). A new `wallecx_memberships` collection is created in PocketBase admin UI by clicking through quickly. The default rules are either permissive (`@request.auth.id != ""` only — any logged-in user can see any other user's cards) or empty (public access). Because the SPA still correctly filters by the current user in queries, casual testing passes — but any user can call the API directly to see all membership cards.
-
-Membership cards contain card numbers, expiry dates, and potentially insurance card or government ID information — a privacy breach with real-world consequences.
-
+**Category:** Forms & dialogs
+**What goes wrong:** PrimeVue 4 DatePicker (used in ExpensesToolbar From/To range, ManageExpense date field, ExpensesReportsView Custom range) renders a calendar overlay. On 360px viewport, the calendar can clip outside the visible area. Day cells default to ~28–32px height — below the 44px touch-target line.
+**Why it happens:** PrimeVue calendar sizing is desktop-optimized; mobile overlays touch a tiny day grid.
 **Prevention:**
-1. Apply identical rules to `wallecx_memberships` as on `wallecx_vaccinations` before any frontend work begins:
-   - `listRule`: `@request.auth.id != "" && user = @request.auth.id`
-   - `viewRule`: `@request.auth.id != "" && user = @request.auth.id`
-   - `createRule`: `@request.auth.id != "" && @request.data.user = @request.auth.id`
-   - `updateRule`: `@request.auth.id != "" && user = @request.auth.id`
-   - `deleteRule`: `@request.auth.id != "" && user = @request.auth.id`
-2. Run the two-user smoke test immediately after collection creation (same test as vaccination Phase 1): log in as user B, attempt `pb.collection('wallecx_memberships').getList()` — must return zero records from user A's data.
-3. Add this to the definition-of-done for the collection setup phase: "Two-user API isolation test passes before any UI work."
+- Use `:touchUI="true"` prop on DatePicker for mobile (`isMobile` computed via `useWindowSize`), which renders a centered modal dialog with larger day cells (similar to native date picker).
+- OR scope a CSS override: `@media (max-width: 640px) { .p-datepicker-day-cell { min-width: 44px; min-height: 44px; } }`.
+- v4.3 UAT: tap a date cell on 360px viewport — adjacent cells must not register accidental taps.
 
-**Phase assignment:** Phase creating the `wallecx_memberships` PocketBase collection (must be first task).
+**Confidence:** HIGH — `touchUI` is a documented PrimeVue 4 Calendar/DatePicker prop.
 
 ---
 
-### MR-3: WallecxApp.vue state explosion from two independent record lists
+### Pitfall M-6: `useWindowSize` race on initial render → flash of wrong layout
 
-**What goes wrong:**
-Following the vaccination pattern, a developer adds membership card state directly into `WallecxApp.vue`: `memberships`, `isLoadingMemberships`, `selectedMembership`, `showMembershipDetail`, `membershipFileToken`, `showManageMembership`, `manageMembership`, `showScanOverlay`, `scanMembership` — plus all the equivalent computed properties and handlers. `WallecxApp.vue` already has ~300 lines for vaccinations. A naively-duplicated membership implementation would push it past 600 lines, making both the vaccination and membership logic hard to maintain and test.
-
+**Category:** Mobile layout
+**What goes wrong:** `const { width } = useWindowSize(); const isMobile = computed(() => width.value < 640);` — on first render, `width.value` may briefly be `0` (or the previous reactive value from a different route) before the `resize` listener fires. A Drawer that conditionally chooses `position="bottom"` vs `position="right"` based on `isMobile` can render in the wrong position for one frame, causing visible flicker.
+**Why it happens:** `useWindowSize` is reactive but the initial sync is `nextTick`-bound.
 **Prevention:**
-1. Extract membership state and logic into a dedicated Pinia store: `src/stores/wallecx/memberships.ts` (following the same shape as `useAuthStore`). Keep vaccination state in `WallecxApp.vue` (or extract it to `src/stores/wallecx/vaccinations.ts` for consistency).
-2. `WallecxApp.vue` becomes an orchestrator: it delegates to the store and handles tab-switching between the Vaccinations and Memberships views.
-3. A Pinia store also makes the mapper + store logic unit-testable independently of the component, consistent with `__tests__/vaccinationMapper.spec.ts`.
-4. Tab state (`activeTab: 'vaccinations' | 'memberships'`) lives in `WallecxApp.vue` itself — it is UI state, not business logic.
+- Initialize: `const { width } = useWindowSize({ initialWidth: window.innerWidth });` — pass `initialWidth` so the first computed read is correct.
+- For SSR safety (not applicable to this SPA but good hygiene): guard with `typeof window !== 'undefined'`.
 
-**Phase assignment:** Phase implementing membership list view.
+**Confidence:** HIGH — `@vueuse/core` `useWindowSize` docs.
 
 ---
 
-### MR-4: Membership mapper carries the same save-loop and id-refresh risk as vaccinations
+### Pitfall M-7: PrimeVue Tabs `scrollable` on narrow viewport — tab labels truncate vs scroll
 
-**What goes wrong:**
-The vaccination mapper (`vaccinationMapper.ts`) was designed to return the server response (with the real `id`) to the caller, enabling the `Object.assign` id-refresh pattern. If a `membershipMapper.ts` is written quickly by copy-paste and the `create` function returns `void` instead of the server record, the same duplicate-on-edit bug (Pitfall 3 from the v1.0 research) reappears for memberships.
-
+**Category:** Mobile layout
+**What goes wrong:** WallecxApp.vue uses PrimeVue Tabs for Vaccinations / Memberships / Expenses. ExpensesReportsView uses PrimeVue Tabs (scrollable) for Month / Quarter / Year / Custom (locked v4.0 decision). On 320px viewports, three top-level tabs fit but the inner period tabs scroll. The scroll indicator (left/right chevron) is often invisible on touch devices — users don't know they can scroll.
+**Why it happens:** PrimeVue 4 Tabs scrollable mode shows chevrons on hover (desktop) but they're easy to miss on touch.
 **Prevention:**
-1. `membershipMapper.ts` must follow the exact same contract as `vaccinationMapper.ts`: `createMembership()` returns `Promise<Memberships>` (the full server record, not void).
-2. Add a `membershipMapper.spec.ts` with the create-then-update sequence test before wiring the form dialog.
-3. Code-review checklist: `await pb.collection('wallecx_memberships').create(...)` must always be `const created = await ...` (captured, not discarded).
+- Add an explicit fade-mask on the right edge of the period selector so users see "more content offscreen".
+- OR force the period selector to wrap to a 2x2 grid on narrow viewports.
+- v4.3 UAT: 320px viewport — Custom period tab must be discoverable (not silently offscreen).
 
-**Phase assignment:** Phase implementing membership CRUD (mapper and form dialog).
+**Confidence:** MEDIUM — PrimeVue 4 Tabs docs.
 
 ---
 
-### MR-5: PocketBase auto-cancel silently drops the membership list fetch when vaccinations load in parallel
+### Pitfall M-8: iOS install banner ineligibility AFTER first dismissal
 
-**What goes wrong:**
-`WallecxApp.vue` loads vaccination records on `onMounted`. If membership records are also fetched on `onMounted` in the same component (or a child component mounted at the same time), PocketBase's default auto-cancellation (`$autoCancel: true`) treats two `getFullList` calls to different collections as potentially duplicate requests and cancels one of them. The cancelled request resolves with an empty array without throwing — the user sees a memberships list that is always empty until they navigate away and back.
-
-**Why it happens:**
-PocketBase SDK's auto-cancellation keying is based on collection name + query parameters. Two separate collections should not collide — but if any wrapper function re-uses the same AbortController or the same cancellation key is generated, the second request is silently dropped.
-
+**Category:** PWA install
+**What goes wrong:** iOS does NOT support `BeforeInstallPromptEvent`. Wallecx's `PwaInstallBanner.vue` (already exists) likely shows a manual "Tap Share → Add to Home Screen" hint on iOS. If v4.3 polish makes the banner more aggressive (showing again on every visit), users get banner fatigue → train themselves to dismiss it without reading.
+**Why it happens:** iOS has no install API; the banner is purely instructional.
 **Prevention:**
-1. Explicitly set `{ requestKey: null }` (or a unique string key) on every `getFullList` call: `pb.collection('wallecx_memberships').getFullList({ requestKey: 'memberships-init', sort: '-created' })`. This opts out of auto-cancellation for the initial load.
-2. Alternatively, fetch vaccinations and memberships sequentially in `onMounted` with `await` between them — no parallelism, no cancellation risk. The extra latency (~100–200ms) is acceptable on initial load.
-3. If parallel fetching is used for performance, use `Promise.all([vaccinationsPromise, membershipsPromise])` where each promise uses a distinct `requestKey`.
+- Track dismissal in `localStorage` (`wallecx:pwa-install-dismissed: 'YYYY-MM-DD'`).
+- Show again only after N days (suggest 30) OR if the user explicitly visits a "How to install" link.
+- Detect already-installed via `window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true` → suppress banner entirely.
+- REQUIREMENTS.md: **NFR-PWA-BANNER-FREQUENCY — Install banner must not show in standalone mode, and must respect a localStorage-based dismissal record.**
 
-**Phase assignment:** Phase implementing the tab-switching WallecxApp with both record types.
+**Confidence:** HIGH — `window.navigator.standalone` is iOS-specific; `display-mode: standalone` is cross-platform.
 
 ---
 
-## Section 4: Color Picker Pitfalls
+### Pitfall M-9: `BeforeInstallPromptEvent.prompt()` may only be called once per event
 
-### CP-1: PrimeVue ColorPicker stores hex WITHOUT the leading `#` — CSS `background-color` will not accept it
-
-**What goes wrong:**
-PrimeVue `<ColorPicker v-model="card_color" format="hex">` stores and emits hex values **without** the leading `#`. Example: the user picks navy blue; `card_color.value` is `'002244'`, not `'#002244'`. If this value is used directly in a CSS binding — `:style="{ backgroundColor: card_color }"` — the browser ignores the invalid colour value and the card renders with no background colour (transparent or default). The card grid looks broken.
-
-This is confirmed by the PrimeVue documentation example showing `6466f1` (no hash), and is consistent with the PrimeVue source code which does not prepend `#` when emitting values.
-
+**Category:** PWA install (Chromium / Android)
+**What goes wrong:** A common bug: store the event globally and call `prompt()` from multiple components. Chromium fires the event once per page load — a stored reference can be called only once. A second call rejects.
+**Why it happens:** Spec contract not obvious; banner refactors may add a second entry point ("install" link in user menu + banner button).
 **Prevention:**
-1. Store `card_color` in the database **without** the `#` prefix (matching what ColorPicker emits). This avoids a strip-on-save / add-on-load transform.
-2. Create a single utility function used everywhere: `function toCSS(hex: string): string { return hex.startsWith('#') ? hex : '#' + hex; }`.
-3. In all style bindings: `:style="{ backgroundColor: toCSS(card.card_color) }"`. Never interpolate `card_color` directly into a CSS string.
-4. In the form, `v-model` binds directly to the local `formState.card_color` ref — no transformation needed on the ColorPicker side.
-5. When reading a card from PocketBase, the stored value is already hash-free; pass it directly to `<ColorPicker v-model="formState.card_color">` — no strip needed.
+- Single owner of the event: `PwaInstallBanner.vue` or a Pinia store. After `prompt()` resolves, null out the stored event.
+- Don't show the install affordance after the event was consumed once in this session.
 
-**Phase assignment:** Phase implementing membership card form and card grid display.
+**Confidence:** HIGH — `BeforeInstallPromptEvent` Chromium contract.
 
 ---
 
-### CP-2: Three-digit hex shorthand is misinterpreted by PrimeVue ColorPicker
+### Pitfall M-10: navigator.storage.persist() not granted → 7-day localStorage eviction
 
-**What goes wrong:**
-If a user types a 3-digit hex shorthand (`fff`, `000`, `f0a`) into any companion text input wired to the same `v-model` as the ColorPicker, PrimeVue ColorPicker misinterprets it and displays the wrong colour. This is an open enhancement issue in the PrimeVue tracker (issue #7505, March 2025 — unfixed as of research date). The misinterpretation is silent — no error is thrown, the picker just shows an incorrect preview.
-
-**Why it happens:**
-ColorPicker's internal parser expects exactly 6 hex digits. A 3-character string is treated as a truncated 6-character string with implicit trailing zeros, not as CSS shorthand.
-
+**Category:** PWA install + standalone + project-specific
+**What goes wrong:** v2.1 calls `navigator.storage.persist()` on WallecxApp mount. The browser MAY return `false` (especially on iOS, where heuristics are stricter). If false, iOS evicts localStorage (including PocketBase auth token) after 7 days of inactivity → user thinks they were logged out for no reason.
+**Why it happens:** persist() is a request, not a guarantee.
 **Prevention:**
-1. Do not provide a free-text hex input field in the membership form. Use only the ColorPicker widget for colour selection. This eliminates the shorthand input path entirely.
-2. If a text input is added in the future (for power users), normalize 3-digit input to 6-digit before passing to ColorPicker: `hex.length === 3 ? hex.split('').map(c => c + c).join('') : hex`.
-3. Add Zod validation on the `card_color` field in the form schema: `z.string().regex(/^[0-9a-fA-F]{6}$/, 'Invalid colour — use a 6-digit hex code')`.
+- Log the persist() result during v4.3 mobile testing (`console.info('persistGranted=', granted)`). If consistently `false` on iOS test devices, add a daily "ping" to PocketBase from a service worker `periodicSync` (where supported) to keep the origin "active".
+- Alternatively, mitigate UX: when auth expires, show a clear "You were logged out due to inactivity (iOS storage policy)" toast instead of generic "Session expired".
+- Add a clear copy line in the install banner: "Pin Wallecx to your home screen to avoid being logged out after 7 days of inactivity."
+- REQUIREMENTS.md: **NFR-IOS-EVICTION-UX — Login-required redirect after iOS storage eviction must surface a copy explaining why (not just "session expired").**
 
-**Phase assignment:** Phase implementing membership card form.
+**Confidence:** MEDIUM — iOS storage eviction is well-documented (ITP / 7-day rule); persist() success rate on iOS is anecdotally low.
 
 ---
 
-### CP-3: ColorPicker initial value ignored when used inside PrimeVue Forms (Forms library bug)
+### Pitfall M-11: Apple splash screens / touch icons missing per-device variants
 
-**What goes wrong:**
-When `<ColorPicker>` is used inside PrimeVue's `<Form>` component (the `@primevue/forms` controlled-form system), the initial value bound via `v-model` or `:defaultValue` is ignored — the picker always starts showing red (`#ff0000`). This is PrimeVue issue #8135, reported September 2025, unfixed as of research date.
-
-**Why it happens:**
-PrimeVue Forms initialises the internal field state from the `defaultValues` prop of the `<Form>` component. ColorPicker has a bug in how it syncs its internal HSB/canvas state from the provided initial hex value when instantiated inside the Form context.
-
+**Category:** PWA install + standalone polish
+**What goes wrong:** iOS requires per-device-resolution splash screens (`<link rel="apple-touch-startup-image" media="..." href="...">`) for a custom standalone splash. Without them, iOS shows a white screen + the apple-touch-icon centered → "blank flash" between tap-icon and app-loaded.
+**Why it happens:** Multi-device variants are tedious; easy to ship one icon and call it done.
 **Prevention:**
-1. Do **not** use `<ColorPicker>` inside a PrimeVue `<Form>` wrapper. Use the existing `<form>` + direct `v-model` pattern that Wallecx vaccination forms already use (not the `@primevue/forms` controlled system).
-2. The vaccination form (`ManageVaccination.vue`) uses direct refs + `v-model` per field — follow this exact pattern for `ManageMembership.vue`.
-3. When editing an existing card, set the local form state ref directly: `formState.card_color = existingCard.card_color` in a `watch(props.record, ...)` handler (same pattern as vaccination edit flow).
+- Use `@vite-pwa/assets-generator` (already a devDep) to generate per-device splash and touch icons. Refer to its docs for the full media-query list.
+- Verify in v4.3 UAT: install on iPhone, force-quit, re-open → splash should be branded, not white.
+- REQUIREMENTS.md: **NFR-IOS-SPLASH — Apple touch startup images must be defined for all v4.3 test viewports (390x844, 360x780, 768x1024).**
 
-**Phase assignment:** Phase implementing membership card form (especially edit flow).
+**Confidence:** HIGH — Apple developer docs + @vite-pwa/assets-generator docs.
 
 ---
 
-### CP-4: Very dark or very light card colours make white or black text unreadable
+### Pitfall M-12: Theme color mismatch between manifest and `<meta name="theme-color">`
 
-**What goes wrong:**
-The membership card grid shows card name, issuer, and card number text over the `card_color` background. If a user picks a very dark colour (close to black) and the text is dark, or a very light colour and the text is light, the card becomes illegible. There is no built-in readability enforcement in PrimeVue ColorPicker.
-
+**Category:** PWA install + standalone polish
+**What goes wrong:** Manifest `theme_color: "#002244"` (navy). `index.html` does NOT currently have a `<meta name="theme-color">` — Chromium falls back to manifest, but iOS Safari (and the iOS PWA chrome bar) reads ONLY the meta tag. Without it, the iOS PWA status bar tints to white/default — looks unbranded against the navy app.
+**Why it happens:** Easy to assume manifest is enough.
 **Prevention:**
-1. Implement automatic text colour selection based on card background luminance. A simple algorithm: convert hex to RGB, compute relative luminance (`L = 0.2126*R + 0.7152*G + 0.0722*B`), use white text for L < 0.5, black text for L >= 0.5.
-2. Export this as a pure utility function `getContrastText(hex: string): '#000000' | '#ffffff'` and use it in both the card grid tile and the fullscreen scan overlay.
-3. No user preference needed — this should be automatic and invisible.
+- Add to `index.html`: `<meta name="theme-color" content="#002244" media="(prefers-color-scheme: light)">` AND `<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">` (or whatever the dark surface token resolves to).
+- Verify on iPhone standalone install: status bar matches app chrome in both themes.
 
-**Phase assignment:** Phase implementing membership card grid display.
+**Confidence:** HIGH — Apple developer docs + Chromium documentation.
 
 ---
 
-### CP-5: Storing card_color as a plain `text` field with no server-side hex validation
+### Pitfall M-13: card_color contract regression via mobile color-picker polish
 
-**What goes wrong:**
-PocketBase does not have a native `color` field type (open feature request, discussion #400 — unimplemented as of 2026). Storing `card_color` as a plain `text` field with no regex constraint means a user (or a crafted API request bypassing the SPA) can store arbitrary strings: empty string, CSS colour names (`red`), injection payloads, or excessively long strings.
-
-If `card_color` is rendered via `:style="{ backgroundColor: toCSS(card.card_color) }"` and the stored value is something like `red; position: fixed` — this is not a CSS injection risk in Vue because Vue's `:style` binding only sets the named property value, not raw CSS. However, an empty string causes the card to render with no background colour, and a non-hex value causes the colour to be silently ignored.
-
+**Category:** Project-specific
+**What goes wrong:** A mobile-polish phase touches `ManageMembership.vue`'s ColorPicker affordance (e.g. swapping to a native `<input type="color">` for better mobile UX). Native color picker emits `#RRGGBB` **with** the leading `#`. Storing it directly violates the locked invariant `card_color stored without # prefix`. MembershipCard renders broken backgrounds.
+**Why it happens:** Native color picker UX is genuinely better on mobile; the temptation is real.
 **Prevention:**
-1. Add a PocketBase `text` field with a pattern constraint (regex) on `card_color`: `^[0-9a-fA-F]{6}$` (6 hex digits, no hash). PocketBase supports regex field validation in the admin UI.
-2. Also validate client-side in the Zod schema (same regex) so the form rejects invalid values before the API call.
-3. Provide a sensible default value in the form: `card_color: '1a56db'` (a readable navy/blue) so new cards always have a valid colour even if the user skips the picker.
-4. In the card grid, add a fallback in the style binding: `toCSS(card.card_color || '1a56db')`.
+- If swapping to native: strip `#` on save (`card_color = newValue.replace(/^#/, '')`); prepend `#` on read for the native input's value binding.
+- Vitest spec: `membershipMapper.spec.ts` already locks the contract — re-run + extend if ColorPicker swaps.
+- REQUIREMENTS.md: **CON-CARD-COLOR-NO-HASH — `card_color` is stored without `#` prefix. Any UI swap must preserve this contract.**
 
-**Phase assignment:** Phase creating the `wallecx_memberships` collection schema and Phase implementing the membership form.
+**Confidence:** HIGH — STATE.md locked invariant.
 
 ---
 
-## Phase Assignment Summary
+### Pitfall M-14: useConfirm broadcast scope — ConfirmDialog duplicated on mobile
 
-| Pitfall | Code | Phase |
-|---------|------|-------|
-| JsBarcode throws on invalid input (no try/catch + fallback) | BR-1 | Barcode rendering component |
-| QR code invisible on dark card — contrast failure | BR-2 | Barcode rendering + card grid |
-| JsBarcode full-format bundle not tree-shakeable | BR-3 | Barcode rendering component |
-| Canvas QR vs SVG — use SVG | BR-4 | Barcode rendering component |
-| Watcher fires before SVG element mounts | BR-5 | Barcode rendering component |
-| Screen dims/locks during scan — Wake Lock required | FS-1 | Fullscreen scan overlay |
-| Fullscreen API unsupported on iPhone — use viewport overlay | FS-2 | Fullscreen scan overlay |
-| Screen brightness cannot be set via web API | FS-3 | Fullscreen scan overlay |
-| Tap-to-close conflicts with tap-to-copy | FS-4 | Fullscreen scan overlay |
-| Overlay z-index trapped by parent stacking context | FS-5 | Fullscreen scan overlay |
-| Component name collision between record types | MR-1 | First membership component |
-| Per-user isolation rules not applied to new collection | MR-2 | Collection creation (first task) |
-| WallecxApp.vue state explosion from two record types | MR-3 | Membership list view |
-| Membership mapper save-loop (copied id-refresh bug) | MR-4 | Membership CRUD mapper |
-| PocketBase auto-cancel drops parallel collection fetches | MR-5 | WallecxApp tab integration |
-| ColorPicker emits hex without `#` — CSS binding breaks | CP-1 | Membership form + card grid |
-| 3-digit hex shorthand misinterpreted by ColorPicker | CP-2 | Membership form |
-| ColorPicker initial value ignored in PrimeVue Forms | CP-3 | Membership form (edit flow) |
-| Dark/light card colour makes text unreadable | CP-4 | Card grid display |
-| No server-side hex validation on card_color text field | CP-5 | Collection schema + form |
+**Category:** Project-specific
+**What goes wrong:** A mobile-polish phase notices the ConfirmDialog renders centered in viewport and "fixes" it by adding a second `<ConfirmDialog />` inside ExpensesListView with mobile-specific positioning. `useConfirm` broadcasts to **all** mounted ConfirmDialog instances → confirmation fires twice; click "Confirm" once, two delete requests fire; second one returns 404 with confusing toast.
+**Why it happens:** STATE.md locked the single-shell-level instance invariant for exactly this reason in v2.0.
+**Prevention:**
+- REQUIREMENTS.md: **CON-CONFIRMDIALOG-SINGLETON — Exactly one `<ConfirmDialog />` mounts at WallecxApp.vue shell level. Any mobile-positioning need must be solved via CSS targeting `.p-confirmdialog`, not by mounting a second instance.**
+- Grep guard: `grep -rn "<ConfirmDialog" src/components/projects/wallecx/` must return exactly 1 line.
+
+**Confidence:** HIGH — STATE.md locked invariant + PrimeVue 4 `useConfirm` source.
+
+---
+
+### Pitfall M-15: PrimeVue Dialog/Drawer z-index collision with PWA install banner
+
+**Category:** Mobile layout
+**What goes wrong:** PwaInstallBanner.vue is `position: fixed; bottom: 0; z-index: ?`. If banner z-index is higher than the PrimeVue overlay layer, a dialog opens with the banner still showing — banner partially covers Save/Cancel buttons. If lower, the install banner is hidden behind dialog backdrop forever.
+**Why it happens:** PrimeVue 4 manages its own z-index layer (typically 1100+); custom fixed elements need careful coordination.
+**Prevention:**
+- Read PrimeVue 4's default overlay z-index from the Aura preset (or `useZIndex` if exposed).
+- Hide the install banner while ANY PrimeVue overlay is open: use a Pinia flag `useOverlayStore` toggled by Dialog/Drawer/Confirm `@show` / `@hide`.
+- OR: install banner z-index = 900 (below PrimeVue overlay), AND auto-dismiss on first Dialog open.
+
+**Confidence:** MEDIUM — depends on PrimeVue 4 Aura preset z-index values; verify before phase planning.
+
+---
+
+### Pitfall M-16: List virtualization breaks sessionStorage scroll-restore + sort persistence
+
+**Category:** Mobile performance / project-specific
+**What goes wrong:** Phase 25 D-09 locked: "sessionStorage sort restoration runs BEFORE getFullList in onMounted". If mobile-perf phase wraps ExpensesListView in `vue-virtual-scroller` or similar, the virtual scroller's lazy item mount can fire `intersection` events that re-trigger derived computeds — including sort persistence — out of order. Result: sort mode "blinks" on mount.
+**Why it happens:** Virtual scrollers mount items asynchronously as they scroll into view.
+**Prevention:**
+- Sort/filter logic must operate on the FULL `expenses` array, BEFORE virtualization. Pass the sorted array to the virtual scroller as the data source — the scroller only handles render windowing.
+- Reproduce the v4.0 Phase 25 v-if chain (isLoading → raw empty → filtered empty → list) inside the virtualized component.
+
+**Confidence:** MEDIUM — depends on virtualization lib chosen.
+
+---
+
+### Pitfall M-17: Chart.js bundle inflation via accidental full-import
+
+**Category:** Mobile performance
+**What goes wrong:** PrimeVue 4 Chart dynamically imports `chart.js/auto`. v4.0 confirmed chart.js is a runtime dep. If v4.3 adds a chart plugin (e.g. `chartjs-plugin-annotation` for budget threshold lines) by importing it at module top, the entire chart.js controllers/elements/scales registry inflates the chart bundle. On mobile cellular, the Reports tab visibly stalls.
+**Why it happens:** Chart.js tree-shaking requires explicit registration (`Chart.register(...)`), but `chart.js/auto` already auto-registers everything — adding a plugin compounds it.
+**Prevention:**
+- Lazy-import chart plugins inside the same dynamic import as chart.js: `const { default: annotation } = await import('chartjs-plugin-annotation');`.
+- Measure: `npm run build` and check the size of the chart-containing chunk before and after; budget < 200 KiB gzipped delta.
+- If a plugin is heavy, defer it to a hover-only / drilldown affordance.
+
+**Confidence:** HIGH — chart.js v4 + PrimeVue 4 Chart docs.
+
+---
+
+### Pitfall M-18: browser-image-compression heavy on mobile main thread
+
+**Category:** Mobile performance
+**What goes wrong:** `browser-image-compression@^2.0.2` runs in a Web Worker by default, but if the worker file path is wrong (e.g. Vite asset hashing changes the worker URL), it falls back to running on the main thread. On a low-end Android (Snapdragon 6xx) compressing a 12 MP receipt photo can lock the UI for 5–10s.
+**Why it happens:** Vite's worker handling can drop the worker URL on certain build configs.
+**Prevention:**
+- Verify in dev: `browser-image-compression` debug log shows "useWebWorker: true" actually using a worker.
+- Add a loading state in ManageExpense / ManageMembership / ManageVaccination receipt upload that shows "Compressing image…" with a spinner. User waits with feedback instead of perceiving freeze.
+- Set `maxIteration: 5` (default 10) for mobile to bound worst-case time.
+
+**Confidence:** MEDIUM — depends on Vite worker config nuances.
+
+---
+
+### Pitfall M-19: `getFullList()` on growing collections — when does it hurt?
+
+**Category:** Mobile performance
+**What goes wrong:** All five `wallecx_*` collections use `getFullList()` (per requestKey invariant). At 100 records, fine. At 1000 expenses, the response is ~1–3 MB JSON over cellular → 5–15s load.
+**Why it happens:** Per-user data grows over months; no rotation strategy.
+**Prevention:**
+- Establish a v4.3 measurement: log payload size + duration of each `getFullList` on real-device cellular. If any collection exceeds ~500 records or ~500 KiB, mark in a "future candidates" issue (e.g. "EXP-ADV-09 expense archival / windowed fetch").
+- v4.3 itself should NOT add pagination (see C-7); instead, document the threshold for when pagination becomes worth the v0.29.x bug workaround.
+- REQUIREMENTS.md: **NFR-PERF-MEASURE — v4.3 must log a one-time payload-size + duration measurement per Wallecx collection on a mid-tier mobile device under cellular conditions, recorded in MILESTONES.md.**
+
+**Confidence:** HIGH — basic network math.
+
+---
+
+### Pitfall M-20: PrimeVue auto-import resolver pulls in unused components
+
+**Category:** Mobile performance
+**What goes wrong:** `unplugin-vue-components` + `PrimeVueResolver` inlines components by name match. If a mobile-polish phase types `<Knob />` somewhere as a placeholder and never removes it, the entire Knob component + dependencies ship in the bundle.
+**Why it happens:** Auto-import is invisible — no `import` statement to grep.
+**Prevention:**
+- `npm run build` and check `dist/assets/primevue-*.js` size before and after each v4.3 phase. Budget zero regression.
+- Periodic audit: search for `<\\b[A-Z][a-zA-Z]+` in Wallecx templates and cross-check against an allowlist of intentionally used PrimeVue components.
+
+**Confidence:** HIGH — `unplugin-vue-components` docs.
+
+---
+
+### Pitfall M-21: dayjs locale / plugin double-load
+
+**Category:** Mobile performance
+**What goes wrong:** v4.0 Phase 26-01 confirmed: `period.ts` extends `quarterOfYear` at module top. If a v4.3 phase adds another plugin (e.g. `duration`, `relativeTime` for "2 hours ago") at a different module, both modules call `dayjs.extend(plugin)`. Extension is idempotent so no functional bug — but `import 'dayjs/plugin/relativeTime'` from N modules can fragment the dayjs chunk in unhelpful ways.
+**Why it happens:** Tree-shaking dayjs plugins is fiddly.
+**Prevention:**
+- Centralize all dayjs plugin extensions in ONE module (`src/lib/wallecx/dayjs-setup.ts`) imported once from `main.ts` (or from `WallecxApp.vue`).
+- v4.3 should not add new dayjs plugins unless strictly needed.
+
+**Confidence:** MEDIUM — dayjs plugin tree-shaking behavior is documented.
+
+---
+
+## Minor Pitfalls
+
+Polish issues; catch in a final UAT pass.
+
+### Pitfall N-1: PrimeVue FileUpload mobile capture attribute
+
+**Category:** Forms & dialogs
+**What goes wrong:** PrimeVue FileUpload accepts `accept="image/*"`. On mobile, this opens both camera AND gallery in the OS picker. To force camera (for receipt capture), pass `capture="environment"` (or `"user"` for selfies). Without it, users have to navigate two more taps.
+**Prevention:** Add `:pt="{ input: { capture: 'environment' } }"` (or equivalent passthrough) on receipt/scan upload affordances. Verify the PrimeVue 4 passthrough syntax.
+**Confidence:** HIGH — HTML5 capture attribute, MDN.
+
+### Pitfall N-2: 300ms tap delay — non-issue in 2026
+
+**Category:** Forms & dialogs
+**What's true:** 300ms tap delay is solved on all current iOS Safari and Android Chrome when viewport meta has `width=device-width` (which Wallecx does). No need to add `touch-action: manipulation` for this purpose.
+**Prevention:** Don't waste a phase on tap delay; it's a non-issue. Confirm by checking that the viewport meta has `width=device-width` (it does).
+**Confidence:** HIGH — well-established since 2016 across iOS Safari and Chromium.
+
+### Pitfall N-3: PrimeVue Dialog already traps focus and scroll
+
+**Category:** Forms & dialogs
+**What's true:** PrimeVue 4 Dialog / Drawer trap focus by default (`:modal="true"`) and prevent body scroll. No manual scroll-trapping needed. Re-implementing it is a waste of a phase.
+**Prevention:** Trust PrimeVue's overlay focus management; verify with a screen-reader UAT pass.
+**Confidence:** HIGH — PrimeVue 4 docs + ARIA dialog pattern.
+
+### Pitfall N-4: PrimeVue Tabs reactive `activeTab` string vs index
+
+**Category:** Mobile layout
+**What goes wrong:** A mobile polish phase swaps PrimeVue Tabs from string-typed `activeTab` to index-typed and breaks the deep-link / hash-based tab switching (not currently used but might be added).
+**Prevention:** STATE.md already locks "PrimeVue Tabs with string-typed `activeTab`". Re-affirm if the phase touches Tabs internals.
+**Confidence:** HIGH — STATE.md locked invariant.
+
+### Pitfall N-5: Wake Lock API still requires HTTPS and user gesture
+
+**Category:** Project-specific (scan overlay)
+**What's true:** Wake Lock (used in v2.0 scan overlay) requires HTTPS (Vercel ✓) and a user gesture (the tap that opens the overlay). v4.3 mobile polish must not move the wake-lock acquisition outside the user-gesture handler (e.g. into onMounted of a re-architected overlay).
+**Prevention:** Acquire wake lock inside the click handler that opens the overlay, not in lifecycle hooks.
+**Confidence:** HIGH — Wake Lock API spec.
+
+### Pitfall N-6: `prefers-reduced-motion` already respected in chart — preserve
+
+**Category:** Mobile layout
+**What's true:** v4.0 Phase 26-01 D-04: chart honors prefers-reduced-motion (duration: 0). Mobile polish that adds new animations (e.g. drawer slide-in, list-item fade-in) must respect the same media query.
+**Prevention:** Wrap any new motion in `@media (prefers-reduced-motion: reduce) { animation: none; transition: none; }`.
+**Confidence:** HIGH — MDN.
+
+### Pitfall N-7: iOS file-input camera capture inconsistent in standalone PWA
+
+**Category:** PWA install + standalone
+**What goes wrong:** In iOS standalone PWAs, `<input type="file" accept="image/*" capture="environment">` historically opens camera less reliably than in Safari tab (iOS 16: camera works; iOS 17.x: regression in some builds; iOS 18: largely restored). The result is the photo picker opens instead of camera, on a phase that needed the camera (receipt upload).
+**Prevention:** Don't depend on `capture` working in standalone; offer a "Take photo" affordance AND a "Choose from gallery" affordance separately. v4.3 UAT scenario: receipt upload in installed PWA on iOS 17+.
+**Confidence:** MEDIUM — WebKit bug history.
+
+---
+
+## Phase-Specific Warning Matrix
+
+| v4.3 Phase Topic | Likely Pitfalls (IDs) | Mitigation Owner |
+|---|---|---|
+| Mobile layout & touch-target audit (3 tabs) | C-2 (BR-2), C-4 (100vh), M-1 (safe-area), M-4 (MultiSelect chips), M-5 (DatePicker touch), M-6 (useWindowSize race), M-7 (Tabs scroll), N-4 (Tabs string activeTab) | Layout phase verifies BR-2 + locked invariants intact |
+| Mobile performance (bundle, lazy-load, virtualization) | C-3 (requestKey dup), C-6 (3 MiB precache), C-7 (PB count bug), M-16 (virt + sort), M-17 (chart plugins), M-18 (image-compression worker), M-19 (getFullList scale), M-20 (auto-import), M-21 (dayjs) | Perf phase publishes bundle-size diff + payload-size measurement |
+| Forms & dialogs on small screens | C-5 (16px), M-2 (Android keyboard), M-3 (Drawer swipe), M-4 (MultiSelect), M-5 (DatePicker), M-15 (z-index), N-1 (capture), N-3 (focus trap) | Forms phase verifies dirty-state guard on all 4 Manage* dialogs |
+| PWA install + standalone polish | C-1 (registerType), C-6 (precache cap), C-8 (scope), M-1 (viewport-fit), M-8 (banner fatigue), M-9 (prompt once), M-10 (eviction), M-11 (splash), M-12 (theme-color), N-7 (capture standalone) | PWA phase verifies all locked PWA invariants intact + 4 viewports installed |
+| Project-specific (cross-phase) | C-1 (registerType), C-2 (BR-2), C-3 (requestKey), C-7 (PB count), M-13 (card_color), M-14 (ConfirmDialog), N-4 (Tabs), N-5 (Wake Lock) | Every phase must re-affirm intersecting invariants |
+
+---
+
+## REQUIREMENTS.md Candidate Non-Functional / Invariant Requirements
+
+These are the pitfalls worth surfacing as explicit REQ-IDs so they bind every phase, not just the phase that introduces them. (Roadmapper: convert each into a `NFR-*` or `CON-*` entry; phrasing is already in REQ-ready form above.)
+
+| Candidate REQ-ID | Pitfall | Type | Where verified |
+|---|---|---|---|
+| `NFR-PWA-AUTOUPDATE` | C-1 | non-functional | PWA phase + every PR touching vite.config.ts |
+| `NFR-BR-2-PRESERVED` | C-2 | invariant | Layout phase + PWA phase + milestone UAT |
+| `NFR-REQUESTKEY-UNIQUE` | C-3 | invariant | Perf phase + any new mobile interaction phase |
+| `NFR-DVH-NOT-VH` | C-4 | non-functional | Layout phase |
+| `NFR-IOS-NO-ZOOM` | C-5 | non-functional | Forms phase |
+| `NFR-PWA-PRECACHE-FITS` | C-6 | non-functional | Perf phase + build CI |
+| `CON-PB-COUNT-BUG` | C-7 | constraint | Perf phase |
+| `CON-PWA-SCOPE` | C-8 | constraint | PWA phase |
+| `CON-VIEWPORT-FIT` | M-1 | constraint | Layout phase |
+| `NFR-DRAWER-DIRTY-GUARD` | M-3 | non-functional | Forms phase |
+| `NFR-PWA-BANNER-FREQUENCY` | M-8 | non-functional | PWA phase |
+| `NFR-IOS-EVICTION-UX` | M-10 | non-functional | PWA phase |
+| `NFR-IOS-SPLASH` | M-11 | non-functional | PWA phase |
+| `CON-CARD-COLOR-NO-HASH` | M-13 | invariant | Forms phase (if ColorPicker touched) |
+| `CON-CONFIRMDIALOG-SINGLETON` | M-14 | invariant | Every phase |
+| `NFR-PERF-MEASURE` | M-19 | non-functional | Perf phase + milestone close |
 
 ---
 
 ## Sources
 
-**HIGH confidence — official documentation or verified library source:**
-- [PrimeVue ColorPicker docs](https://primevue.org/colorpicker/) — confirms hex format stores without `#`, format options
-- [PrimeVue issue #7505](https://github.com/primefaces/primevue/issues/7505) — 3-digit hex misinterpretation (open, March 2025)
-- [PrimeVue issue #8135](https://github.com/primefaces/primevue/issues/8135) — ColorPicker initial value ignored in Forms (open, September 2025)
-- [MDN — Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API) — full API reference
-- [caniuse.com — Wake Lock](https://caniuse.com/wake-lock) — browser support matrix
-- [web.dev — Screen Wake Lock supported in all browsers](https://web.dev/blog/screen-wake-lock-supported-in-all-browsers) — Safari 16.4+ confirmed
-- [JsBarcode issue #269](https://github.com/lindell/JsBarcode/issues/269) — invalid input exception details
-- [JsBarcode issue #212](https://github.com/lindell/JsBarcode/issues/212) — uncaught exception on invalid value
-- [JsBarcode Code39 wiki](https://github.com/lindell/JsBarcode/wiki/CODE39) — charset restrictions
-- [caniuse.com — Fullscreen API](https://caniuse.com/fullscreen) — iPhone restriction documented
-- [PocketBase discussion #400](https://github.com/pocketbase/pocketbase/discussions/400) — no native color field type
-- [QR code color contrast guidelines — Pageloot](https://pageloot.com/blog/qr-code-color-contrast-best-practices/) — minimum 3:1 ratio requirement
-- [QR codes on dark backgrounds — SmartyTags](https://www.smartytags.com/blog/qr-codes-dark-backgrounds) — inversion and contrast failure
-
-**MEDIUM confidence — community reports + Apple forums:**
-- [Apple Community — screen brightness for barcode](https://discussions.apple.com/thread/254421438) — iOS brightness behaviour
-- [W3C Screen Wake Lock issue #129](https://github.com/w3c/screen-wake-lock/issues/129) — brightness API gap acknowledged
-- [magicbell PWA iOS limitations guide](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide) — iOS 18.4 Wake Lock PWA fix
-- [Apple Developer Forums — Fullscreen API iOS Safari](https://developer.apple.com/forums/thread/133248) — iPhone limitation
+| Topic | Source | Confidence |
+|---|---|---|
+| `dvh` / `svh` / `lvh` units | MDN + CanIUse (Safari 15.4+, Chrome 108+) | HIGH |
+| iOS auto-zoom on inputs <16px | WebKit / Apple developer docs | HIGH |
+| `viewport-fit=cover` + `env(safe-area-inset-*)` | Apple Human Interface Guidelines, WebKit blog | HIGH |
+| `interactive-widget=resizes-content` | Chromium docs (108+) | MEDIUM |
+| Workbox `maximumFileSizeToCacheInBytes` | Workbox 7.x docs | HIGH |
+| `BeforeInstallPromptEvent` single-use | Chrome platform docs | HIGH |
+| iOS 7-day storage eviction | WebKit ITP / Storage Standard | MEDIUM |
+| Apple touch startup images | Apple developer docs + @vite-pwa/assets-generator | HIGH |
+| `<meta name="theme-color">` per color-scheme | Apple developer docs + MDN | HIGH |
+| PrimeVue 4 Drawer / Dialog / DatePicker / MultiSelect / Tabs / FileUpload | PrimeVue 4 official docs | HIGH (verify versions before each phase) |
+| PocketBase v0.29.x count-path bug | STATE.md D-31-B (verified during v4.2) | HIGH |
+| `card_color` no-hash invariant | STATE.md (locked v2.0) | HIGH |
+| BR-2 barcode invariant | STATE.md (locked v2.0, re-verified v4.1 Phase 30) | HIGH |
+| Wake Lock API HTTPS + gesture | W3C Wake Lock spec | HIGH |
+| `prefers-reduced-motion` | MDN, used in v4.0 Phase 26-01 | HIGH |
+| `unplugin-vue-components` auto-import inflating bundles | unplugin-vue-components docs | HIGH |
+| chart.js v4 + PrimeVue 4 Chart dynamic import | PrimeVue 4 Chart docs + chart.js v4 docs | HIGH |
+| `browser-image-compression` worker behavior | npm pkg docs | MEDIUM |
+| `useWindowSize` (`@vueuse/core`) initial-value race | @vueuse/core docs | HIGH |
 
 ---
-*Pitfalls research for: Wallecx v2.0 Membership Cards — barcode rendering, fullscreen scan, multi-record type, colour picker*
-*Researched: 2026-05-13*
+
+*Researched 2026-05-26 for v4.3 Wallecx Mobile Optimization milestone. Codebase grep evidence: `text-sm` confirmed on ManageExpense.vue labels (C-5 trap directly in code); `useWindowSize` already imported in 5 Wallecx files (M-6 applies); 100vh/h-screen grep returned 0 in wallecx folder but exists elsewhere in src (audit pass needed). Next: Requirements step converts the candidate NFR/CON list into REQUIREMENTS.md REQ-IDs; Roadmapper assigns each NFR/CON to its owning phase.*
