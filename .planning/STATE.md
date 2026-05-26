@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
-status: defining-requirements
-stopped_at: PROJECT.md + STATE.md updated; REQUIREMENTS.md + ROADMAP.md pending
-last_updated: "2026-05-26T07:00:00.000Z"
+status: planned
+stopped_at: ROADMAP.md created; ready for /gsd-plan-phase 33
+last_updated: "2026-05-26T08:00:00.000Z"
 last_activity: 2026-05-26
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -16,7 +16,7 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-26 — v4.3 Wallecx Mobile Optimization started. Goal: make Wallecx feel native-grade on mobile (layout & touch targets, perf, forms/dialogs on small screens, PWA install + standalone polish). Scope locked to mobile; HEALTH-01, UAT-28/29-CLOSE, PB-REALTIME explicitly deferred. Currently defining requirements.
+**Last updated:** 2026-05-26 — v4.3 Wallecx Mobile Optimization planned. ROADMAP.md created with 6 mandatory phases (33–38) + 1 conditional (38b). 32/32 functional requirements mapped; 16 NFR/CON bound to verification-owner phases. Next: `/gsd-plan-phase 33` for Mobile Foundation.
 
 ## Project Reference
 
@@ -28,10 +28,10 @@ progress:
 ## Current Position
 
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Defining requirements (PROJECT.md + STATE.md updated; REQUIREMENTS.md + ROADMAP.md pending)
-**Phase:** Not started
+**Status:** Planned — ROADMAP.md created, 32/32 functional requirements mapped, ready for phase planning
+**Phase:** Not started (Phase 33 next)
 **Plan:** —
-**Last activity:** 2026-05-26 — Milestone v4.3 started
+**Last activity:** 2026-05-26 — Roadmap created (6 mandatory phases + 1 conditional)
 
 ## Shipped Milestones Summary
 
@@ -49,6 +49,18 @@ progress:
 | v4.1 Gap Resolution & Feature Completeness | 27–30 | 15 | 2026-05-25 |
 | v4.2 Budget Recovery & Hardening | 31–32 | 2 | 2026-05-26 |
 
+## v4.3 Phase Structure
+
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 33 | Mobile Foundation | FND-01..04 | Not started |
+| 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | Not started |
+| 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | Not started |
+| 36 | Mobile Performance | PF-01,02,04,05,07,09 | Not started |
+| 37 | PWA Install + Standalone Polish | PWA-01,02,04,06,07,09 | Not started |
+| 38 | Mobile UAT Sweep + PWA-UAT-01 | PWA-05 | Not started |
+| 38b | List Virtualization (CONDITIONAL) | PF-06 | Not triggered |
+
 ## Accumulated Context
 
 ### Architectural Invariants (locked)
@@ -65,7 +77,18 @@ progress:
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
 - **Admin-UI checkpoints require text paste-back + downstream smoke verify.** When a phase configures a live external artifact (PocketBase collection schema, rules, env vars, dashboard settings), the checkpoint MUST require the user to paste back the actual configured values as text AND a code-side smoke verification must run against the live system. Acknowledgment-only signals ("approved", "done") are insufficient. See BUG-01 post-mortem: Phase 28-01 Task 1 → Phase 31.
 
-### v2.1 PWA Architectural Decisions (new)
+### v4.3 Phase Structure Decisions (pre-planning, 2026-05-26)
+
+- **Category-grouped phases per A-43-9.** One pattern established once and applied across all 3 tabs. Tab-by-tab ordering rejected — would rediscover the same patterns 3× and produce less reviewable diffs.
+- **Foundation phase first (33).** `useMobileEnv` composable + App.vue-scope `beforeinstallprompt` listener must land before any consumer phase. Late listener registration silently drops Android install affordance (A-43-4).
+- **Shell before dialogs (34 → 35).** Layout audit fixes the frame; forms phase fixes the content. LT-08 (sticky bottom action bars in 4 dialogs) groups with Phase 35 forms work — the dialogs are where the sticky bars live — not with Phase 34 layout audit, to keep the Manage dialog migration coherent.
+- **Performance after visual layer stable (35 → 36).** Bundle splits and async components are easier to verify (and easier to detect regressions in) once the visual surface is stable. Skeleton states (PF-04) are sized against the final layout from Phase 34/35.
+- **PWA polish last before UAT (36 → 37 → 38).** Status-bar + splash + install affordance need safe-area wiring (34), sticky bars (35), and reduced bundle (36) all in place to feel native-grade.
+- **ManageMembership BaseMobileDialog migration goes LAST in Phase 35.** Highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135). Order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (A-43-2).
+- **NFR-PERF-MEASURE gates Phase 38b conditional virtualization.** Production record counts unknown (personal vault scope). Phase 36 PF-05 instrumentation closes that knowledge gap; only then do we know whether virtualization is needed. Premature virtualization risks M-16 sessionStorage sort-restore regression.
+- **NFR/CON bind multiple phases.** Each NFR/CON requirement has a verification-owner phase AND binds every other phase that touches the affected surface. Documented in each phase's "Binds NFR/CON" section in ROADMAP.md.
+
+### v2.1 PWA Architectural Decisions
 
 - **registerType: 'prompt' only — never autoUpdate.** Both CRUD forms have unsaved state; a silent SW reload would destroy it.
 - **All PocketBase API calls: NetworkOnly.** Auth token lives in localStorage (inaccessible to SW context); stale data risk is unacceptable for a personal vault.
@@ -236,7 +259,7 @@ Items acknowledged and deferred at v4.1 milestone close on 2026-05-25:
 |----------|------|--------|
 | uat_gap | Phase 28: 28-HUMAN-UAT.md | partial — 9 pending scenarios (just-shipped budget tracking UAT; out of Phase 30 scope per ROADMAP) |
 | uat_gap | Phase 29: 29-HUMAN-UAT.md | partial — 7 pending scenarios (just-shipped period comparison UAT; out of Phase 30 scope) |
-| uat_gap | Phase 22: 22-HUMAN-UAT.md V6 | deferred — PWA standalone install + toggle (needs install flow) |
+| uat_gap | Phase 22: 22-HUMAN-UAT.md V6 | deferred — PWA standalone install + toggle (needs install flow) — TARGETED BY v4.3 Phase 38 PWA-UAT-01 |
 | verification_gap | Phase 27: 27-VERIFICATION.md | human_needed (sweep approved 2026-05-22 via 27-HUMAN-UAT.md) |
 | verification_gap | Phase 28: 28-VERIFICATION.md | human_needed (9 UAT items already deferred in 28-HUMAN-UAT.md) |
 | verification_gap | Phase 29: 29-VERIFICATION.md | human_needed (7 UAT items already deferred in 29-HUMAN-UAT.md) |
@@ -245,12 +268,12 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-25T08:30:00.000Z
+**Last session:** 2026-05-26T08:00:00.000Z
 
-**Stopped at:** Phase 31 context gathered (13 decisions captured in 31-CONTEXT.md)
+**Stopped at:** v4.3 ROADMAP.md created. 6 mandatory phases (33–38) + 1 conditional (38b). 32/32 functional requirements mapped; 16 NFR/CON bound to verification-owner phases. REQUIREMENTS.md traceability filled.
 
-**Next session entry point:** Run `/gsd-plan-phase 31` to plan Phase 31: Re-create wallecx_expense_budgets PocketBase collection. Resume file: `.planning/phases/31-recreate-budgets-collection/31-CONTEXT.md`
+**Next session entry point:** Run `/gsd-plan-phase 33` to plan Phase 33: Mobile Foundation (FND-01..04 — useMobileEnv composable + App.vue-scope beforeinstallprompt + Vue/PrimeVue version bumps + visualizer dev wiring).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-25 — v4.2 Budget Recovery & Hardening milestone started; 2 BUG requirements; Phase 31 + 32 scoped*
+*Last updated: 2026-05-26 — v4.3 Wallecx Mobile Optimization roadmap created; status `planned`; 7 phases (6 mandatory + 1 conditional); 32/32 functional requirements mapped; ready for `/gsd-plan-phase 33`*

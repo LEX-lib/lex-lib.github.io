@@ -125,66 +125,67 @@ Explicitly excluded from v4.3 to keep scope mobile-focused. Anti-features locked
 
 ## Traceability
 
-Empty initially; populated by gsd-roadmapper during ROADMAP.md creation. Each requirement maps to exactly one phase.
+Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functional requirement maps to exactly one phase. NFR/CON requirements list the **verification-owner phase**; binds to multiple phases documented in each phase's "Binds NFR/CON" section in ROADMAP.md.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | — | Pending |
-| FND-02 | — | Pending |
-| FND-03 | — | Pending |
-| FND-04 | — | Pending |
-| LT-01 | — | Pending |
-| LT-02 | — | Pending |
-| LT-03 | — | Pending |
-| LT-04 | — | Pending |
-| LT-05 | — | Pending |
-| LT-07 | — | Pending |
-| LT-08 | — | Pending |
-| LT-09 | — | Pending |
-| PF-01 | — | Pending |
-| PF-02 | — | Pending |
-| PF-04 | — | Pending |
-| PF-05 | — | Pending |
-| PF-06 | — | Pending (conditional) |
-| PF-07 | — | Pending |
-| PF-09 | — | Pending |
-| FD-01 | — | Pending |
-| FD-03 | — | Pending |
-| FD-04 | — | Pending |
-| FD-05 | — | Pending |
-| FD-06 | — | Pending |
-| FD-07 | — | Pending |
-| FD-09 | — | Pending |
-| PWA-01 | — | Pending |
-| PWA-02 | — | Pending |
-| PWA-04 | — | Pending |
-| PWA-05 | — | Pending |
-| PWA-06 | — | Pending |
-| PWA-07 | — | Pending |
-| PWA-09 | — | Pending |
-| NFR-PWA-AUTOUPDATE | — | Pending |
-| NFR-BR-2-PRESERVED | — | Pending |
-| NFR-REQUESTKEY-UNIQUE | — | Pending |
-| NFR-DVH-NOT-VH | — | Pending |
-| NFR-IOS-NO-ZOOM | — | Pending |
-| NFR-PWA-PRECACHE-FITS | — | Pending |
-| CON-PB-COUNT-BUG | — | Pending |
-| CON-PWA-SCOPE | — | Pending |
-| CON-VIEWPORT-FIT | — | Pending |
-| NFR-DRAWER-DIRTY-GUARD | — | Pending |
-| NFR-PWA-BANNER-FREQUENCY | — | Pending |
-| NFR-IOS-EVICTION-UX | — | Pending |
-| NFR-IOS-SPLASH | — | Pending |
-| CON-CARD-COLOR-NO-HASH | — | Pending |
-| CON-CONFIRMDIALOG-SINGLETON | — | Pending |
-| NFR-PERF-MEASURE | — | Pending |
+| FND-01 | Phase 33 | Pending |
+| FND-02 | Phase 33 | Pending |
+| FND-03 | Phase 33 | Pending |
+| FND-04 | Phase 33 | Pending |
+| LT-01 | Phase 34 | Pending |
+| LT-02 | Phase 34 | Pending |
+| LT-03 | Phase 34 | Pending |
+| LT-04 | Phase 34 | Pending |
+| LT-05 | Phase 34 | Pending |
+| LT-07 | Phase 34 | Pending |
+| LT-08 | Phase 35 | Pending |
+| LT-09 | Phase 34 | Pending |
+| PF-01 | Phase 36 | Pending |
+| PF-02 | Phase 36 | Pending |
+| PF-04 | Phase 36 | Pending |
+| PF-05 | Phase 36 | Pending |
+| PF-06 | Phase 38b | Conditional (triggered by PF-05 instrumentation) |
+| PF-07 | Phase 36 | Pending |
+| PF-09 | Phase 36 | Pending |
+| FD-01 | Phase 35 | Pending |
+| FD-03 | Phase 35 | Pending |
+| FD-04 | Phase 35 | Pending |
+| FD-05 | Phase 35 | Pending |
+| FD-06 | Phase 35 | Pending |
+| FD-07 | Phase 35 | Pending |
+| FD-09 | Phase 35 | Pending |
+| PWA-01 | Phase 37 | Pending |
+| PWA-02 | Phase 37 | Pending |
+| PWA-04 | Phase 37 | Pending |
+| PWA-05 | Phase 38 | Pending |
+| PWA-06 | Phase 37 | Pending |
+| PWA-07 | Phase 37 | Pending |
+| PWA-09 | Phase 37 | Pending |
+| NFR-PWA-AUTOUPDATE | Phase 37 (owner; binds 36, 38) | Pending |
+| NFR-BR-2-PRESERVED | Phase 38 (final owner; binds 34, 35, 37) | Pending |
+| NFR-REQUESTKEY-UNIQUE | Phase 36 (owner; binds 38b) | Pending |
+| NFR-DVH-NOT-VH | Phase 34 (owner; binds milestone-close audit) | Pending |
+| NFR-IOS-NO-ZOOM | Phase 35 (owner; binds 34 grep audit, 38 UAT) | Pending |
+| NFR-PWA-PRECACHE-FITS | Phase 36 (owner; binds 37) | Pending |
+| CON-PB-COUNT-BUG | Phase 36 (owner; binds 38b) | Pending |
+| CON-PWA-SCOPE | Phase 37 (owner; binds 38) | Pending |
+| CON-VIEWPORT-FIT | Phase 34 (owner; binds 37 PWA) | Pending |
+| NFR-DRAWER-DIRTY-GUARD | Phase 35 (owner; binds 38 UAT) | Pending |
+| NFR-PWA-BANNER-FREQUENCY | Phase 37 (owner; binds 38 UAT) | Pending |
+| NFR-IOS-EVICTION-UX | Phase 37 (owner; binds 38 UAT) | Pending |
+| NFR-IOS-SPLASH | Phase 37 (owner; binds 38 UAT) | Pending |
+| CON-CARD-COLOR-NO-HASH | Phase 35 (owner; ManageMembership migration) | Pending |
+| CON-CONFIRMDIALOG-SINGLETON | Phase 35 (owner; binds 38 UAT) | Pending |
+| NFR-PERF-MEASURE | Phase 36 (owner; gates Phase 38b conditional) | Pending |
 
 **Coverage:**
-- v4.3 functional requirements: 32 total (4 FND + 8 LT + 8 PF + 7 FD + 7 PWA — note PF-06 is conditional)
+- v4.3 functional requirements: 32 total (4 FND + 8 LT + 8 PF + 7 FD + 7 PWA — PF-06 is conditional)
 - v4.3 non-functional / constraints: 16 total
 - Total: 48 requirements
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 48 ⚠ (resolved by roadmapper)
+- Mapped to phases: 48/48 (100%) — PF-06 mapped to conditional Phase 38b
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-26 after gathering milestone goals (mobile optimization for Wallecx + PWA polish) and consuming research outputs (STACK / FEATURES / ARCHITECTURE / PITFALLS / SUMMARY in `.planning/research/`).*
+*Traceability populated: 2026-05-26 by gsd-roadmapper — 32/32 functional + 16/16 NFR/CON mapped; PF-06 conditional accepted per milestone scope.*
