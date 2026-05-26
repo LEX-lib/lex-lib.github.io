@@ -16,7 +16,7 @@ verification:
   type_check: pass
   lint: "1 pre-existing error (VaccinationDetail.vue:5 — grandfathered by ROADMAP success criterion 5); 0 new errors"
   test_unit: "49/49 passing (5 files, 4.24s)"
-  manual_uat: pending (BUG-02 isolation test — see Open Items)
+  manual_uat: "pass — UAT 1 (BUG-02 isolation test) completed 2026-05-26 with paste-back gate per D-13 invariant; UAT 2 (save-refresh toast copy) skipped — cosmetic only, ternary guarantees correctness via locked code"
 decisions_applied:
   - id: D-32-1
     description: "loadBudgets signature now takes opts: { context: 'mount' | 'refresh' } = { context: 'refresh' }; default preserves @budgets-saved call site at line 219"
@@ -110,16 +110,33 @@ All 9 acceptance criteria from `32-01-PLAN.md` Task 1 verified post-edit:
 
 | # | Criterion | Status | Evidence |
 |---|-----------|--------|----------|
-| 1 | Both collections healthy → Expenses tab loads without toast; List + Reports sub-tabs working | DEFERRED to manual UAT | Code review confirms correct shape; the user-visible behavior with both collections healthy is the no-error case. Manual smoke recommended. |
-| 2 | Budgets collection missing → expenses STILL load; `'Failed to load budgets.'` toast (not `'Failed to load expenses…'`); Reports opens; Budget vs Actual absent | DEFERRED to manual UAT | This is BUG-02's smoking gun and the literal isolation guarantee — verifiable by temporarily renaming the live PB collection. NOT an automated test (CONTEXT.md §specifics). |
-| 3 | Reports sub-tab period comparison line (Phase 29) still renders | INHERITED | No code in Phase 32 touched ExpensesReportsView.vue or period comparison logic; type-check + unit tests passing confirms no regression. |
+| 1 | Both collections healthy → Expenses tab loads without toast; List + Reports sub-tabs working | ✓ PASS (UAT 1 pre-flight) | Pre-flight control state confirmed clean by user (2026-05-26): "PRE-UAT control: expenses tab loads cleanly with budgets visible" |
+| 2 | Budgets collection missing → expenses STILL load; `'Failed to load budgets.'` toast (not `'Failed to load expenses…'`); Reports opens; Budget vs Actual absent | ✓ PASS (UAT 1) | Manual paste-back gate (2026-05-26) per D-13 invariant: toast text verbatim `'Failed to load budgets.'`; expenses list rendered; Reports sub-tab opened; Budget vs Actual section absent from DOM (per Phase 28 D-28-4 `v-if="visibleBudgets.length > 0"` auto-hide); console smoke probe returned `NOT_PRESENT: 404 Missing collection context` corroborating the test was actually exercised. |
+| 3 | Reports sub-tab period comparison line (Phase 29) still renders | ✓ PASS (UAT 1) | User observed `↑ ₱5,971.00 vs last month (no prior spend)` rendered during budgets-missing scenario — Phase 29 inline period comparison line driven by expenses data, independent of budgets path. Manage Budgets button + category breakdown chart also intact. |
 | 4 | Console.error tags distinct (`'ExpensesTab: loadBudgets failed'` vs `'ExpensesTab: getFullList failed'`) | ✓ PASS | Grep criteria 6 and 7 both 1×. |
 | 5 | `npm run type-check`, `npm run lint` (no new errors beyond pre-existing VaccinationDetail.vue:5), `npm run test:unit` (49/49) pass | ✓ PASS | All three exit cleanly per automated verification above. |
 
-## Open items (manual UAT — not blocking phase completion)
+## Manual UAT — completed
 
-1. **BUG-02 isolation test:** Temporarily rename `wallecx_expense_budgets` → `wallecx_expense_budgets_disabled` in PocketBase Admin UI. Reload `/projects/wallecx` → Expenses tab. Expected: (a) expenses list renders; (b) single toast `'Failed to load budgets.'` fires; (c) Reports sub-tab opens without error; (d) Budget vs Actual section absent (because `budgets.value` stays `[]`). After verification, rename the collection back. This is the canonical BUG-02 close-the-loop signal.
-2. **Save-refresh failure test (optional):** Open ManageBudget, simulate a save failure (network throttle / collection rename mid-flight) and confirm the post-save toast reads `'Failed to refresh budgets after save. Reload to see changes.'` (NOT the mount-time copy).
+### UAT 1: BUG-02 isolation test — ✓ PASS (2026-05-26)
+
+Methodology (per Phase 31 D-13 invariant — text paste-back + downstream smoke verify):
+- User temporarily renamed `wallecx_expense_budgets` → `wallecx_expense_budgets_uat32` in PocketBase Admin UI
+- Hard-refreshed `/projects/wallecx` → Expenses tab to force fresh `onMounted`
+- Pasted back four observed signals + one code-side console smoke probe output as plain text
+- Renamed collection back to `wallecx_expense_budgets` after test
+
+Paste-back evidence (verbatim from user):
+- Toast text: `"Failed to load budgets."` (mount-time ternary branch — D-32-2a verified live)
+- Expenses list rendered: yes (BUG-02 root cause eliminated — no skeleton-stuck on budgets failure)
+- Reports sub-tab opens without crash: yes
+- Budget vs Actual section: absent from DOM (Phase 28 D-28-4 `v-if="visibleBudgets.length > 0"` auto-hide confirmed)
+- Phase 29 period comparison line still rendered: `↑ ₱5,971.00 vs last month (no prior spend)` (success criterion 3 verified inherited intact)
+- Console smoke probe (`getList(1, 1, { skipTotal: true })` against renamed collection): `NOT_PRESENT: 404 {"data":{},"message":"Missing collection context.","status":404}` (corroborates collection was truly invisible during test — no false-pass)
+
+### UAT 2: Save-refresh toast copy — SKIPPED (cosmetic only)
+
+Skipped by user election. Rationale: the locked code uses a deterministic ternary on `opts.context` to pick the toast string — there is no runtime branch beyond the param value, so D-32-2b ("Failed to refresh budgets after save. Reload to see changes.") is structurally guaranteed correct whenever `loadBudgets()` is called without explicit args (the `@budgets-saved` template binding). No additional runtime verification adds confidence beyond the locked-implementation static guarantee.
 
 ## Phase 32 scope guarantee — confirmed
 
