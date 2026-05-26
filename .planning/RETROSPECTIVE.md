@@ -90,6 +90,46 @@
 
 ---
 
+## Milestone: v4.2 — Budget Recovery & Hardening
+
+**Shipped:** 2026-05-26
+**Phases:** 2 (31–32) | **Plans:** 2 | **Timeline:** 1 build day (~8 hours)
+
+### What Was Built
+- Phase 31: Re-created `wallecx_expense_budgets` PocketBase collection in production with locked Phase 28-01 schema via paste-back gated Admin UI flow (pre-flight 404 probe → Task 2 paste-back literal-string compare → Task 3 dual-pass smoke verify). Closes BUG-01. Locked new project-level D-13 architectural invariant in STATE.md ("Admin-UI checkpoints require text paste-back + downstream smoke verify"). Discovered + documented PB v0.29.x count-path bug (D-31-B: `getList()` returns 400 against non-trivial listRule expressions; workaround via `getFullList()` or `skipTotal: true`).
+- Phase 32: Refactored `ExpensesTab.vue` `onMounted` into independent try/catches. `loadBudgets()` gained `opts: { context: 'mount' | 'refresh' } = { context: 'refresh' }` parameter with ternary toast copy; `isLoading` wraps only the expenses fetch and clears in `finally` before the sequential budgets fetch. Closes BUG-02. Single file modified (`src/components/projects/wallecx/ExpensesTab.vue`): +6/−8 lines. UAT 1 close-the-loop signal verified via paste-back (toast verbatim `'Failed to load budgets.'`, expenses list rendered, Reports opened, Budget vs Actual absent) + 404 console smoke probe.
+
+### What Worked
+- **D-13 invariant designed inside the phase that needed it.** Phase 31's Task 3 Part C was an explicit instruction to inject the new "paste-back + downstream verify" invariant into STATE.md. Treating the workflow-layer fix as part of the phase scope (not a separate process-improvement initiative) meant the invariant landed structurally and was immediately applied to Phase 32's UAT 1 — no separate "set up the discipline first" overhead.
+- **Paste-back gate caught a real deviation in Phase 31 Task 2.** User configured stricter rules (`@request.auth.id != "" && user = @request.auth.id`) than the locked spec called for. Literal-string compare surfaced the diff immediately. Outcome: deviation accepted with rationale (D-31-A) — project-wide consistency with other `wallecx_*` collections, strict enhancement. Without paste-back, this would have been a silent divergence between spec and reality.
+- **Diagnostic-driven root cause analysis for the Phase 31 Task 3 Part B 400.** When the spec-literal `getList({page:1, perPage:1})` returned 400 against a collection where `getFullList()` returned 200 + empty, three follow-up probes (auth state, getFullList, skipTotal:true) isolated the cause to a PB SDK/server quirk on the totalItems COUNT path. Functional-equivalence waiver (D-31-B) is documented and defensible; not a Phase 31 schema defect.
+- **`gsd-discuss-phase` scope guardrail caught PB-REALTIME scope creep cleanly.** During Phase 32 discussion the user proposed switching to PocketBase subscribe. Surfaced that subscribe does NOT solve BUG-02 (initial getFullList still needs its own try/catch) and ought to be applied uniformly. User selected "defer realtime" and the idea was captured to backlog — zero scope creep, idea preserved.
+- **Plan-checker caught a cosmetic acceptance criterion miscount with a 1-line fix.** The first PLAN.md draft had an acceptance criterion that grepped for `toast.error('Failed to load budgets.')` literal — which wouldn't match the locked ternary-shaped code (`toast.error(msg)` after a ternary assignment). Plan-checker flagged this as a single warning; fixed inline without re-running the planner. Demonstrates the plan-checker's value even on tiny phases.
+
+### What Was Inefficient
+- **`gsd-tools.cjs` SDK still incomplete.** Same finding as v4.1: many workflow steps reference `gsd-sdk query …` commands that aren't registered (`init.execute-phase`, `state.begin-phase`, `phase.complete`, `audit-open`, `roadmap.analyze`, `summary-extract`, `milestone.complete`, etc.). Managed STATE.md / ROADMAP.md / REQUIREMENTS.md updates manually. Works but error-prone — easy to drift from workflow intent (e.g., forgetting a frontmatter field on STATE.md or missing the "git rm REQUIREMENTS.md" step).
+- **`workflow.auto_advance: true` config setting kept triggering edge cases.** Strict workflow says "auto-advance to next step when AUTO_CFG is true," but the user was clearly pacing manually (invoking each `/gsd-*` command explicitly). Chose to honor user behavior over strict config interpretation. Worth either toggling `auto_advance: false` for this style of work, or documenting the manual-override pattern more explicitly.
+- **Phase 31 Task 2 paste-back gate UX was wordy.** The "paste BOTH artifacts as plain text" instruction generated ~30 lines of paste-back specification before the user even ran the test. Future paste-back gates could be tighter — one canonical paste-back schema, not two separate ones (field table + rules block).
+
+### Patterns Established
+- **Paste-back + downstream smoke verify** (D-13 invariant, now project-wide). For any phase that configures a live external artifact (PB collection, env vars, dashboard settings, third-party integration), the checkpoint MUST require the user to paste actual configured values as text AND a code-side smoke probe must exercise the live system. Acknowledgment-only ("approved", "done") is structurally insufficient. This is the explicit response to T-31-05 (process-level threat: trust-based-checkpoint silent no-op).
+- **Functional-equivalence waiver with rationale + multi-source proof** (D-31-B precedent). When a spec-literal probe trips on an external-system quirk, prove the underlying semantic three independent ways (here: `getFullList` 200 + empty array; `getList(skipTotal:true)` 200 + items:[]; app-flow no-toast signal) and record the deviation with explicit rationale. Avoids both rubber-stamping and getting stuck on cosmetic spec-vs-reality drift.
+- **Optional parameter with default that preserves existing call sites** (D-32-1). When extending a helper used in multiple places, add `opts: { … } = { … }` with the default that matches the most common existing call site. New calls pass explicit context; old calls keep working unchanged. Verified for `loadBudgets()` against the `@budgets-saved` template binding via the Vue emit signature grep.
+- **Inline orchestrator execution for tiny single-task autonomous plans.** Phase 32 had 1 plan, 1 task, ~20 lines of changes in a single file. Spawning a gsd-executor worktree agent for that would cost more in worktree setup + merge cleanup than the work itself. Going inline (read PLAN locked_implementation → apply Edits → run type-check/lint/test → grep-verify → commit) was 2–3× faster. Pattern: for `autonomous: true` plans with ≤2 tasks and ≤1 file modified, prefer inline; for everything else, spawn the executor.
+
+### Key Lessons
+1. **Process-level threats deserve process-level fixes.** BUG-01's root cause wasn't a code defect — it was a workflow design choice (trust-based "approved" signal) that silently no-op'd. Locking D-13 as a STATE.md invariant turns the lesson into a structural guard rather than a one-time post-mortem note. Future GSD phases inherit the protection automatically.
+2. **Spec-vs-reality drift is sometimes the external system's fault, not yours.** PocketBase v0.29.x's count-path bug on non-trivial listRule expressions is a real upstream defect. The right response is to document the diagnostic chain, accept a functional-equivalence waiver with rationale, and capture the workaround pattern for future reference — not to chase a spec-literal that the upstream cannot satisfy.
+3. **Surgical milestones can stay surgical if you guard against discussion-time scope creep.** Phase 32's PB-REALTIME suggestion would have been a legitimate v4.3+ feature in its own right but had no place in a 2-phase BUG-02 fix. The discuss-phase scope guardrail (surface the scope-creep tension, present options, capture deferred) worked exactly as designed.
+4. **Even tiny plans benefit from the plan-checker.** Phase 32's plan-checker found one warning in a 1-file refactor — a wording miscount in an acceptance criterion. Sub-1-minute fix. The plan-checker isn't only valuable on large phases.
+
+### Cost Observations
+- Model mix: ~100% Opus 4.7 (1M context) — the entire milestone (discuss → plan → execute → UAT → close) ran in a single long conversation session inline; subagents (planner + plan-checker) called once each for Phase 32 only; Phase 31 was fully inline (autonomous: false + all human-action checkpoints made spawning impractical).
+- Sessions: 1 long session (didn't `/clear` between phases — Opus 4.7 1M context absorbed the full milestone without pressure).
+- Notable: 8 commits in one build day; type-check + 49 tests green throughout; no rework commits needed; zero new test files added (test strategy per CONTEXT.md §specifics: BUG-02 isolation is manual UAT, not automated).
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -102,6 +142,7 @@
 | v3.0 Site-Wide Dark Mode | 4 | 7 | Site-wide theme; useTheme composable; FOUC prevention |
 | v4.0 Daily Expense Tracker | 4 | 9 | Parent-shell + child-view SFC split; chart infrastructure; TDD on helpers |
 | v4.1 Gap Resolution & Feature Completeness | 4 | 15 | Period-gated UI pattern (v-if DOM-absent); status-color value-judgment mapping; one-plan-per-phase UAT sweep template |
+| v4.2 Budget Recovery & Hardening | 2 | 2 | D-13 paste-back + downstream-smoke-verify invariant (workflow-layer mitigation for trust-based-checkpoint silent no-op); inline orchestrator pattern for tiny single-task autonomous plans; functional-equivalence waiver template (D-31-B) |
 
 ### Cumulative Quality
 
@@ -111,6 +152,7 @@
 | v2.0 | 24 | 11 | membershipMapper.spec.ts |
 | v4.0 | 49 | 25 | expenseMapper.spec.ts (9) + period.test.ts (16) |
 | v4.1 | 49 | 0 | Stable regression floor; new code in v4.1 (~410 LOC) was UI-only — no new mapper unit tests; UAT sweep verified prior phases instead |
+| v4.2 | 49 | 0 | Stable regression floor maintained through a surgical 6/−8-line refactor; no new tests added (manual UAT per CONTEXT.md §specifics) |
 
 ### Top Lessons (Verified Across Milestones)
 

@@ -1,5 +1,36 @@
 # Milestones
 
+## v4.2 — Budget Recovery & Hardening
+
+**Shipped:** 2026-05-26
+**Phases:** 31–32 (2 phases, 2 plans)
+**Timeline:** 2026-05-25 → 2026-05-26 (build day 2026-05-26; ~8 hours)
+**Requirements:** 2/2 shipped (BUG-01, BUG-02)
+**Git range:** `04b9cfb` → `58c3e4b` (8 commits on `feat/wallecx`)
+**Source LOC change:** 1 file modified (`ExpensesTab.vue`): +6 / −8 lines
+
+### Delivered
+
+1. **BUG-01 closed** — `wallecx_expense_budgets` PocketBase collection re-created in production with the locked Phase 28-01 schema (4 fields + 5 v0.29.3 rules) via a paste-back gated Admin UI flow that replaced Phase 28-01's trust-based "approved" signal. Pre-flight 404 probe + Task 2 paste-back literal-string compare against locked spec + Task 3 dual-pass smoke verify (`getFullList` 200 + empty array; app-flow no on-mount toast).
+2. **BUG-02 closed** — `ExpensesTab.vue` `onMounted` refactored to independent try/catches. `loadBudgets()` gained `opts: { context: 'mount' | 'refresh' } = { context: 'refresh' }` parameter with ternary toast copy; `isLoading` now wraps only the expenses fetch and clears in `finally` before the sequential `await loadBudgets({ context: 'mount' })`. Budgets-only failure no longer fires the misleading `'Failed to load expenses…'` toast and no longer blocks the expenses list from rendering.
+3. **D-13 architectural invariant locked** project-wide — "Admin-UI checkpoints require text paste-back + downstream smoke verify." Recorded in STATE.md `## Architectural Invariants` during Phase 31 Task 3 Part C. Now binds all future GSD admin-UI tasks in this project; acknowledgment-only signals are explicitly insufficient.
+4. **PocketBase v0.29.x count-path bug discovered + documented** — `getList()` returns 400 against collections with non-trivial listRule expressions (the totalItems count path trips on the `&&` evaluation). Workaround via `getFullList()` (uses skipTotal internally) or `getList(p, pp, { skipTotal: true })`. Documented in `31-01-SUMMARY.md` deviation D-31-B for future reference; not a Phase 31 schema/rule defect.
+5. **UAT discipline upheld per D-13** — Both BUG fixes verified with text paste-back gates AND code-side console smoke probes. BUG-01: Task 1 pre-flight 404 paste-back, Task 2 schema/rules literal-string compare, Task 3 dual-signal smoke verify. BUG-02: UAT 1 paste-back (toast verbatim `'Failed to load budgets.'`, expenses list rendered, Reports opened, Budget vs Actual absent) + console smoke probe returning 404 to corroborate the test was actually exercised.
+
+### Accepted deviations (recorded with rationale)
+
+- **D-31-A** — List/View/Update/Delete rules use the stricter `@request.auth.id != "" && user = @request.auth.id` form (project-wide consistency with other `wallecx_*` collections; strict enhancement, no security regression). Create rule matches spec verbatim.
+- **D-31-B** — Plan-spec literal `getList({ page: 1, perPage: 1 })` returns 400 due to PocketBase v0.29.x count-path bug; functional equivalence proven via `getFullList()` 200 + empty array and `getList(p, pp, { skipTotal: true })` 200 + `items:[]` (three independent confirmations of the underlying semantic).
+
+### Known deferred items at close: 0 NEW
+
+Pre-existing items from prior milestones remain in STATE.md `## Deferred Items` (00-HUMAN-UAT.md, 08-HUMAN-UAT.md from v1.0, etc.) — none of these are v4.2-introduced. v4.2 explicitly deferred to v4.3+ per REQUIREMENTS.md Future Requirements section: HEALTH-01 (code-level collection health check on boot), UAT-28-CLOSE (Phase 28 deferred UAT — 9 scenarios), UAT-29-CLOSE (Phase 29 deferred UAT — 7 scenarios), and the newly-captured PB-REALTIME idea (subscribe across all wallecx_* collections, uniform-application future phase).
+
+**Archive:** [milestones/v4.2-ROADMAP.md](milestones/v4.2-ROADMAP.md)
+**Requirements:** [milestones/v4.2-REQUIREMENTS.md](milestones/v4.2-REQUIREMENTS.md)
+
+---
+
 ## v4.1 — Gap Resolution & Feature Completeness
 
 **Shipped:** 2026-05-25

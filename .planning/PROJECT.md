@@ -18,23 +18,13 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 If everything else fails, these capabilities must work: the vaccination history list (with attachment preview), the membership card grid (with barcode scan overlay), and the expenses list with reporting + budget comparison.
 
-## Current State: v4.2 in Progress — Budget Recovery & Hardening
+## Current State: v4.2 Shipped — Planning Next Milestone
 
-**Latest shipped:** v4.1 Gap Resolution & Feature Completeness (2026-05-25) — closed deferred code-quality items (WR-01/02/03), added JSON exports for memberships and expenses, shipped budget tracking (Manage Budgets dialog + actual-vs-budget reports) and period-over-period comparison line, then ran a structured UAT sweep over 8 phases (80/82 in-scope scenarios passed, BR-2 barcode invariant verified twice, regression floor of 49/49 tests intact).
+**Latest shipped:** v4.2 Budget Recovery & Hardening (2026-05-26) — closed two production-visible bugs discovered after v4.1 ship. BUG-01: re-created the missing `wallecx_expense_budgets` PocketBase collection via a paste-back gated Admin UI flow that replaced Phase 28-01's trust-based "approved" signal. BUG-02: refactored `ExpensesTab.vue` `onMounted` into independent try/catches so a budgets-only failure no longer fires the misleading `'Failed to load expenses…'` toast or blocks the expenses list. Locked new architectural invariant D-13 ("Admin-UI checkpoints require text paste-back + downstream smoke verify") that prevents the silent-no-op trust-based-checkpoint failure mode project-wide. One PocketBase v0.29.x count-path bug discovered + documented in deviation D-31-B (workaround via `getFullList()` or `getList(p, pp, { skipTotal: true })`).
 
-**v4.2 in progress** — production runtime regression discovered after v4.1 ship: `wallecx_expense_budgets` PocketBase collection was never actually created (Phase 28-01 Task 1 was a trust-based human-action checkpoint with no code-level verification). The Expenses → Reports tab fires a `ClientResponseError 404: Missing collection context` on every mount, and the shared try/catch in `ExpensesTab.vue` surfaces it as a misleading `"Failed to load expenses..."` toast.
+**Previously shipped:** v4.1 Gap Resolution & Feature Completeness (2026-05-25) — closed deferred code-quality items (WR-01/02/03), added JSON exports for memberships and expenses, shipped budget tracking (Manage Budgets dialog + actual-vs-budget reports) and period-over-period comparison line, then ran a structured UAT sweep over 8 phases (80/82 in-scope scenarios passed, BR-2 barcode invariant verified twice, regression floor of 49/49 tests intact).
 
-## Current Milestone: v4.2 Budget Recovery & Hardening (surgical)
-
-**Goal:** Eliminate the `404 Missing collection context` error on the Expenses → Reports tab by ensuring the `wallecx_expense_budgets` PocketBase collection exists, and harden the ExpensesTab fetch so a missing budgets collection no longer fires misleading toast copy or blocks expenses from loading.
-
-**Target features:**
-- Re-create the `wallecx_expense_budgets` PocketBase collection per the Phase 28-01 spec (4 fields, 5 rules using v0.29.3 `@request.body.user` createRule syntax) and verify it's reachable from the app
-- Decouple the budgets fetch from the expenses fetch in `ExpensesTab.vue` onMounted — independent try/catches, accurate toast copy (`'Failed to load budgets.'` distinct from `'Failed to load expenses.'`), graceful degradation when budgets collection is missing
-
-**Key context:**
-- Discovered post-v4.1 because Phase 28-01 Task 1 was trust-based (no automated verification). Runtime fetch was the first place the gap surfaced.
-- Deferred to a future milestone (v4.3 likely): code-level collection health check on app boot, plus walking through Phase 28 + 29 deferred UAT scenarios (16 total) for final budget tracking + period comparison validation.
+**Next milestone candidates (v4.3+):** HEALTH-01 (code-level collection health check on app boot), UAT-28-CLOSE + UAT-29-CLOSE (walk through 16 deferred UAT scenarios from Phases 28/29), PB-REALTIME (PocketBase realtime subscribe applied uniformly across all `wallecx_*` collections — captured during Phase 32 discussion).
 
 <details>
 <summary>v4.1 milestone goal (shipped 2026-05-25)</summary>
@@ -128,11 +118,12 @@ If everything else fails, these capabilities must work: the vaccination history 
 - ✓ ExpensesTab shell fetches budgets and passes through; ExpensesReportsView renders period-gated Budget vs Actual section (monthly for this-month, yearly for this-year, hidden for quarter/custom) with progress bars + Under/Over/On budget badges, plus Manage Budgets button entry — v4.1
 - ✓ ExpensesReportsView inline period-over-period comparison line in STATE 4 between Grand Total and Manage Budgets button — Month + Quarter coverage; color-coded direction (error red = overspending, success green = underspending); `↑ $230 (+23%) vs last month` format; honest zero-prior handling (omit %, append "no prior spend"); U+2212 minus — v4.1
 - ✓ Structured Phase 30 UAT sweep over 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25) — 80/82 scenarios passed, 1 deferred (PWA standalone install), 0 regressions; BR-2 barcode invariant verified twice — v4.1
+- ✓ **BUG-01** — `wallecx_expense_budgets` PocketBase collection re-created in production with locked Phase 28-01 schema (4 fields, 5 rules with v0.29.3 `@request.body.user` createRule); paste-back gated Admin UI flow + `getFullList` 200 + empty array smoke verify; D-13 architectural invariant locked into STATE.md as workflow-layer prevention of silent-no-op checkpoints — v4.2
+- ✓ **BUG-02** — `ExpensesTab.vue` `onMounted` refactored to independent try/catches; `loadBudgets()` gained `opts: { context: 'mount' | 'refresh' }` parameter with ternary toast (`'Failed to load budgets.'` vs `'Failed to refresh budgets after save. Reload to see changes.'`); `isLoading` wraps only the expenses fetch; budgets-only failure no longer fires misleading toast or blocks expenses list (UAT 1 close-the-loop signal verified) — v4.2
 
-### Active (v4.2)
+### Active
 
-- [ ] **BUG-01** — Re-create `wallecx_expense_budgets` PocketBase collection (4 fields: user, category, budget_type pattern `^(monthly|yearly)$`, amount min 0; 5 rules with v0.29.3 `@request.body.user` createRule); verify reachability via a code-side smoke read from the app
-- [ ] **BUG-02** — Decouple budgets fetch from expenses fetch in `ExpensesTab.vue` onMounted; independent try/catches with accurate toast copy; expenses load even if budgets collection is missing; Reports tab degrades gracefully (Budget vs Actual section already auto-hides when budgets array is empty per Phase 28 D-09)
+(None — v4.2 just shipped. Next milestone TBD via `/gsd-new-milestone`.)
 
 ### Future candidates
 
@@ -144,7 +135,10 @@ If everything else fails, these capabilities must work: the vaccination history 
 - [ ] **CONV-03** — Expiry date reminders (requires notification infrastructure)
 - [ ] **SCAN-ADV-01** — PDF417 and Aztec code formats via dynamic `bwip-js` import
 - [ ] **PWA-UAT-01** — PWA standalone install + toggle + re-open verification (deferred from Phase 22 V6)
-- [ ] **UAT-RESIDUAL-01** — Walk through Phase 28 + Phase 29 deferred UAT scenarios (16 scenarios from v4.1)
+- [ ] **HEALTH-01** (deferred from v4.2) — Code-level collection health check on app boot or Reports tab mount: probe `wallecx_expense_budgets` reachability and surface an inline warning (with PB Admin UI setup steps) if missing. Complements the v4.2 D-13 workflow-layer invariant with a runtime safety net.
+- [ ] **UAT-28-CLOSE** (deferred from v4.2) — Walk through Phase 28's 9 deferred UAT scenarios in `28-HUMAN-UAT.md` now that the collection is healthy.
+- [ ] **UAT-29-CLOSE** (deferred from v4.2) — Walk through Phase 29's 7 deferred UAT scenarios in `29-HUMAN-UAT.md` (period comparison validation).
+- [ ] **PB-REALTIME** (captured during v4.2 Phase 32 discussion) — PocketBase realtime `subscribe('*', cb)` / `unsubscribe('*')` lifecycle for `wallecx_*` collections to replace `@budgets-saved`-driven manual refetch and similar emit-up-refetch patterns. Apply uniformly across all wallecx collections rather than ad-hoc on one.
 
 ### Out of Scope
 
@@ -227,6 +221,10 @@ If everything else fails, these capabilities must work: the vaccination history 
 | U+2212 minus character (−) for negative percentages, not ASCII hyphen-minus | Typographic correctness; locked in ExpensesReportsView Phase 29 helper | ✓ Validated v4.1 |
 | Period comparison covers Month + Quarter only (Year + Custom hidden) | Roadmap-strict scope; year/custom deferred (EXP-ADV-05/06) to keep RPT-03 surface area minimal | ✓ Validated v4.1 |
 | Phase 30 UAT sweep as one-plan-per-phase | 8 plans (30-01..30-08), each with checkpoint:human-verify + result-recording task; failures batch-handled at end via gap-closure fix plans | ✓ Validated v4.1 (0 failures actually needed — sweep was clean) |
+| Admin-UI checkpoints require text paste-back + downstream smoke verify (D-13 invariant) | Trust-based "approved" signals silently no-op'd Phase 28-01 Task 1 and caused BUG-01. Now project-wide: any phase configuring a live external artifact (PB collection, env vars, dashboard settings) MUST require the user to paste back actual configured values as text AND a code-side smoke probe must exercise the live artifact. Acknowledgment-only is explicitly insufficient | ✓ Validated v4.2 (mitigated T-31-05 process-level threat; locked structurally for all future GSD admin-UI tasks) |
+| PocketBase v0.29.x `getList()` count-path bug against non-trivial listRule expressions | The totalItems COUNT path trips on `@request.auth.id != "" && user = @request.auth.id`-shaped listRule expressions, returning 400 "Something went wrong". `getFullList()` uses skipTotal internally and works correctly. Workarounds: `getFullList()` or explicit `getList(p, pp, { skipTotal: true })` | ✓ Documented v4.2 (D-31-B; not a project defect, but a PB SDK/server quirk worth knowing) |
+| `loadBudgets()` carries call-site context via `opts.context: 'mount' \| 'refresh'` parameter (default 'refresh') | Single source of truth for the budgets fetch; ternary toast branches to the appropriate copy without duplicating the `getFullList` block. Default `'refresh'` preserves the existing `@budgets-saved="loadBudgets"` template binding without modification | ✓ Validated v4.2 |
+| `isLoading` skeleton state wraps only the headline data fetch in `onMounted`, not supporting data | BUG-02 isolation: the budgets path should not block or delay the expenses list rendering. `isLoading` clears in the expenses `try/finally`; supporting fetches (budgets) run sequentially after, outside the skeleton envelope | ✓ Validated v4.2 |
 
 ## Shipped Milestones
 
@@ -242,6 +240,7 @@ If everything else fails, these capabilities must work: the vaccination history 
 | v3.0 Site-Wide Dark Mode | 19–22 | 2026-05-19 | [v3.0-ROADMAP.md](milestones/v3.0-ROADMAP.md) |
 | v4.0 Daily Expense Tracker | 23–26 | 2026-05-22 | [v4.0-ROADMAP.md](milestones/v4.0-ROADMAP.md) |
 | v4.1 Gap Resolution & Feature Completeness | 27–30 | 2026-05-25 | [v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md) |
+| v4.2 Budget Recovery & Hardening | 31–32 | 2026-05-26 | [v4.2-ROADMAP.md](milestones/v4.2-ROADMAP.md) |
 
 ## Evolution
 
@@ -261,4 +260,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-25 — v4.2 Budget Recovery & Hardening started. 2 active requirements: BUG-01 (re-create wallecx_expense_budgets PB collection) and BUG-02 (decoupled budgets fetch in ExpensesTab.vue). Discovered after v4.1 ship: trust-based Phase 28-01 Task 1 checkpoint never landed the collection in production PB.*
+*Last updated: 2026-05-26 after v4.2 Budget Recovery & Hardening milestone. Both BUG requirements closed: BUG-01 (collection re-created via paste-back gated Admin UI flow) and BUG-02 (ExpensesTab.vue onMounted refactored to independent try/catches). New project-level architectural invariant D-13 ("Admin-UI checkpoints require text paste-back + downstream smoke verify") locked into STATE.md, structurally preventing the trust-based-checkpoint silent-no-op failure mode that caused BUG-01. PocketBase v0.29.x count-path bug discovered + documented (D-31-B). Next milestone TBD via `/gsd-new-milestone`; deferred candidates include HEALTH-01, UAT-28/29-CLOSE, and PB-REALTIME.*

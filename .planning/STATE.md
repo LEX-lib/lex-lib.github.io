@@ -1,42 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.2
-milestone_name: Budget Recovery & Hardening
-status: shipped
-stopped_at: v4.2 Budget Recovery & Hardening SHIPPED (BUG-01 + BUG-02 both closed)
-last_updated: "2026-05-26T05:00:00.000Z"
+milestone: null
+milestone_name: null
+status: between-milestones
+stopped_at: v4.2 Budget Recovery & Hardening archived 2026-05-26; awaiting /gsd-new-milestone for next cycle
+last_updated: "2026-05-26T06:00:00.000Z"
 last_activity: 2026-05-26
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-**Last updated:** 2026-05-25 — v4.2 Budget Recovery & Hardening milestone started. Two surgical fixes for a production runtime error discovered post-v4.1 ship: `wallecx_expense_budgets` PocketBase collection missing (Phase 28-01 trust-based checkpoint never landed) + misleading toast copy from shared try/catch in ExpensesTab.vue.
+**Last updated:** 2026-05-26 — v4.2 Budget Recovery & Hardening shipped + archived. BUG-01 (collection re-created via paste-back gated Admin UI flow) and BUG-02 (independent try/catches in ExpensesTab.vue) both closed. New D-13 architectural invariant locked: "Admin-UI checkpoints require text paste-back + downstream smoke verify." Awaiting `/gsd-new-milestone` for next cycle.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
-**Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints
-**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them.
-**Current focus:** v4.2 — Budget Recovery & Hardening (surgical). Fix the production 404 and decouple budgets fetch.
+**Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
+**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
+**Current focus:** Between milestones. Next milestone candidates: HEALTH-01 (boot-time collection health check), UAT-28-CLOSE + UAT-29-CLOSE (16 deferred UAT scenarios), PB-REALTIME (subscribe across all wallecx_* collections).
 
 ## Current Position
 
-**Milestone:** v4.2 — Budget Recovery & Hardening (SHIPPED 2026-05-26)
-**Status:** Milestone complete — BUG-01 + BUG-02 both closed
+**Milestone:** None active (v4.2 archived 2026-05-26)
+**Status:** Between milestones — run `/gsd-new-milestone` to start next cycle
 **Phase:** — (none active)
 **Last activity:** 2026-05-26
-
-```
-v4.2 Progress: [##########] 100% (2/2 phases) — SHIPPED
-Phase 31: Re-create wallecx_expense_budgets PB collection (BUG-01)   [x] Complete 2026-05-26
-Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [x] Complete 2026-05-26
-```
 
 ## Shipped Milestones Summary
 

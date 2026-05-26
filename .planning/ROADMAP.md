@@ -15,7 +15,7 @@
 - ✅ **v3.0 Site-Wide Dark Mode** — Phases 19–22 (shipped 2026-05-19) — [archive](milestones/v3.0-ROADMAP.md)
 - ✅ **v4.0 Daily Expense Tracker** — Phases 23–26 (shipped 2026-05-22) — [archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Gap Resolution & Feature Completeness** — Phases 27–30 (shipped 2026-05-25) — [archive](milestones/v4.1-ROADMAP.md)
-- ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (shipped 2026-05-26)
+- ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (shipped 2026-05-26) — [archive](milestones/v4.2-ROADMAP.md)
 
 ## Phases
 
@@ -144,41 +144,17 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 
 ---
 
-### v4.2 Budget Recovery & Hardening (Phases 31–32) — SHIPPED 2026-05-26
+<details>
+<summary>✅ v4.2 Budget Recovery & Hardening (Phases 31–32) — SHIPPED 2026-05-26</summary>
 
-- [x] **Phase 31: Re-create wallecx_expense_budgets PocketBase collection** — Manual Admin UI step per Phase 28-01 spec + code-side smoke read verification (BUG-01) — 2026-05-26
-- [x] **Phase 32: Decouple budgets fetch in ExpensesTab.vue** — Independent try/catches with accurate toast copy; graceful degradation when budgets fail (BUG-02) — 2026-05-26
+- [x] Phase 31: Re-create wallecx_expense_budgets PocketBase collection (1/1 plan) — completed 2026-05-26 (BUG-01)
+- [x] Phase 32: Decouple budgets fetch in ExpensesTab.vue (1/1 plan) — completed 2026-05-26 (BUG-02)
 
----
+**Milestone goal:** Eliminate the `404 Missing collection context` runtime error on the Expenses → Reports tab by re-creating the `wallecx_expense_budgets` collection in production PocketBase and refactoring `ExpensesTab.vue` so a missing budgets collection no longer fires misleading toast copy or blocks expenses from loading.
 
-## Phase Details
+Full details: [milestones/v4.2-ROADMAP.md](milestones/v4.2-ROADMAP.md)
 
-### Phase 31: Re-create wallecx_expense_budgets PocketBase Collection
-**Goal**: The `wallecx_expense_budgets` PocketBase collection exists in production with the locked Phase 28-01 schema, and the running Wallecx app can successfully `getList` from it.
-**Depends on**: Phase 28-01 spec (collection schema reference)
-**Requirements**: BUG-01
-**Success Criteria** (what must be TRUE):
-  1. PocketBase Admin UI shows a collection named exactly `wallecx_expense_budgets` (lowercase, underscores)
-  2. The collection has 4 fields with correct types and constraints: `user` (Relation → users, required, max 1, cascade=false), `category` (Text required, min 1, max 200), `budget_type` (Text required, pattern `^(monthly|yearly)$`), `amount` (Number required, min 0)
-  3. The collection has all 5 API rules: listRule/viewRule/updateRule/deleteRule = `user = @request.auth.id`; createRule = `@request.auth.id != "" && @request.body.user = @request.auth.id` (v0.29.3 `@request.body.user` syntax)
-  4. Running `pb.collection('wallecx_expense_budgets').getList({ page: 1, perPage: 1 })` from the live Wallecx app (browser console or via the existing `loadBudgets` helper) returns 200 OK with an empty `items` array (NOT a `404 Missing collection context`)
-  5. After Phase 31 ships, refreshing the Expenses tab no longer shows any error toast on mount (assumes Phase 32 has not yet shipped; otherwise the toast was already suppressed)
-**Plans**: TBD (single human-action checkpoint plan likely)
-**UI hint**: no (pure PocketBase config)
-
-### Phase 32: Decouple Budgets Fetch in ExpensesTab.vue
-**Goal**: `ExpensesTab.vue` onMounted loads expenses and budgets via independent try/catches, so a missing/failing budgets fetch does NOT fail or mislead the expenses fetch UX, and toast copy accurately identifies which collection failed.
-**Depends on**: Phase 31 (so that the success case can also be verified)
-**Requirements**: BUG-02
-**Success Criteria** (what must be TRUE):
-  1. With both collections healthy: `npm run dev` → Expenses tab loads without any toast and shows both List + Reports sub-tabs working
-  2. With `wallecx_expense_budgets` collection missing (temporary test): expenses STILL load successfully; no expenses-related error toast; a single toast `'Failed to load budgets.'` fires (not `'Failed to load expenses...'`); Reports sub-tab opens without error and Budget vs Actual section is absent (auto-hidden because `budgets.value` stays as `[]`)
-  3. The Reports sub-tab's period-over-period comparison line (Phase 29) still renders normally regardless of budgets fetch outcome
-  4. Console error log message identifies the budgets failure distinctly (e.g., `console.error('ExpensesTab: loadBudgets failed', e)` separate from the existing `'ExpensesTab: getFullList failed'`)
-  5. `npm run type-check`, `npm run lint` (no NEW errors beyond pre-existing VaccinationDetail.vue:5), and `npm run test:unit` (49/49) all pass
-**Plans**: 1 plan
-  - [ ] 32-01-PLAN.md — Refactor loadBudgets with context param and split onMounted into independent try/catches
-**UI hint**: no (no visible UI changes beyond toast copy correction)
+</details>
 
 ---
 
@@ -222,4 +198,4 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-25 — v4.2 Budget Recovery & Hardening started. Phases 31–32 scoped; 2 BUG requirements. Surgical milestone targeting a production runtime error discovered after v4.1 ship.*
+*Last updated: 2026-05-26 — v4.2 Budget Recovery & Hardening archived. Both BUG requirements closed (BUG-01 collection re-created, BUG-02 try/catch split). D-13 architectural invariant locked. Between milestones; awaiting `/gsd-new-milestone` for next cycle.*
