@@ -1,239 +1,208 @@
-# Research Summary -- Wallecx v2.1 PWA + Mobile Milestone
+# Project Research Summary — v4.3 Wallecx Mobile Optimization
 
-**Project:** Wallecx (Lexarium mini-app -- vaccinations + membership cards)
-**Domain:** PWA installability + mobile-first layout for an existing Vue 3 / PocketBase SPA
-**Researched:** 2026-05-14
+**Project:** Lexarium — Wallecx
+**Domain:** Mobile-grade polish layer on an existing Vue 3 + PrimeVue 4 + Tailwind v4 + PocketBase + vite-plugin-pwa SPA mini-app
+**Researched:** 2026-05-26
 **Confidence:** HIGH
-
----
 
 ## Executive Summary
 
-Wallecx v2.1 adds PWA installability and mobile-responsive layout on top of the shipped v2.0
-codebase (PrimeVue Tabs shell, VaccinationsTab, MembershipsTab with full CRUD, barcode/QR
-rendering, fullscreen scan overlay). The correct implementation path is `vite-plugin-pwa ^1.3.0`
-with Workbox `generateSW`, `registerType: 'prompt'`, and `navigateFallback: 'index.html'`.
-This is a dev-dependency-only change -- zero new runtime packages. Icon generation uses
-`@vite-pwa/assets-generator`. `src/main.ts` and `src/router/index.ts` require no changes; the
-plugin auto-injects the SW registration script and manifest link at build time.
+v4.3 is a **presentation-layer polish milestone, not a refactor.** The four research dimensions (STACK, FEATURES, ARCHITECTURE, PITFALLS) converge on a single thesis: every locked invariant from v2.0–v4.2 stays put (BR-2 barcode, registerType prompt, NetworkOnly /api/*, requestKey isolation, card_color no-hash, shell-owns-data, single ConfirmDialog), and the milestone ships a thin lateral layer of mobile-grade UX on top: real isMobile/isTablet/isStandalone reactive env, Dialog vs Drawer unification, iOS 16px input fix, sticky action bars, beforeinstallprompt capture, iOS standalone meta tags + splash images, and per-tab bundle splitting.
 
-The primary target is iOS Safari (personal phone wallets in AU skew iPhone). iOS has hard
-constraints that shape the entire feature set: no `beforeinstallprompt` event, 7-day storage
-eviction cap on `localStorage` (including the PocketBase auth token), no Background Sync, and no
-`requestFullscreen` on non-video elements. These are constraints to design around, not gaps to
-close. The iOS Add-to-Home-Screen instruction banner replaces the Android install prompt,
-`navigator.storage.persist()` mitigates (but does not guarantee) token eviction, and the existing
-CSS-based fullscreen scan overlay already works around the iOS fullscreen API limitation.
+The recommended approach is **category-grouped phases** (foundation composable -> layout audit -> forms and dialogs -> performance -> PWA polish -> conditional virtualization -> UAT sweep), continuing numbering from Phase 33. Net new dependencies are minimal: promote @vueuse/core from transitive to direct (0 KB net), add rollup-plugin-visualizer as a devDep, patch-bump Vue 3.5.18->3.5.34, and minor-bump PrimeVue 4.3.7->4.5.5 (smoke-test in a branch before merge). Everything else is local code/CSS/meta-tag changes.
 
-PocketBase has no offline SDK. Wallecx is and remains an online-only app. The PWA improvement is
-app-shell caching (instant repeat-visit load) and native home-screen feel -- not offline data
-access. Any feature requiring PocketBase API caching, Background Sync, or IndexedDB replication is
-out of scope and must be deferred to v3.x or later.
+The three highest-cost regression risks are (a) flipping registerType to autoUpdate and destroying unsaved CRUD input on a deploy; (b) regressing BR-2 barcode colors in a dark-mode/mobile CSS sweep so memberships fail at checkout counters; and (c) switching getFullList() to getList() for "mobile pagination" and tripping the locked PocketBase v0.29.x count-path 400 bug (D-31-B). All three are surfaced as REQUIREMENTS.md candidate REQ-IDs below.
 
----
+## Key Findings
 
-## Stack Additions
+### Recommended Stack
 
-Two new **devDependencies** only. Zero new runtime dependencies.
+Stack is **locked**; v4.3 adds only what the mobile-optimization capabilities require. Bundle wins come from splitting existing chunks (visualizer-driven), not from new libraries.
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `vite-plugin-pwa` | `^1.3.0` | Generates SW + manifest at build time; Vite 8 / Rolldown compatible (confirmed issue #918) |
-| `@vite-pwa/assets-generator` | latest | CLI: one SVG in, all icon sizes out via sharp (no Puppeteer) |
+**Stack additions:**
+- **@vueuse/core ^13.9.0 (promote to direct dep)** — already transitive via @vueuse/motion; unlocks useWindowSize, useScrollLock, useSwipe, useOnline, usePreferredReducedMotion, useMediaQuery. **0 KB net.**
+- **rollup-plugin-visualizer ^7.0.1 (devDep)** — bundle treemap report gated on ANALYZE=true; informs lazy-import decisions. **0 KB runtime.**
+- **cross-env (devDep)** — Windows-friendly ANALYZE=true flag for the new npm run analyze script.
 
-**Config files to create or modify:**
+**Version upgrades:**
+- **vue ^3.5.18 -> ^3.5.34** — patch only; pure reactivity/memory fixes. LOW risk.
+- **primevue ^4.3.7 -> ^4.5.5** (+ @primevue/auto-import-resolver, @primevue/forms lockstep) — minor; Drawer/Dialog/Timeline a11y fixes. **MEDIUM-LOW risk; branch smoke-test required** before merge.
+- **vite-plugin-pwa ^1.3.0** — already current; no change.
 
-| File | Action | Key Change |
-|------|--------|-----------|
-| `vite.config.ts` | Modify | Add `VitePWA()` to `plugins[]` after `tailwindcss()` |
-| `index.html` | Modify | Add `viewport-fit=cover`, `interactive-widget=resizes-content`, `theme-color`, `apple-touch-icon` link, iOS PWA meta tags; do NOT add `<link rel="manifest">` manually |
-| `vercel.json` | Create | `Cache-Control: no-cache` on `sw.js` + `manifest.webmanifest`; `Content-Type: application/manifest+json`; `Cache-Control: immutable` on `/assets/*`; catch-all rewrite to `/index.html` |
-| `env.d.ts` | Modify | Add `/// <reference types="vite-plugin-pwa/vue" />` for `virtual:pwa-register/vue` types |
-| `src/assets/main.css` | Modify | `@layer theme, base, primevue, components, utilities`; `overscroll-behavior: none` scoped to `@media (display-mode: standalone)` |
+**Rejected:** vue-virtual-scroller / @tanstack/vue-virtual (defer until measured — datasets too small), vite-imagetools / vite-plugin-image-optimizer (only 1-2 static images to compress), body-scroll-lock (unmaintained — use VueUse useScrollLock), vue-pwa-install (Vue 2-era wrapper around 30 lines).
 
-**Public assets to generate (`npx pwa-assets-generator --preset minimal-2023 public/branding_logo.svg`):**
-- `pwa-192x192.png` (purpose: any)
-- `pwa-512x512.png` (purpose: any)
-- `pwa-maskable-512x512.png` (purpose: maskable -- content in central 80%, navy background)
-- `apple-touch-icon-180x180.png`
+### Expected Features
 
----
+Drawn from 40+ catalogued features across 4 categories (Layout, Performance, Forms, PWA). Tier 1 = ship in v4.3; details in FEATURES.md.
 
-## Feature Table Stakes (must-haves for v2.1)
+**Must have (table stakes):**
+- **LT-01 44x44 touch-target audit** [Layout | S] — every interactive element across all 3 tabs.
+- **LT-03 Safe-area inset coverage** [Layout | S] — every fixed/overlay surface, both orientations; prerequisite for sticky surfaces and iOS status-bar black-translucent.
+- **LT-05 Sticky TabList + toolbar** [Layout | M] — pinned so long lists do not lose context.
+- **LT-08 Sticky action bars in all 4 manage dialogs** [Layout | M] — Save/Cancel always above the keyboard.
+- **FD-01 iOS 16px input font** [Forms | S] — single global @media (max-width: 640px) rule; the single most-cited iOS PWA bug.
+- **FD-03 inputmode / autocomplete / enterkeyhint sweep** [Forms | S] — keyboard correctness on every input.
+- **FD-04 DatePicker touchUI mode** [Forms | M] — full-screen modal calendar on mobile.
+- **FD-05 Camera capture on FileUpload** [Forms | S] — capture=environment for receipt/scan; PrimeVue passthrough verification needed.
+- **PF-02 Per-tab defineAsyncComponent** [Perf | M] — split VaccinationsTab / MembershipsTab / ExpensesTab from the WallecxApp.vue shell.
+- **PF-04 Skeleton states everywhere** [Perf | S] — match final layout dims to keep CLS <= 0.1.
+- **PWA-01 iOS standalone status-bar meta tags** [PWA | S] — apple-mobile-web-app-* + theme-color per color-scheme; index.html currently missing these.
+- **PWA-02 iOS splash screens** [PWA | M] — via existing @vite-pwa/assets-generator.
+- **PWA-04 Android beforeinstallprompt capture** [PWA | M] — listener at App.vue scope; UI in extended PwaInstallBanner.vue.
+- **PWA-05 PWA-UAT-01** [PWA | M] — deferred from Phase 22 V6; gated on PWA-01..04 + LT-03.
 
-- **Web App Manifest** -- `manifest.webmanifest` auto-generated by plugin; `name`, `short_name`,
-  `theme_color: #002244`, `background_color`, `display: standalone`,
-  `start_url: /projects/wallecx`, `scope: /`, 192+512 any icons + 512 maskable
-- **Service worker with app-shell precache** -- `vite-plugin-pwa` `generateSW`; precaches all
-  Vite output assets; instant repeat-visit load on bad mobile signal
-- **`navigateFallback: /index.html`** -- mandatory for SPA routing; without it, navigating to
-  `/projects/wallecx` offline = white screen
-- **`registerType: prompt`** -- do NOT use `autoUpdate`; both CRUD forms have unsaved state a
-  silent reload would destroy
-- **SW update toast** -- wire `useRegisterSW` from `virtual:pwa-register/vue` to a `vue-sonner`
-  toast with "Refresh" action; add `periodicSyncForUpdates: 3600`
-- **`NetworkOnly` for all PocketBase API calls** -- auth token in `localStorage` is inaccessible
-  to SW context; stale data risk is unacceptable for a personal vault
-- **`vercel.json` cache headers** -- `no-cache` on `sw.js` and manifest; `immutable` on
-  `/assets/*` hashed chunks
-- **iOS Add-to-Home-Screen instruction banner** (`PwaInstallBanner.vue`) -- iOS will never fire
-  `beforeinstallprompt`; show "Tap Share -> Add to Home Screen" when iOS UA detected and
-  `!window.navigator.standalone`; store dismiss in `localStorage`
-- **`navigator.storage.persist()`** -- call on mount in `WallecxApp.vue` to request storage
-  exemption from iOS 7-day eviction cap
-- **Auth validity check on mount** -- `if (!pb.authStore.isValid)` clear + redirect to `/login`
-  with toast; never silently land on blank state after iOS eviction
-- **Responsive card grids** -- 2-column at >=375px, 1-column at <340px;
-  `aspect-ratio: 1.586` (credit card ratio) for consistent height
-- **Touch targets >= 44px** -- audit: `MembershipCard.vue` tile, group panel close button,
-  Edit/Delete icon buttons, scan overlay close, tab triggers
-- **Safe-area insets** -- `env(safe-area-inset-*)` on `WallecxApp.vue` shell, scan overlay close
-  button, bottom-anchored UI
-- **Dialog `dvh` sizing for iOS keyboard** -- `style="width: 95vw; max-height: 80dvh;
-  overflow-y: auto"` on both CRUD dialogs; viewport meta needs `interactive-widget=resizes-content`
-- **`overscroll-behavior: none`** scoped to `@media (display-mode: standalone)` -- kills iOS
-  elastic bounce and Android pull-to-refresh
-- **Offline-state messaging** -- `navigator.onLine` watch in both tabs; PrimeVue `Message`
-  (warn severity) instead of blank list
+**Should have (differentiators):**
+- **PF-07 WebP receipt/scan upload** [Perf | S] — pass fileType image/webp to existing browser-image-compression.
+- **PF-09 Preconnect hints** [Perf | S] — DNS+TLS warm-up for PocketBase origin.
+- **PWA-07 Offline banner + retry** [PWA | S] — via useOnline.
+- **PWA-09 Manifest shortcuts** [PWA | S] — long-press Quick Actions (Add Expense etc.).
+- **FD-09 Unsaved-changes guard** [Forms | M] — confirm before discarding dirty form on backdrop tap.
 
----
+**Defer (locked anti-features or out-of-budget):**
+- **LT-11 Bottom-sheet snap points** — no PrimeVue primitive; complex; low payoff.
+- **PF-06 List virtualization** — instrument first; threshold >= 500 rendered rows.
+- **PWA-08 Standalone history-back integration** — complex; risky popstate handling.
+- **All PWA-AF / FD-AF / LT-AF entries** — explicitly locked out (autoUpdate SW, IndexedDB replica, push notifications, FAB, long-press menus, native select swap).
 
-## Feature Differentiators (nice-to-have, defer to v3.x)
+### Architecture Approach
 
-- Bottom sheet refactor for `MembershipDetail.vue` (current Dialog works; bottom sheet is
-  native-feeling but medium complexity)
-- Swipe-down gesture to dismiss bottom sheet (depends on bottom sheet first)
-- Dark mode selector fix (PrimeVue bug #7465; workaround exists but optional if no manual
-  toggle exposed in v2.1)
-- Push notifications (full milestone: iOS 16.4+ installed + server scheduler + EU restriction)
-- Swipe gestures on card tiles
-- Offline data access (PocketBase has no offline SDK; not achievable without full sync architecture)
-- Android custom install prompt `usePwaInstall.ts` (lower ROI for AU-iPhone audience)
-- Bottom navigation bar (only beneficial at 3+ tabs; currently 2 tabs)
-- Splash screen startup images (tedious PNG generation per iPhone screen size)
-- Periodic Background Sync / Background Fetch (not supported on iOS, unreliable on Android)
+v4.3 is a **thin lateral layer over the existing architecture.** No new collections, no new routes, no Pinia store, no design-token churn. The five integration surfaces are: one new composable (useMobileEnv), one new optional wrapper (BaseMobileDialog), one extended component (PwaInstallBanner), vite.config.ts build-target tweaks (async tab imports), and deferred virtualization. The shell-owns-data pattern (ExpensesTab -> ExpensesListView + ExpensesReportsView) is preserved verbatim.
 
----
+**Key architecture decisions (the load-bearing 6 of 11):**
 
-## Critical Pitfalls (must address in implementation)
+1. **A-43-1 useMobileEnv.ts extends, does NOT replace useIsMobile.ts.** Backward-compatible for 8 existing call sites; centralizes isMobile / isTablet / isStandalone / installPromptEvent / safeAreaInsets. New v4.3 code uses the new composable; existing code is not forced to migrate.
+2. **A-43-2 BaseMobileDialog.vue is per-dialog opt-in, NOT big-bang refactor.** Migrate ManageExpense -> ManageBudget -> ManageMembership -> ManageVaccination, one per phase-plan. ManageMembership is the highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135) and goes late.
+3. **A-43-4 beforeinstallprompt listener registers at App.vue scope, NOT WallecxApp.vue.** The event fires once on first page load; if the user navigates to /projects/wallecx AFTER the event fires, capture is lost. Module-scope singleton ref in useMobileEnv.ts solves this.
+4. **A-43-5 PwaInstallBanner.vue extended for iOS + Android in ONE component.** Splitting would duplicate dismissal storage, standalone detection, visual frame, safe-area calcs.
+5. **A-43-6 Per-tab defineAsyncComponent from WallecxApp.vue.** Initial chunk drops by ~2/3; first-click tab switch is sub-second; subsequent switches are cached.
+6. **A-43-9 Build order grouped by CATEGORY (not by tab).** One pattern established once and applied across surfaces is cheaper than rediscovering it tab-by-tab.
 
-1. **iOS 7-day storage eviction wipes PocketBase auth token (IOS-1, CRITICAL)** -- call
-   `navigator.storage.persist()` on mount; check `pb.authStore.isValid` on every
-   `WallecxApp.vue` mount; redirect gracefully to `/login` with toast; never show a silent
-   blank state.
+### Critical Pitfalls (5 of 8 critical + 21 moderate + 7 minor)
 
-2. **`navigateFallback` not configured causes white screen on offline SPA navigation
-   (ROUTER-1, CRITICAL)** -- `workbox.navigateFallback: 'index.html'` is mandatory; add
-   `navigateFallbackDenylist: [/^\/api/, /^\/_vercel/]` to prevent API calls from being
-   served `index.html`.
+1. **C-1 registerType drift to autoUpdate** -> silent SW reload destroys unsaved CRUD input. Lock prompt with inline LOCKED comment; REQ: NFR-PWA-AUTOUPDATE. **Owner: PWA polish phase.**
+2. **C-2 BR-2 barcode regression via dark-mode mobile CSS sweep** -> cream-on-navy bars unreadable at checkout. Add Vitest/Playwright snapshot guard on BarcodeDisplay.vue SVG fill; REQ: NFR-BR-2-PRESERVED. **Owner: Layout audit phase + PWA standalone phase.**
+3. **C-5 iOS auto-zoom on inputs <16px** -> page zooms in on focus and never zooms back. Confirmed in code (text-sm on ManageExpense.vue labels). Single global @media (max-width: 640px) rule on .p-inputtext, .p-textarea, .p-datepicker-input, .p-inputnumber-input, .p-select-label with font-size: 16px !important. REQ: NFR-IOS-NO-ZOOM. **Owner: Forms phase.**
+4. **C-4 100vh / h-screen measuring wrong on iOS/Android** -> sticky bottom controls offscreen under URL bar. Replace with 100dvh (svh fallback). REQ: NFR-DVH-NOT-VH. **Owner: Layout audit phase.**
+5. **C-7 getList() regression on wallecx_* collections** -> D-31-B count-path 400. Do NOT paginate; prefer client-side virtualization; if getList is unavoidable, skipTotal=true. REQ: CON-PB-COUNT-BUG. **Owner: Performance phase.**
+6. **C-6 Workbox maximumFileSizeToCacheInBytes 3 MiB silently skips bigger chunks** -> standalone PWA breaks offline days later. Add build-time chunk-size assertion. REQ: NFR-PWA-PRECACHE-FITS. **Owner: Performance phase.**
+7. **M-3 Drawer swipe-down-to-close destroys unsaved form input** -> guard via PrimeVue Drawer config + dirty-state confirmation. REQ: NFR-DRAWER-DIRTY-GUARD. **Owner: Forms phase.**
+8. **C-3 Duplicate requestKey from new mobile refetch (pull-to-refresh, focus-back)** -> PocketBase SDK auto-cancels, list renders empty. New mobile fetch paths require distinct requestKeys. REQ: NFR-REQUESTKEY-UNIQUE. **Owner: Performance phase + any layout phase adding a refresh affordance.**
 
-3. **`registerType: autoUpdate` destroys unsaved form data (SW-1, CRITICAL)** -- use `prompt`;
-   wire `needRefresh` to a non-blocking `vue-sonner` toast with "Refresh" action; never use
-   `autoUpdate` when CRUD dialogs with unsaved state are present.
+Full pitfall matrix (8 critical + 21 moderate + 7 minor) and 16 candidate REQ-IDs in PITFALLS.md.
 
-4. **PrimeVue Dialog clipped by iOS soft keyboard (DLG-1, HIGH)** -- `max-height: 80dvh;
-   overflow-y: auto` on both CRUD dialogs; viewport meta requires
-   `interactive-widget=resizes-content`; must test on real iOS device (simulator keyboard does
-   not resize viewport).
+## Implications for Roadmap
 
-5. **Vercel caching `sw.js` blocks all future SW updates (SW-2, HIGH)** -- `vercel.json` with
-   `Cache-Control: no-cache` on `sw.js` and `manifest.webmanifest` must be committed in the same
-   deployment as the first service worker.
+Suggested phase structure (continuing numbering from v4.2 Phase 32), category-grouped per A-43-9:
 
-6. **Tailwind utilities silently lose to PrimeVue styles (CSS-2, MEDIUM)** -- declare
-   `@layer theme, base, primevue, components, utilities` in `src/assets/main.css` before any
-   responsive layout work; otherwise Tailwind responsive classes on PrimeVue components have
-   no visible effect.
+### Phase 33 — Mobile foundation: useMobileEnv + PWA install capture
+**Rationale:** App.vue listener for beforeinstallprompt MUST register before user navigates to Wallecx (event fires once on first page load). Foundation composable unblocks every later phase.
+**Delivers:** src/composables/useMobileEnv.ts; App.vue listener wiring; extended PwaInstallBanner.vue (Android path); spec files for both. useIsMobile.ts kept as-is for backward compat.
+**Addresses:** PWA-04, partial PWA-01 prep; unblocks LT-03/05/08 by exposing safeAreaInsets.
+**Avoids:** Late event-listener registration silently dropping the Android install prompt.
 
----
+### Phase 34 — Layout audit + 44px touch targets + safe-area + horizontal-scroll sweep
+**Rationale:** Fix the shell before the dialogs — dialog content inherits the layout frame. Establishes safe-area inset wiring required by Phase 35 sticky bars and Phase 37 PWA status-bar black-translucent.
+**Delivers:** Per-tab scoped CSS fixes; 100dvh migration; touch-target audit; sticky TabList + toolbar; horizontal-scroll prevention sweep; MultiSelect chip cap; DatePicker touchUI; AttachmentPreview pinch-zoom check.
+**Addresses:** LT-01, LT-02, LT-03, LT-04, LT-05, LT-06, LT-07.
+**Avoids:** C-2 BR-2 regression (barcode visual check), C-4 100vh trap, M-1 viewport-fit lock, M-4 MultiSelect chip overflow, M-5 DatePicker touch, M-7 Tabs scroll discoverability.
 
-## Architecture Notes
+### Phase 35 — Forms and dialogs on small screens (BaseMobileDialog rollout + iOS 16px fix)
+**Rationale:** Sticky action bar depends on Phase 34 safe-area wiring; iOS 16px fix is one CSS rule but the per-dialog BaseMobileDialog migration is the risky part. Order: ManageExpense -> ManageBudget -> ManageMembership (ColorPicker risk, late) -> ManageVaccination.
+**Delivers:** BaseMobileDialog.vue; global @media (max-width: 640px) input-font-size rule in wallecx-overrides.css; sticky bottom action bars in all 4 Manage* dialogs; per-field inputmode/autocomplete/enterkeyhint; camera capture on FileUpload; focus auto-scroll; Drawer dirty-state guard.
+**Addresses:** LT-08, LT-09, FD-01, FD-02, FD-03, FD-04 (touchUI applied), FD-05, FD-06, FD-07. Tier-2 if budget: FD-08, FD-09, FD-10.
+**Avoids:** C-5 iOS zoom-on-focus, M-3 Drawer swipe-to-close eats form, M-13 card_color hash regression (ManageMembership ColorPicker), M-14 ConfirmDialog singleton, M-15 z-index collision.
 
-- `src/main.ts` and `src/router/index.ts`: **NO CHANGES needed**
-- `manifest.start_url: '/projects/wallecx'` -- opens vault directly on launch; router guard
-  redirects to `/login` if session expired
-- `scope: '/'` -- covers the entire origin; do not scope to `/projects/wallecx` (would break
-  cross-route navigation)
-- All PocketBase API calls: NetworkOnly (auth token in localStorage, stale data risk)
-- `<link rel="manifest">` auto-injected at build time -- do NOT add manually
-- SW registration script also auto-injected -- do NOT add manual `navigator.serviceWorker.register()`
-  in `main.ts`
+### Phase 36 — Mobile performance: bundle splits + asset compression + measurement
+**Rationale:** Perf work is non-functional and easier to verify once visual layer (33-35) is stable. Visualizer-driven, not speculative.
+**Delivers:** rollup-plugin-visualizer wired (gated on ANALYZE=true); WallecxApp.vue tabs converted to defineAsyncComponent; per-Manage* defineAsyncComponent; PWA icon regeneration; about-me-photo.png one-time squoosh compression; WebP upload format; preconnect hints; performance.mark/measure instrumentation; payload-size + duration measurement per Wallecx collection on mobile cellular (REQ NFR-PERF-MEASURE).
+**Addresses:** PF-01, PF-02, PF-03, PF-05; Tier-2: PF-07, PF-08, PF-09.
+**Avoids:** C-6 3 MiB precache cap, C-7 getList D-31-B trap, M-17 chart plugin inflation, M-18 image-compression on main thread, M-19 getFullList scale, M-20 auto-import bundle inflation.
 
-**New components required:**
-- `PwaInstallBanner.vue` -- iOS-specific ATH instruction banner in `WallecxApp.vue`;
-  auto-hides if `window.navigator.standalone === true`; dismissible with `localStorage` flag
-- `PwaUpdateNotifier.vue` (or wired in `App.vue`) -- `useRegisterSW` from
-  `virtual:pwa-register/vue`; shows `vue-sonner` toast on `needRefresh`
+### Phase 37 — PWA standalone polish + install flow UAT
+**Rationale:** Requires Phase 33 listener + Phase 34 safe-area + Phase 36 reduced bundle to feel native-grade. iOS meta tags + splash + theme-color land here.
+**Delivers:** apple-mobile-web-app-* meta tags in index.html; apple-touch-startup-image set via @vite-pwa/assets-generator; per-color-scheme theme-color meta; display-mode standalone CSS tweaks; SW-update toast safe-area verification; manifest shortcuts (Tier-2); offline banner via useOnline (Tier-2); banner-dismissal frequency rule.
+**Addresses:** PWA-01, PWA-02, PWA-03, PWA-06, PWA-10; Tier-2: PWA-07, PWA-09.
+**Avoids:** C-1 registerType drift (re-affirm LOCKED), C-8 manifest scope narrowing, M-8 banner fatigue, M-10 iOS 7-day eviction UX, M-11 splash variants, M-12 theme-color mismatch, N-7 iOS standalone capture inconsistency.
 
-**Caching architecture:**
+### Phase 38 — PWA-UAT-01 (deferred from Phase 22 V6) + mobile UAT sweep
+**Rationale:** Natural milestone-close UAT. Mirrors v4.1 Phase 30 sweep structure. Real-device iOS + Android Chrome required.
+**Delivers:** PWA-UAT-01-HUMAN-UAT.md with viewport-tagged scenarios across phases 33-37; iOS A2HS install + force-quit + relaunch + dark-mode toggle + auth survival; Android beforeinstallprompt install; standalone in-app navigation; barcode visual check in dark-mode standalone.
+**Addresses:** PWA-05.
+**Avoids:** Final guardrail against C-2, C-1, M-8, M-10 in real installed standalone mode.
 
-| Request | Strategy | Rationale |
-|---------|---------|-----------|
-| Built JS/CSS/HTML chunks (content-hashed) | CacheFirst (precache) | Static, immutable filenames |
-| `index.html`, `sw.js`, manifest | No-cache via `vercel.json` | Must always be fresh for SW update propagation |
-| PocketBase auth + collection API | NetworkOnly | Auth security; data freshness; offline not a goal |
-| PocketBase file/thumbnail URLs | NetworkOnly | Short-lived signed URLs |
-| Public PNG/SVG icons | CacheFirst (precache, auto) | Included in precache manifest automatically |
+### Phase 38b (conditional) — List virtualization
+**Rationale:** Only triggered if Phase 36 instrumentation reveals >16ms scroll jank on long-running expense logs or any collection exceeds ~500 rendered rows. Likely skipped.
+**Delivers:** @tanstack/vue-virtual integration in ONE long list view (probably ExpensesListView); virtual scroller consumes the already-sorted array.
+**Addresses:** PF-06.
+**Avoids:** M-16 virtualization breaks sessionStorage sort-restore order.
 
----
+### Phase Ordering Rationale
 
-## Build Order
+- **Foundation before audit:** useMobileEnv must land first so Phase 34/35/37 can consume safeAreaInsets, isStandalone, installPromptEvent. App.vue listener registration ordering matters for first-page-load capture (A-43-4).
+- **Shell before dialogs:** Layout audit (34) fixes the frame; forms (35) fix the content. Reversing the order would mean re-doing dialog work after the shell moves.
+- **Performance after visual:** Bundle splits and async components are easier to verify (and easier to detect regressions in) once the visual surface is stable.
+- **PWA polish last (before UAT):** Status-bar / splash / install affordance want the safe-area wiring (34), the sticky bars (35), and the reduced bundle (36) all in place before UAT.
+- **Category grouping (A-43-9):** Each phase establishes ONE pattern across all 3 tabs; tab-by-tab ordering would rediscover the same patterns 3x and produce less reviewable diffs.
 
-**Phase 14 (PWA Foundation)** before **Phase 15 (Mobile Layouts + iOS Banner)**
+### Research Flags
 
-Phase 14 is prerequisite because:
-1. `dvh` viewport behaviour in standalone mode cannot be correctly verified without the SW active
-   on a real device
-2. `vercel.json` cache headers must ship in the same deployment as the first SW -- deploying SW
-   without headers means Vercel may cache `sw.js` indefinitely
-3. `navigator.storage.persist()` + auth validity check are PWA-foundation concerns that must be
-   live from the first PWA-capable deployment
+**Phases likely needing deeper research during planning (/gsd-research-phase):**
+- **Phase 35** — PrimeVue 4.5.5 minor-upgrade smoke test (Drawer body-scroll lock parity with Dialog; FileUpload capture passthrough syntax; touchUI on DatePicker inside Drawer); ColorPicker direct-v-model survival through BaseMobileDialog slot rendering.
+- **Phase 36** — rollup-plugin-visualizer output review against locked v2.1 D-09 3 MiB cap; concrete chunk-split decisions per-tab.
+- **Phase 37** — apple-touch-startup-image media-query list for v4.3 viewports (390x844, 360x780, 768x1024); @vite-pwa/assets-generator regeneration commands.
 
----
+**Phases with standard patterns (skip deep research):**
+- **Phase 33** — useMobileEnv is a straightforward composable; beforeinstallprompt capture is a documented 30-line pattern.
+- **Phase 34** — Tailwind min-h-[44px] + 100dvh + overflow-x-hidden audit; no new tech.
+- **Phase 38** — UAT only; mirrors v4.1 Phase 30 workflow.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | `vite-plugin-pwa` v1.3.0 Vite 8 compatibility confirmed via issue #918 + release notes |
-| Features | HIGH | iOS PWA constraints from WebKit official blog + MDN; PocketBase no-offline confirmed via GitHub discussion #4379 |
-| Architecture | HIGH | Official vite-plugin-pwa docs cover all integration points; no-change conclusion for main.ts/router verified |
-| Pitfalls | HIGH (iOS/SW) / MEDIUM (CSS) | iOS storage from webkit.org; Dialog keyboard from GitHub issue tracker; CSS layer from community |
+| Stack | HIGH | Direct npm ls verification; current package versions confirmed against vuejs.org, PrimeVue releases, vite-pwa, rollup-plugin-visualizer. One MEDIUM flag: PrimeVue 4.3->4.5 minor reads as pure fixes but warrants branch smoke-test. |
+| Features | HIGH | Apple HIG, Material 3, web.dev Core Web Vitals, MDN PWA all converge; classifications cross-checked against existing Wallecx code state. Two MEDIUM flags: FD-05 PrimeVue FileUpload capture passthrough exposure on basic mode; FD-07 PrimeVue 4 Drawer body-scroll lock parity with Dialog. |
+| Architecture | HIGH | All 11 decisions grounded in source files read directly (WallecxApp.vue, PwaInstallBanner.vue, useIsMobile.ts, vite.config.ts, wallecx-overrides.css, App.vue, main.ts). |
+| Pitfalls | HIGH | 8 critical + 21 moderate + 7 minor verified against MDN/CanIUse, Workbox docs, PrimeVue 4 docs, WebKit notes, and STATE.md locked invariants. Codebase grep evidence confirmed C-5 trap directly in ManageExpense.vue (text-sm on inputs). |
 
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH.
 
-### Gaps to Address
+### Gaps to Address (open questions for Requirements / Roadmap step)
 
-- **Maskable icon design:** `branding_logo.svg` is a wide-format nav-bar logo, not a square
-  mark. Verify safe-zone compliance with Maskable.app before committing; may need a square-safe
-  variant. Design task, but blocks icon generation in Phase 14.
-- **PocketBase host URL:** Read exact hostname from `VITE_API_BASE_URL` in `.env.production`
-  before writing the workbox `NetworkOnly` urlPattern.
-- **Rubik font loading:** If Rubik is loaded from Google Fonts CDN (not bundled), add a separate
-  CacheFirst rule for `fonts.googleapis.com` / `fonts.gstatic.com`. Inspect `src/assets/main.css`.
-- **`interactive-widget=resizes-content` global impact:** Test the fullscreen scan overlay and
-  Larga (Leaflet) map view to confirm they are unaffected when the keyboard is closed.
-
----
+- **Production record counts unknown.** Wallecx is a personal vault; per-collection record counts (vaccinations / memberships / expenses) are not measured. Phase 36 instrumentation (REQ NFR-PERF-MEASURE) closes this gap and determines whether Phase 38b virtualization is triggered. Roadmap must surface this measurement as the gating signal.
+- **PrimeVue 4.3->4.5 minor-upgrade smoke test scope.** Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect chip behavior must be re-verified in a branch before merge. Recommendation: run the upgrade as the FIRST plan in Phase 35 (forms phase touches dialogs the most).
+- **Virtualization defer-vs-include decision.** Currently deferred (Phase 38b conditional). The roadmap should explicitly require Phase 36 instrumentation report before Phase 38 milestone-close to either close the loop (no virtualization needed) or trigger Phase 38b.
+- **Bundle composition of current Wallecx critical path.** Visualizer report from Phase 36 will reveal whether leaflet, quill, vue-pdf-embed, dompurify, or axios are inadvertently in the Wallecx first-paint chunk. Roadmap should treat the visualizer output as the input to phase-36 plan sequencing, not as a milestone-close-only artifact.
+- **PWA-UAT-01 device coverage.** Requires real iOS + Android devices; iPad-820 viewport explicit. Roadmap should call out the device matrix in Phase 38 acceptance criteria.
+- **16 candidate REQ-IDs from PITFALLS.md** need conversion to REQUIREMENTS.md entries; some bind every phase (e.g. NFR-BR-2-PRESERVED, CON-CONFIRMDIALOG-SINGLETON), others bind a specific phase (e.g. NFR-IOS-NO-ZOOM -> Phase 35).
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- vite-plugin-pwa official docs (vite-pwa-org.netlify.app) -- plugin config, generateSW,
-  navigateFallback, Vercel deployment, assets generator
-- vite-plugin-pwa GitHub issue #918 -- Vite 8 / Rolldown peer dependency compatibility confirmed
-- WebKit Blog -- Updates to Storage Policy -- iOS 7-day storage eviction, navigator.storage.persist()
-- MDN Web Docs -- Storage quotas, StorageManager.persist(), env(safe-area-inset-*), Screen Wake Lock API
-- web.dev -- Maskable icons, promote-install patterns, add-manifest
-- PrimeVue GitHub issues #7465, #1855, #3972 -- dark mode selector bug; Dialog keyboard/mobile issues
-- PocketBase GitHub discussion #4379 -- confirmed no offline SDK support
+- .planning/research/STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md (researched 2026-05-26)
+- .planning/PROJECT.md, .planning/STATE.md (locked architectural invariants v2.0-v4.2)
+- Direct source-file reads: WallecxApp.vue, PwaInstallBanner.vue, useIsMobile.ts, vite.config.ts, wallecx-overrides.css, App.vue, main.ts, router/index.ts, ManageExpense.vue
+- Apple Human Interface Guidelines (44pt touch target, safe-area insets, apple-mobile-web-app-* meta tags, viewport-fit=cover)
+- web.dev — Core Web Vitals + INP (LCP <=2.5s / INP <=200ms / CLS <=0.1) and Installation prompt guide
+- MDN — meta viewport interactive-widget, apple-mobile-web-app-status-bar-style, Web App Manifest, beforeinstallprompt
+- vite-plugin-pwa 1.3.0 docs + @vite-pwa/assets-generator 1.0.2
+- PrimeVue 4 docs — Drawer / Dialog / DatePicker (touchUI) / FileUpload / MultiSelect / Tabs
+- @vueuse/core docs — useWindowSize, useScrollLock, useSwipe, useOnline, usePreferredReducedMotion
+- CSS-Tricks + WebKit notes — iOS 16px input-zoom prevention
+- Workbox 7.x docs — maximumFileSizeToCacheInBytes precache skip semantics
+- CanIUse / MDN — dvh/svh/lvh viewport units (Safari 15.4+, Chrome 108+)
 
 ### Secondary (MEDIUM confidence)
-- MagicBell PWA iOS Limitations 2026 -- 7-day cap, EU DMA impact, storage quota
-- Francisco Moretti -- dvh and interactive-widget keyboard fix
-- Gearbox Solutions -- Tailwind 4 + PrimeVue 4 CSS layer configuration
-- Vercel Community -- SPA subpath 404 and service worker interaction
+- interactive-widget=resizes-content Android Chrome keyboard semantics (Chromium-only; iOS uses legacy overlay)
+- iOS 7-day localStorage eviction (ITP / WebKit Storage Standard) — anecdotal navigator.storage.persist() success rate on iOS
+- browser-image-compression Web Worker fallback behavior under Vite worker config edge cases
+- Material Design 3 — 48dp touch target (corroborates HIG 44pt floor)
+- Wallecx per-user data scale estimates (10-40 vaccinations, 5-30 memberships, 50-500 expenses) — inferred from personal vault scope
+
+### Tertiary (LOW confidence)
+- Vendor chunk composition (2.57 MiB raw / ~700 KiB gzipped) — quoted from v2.1 Plan 14-04 notes; needs visualizer verification in Phase 36
+- iOS standalone PWA capture=environment reliability across iOS 17.x builds — WebKit bug history; mitigate by offering both Take photo and Choose from gallery
 
 ---
-*Research completed: 2026-05-14*
+*Research completed: 2026-05-26*
 *Ready for roadmap: yes*
