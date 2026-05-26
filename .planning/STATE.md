@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between-milestones
-stopped_at: v4.2 Budget Recovery & Hardening archived 2026-05-26; awaiting /gsd-new-milestone for next cycle
-last_updated: "2026-05-26T06:00:00.000Z"
+milestone: v4.3
+milestone_name: Wallecx Mobile Optimization
+status: defining-requirements
+stopped_at: PROJECT.md + STATE.md updated; REQUIREMENTS.md + ROADMAP.md pending
+last_updated: "2026-05-26T07:00:00.000Z"
 last_activity: 2026-05-26
 progress:
   total_phases: 0
@@ -16,21 +16,22 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-26 — v4.2 Budget Recovery & Hardening shipped + archived. BUG-01 (collection re-created via paste-back gated Admin UI flow) and BUG-02 (independent try/catches in ExpensesTab.vue) both closed. New D-13 architectural invariant locked: "Admin-UI checkpoints require text paste-back + downstream smoke verify." Awaiting `/gsd-new-milestone` for next cycle.
+**Last updated:** 2026-05-26 — v4.3 Wallecx Mobile Optimization started. Goal: make Wallecx feel native-grade on mobile (layout & touch targets, perf, forms/dialogs on small screens, PWA install + standalone polish). Scope locked to mobile; HEALTH-01, UAT-28/29-CLOSE, PB-REALTIME explicitly deferred. Currently defining requirements.
 
 ## Project Reference
 
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Between milestones. Next milestone candidates: HEALTH-01 (boot-time collection health check), UAT-28-CLOSE + UAT-29-CLOSE (16 deferred UAT scenarios), PB-REALTIME (subscribe across all wallecx_* collections).
+**Current focus:** v4.3 Wallecx Mobile Optimization — Wallecx-wide mobile audit (Vaccinations + Memberships + Expenses List + Reports), mobile performance, forms & dialogs on small screens, PWA install + standalone polish. Test viewports: iOS Safari ~390px, Android Chrome ~360–412px, iPad ~768–820px.
 
 ## Current Position
 
-**Milestone:** None active (v4.2 archived 2026-05-26)
-**Status:** Between milestones — run `/gsd-new-milestone` to start next cycle
-**Phase:** — (none active)
-**Last activity:** 2026-05-26
+**Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
+**Status:** Defining requirements (PROJECT.md + STATE.md updated; REQUIREMENTS.md + ROADMAP.md pending)
+**Phase:** Not started
+**Plan:** —
+**Last activity:** 2026-05-26 — Milestone v4.3 started
 
 ## Shipped Milestones Summary
 

@@ -18,13 +18,25 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 If everything else fails, these capabilities must work: the vaccination history list (with attachment preview), the membership card grid (with barcode scan overlay), and the expenses list with reporting + budget comparison.
 
-## Current State: v4.2 Shipped — Planning Next Milestone
+## Current Milestone: v4.3 Wallecx Mobile Optimization
+
+**Goal:** Make Wallecx feel native-grade on mobile — tighten layout & touch targets, drop perceived load time on small-screen devices, and polish the PWA install + standalone experience.
+
+**Target features:**
+- Wallecx-wide mobile layout & touch-target audit across all 3 tabs (Vaccinations, Memberships, Expenses List + Reports) — responsive grids, 44px tap targets, bottom sheets, safe-area insets, no horizontal scroll, modal sizing
+- Mobile performance improvements — bundle size, lazy-loading, image compression, first paint, list virtualization on long lists
+- Forms & dialogs on small screens — Drawer-vs-Dialog mobile split refinement, sticky action bars, iOS 16px input-font fix, scroll trapping
+- PWA install + standalone polish — iOS standalone, install banner, safe-area insets, app-icon polish
+
+**Test viewports:** iOS Safari (~390px), Android Chrome (~360–412px), Tablet (~768–820px)
+
+**Explicitly deferred from v4.3 scope:** HEALTH-01 (boot-time collection health check), UAT-28-CLOSE + UAT-29-CLOSE (16 deferred UAT scenarios), PB-REALTIME (uniform `wallecx_*` realtime subscribe). v4.3 stays mobile-focused.
+
+## Previous State: v4.2 Shipped 2026-05-26
 
 **Latest shipped:** v4.2 Budget Recovery & Hardening (2026-05-26) — closed two production-visible bugs discovered after v4.1 ship. BUG-01: re-created the missing `wallecx_expense_budgets` PocketBase collection via a paste-back gated Admin UI flow that replaced Phase 28-01's trust-based "approved" signal. BUG-02: refactored `ExpensesTab.vue` `onMounted` into independent try/catches so a budgets-only failure no longer fires the misleading `'Failed to load expenses…'` toast or blocks the expenses list. Locked new architectural invariant D-13 ("Admin-UI checkpoints require text paste-back + downstream smoke verify") that prevents the silent-no-op trust-based-checkpoint failure mode project-wide. One PocketBase v0.29.x count-path bug discovered + documented in deviation D-31-B (workaround via `getFullList()` or `getList(p, pp, { skipTotal: true })`).
 
 **Previously shipped:** v4.1 Gap Resolution & Feature Completeness (2026-05-25) — closed deferred code-quality items (WR-01/02/03), added JSON exports for memberships and expenses, shipped budget tracking (Manage Budgets dialog + actual-vs-budget reports) and period-over-period comparison line, then ran a structured UAT sweep over 8 phases (80/82 in-scope scenarios passed, BR-2 barcode invariant verified twice, regression floor of 49/49 tests intact).
-
-**Next milestone candidates (v4.3+):** HEALTH-01 (code-level collection health check on app boot), UAT-28-CLOSE + UAT-29-CLOSE (walk through 16 deferred UAT scenarios from Phases 28/29), PB-REALTIME (PocketBase realtime subscribe applied uniformly across all `wallecx_*` collections — captured during Phase 32 discussion).
 
 <details>
 <summary>v4.1 milestone goal (shipped 2026-05-25)</summary>
@@ -123,7 +135,7 @@ If everything else fails, these capabilities must work: the vaccination history 
 
 ### Active
 
-(None — v4.2 just shipped. Next milestone TBD via `/gsd-new-milestone`.)
+v4.3 Wallecx Mobile Optimization — requirements TBD (REQUIREMENTS.md to be created in the next workflow step). Scope: Wallecx-wide mobile layout & touch-target audit, mobile performance, forms & dialogs on small screens, PWA install + standalone polish.
 
 ### Future candidates
 
@@ -260,4 +272,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-26 after v4.2 Budget Recovery & Hardening milestone. Both BUG requirements closed: BUG-01 (collection re-created via paste-back gated Admin UI flow) and BUG-02 (ExpensesTab.vue onMounted refactored to independent try/catches). New project-level architectural invariant D-13 ("Admin-UI checkpoints require text paste-back + downstream smoke verify") locked into STATE.md, structurally preventing the trust-based-checkpoint silent-no-op failure mode that caused BUG-01. PocketBase v0.29.x count-path bug discovered + documented (D-31-B). Next milestone TBD via `/gsd-new-milestone`; deferred candidates include HEALTH-01, UAT-28/29-CLOSE, and PB-REALTIME.*
+*Last updated: 2026-05-26 — v4.3 Wallecx Mobile Optimization milestone started. Goal: make Wallecx feel native-grade on mobile across all 3 tabs and the PWA install/standalone surfaces. Scope locked to mobile (HEALTH-01, UAT-28/29-CLOSE, PB-REALTIME explicitly deferred to a later milestone). Target viewports: iOS Safari ~390px, Android Chrome ~360–412px, iPad ~768–820px. REQUIREMENTS.md + ROADMAP.md next.*
