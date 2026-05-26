@@ -23,7 +23,7 @@ const isExporting = ref(false)
 // Phase 28 — budgets owned by the shell (CONTEXT.md "Budget data ownership"); passed to Reports view.
 const budgets = ref<ExpenseBudget[]>([])
 
-async function loadBudgets(): Promise<void> {
+async function loadBudgets(opts: { context: 'mount' | 'refresh' } = { context: 'refresh' }): Promise<void> {
   try {
     budgets.value = await pb
       .collection('wallecx_expense_budgets')
@@ -31,7 +31,10 @@ async function loadBudgets(): Promise<void> {
         requestKey: 'expense-budgets-getFullList',  // STATE.md invariant — distinct key
       })
   } catch (e: unknown) {
-    toast.error('Failed to refresh budgets. Please reload the page.')
+    const msg = opts.context === 'mount'
+      ? 'Failed to load budgets.'
+      : 'Failed to refresh budgets after save. Reload to see changes.'
+    toast.error(msg)
     console.error('ExpensesTab: loadBudgets failed', e)
   }
 }
@@ -67,18 +70,13 @@ onMounted(async () => {
         sort: '-expense_date,-created',
         requestKey: 'expenses-getFullList',  // STATE.md: must not collide with other collection keys
       })
-    // Phase 28 — second fetch for budgets. Distinct requestKey per RESEARCH.md Pitfall 1.
-    budgets.value = await pb
-      .collection('wallecx_expense_budgets')
-      .getFullList<ExpenseBudget>({
-        requestKey: 'expense-budgets-getFullList',
-      })
   } catch (e: unknown) {
     toast.error('Failed to load expenses. Pull to refresh or reload the page.')
     console.error('ExpensesTab: getFullList failed', e)
   } finally {
     isLoading.value = false
   }
+  await loadBudgets({ context: 'mount' })
 })
 
 function openManage(record: Expenses | null) {
