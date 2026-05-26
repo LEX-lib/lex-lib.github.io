@@ -67,6 +67,7 @@ Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [ ] Not sta
 - **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
 - **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
+- **Admin-UI checkpoints require text paste-back + downstream smoke verify.** When a phase configures a live external artifact (PocketBase collection schema, rules, env vars, dashboard settings), the checkpoint MUST require the user to paste back the actual configured values as text AND a code-side smoke verification must run against the live system. Acknowledgment-only signals ("approved", "done") are insufficient. See BUG-01 post-mortem: Phase 28-01 Task 1 → Phase 31.
 
 ### v2.1 PWA Architectural Decisions (new)
 
