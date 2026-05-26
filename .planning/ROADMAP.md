@@ -146,7 +146,7 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 
 ### v4.2 Budget Recovery & Hardening (Phases 31–32) — IN PROGRESS
 
-- [ ] **Phase 31: Re-create wallecx_expense_budgets PocketBase collection** — Manual Admin UI step per Phase 28-01 spec + code-side smoke read verification (BUG-01)
+- [x] **Phase 31: Re-create wallecx_expense_budgets PocketBase collection** — Manual Admin UI step per Phase 28-01 spec + code-side smoke read verification (BUG-01) — 2026-05-26
 - [ ] **Phase 32: Decouple budgets fetch in ExpensesTab.vue** — Independent try/catches with accurate toast copy; graceful degradation when budgets fail (BUG-02)
 
 ---
@@ -216,7 +216,7 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 | 28. Budget Tracking | v4.1 | 3/3 | Complete (UAT deferred) | 2026-05-25 |
 | 29. Period Comparison | v4.1 | 1/1 | Complete (UAT deferred) | 2026-05-25 |
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
-| 31. Re-create wallecx_expense_budgets collection | v4.2 | 0/? | Not started | — |
+| 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 0/? | Not started | — |
 
 ---

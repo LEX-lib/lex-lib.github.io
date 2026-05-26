@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Budget Recovery & Hardening
 status: executing
-stopped_at: Phase 31 context gathered (13 decisions captured in 31-CONTEXT.md)
-last_updated: "2026-05-26T02:39:12.894Z"
+stopped_at: Phase 31 complete (BUG-01 closed via paste-back gated Admin UI flow; D-13 invariant locked in STATE.md)
+last_updated: "2026-05-26T03:15:00.000Z"
 last_activity: 2026-05-26
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -28,13 +28,13 @@ progress:
 ## Current Position
 
 **Milestone:** v4.2 — Budget Recovery & Hardening (STARTED 2026-05-25)
-**Status:** Ready to execute
-**Phase:** 31 (not started)
+**Status:** Phase 31 complete — ready to execute Phase 32
+**Phase:** 32 (not started)
 **Last activity:** 2026-05-26
 
 ```
-v4.2 Progress: [__________] 0% (0/2 phases)
-Phase 31: Re-create wallecx_expense_budgets PB collection (BUG-01)   [ ] Not started
+v4.2 Progress: [#####_____] 50% (1/2 phases)
+Phase 31: Re-create wallecx_expense_budgets PB collection (BUG-01)   [x] Complete 2026-05-26
 Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [ ] Not started
 ```
 
