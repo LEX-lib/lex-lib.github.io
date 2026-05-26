@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Budget Recovery & Hardening
-status: executing
-stopped_at: Phase 32 planned (1 plan, 1 wave; ready to execute)
-last_updated: "2026-05-26T04:10:00.000Z"
+status: shipped
+stopped_at: v4.2 Budget Recovery & Hardening SHIPPED (BUG-01 + BUG-02 both closed)
+last_updated: "2026-05-26T05:00:00.000Z"
 last_activity: 2026-05-26
 progress:
   total_phases: 2
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 50
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -27,15 +27,15 @@ progress:
 
 ## Current Position
 
-**Milestone:** v4.2 — Budget Recovery & Hardening (STARTED 2026-05-25)
-**Status:** Phase 32 planned — ready to execute (1 plan)
-**Phase:** 32 (planned)
+**Milestone:** v4.2 — Budget Recovery & Hardening (SHIPPED 2026-05-26)
+**Status:** Milestone complete — BUG-01 + BUG-02 both closed
+**Phase:** — (none active)
 **Last activity:** 2026-05-26
 
 ```
-v4.2 Progress: [#####_____] 50% (1/2 phases)
+v4.2 Progress: [##########] 100% (2/2 phases) — SHIPPED
 Phase 31: Re-create wallecx_expense_budgets PB collection (BUG-01)   [x] Complete 2026-05-26
-Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [ ] Not started
+Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [x] Complete 2026-05-26
 ```
 
 ## Shipped Milestones Summary
@@ -52,6 +52,7 @@ Phase 32: Decouple budgets fetch in ExpensesTab.vue (BUG-02)         [ ] Not sta
 | v3.0 Site-Wide Dark Mode | 19–22 | 7 | 2026-05-19 |
 | v4.0 Daily Expense Tracker | 23–26 | 9 | 2026-05-22 |
 | v4.1 Gap Resolution & Feature Completeness | 27–30 | 15 | 2026-05-25 |
+| v4.2 Budget Recovery & Hardening | 31–32 | 2 | 2026-05-26 |
 
 ## Accumulated Context
 

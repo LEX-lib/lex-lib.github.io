@@ -15,7 +15,7 @@
 - ✅ **v3.0 Site-Wide Dark Mode** — Phases 19–22 (shipped 2026-05-19) — [archive](milestones/v3.0-ROADMAP.md)
 - ✅ **v4.0 Daily Expense Tracker** — Phases 23–26 (shipped 2026-05-22) — [archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Gap Resolution & Feature Completeness** — Phases 27–30 (shipped 2026-05-25) — [archive](milestones/v4.1-ROADMAP.md)
-- 🔄 **v4.2 Budget Recovery & Hardening** — Phases 31–32 (in progress)
+- ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (shipped 2026-05-26)
 
 ## Phases
 
@@ -144,10 +144,10 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 
 ---
 
-### v4.2 Budget Recovery & Hardening (Phases 31–32) — IN PROGRESS
+### v4.2 Budget Recovery & Hardening (Phases 31–32) — SHIPPED 2026-05-26
 
 - [x] **Phase 31: Re-create wallecx_expense_budgets PocketBase collection** — Manual Admin UI step per Phase 28-01 spec + code-side smoke read verification (BUG-01) — 2026-05-26
-- [ ] **Phase 32: Decouple budgets fetch in ExpensesTab.vue** — Independent try/catches with accurate toast copy; graceful degradation when budgets fail (BUG-02)
+- [x] **Phase 32: Decouple budgets fetch in ExpensesTab.vue** — Independent try/catches with accurate toast copy; graceful degradation when budgets fail (BUG-02) — 2026-05-26
 
 ---
 
@@ -218,7 +218,7 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 | 29. Period Comparison | v4.1 | 1/1 | Complete (UAT deferred) | 2026-05-25 |
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
-| 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 0/1 | Not started | — |
+| 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
 
 ---
 *Roadmap created: 2026-05-10*
