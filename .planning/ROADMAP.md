@@ -176,7 +176,8 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
   3. The Reports sub-tab's period-over-period comparison line (Phase 29) still renders normally regardless of budgets fetch outcome
   4. Console error log message identifies the budgets failure distinctly (e.g., `console.error('ExpensesTab: loadBudgets failed', e)` separate from the existing `'ExpensesTab: getFullList failed'`)
   5. `npm run type-check`, `npm run lint` (no NEW errors beyond pre-existing VaccinationDetail.vue:5), and `npm run test:unit` (49/49) all pass
-**Plans**: TBD (single-file modification to ExpensesTab.vue)
+**Plans**: 1 plan
+  - [ ] 32-01-PLAN.md — Refactor loadBudgets with context param and split onMounted into independent try/catches
 **UI hint**: no (no visible UI changes beyond toast copy correction)
 
 ---
@@ -217,7 +218,7 @@ Full details: [milestones/v4.1-ROADMAP.md](milestones/v4.1-ROADMAP.md)
 | 29. Period Comparison | v4.1 | 1/1 | Complete (UAT deferred) | 2026-05-25 |
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
-| 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 0/? | Not started | — |
+| 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 0/1 | Not started | — |
 
 ---
 *Roadmap created: 2026-05-10*
