@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.2
 milestone_name: Budget Recovery & Hardening
 status: executing
-stopped_at: Phase 31 complete (BUG-01 closed via paste-back gated Admin UI flow; D-13 invariant locked in STATE.md)
-last_updated: "2026-05-26T03:15:00.000Z"
+stopped_at: Phase 32 context gathered (3 decisions captured in 32-CONTEXT.md; PB realtime subscribe deferred to backlog)
+last_updated: "2026-05-26T03:45:00.000Z"
 last_activity: 2026-05-26
 progress:
   total_phases: 2
