@@ -865,17 +865,19 @@ Note: `isMobile` is already imported via `useIsMobile()` in all three tab compon
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`overflow: visible` on `.p-tablist` + PrimeVue ink bar**
+1. **`overflow: visible` on `.p-tablist` + PrimeVue ink bar** — RESOLVED
    - What we know: the ink bar is `position: absolute; inset-block-end: 0` inside `.p-tablist`; removing `overflow: hidden` from `.p-tablist` means the ink bar could render outside the tablist box in theory.
    - What's unclear: does the ink bar ever visually overflow `.p-tablist` height, or is it always flush with the bottom border?
    - Recommendation: Test after implementation. If the ink bar bleeds, add `clip-path: inset(0)` on `.p-tablist` instead of `overflow: visible` — this clips visual overflow without affecting sticky positioning.
+   - **RESOLVED:** Implemented in plan 34-01 T2 (sticky `.wallecx-main-tabs .p-tablist` override); the `clip-path: inset(0)` fallback is documented for the executor to apply if the ink bar bleeds during the human-verify checkpoint.
 
-2. **ManageVaccination Drawer branch `<Form>` duplication — lazy vs. eager `v-if`**
+2. **ManageVaccination Drawer branch `<Form>` duplication — lazy vs. eager `v-if`** — RESOLVED
    - What we know: `ManageVaccination.vue` uses both `@primevue/forms` `<Form>` (for most fields) and a direct v-model `administeredDate` ref. The Dialog and Drawer templates must both render the same `<Form>` structure.
    - What's unclear: whether having two `<Form>` instances in the same component (one `v-if="!isMobile"`, one `v-else`) causes any conflict with the PrimeVue Forms provide/inject context.
    - Recommendation: Each `<Form>` instance provides its own context to its subtree. Since only one renders at a time (v-if/v-else), there should be no conflict. Verify by testing form validation in both branches.
+   - **RESOLVED:** Each `<Form>` provides an isolated provide/inject context to its own subtree and only one renders at a time (`v-if`/`v-else`), so there is no conflict. Implemented in plan 34-03 T2, whose verify step asserts exactly two `<Form>` instances and that the D-33-01-A direct-v-model `administeredDate` binding is preserved in both branches.
 
 ---
 
