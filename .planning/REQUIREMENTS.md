@@ -14,7 +14,7 @@
 - [x] **FND-01**: `@vueuse/core` promoted from transitive (via `@vueuse/motion`) to direct dependency; `useMobileEnv` composable centralizes `isMobile`, `isTablet`, `isStandalone`, `installPromptEvent`, and `safeAreaInsets` — backward-compatible with existing `useIsMobile.ts` callers
 - [x] **FND-02**: `beforeinstallprompt` listener registered at `App.vue` scope (NOT `WallecxApp.vue`) so the Android Chrome install event is captured even when the user reaches `/projects/wallecx` via in-app navigation
 - [x] **FND-03**: `rollup-plugin-visualizer` added as devDep with `ANALYZE=true`-gated `npm run analyze` script; treemap report generated and reviewed before Performance phase planning
-- [ ] **FND-04**: Patch-bump `vue@^3.5.18 → ^3.5.34`; minor-bump `primevue@^4.3.7 → ^4.5.5` lockstep with `@primevue/auto-import-resolver` + `@primevue/forms`; branch smoke-test validates Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect + ColorPicker direct v-model survive before merge
+- [x] **FND-04**: Patch-bump `vue@^3.5.18 → ^3.5.34`; minor-bump `primevue@^4.3.7 → ^4.5.5` lockstep with `@primevue/auto-import-resolver` + `@primevue/forms`; branch smoke-test validates Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect + ColorPicker direct v-model survive before merge
 
 ### Layout & Touch Targets (LT)
 
@@ -132,7 +132,7 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | FND-01 | Phase 33 | Complete (33-02) |
 | FND-02 | Phase 33 | Complete (33-02) |
 | FND-03 | Phase 33 | Complete (33-03) |
-| FND-04 | Phase 33 | Pending |
+| FND-04 | Phase 33 | Complete (33-01) |
 | LT-01 | Phase 34 | Pending |
 | LT-02 | Phase 34 | Pending |
 | LT-03 | Phase 34 | Pending |
