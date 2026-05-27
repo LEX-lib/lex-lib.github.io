@@ -7,6 +7,7 @@ import Components from "unplugin-vue-components/vite";
 import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -98,6 +99,19 @@ export default defineConfig({
         type: "module",
       },
     }),
+    // FND-03: bundle treemap, gated on `process.env.ANALYZE === 'true'` (set by the
+    // cross-env-wrapped `npm run analyze` script). A plain `npm run build` NEVER attaches
+    // this plugin, so the dist/stats.html report is only produced on demand.
+    ...(process.env.ANALYZE === "true"
+      ? [
+          visualizer({
+            filename: "dist/stats.html",
+            template: "treemap",
+            gzipSize: true,
+            brotliSize: true,
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
