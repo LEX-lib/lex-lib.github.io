@@ -9,6 +9,7 @@ import { expenseSchema, DEFAULT_EXPENSE_CATEGORIES } from '@/lib/wallecx/expense
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
 import { useIsMobile } from '@/composables/useIsMobile'
+import DragHandle from './DragHandle.vue'
 
 const visible = defineModel('visible', { type: Boolean, default: false, required: true })
 const record = defineModel<Expenses | null>('record', { default: null })
@@ -400,7 +401,7 @@ async function onSubmit(): Promise<void> {
   >
     <template #header>
       <div class="flex flex-col items-center w-full gap-1">
-        <div class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></div>
+        <DragHandle />
         <span class="font-semibold">{{ dialogHeader }}</span>
       </div>
     </template>

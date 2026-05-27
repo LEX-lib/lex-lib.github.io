@@ -9,6 +9,7 @@ import ManageVaccination from "./ManageVaccination.vue";
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 import WallecxToolbar from './WallecxToolbar.vue';
+import DragHandle from './DragHandle.vue';
 import { useIsMobile } from "@/composables/useIsMobile";
 
 const VIEW_MODE_STORAGE_KEY = 'wallecx:view-mode';
@@ -428,11 +429,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
     >
       <template #header>
         <div class="flex flex-col items-center w-full gap-1">
-          <div
-            v-if="isMobile"
-            class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600"
-            aria-hidden="true"
-          ></div>
+          <DragHandle v-if="isMobile" />
           <span class="font-semibold">{{ selectedGroup?.vaccineType ?? '' }}</span>
         </div>
       </template>

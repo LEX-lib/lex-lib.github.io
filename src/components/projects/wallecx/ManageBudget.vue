@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
 import { useIsMobile } from '@/composables/useIsMobile'
+import DragHandle from './DragHandle.vue'
 import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
 import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
 
@@ -168,7 +169,7 @@ async function onSubmit(): Promise<void> {
   >
     <template #header>
       <div class="flex flex-col items-center w-full gap-1">
-        <div class="w-8 h-1 rounded-full bg-gray-300 dark:bg-gray-600" aria-hidden="true"></div>
+        <DragHandle />
         <span class="font-semibold">Manage Budgets</span>
       </div>
     </template>
