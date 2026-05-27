@@ -39,10 +39,9 @@ below use Tailwind class names or CSS pixel equivalents.
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px (`gap-1`) | Icon gaps, inline DragHandle pill spacing |
-| sm | 8px (`gap-2`) | Button gap within action bar row |
-| md | 16px (`space-y-4`) | Between form field rows (existing pattern) |
-| lg | 20px | Action bar top/bottom padding (12px top + 12px bottom = `0.75rem` each) |
-| xl | 32px | —  |
+| sm | 8px (`gap-2`) | Button gap within action bar row; action bar bottom padding |
+| md | 16px (`space-y-4`) | Between form field rows (existing pattern); action bar top padding |
+| xl | 32px | — |
 | 2xl | 48px | — |
 | 3xl | 64px | — |
 
@@ -50,7 +49,7 @@ Exceptions:
 - **44px minimum touch target** on all buttons, labels wrapping file inputs, and
   the Drawer/Dialog close icon — enforced via `.wallecx-root .p-button.p-button-icon-only`
   rule (Phase 34) and the `min-h-[44px]` Tailwind class on raw `<label>` buttons.
-- **Action bar bottom padding**: `0.75rem` (12px) flat — NOT `max(env(safe-area-inset-bottom), ...)`.
+- **Action bar bottom padding**: `0.5rem` (8px) flat — NOT `max(env(safe-area-inset-bottom), ...)`.
   The outer `.p-drawer-content` padding-bottom already absorbs the iOS home-indicator
   inset via `max(env(safe-area-inset-bottom), 1.25rem)` (Phase 34). Double-stacking
   the env() would produce ~68px total on a notched iPhone. See Critical Note below.
@@ -193,7 +192,7 @@ These scoped `:deep` rules should live in `BaseMobileDialog.vue`'s `<style scope
  * Sits at the bottom of .p-drawer-content / .p-dialog-content scroll container.
  * Background matches the dialog surface to mask scrolling content.
  *
- * CRITICAL: padding-bottom is a FLAT 0.75rem — NOT env(safe-area-inset-bottom).
+ * CRITICAL: padding-bottom is a FLAT 0.5rem (8px) — NOT env(safe-area-inset-bottom).
  * The outer .p-drawer-content already pads the bottom via
  * max(env(safe-area-inset-bottom), 1.25rem) from Phase 34. Adding the env() a
  * second time would double the home-indicator clearance (~34px + ~34px = 68px
@@ -201,8 +200,8 @@ These scoped `:deep` rules should live in `BaseMobileDialog.vue`'s `<style scope
 .wallecx-manage-actions {
   position: sticky;
   bottom: 0;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
   background: var(--p-drawer-background, var(--p-overlay-modal-background));
   border-top: 1px solid var(--color-surface-divider);
   z-index: 1;
@@ -578,7 +577,7 @@ documented fallback in Phase 38 UAT.
 | Edit Membership CTA | `Save Changes` | Button label (edit mode) |
 | Add Vaccination CTA | `Add Vaccination` | Button label (add mode) |
 | Edit Vaccination CTA | `Save Changes` | Button label (edit mode) |
-| Cancel (all dialogs) | `Cancel` | Secondary button, all dialogs |
+| Cancel (all dialogs) | `Cancel` | Secondary button, all dialogs. **LOCKED CONVENTION — carried forward verbatim from the 4 shipped Wallecx Manage dialogs (ManageExpense, ManageBudget, ManageMembership, ManageVaccination). This is the established PrimeVue secondary-button label used app-wide. Changing it would diverge from the live app and break consistency. Discard/navigation semantics are owned separately by the FD-09 ConfirmDialog ("Discard changes?" / "Discard" / "Keep editing"). Evaluate as intentional system-convention carry-forward, not a generic label.** |
 | Camera button | `Take photo` | Label-wrapped mobile input |
 | Gallery button | `Choose from gallery` | Label-wrapped mobile input |
 | File selected | `{filename} selected` | Below upload buttons, `--color-typo-muted` |
