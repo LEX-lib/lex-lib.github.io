@@ -174,7 +174,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 ### Phases
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
-- [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock
+- [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock (1/3 plans complete)
 - [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, DatePicker touchUI
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
@@ -224,7 +224,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. BarcodeDisplay.vue still renders black bars on white background in BOTH light and dark theme on the Memberships tab after the CSS sweep — visual check recorded
 
 **Plans:** 3 plans
-- [ ] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09)
+- [x] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09) — COMPLETE (DragHandle.vue 9ee21cb; CSS rules + wallecx-main-tabs 294c3b9; LOCKED viewport meta a16f9fe; dvh 0 matches confirmed; type-check 0, test:unit 59/59)
 - [ ] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07)
 - [ ] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07)
 **UI hint:** yes
