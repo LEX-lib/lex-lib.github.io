@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { Form, type FormSubmitEvent } from "@primevue/forms";
 import { z } from "zod";
@@ -21,6 +21,13 @@ const emit = defineEmits<{
 const isSaving = ref(false);
 const pendingFile = ref<File | null>(null);
 
+// date_administered is controlled by a direct v-model ref, NOT @primevue/forms.
+// PrimeVue Forms 4.4.0+ ignores initialValues/setFieldValue for a Form-bound DatePicker
+// (primefaces/primevue#8191, #7806) — only v-model binds reliably. Mirrors the
+// expenseDate/expiryDate pattern already used in ManageExpense.vue and ManageMembership.vue.
+const administeredDate = ref<Date | null>(null);
+const dateAdministeredError = ref<string>("");
+
 const isEditMode = computed(() => record.value !== null);
 const dialogHeader = computed(() => isEditMode.value ? "Edit Vaccination" : "Add Vaccination");
 
@@ -29,7 +36,6 @@ const initialValues = computed(() => {
   return {
     vaccine_type: record.value.vaccine_type ?? "",
     vaccine_name: record.value.vaccine_name,
-    date_administered: new Date(record.value.date_administered),
     dose_number: record.value.dose_number ?? null,
     lot_number: record.value.lot_number ?? "",
     manufacturer: record.value.manufacturer ?? "",
@@ -38,15 +44,22 @@ const initialValues = computed(() => {
   };
 });
 
+// Seed the date on every dialog open (visible rising edge), not just on record change —
+// reopening the same record object would not re-fire a record-only watch, leaving the
+// field stale-blank. Reading record here keeps add (null → empty) and edit in sync.
+watch(
+  () => [visible.value, record.value] as const,
+  ([isVisible, rec]) => {
+    if (!isVisible) return;
+    administeredDate.value = rec ? new Date(rec.date_administered) : null;
+    dateAdministeredError.value = "";
+  },
+  { immediate: true },
+);
+
 const schema = z.object({
   vaccine_type: z.string().min(1, { message: "Vaccine type is required." }),
   vaccine_name: z.string().min(1, { message: "Vaccine name is required." }),
-  date_administered: z.union([
-    z.date(),
-    z.string().min(1, { message: "Date administered is required." }),
-  ]).refine((v) => v !== null && v !== undefined && v !== "", {
-    message: "Date administered is required.",
-  }),
   dose_number: z.number().int().min(0, { message: "Dose number must be between 0 and 20." }).max(20, { message: "Dose number must be between 0 and 20." }).optional().nullable(),
   lot_number: z.string().optional(),
   manufacturer: z.string().optional(),
@@ -125,6 +138,12 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
 
 async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
   if (!valid) return;
+  // date_administered is validated manually (it lives outside the Form — see administeredDate)
+  dateAdministeredError.value = "";
+  if (!administeredDate.value) {
+    dateAdministeredError.value = "Date administered is required.";
+    return;
+  }
   isSaving.value = true;
   try {
     const formData = new FormData();
@@ -133,7 +152,7 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
     // Pitfall A: DatePicker returns Date object — must convert to YYYY-MM-DD for PocketBase
     formData.append(
       "date_administered",
-      dayjs(values.date_administered as Date | string).format("YYYY-MM-DD"),
+      dayjs(administeredDate.value).format("YYYY-MM-DD"),
     );
     if (values.dose_number != null) {
       formData.append("dose_number", String(values.dose_number));
@@ -183,6 +202,7 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
 
 function onHide(): void {
   pendingFile.value = null;
+  dateAdministeredError.value = "";
 }
 </script>
 
@@ -230,9 +250,9 @@ function onHide(): void {
       <!-- date_administered (required, DatePicker per D-04) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
-        <DatePicker name="date_administered" fluid dateFormat="dd M yy" :disabled="isSaving" />
-        <Message v-if="$form.date_administered?.invalid" severity="error" size="small" variant="simple">
-          {{ $form.date_administered.error?.message }}
+        <DatePicker v-model="administeredDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
+        <Message v-if="dateAdministeredError" severity="error" size="small" variant="simple">
+          {{ dateAdministeredError }}
         </Message>
       </div>
 
