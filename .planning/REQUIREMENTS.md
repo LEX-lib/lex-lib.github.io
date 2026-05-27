@@ -18,14 +18,14 @@
 
 ### Layout & Touch Targets (LT)
 
-- [ ] **LT-01**: Every interactive element in Wallecx (buttons, links, icon buttons, tab triggers, card tiles, sort/filter affordances) meets the 44×44px iOS touch-target floor on mobile viewports
-- [ ] **LT-02**: PrimeVue Drawer bottom-sheet instances render a visible drag handle with parity across `MembershipDetail`, `VaccinationGroupPanel`, and all 4 Manage dialogs in mobile (Drawer) mode
-- [ ] **LT-03**: `env(safe-area-inset-*)` insets respected on every fixed/overlay surface (sticky action bars, install banner, scan overlay, sticky TabList, bottom drawers, Reports period selector) in both orientations and in PWA standalone mode
-- [ ] **LT-04**: All `100vh` / `h-screen` occurrences in `src/components/projects/wallecx/` replaced with `100dvh` (with `100svh` fallback); audit pass confirms 0 raw `100vh` matches
-- [ ] **LT-05**: WallecxApp.vue TabList + each tab's filter/sort toolbar pinned to the top on scroll (mobile only); long lists keep tab context visible
-- [ ] **LT-07**: All 4 Manage dialogs and detail views verify internal-scroll behavior on small viewports — content scrolls, header + sticky action bar remain pinned, no double-scroll trap
+- [x] **LT-01**: Every interactive element in Wallecx (buttons, links, icon buttons, tab triggers, card tiles, sort/filter affordances) meets the 44×44px iOS touch-target floor on mobile viewports
+- [x] **LT-02**: PrimeVue Drawer bottom-sheet instances render a visible drag handle with parity across `MembershipDetail`, `VaccinationGroupPanel`, and all 4 Manage dialogs in mobile (Drawer) mode
+- [x] **LT-03**: `env(safe-area-inset-*)` insets respected on every fixed/overlay surface (sticky action bars, install banner, scan overlay, sticky TabList, bottom drawers, Reports period selector) in both orientations and in PWA standalone mode
+- [x] **LT-04**: All `100vh` / `h-screen` occurrences in `src/components/projects/wallecx/` replaced with `100dvh` (with `100svh` fallback); audit pass confirms 0 raw `100vh` matches
+- [x] **LT-05**: WallecxApp.vue TabList + each tab's filter/sort toolbar pinned to the top on scroll (mobile only); long lists keep tab context visible
+- [x] **LT-07**: All 4 Manage dialogs and detail views verify internal-scroll behavior on small viewports — content scrolls, header + sticky action bar remain pinned, no double-scroll trap
 - [ ] **LT-08**: All 4 Manage dialogs (`ManageVaccination`, `ManageMembership`, `ManageExpense`, `ManageBudget`) render sticky bottom action bars (Save/Cancel) that remain visible above the virtual keyboard on mobile
-- [ ] **LT-09**: `<meta name="viewport">` in `index.html` includes `viewport-fit=cover` (required for `env(safe-area-inset-*)` non-zero values); locked with an inline LOCKED comment
+- [x] **LT-09**: `<meta name="viewport">` in `index.html` includes `viewport-fit=cover` (required for `env(safe-area-inset-*)` non-zero values); locked with an inline LOCKED comment
 
 ### Mobile Performance (PF)
 
@@ -133,14 +133,14 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | FND-02 | Phase 33 | Complete (33-02) |
 | FND-03 | Phase 33 | Complete (33-03) |
 | FND-04 | Phase 33 | Complete (33-01) |
-| LT-01 | Phase 34 | Pending |
-| LT-02 | Phase 34 | Pending |
-| LT-03 | Phase 34 | Pending |
-| LT-04 | Phase 34 | Pending |
-| LT-05 | Phase 34 | Pending |
-| LT-07 | Phase 34 | Pending |
+| LT-01 | Phase 34 | Complete |
+| LT-02 | Phase 34 | Complete |
+| LT-03 | Phase 34 | Complete |
+| LT-04 | Phase 34 | Complete |
+| LT-05 | Phase 34 | Complete |
+| LT-07 | Phase 34 | Complete |
 | LT-08 | Phase 35 | Pending |
-| LT-09 | Phase 34 | Pending |
+| LT-09 | Phase 34 | Complete |
 | PF-01 | Phase 36 | Pending |
 | PF-02 | Phase 36 | Pending |
 | PF-04 | Phase 36 | Pending |

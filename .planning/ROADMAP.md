@@ -223,7 +223,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 4. Internal scroll inside Manage dialogs and detail views works without double-scroll trap on small viewports — content scrolls, header + (eventual sticky action bar) remain pinned
 5. BarcodeDisplay.vue still renders black bars on white background in BOTH light and dark theme on the Memberships tab after the CSS sweep — visual check recorded
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 - [x] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09) — COMPLETE (DragHandle.vue 9ee21cb; CSS rules + wallecx-main-tabs 294c3b9; LOCKED viewport meta a16f9fe; dvh 0 matches confirmed; type-check 0, test:unit 59/59)
 - [x] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07) — COMPLETE (f6586e3, f29ba7a, 4f177e6)
 - [x] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07) — COMPLETE (3dc3b73, b119c76; fixes 06a1238, 78b2d45; BR-2 APPROVED 375x667 light+dark)
