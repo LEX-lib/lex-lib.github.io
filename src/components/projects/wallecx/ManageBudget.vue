@@ -49,6 +49,14 @@ watch(visible, (isOpen) => {
   })
 })
 
+// MD-02: reset transient save state on dismiss (backdrop tap / back-gesture /
+// swipe-down) so a Drawer/Dialog closed mid-save does not reopen with the Save
+// button stuck disabled. Mirrors the onHide reset pattern in ManageExpense /
+// ManageMembership / ManageVaccination.
+function onHide(): void {
+  isSaving.value = false
+}
+
 async function onSubmit(): Promise<void> {
   const userId = pb.authStore.record?.id
   if (!userId) {
@@ -107,6 +115,7 @@ async function onSubmit(): Promise<void> {
     :style="{ width: '40vw' }"
     :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
     :closable="!isSaving"
+    @hide="onHide"
   >
     <form @submit.prevent="onSubmit" class="space-y-4">
       <div
@@ -166,6 +175,7 @@ async function onSubmit(): Promise<void> {
     v-model:visible="visible"
     position="bottom"
     :show-close-icon="!isSaving"
+    @hide="onHide"
   >
     <template #header>
       <div class="flex flex-col items-center w-full gap-1">

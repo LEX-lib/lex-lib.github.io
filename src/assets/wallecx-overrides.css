@@ -61,8 +61,15 @@
  * Aura's button.sm.iconOnlyWidth = 2rem (32px) — below the 44px floor.
  * .p-button-icon-only is added by PrimeVue only when NO label text is present.
  * Label buttons are unaffected (their height is set by padding + line-height).
+ *
+ * Scoped under .wallecx-root (the WallecxApp Card) so the floor applies ONLY to
+ * Wallecx in-root content and does NOT leak to other mini-apps (e.g. LexTrack's
+ * ActivityCard icon button) once the Wallecx chunk loads in a session (HR-01).
+ * Wallecx's teleported Drawer/Dialog overlays use PrimeVue's own
+ * .p-drawer-close-button / .p-dialog-close-button (not .p-button-icon-only), so
+ * none of those lose the floor; explicit overlay-button sizing is Phase 35's scope.
  * Does NOT use !important — specificity is sufficient over Aura element rules. */
-.p-button.p-button-icon-only {
+.wallecx-root .p-button.p-button-icon-only {
   min-width: 44px;
   min-height: 44px;
 }
