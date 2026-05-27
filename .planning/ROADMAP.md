@@ -200,7 +200,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 **Plans:** 3 plans
 - [x] 33-01-PLAN.md — Vue 3.5.34 + PrimeVue 4.5.5 lockstep version bump + smoke-test gate (FND-04) — COMPLETE (smoke-test PASSED; fix-forward D-33-01-A: ManageVaccination DatePicker rebound to direct v-model per PrimeVue Forms #8191)
-- [ ] 33-02-PLAN.md — useMobileEnv composable + App.vue beforeinstallprompt capture (FND-01, FND-02)
+- [x] 33-02-PLAN.md — useMobileEnv composable + App.vue beforeinstallprompt capture (FND-01, FND-02) — COMPLETE (5-key composable, tri-state tiers, module-singleton install event, @vueuse/core promoted; 49→59 tests; useIsMobile.ts + PwaInstallBanner.vue untouched)
 - [ ] 33-03-PLAN.md — ANALYZE-gated rollup-plugin-visualizer + analyze script (FND-03)
 **UI hint:** yes
 
@@ -406,7 +406,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
-| 33. Mobile Foundation | v4.3 | 1/3 | In progress | — |
+| 33. Mobile Foundation | v4.3 | 2/3 | In progress | — |
 | 34. Layout Audit & Touch Targets | v4.3 | 0/? | Not started | — |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 0/? | Not started | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |

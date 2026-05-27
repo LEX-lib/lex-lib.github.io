@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 33 executing — Plan 33-01 COMPLETE (FND-04 version bump + DatePicker fix-forward; smoke-test human-verify PASSED). Next: Plan 33-02 (useMobileEnv + App.vue beforeinstallprompt).
-last_updated: "2026-05-27T09:30:00.000Z"
+stopped_at: Phase 33 executing — Plan 33-02 COMPLETE (FND-01 useMobileEnv composable + @vueuse/core promotion; FND-02 App.vue beforeinstallprompt capture; spec added, 49→59 tests, type-check clean). Next: Plan 33-03 (ANALYZE-gated rollup-plugin-visualizer + analyze script, FND-03).
+last_updated: "2026-05-27T08:10:00.000Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -28,10 +28,10 @@ progress:
 ## Current Position
 
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Executing — Phase 33 Plan 33-01 COMPLETE (FND-04 delivered; human-verify smoke-test PASSED); next Plan 33-02
+**Status:** Executing — Phase 33 Plan 33-02 COMPLETE (FND-01/FND-02 delivered); next Plan 33-03
 **Phase:** 33 Mobile Foundation
-**Plan:** 33-01 (FND-04 version bumps) COMPLETE — Vue 3.5.34 + PrimeVue 4.5.5 lockstep landed; Task 2 smoke-test PASSED with a fix-forward (ManageVaccination DatePicker rebind, D-33-01-A). 33-02 (FND-01/02 useMobileEnv + App.vue listener) is NEXT; 33-03 (FND-03 visualizer) not started.
-**Last activity:** 2026-05-27 — 33-01 completed; SUMMARY written, automated gate re-confirmed green on HEAD (type-check 0, test:unit 49/49)
+**Plan:** 33-02 (FND-01 useMobileEnv composable + @vueuse/core promotion, FND-02 App.vue beforeinstallprompt capture) COMPLETE — 5-key composable lands with tri-state tiers, module-singleton install event, synchronous seeding; App.vue captures the event (preventDefault, capture-only) and clears on appinstalled; spec added (49→59 tests); type-check clean. 33-01 (FND-04) COMPLETE. 33-03 (FND-03 visualizer) is NEXT.
+**Last activity:** 2026-05-27 — 33-02 completed; SUMMARY written, self-check PASSED, automated gates green (type-check 0, test:unit 59/59)
 
 ## Shipped Milestones Summary
 
@@ -92,6 +92,19 @@ progress:
 
 - **v4.3 version baseline locked: Vue 3.5.34 + PrimeVue 4.5.5 lockstep.** `vue ^3.5.34`, `primevue ^4.5.5`, `@primevue/forms ^4.5.5`, `@primevue/auto-import-resolver ^4.5.5`. One clean baseline for the whole milestone — no pin-back (D-07 fix-forward held). Committed 931aef0.
 - **D-33-01-A — Form-bound DatePickers must use direct v-model on the 4.5 baseline.** PrimeVue Forms 4.4.0+ ignores `initialValues`/`setFieldValue` for a Form-bound DatePicker (primefaces/primevue#8191, #7806) — Edit mode rendered the date blank. Fix-forward: ManageVaccination's `date_administered` moved out of `@primevue/forms` into a direct v-model ref (`administeredDate`), seeded on the dialog-open rising edge via a `[visible, record]` watch, with manual required-validation. Mirrors the existing `expenseDate`/`expiryDate` pattern in ManageExpense.vue / ManageMembership.vue. Committed 2acd29f. **Any NEW Form-bound DatePicker introduced for the rest of v4.3 must use direct v-model, not @primevue/forms initialValues, until #8191 is fixed upstream.** Phase 35 BaseMobileDialog rollout must preserve ManageVaccination's direct-v-model date binding (do NOT fold it back into the Form).
+
+### Phase 33 Decisions (Plan 02 — useMobileEnv composable + App.vue beforeinstallprompt, FND-01/FND-02)
+
+- **`useMobileEnv()` returns ONE 5-key object (D-01): `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`.** The single mobile primitive Phases 34–37 destructure from. Lives at `src/composables/useMobileEnv.ts`.
+- **639px has a single source of truth (D-02): `isMobile` delegates to `useIsMobile()` internally.** `useMobileEnv` EXTENDS, does not replace, `useIsMobile.ts` — the existing composable is byte-for-byte unchanged and its callers are NOT migrated (backward-compatible, A-43-1). No second hardcoded 639.
+- **Tri-state tiers via `useMediaQuery` (@vueuse/core), mutually exclusive: isMobile ≤639, isTablet 640–1023, desktop ≥1024.** iPad portrait (768–820) reads `isTablet === true` / `isMobile === false` (D-03/D-04, first-class tablet tier — substrate for Phase 35 Drawer-vs-Dialog split). `useMediaQuery` seeds synchronously from `window.matchMedia(...).matches` (M-6 race avoided) and self-manages listener cleanup.
+- **`isStandalone` lifts PwaInstallBanner's detector** (`matchMedia('(display-mode: standalone)')` OR iOS `navigator.standalone`); seeded synchronously, kept reactive via the display-mode media query. One shared detector for the banner (P37) and any standalone-gated UI.
+- **`safeAreaInsets` = static CSS `env()` strings `{ top, right, bottom, left }`.** Simplest correct default; Phase 34 binds them directly into `padding`/`inset` and the browser resolves real pixels per device/orientation.
+- **`installPromptEvent` is a MODULE-SCOPE singleton ref (A-43-4, D-05) — NOT a Pinia store.** Written via exported `setInstallPromptEvent(e)` / cleared via `clearInstallPromptEvent()`. The same singleton is returned from every `useMobileEnv()` call so App.vue's write is visible to deep-linked future readers (Phase 37 Install button).
+- **App.vue (not WallecxApp.vue) captures `beforeinstallprompt` (FND-02).** `onMounted` registers `beforeinstallprompt` (calls `e.preventDefault()` to suppress Chrome's auto-banner, writes the module singleton) + `appinstalled` (clears the singleton); `onUnmounted` removes both. App.vue scope ensures the event survives in-app navigation to `/projects/wallecx`.
+- **Capture-only (M-9, D-05): `.prompt()` is NEVER called in Phase 33.** Phase 37 owns the user-gesture-gated call. Grep guard upheld: useMobileEnv.ts and App.vue contain no `.prompt(` invocation (only docblock/comment references).
+- **`@vueuse/core ^13.9.0` promoted to a direct `dependencies` entry (FND-01).** First direct use of @vueuse/core in the repo; already resolved transitively via `@vueuse/motion` (0 KB net) — promotion makes the import contract explicit.
+- **`PwaInstallBanner.vue` left untouched in Phase 33** (D-06; Android Install button + 30-day dismissal deferred to Phase 37).
 
 ### v2.1 PWA Architectural Decisions
 
@@ -273,13 +286,15 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T09:30:00.000Z
+**Last session:** 2026-05-27T08:10:00.000Z
 
-**Stopped at:** Phase 33 Plan 33-01 COMPLETE. Vue 3.5.34 + PrimeVue 4.5.5 lockstep baseline landed (931aef0); Task 2 human-verify 6-surface smoke-test + #7465 dark-mode no-flash PASSED after a fix-forward (2acd29f — ManageVaccination DatePicker rebound to direct v-model per D-33-01-A, PrimeVue Forms #8191/#7806). 33-01-SUMMARY.md written; STATE.md + ROADMAP.md mark 33-01 complete; automated gate re-confirmed on HEAD (type-check 0, test:unit 49/49). PrimeVue stayed at 4.5.5 (no pin-back). Next: Plan 33-02 (FND-01/02 useMobileEnv composable + App.vue beforeinstallprompt capture).
+**Stopped at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
-**Prior stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
+**Prior stopped-at:** Phase 33 Plan 33-01 COMPLETE. Vue 3.5.34 + PrimeVue 4.5.5 lockstep baseline landed (931aef0); Task 2 human-verify 6-surface smoke-test + #7465 dark-mode no-flash PASSED after a fix-forward (2acd29f — ManageVaccination DatePicker rebound to direct v-model per D-33-01-A, PrimeVue Forms #8191/#7806). 33-01-SUMMARY.md written; automated gate re-confirmed on HEAD (type-check 0, test:unit 49/49).
 
-**Next session entry point:** Continue Phase 33 — execute Plan 33-02 (`.planning/phases/33-mobile-foundation/33-02-PLAN.md`), then 33-03. Plan 33-01 is complete.
+**Earlier stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
+
+**Next session entry point:** Continue Phase 33 — execute Plan 33-03 (`.planning/phases/33-mobile-foundation/33-03-PLAN.md`). Plans 33-01 and 33-02 are complete.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
