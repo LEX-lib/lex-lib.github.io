@@ -174,7 +174,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 ### Phases
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
-- [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock (1/3 plans complete)
+- [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock (2/3 plans complete)
 - [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, DatePicker touchUI
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner

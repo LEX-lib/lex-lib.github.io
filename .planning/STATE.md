@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
 stopped_at: "Phase 33 COMPLETE (3/3 plans). Plan 33-03 COMPLETE (FND-03). `rollup-plugin-visualizer@^7.0.1` + `cross-env@^10.1.0` added as devDeps (commit 120a878); `"analyze": "cross-env ANALYZE=true vite build"` script added near build-only. Visualizer wired into vite.config.ts behind `process.env.ANALYZE === "true"` spread-conditional → `dist/stats.html` treemap (commit f39dfe0). Gating verified BOTH directions via cross-platform node -e: plain `npm run build` produces NO report + 0 "exceeds"/"Skipping precaching"; `npm run analyze` produces the report. PWA `registerType: "prompt"` + `scope: "/"` LOCKED comments byte-intact (grep-confirmed). dist/stats.html confirmed git-ignored. type-check 0, test:unit 59/59. 33-03-SUMMARY.md written, self-check PASSED. **Next: Phase 34 Layout Audit & Touch Targets — not yet planned; run `/gsd-plan-phase 34`.**"
-last_updated: "2026-05-27T09:44:57.182Z"
+last_updated: "2026-05-27T10:00:03Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
-  percent: 57
+  completed_plans: 5
+  percent: 63
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Phase 34 — Layout Audit & Touch Targets (Plan 1 complete)
+**Current focus:** Phase 34 — Layout Audit & Touch Targets (Plan 2 complete)
 
 ## Current Position
 
 Phase: 34 (Layout Audit & Touch Targets) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Executing Phase 34
-**Phase:** 34 Layout Audit & Touch Targets — EXECUTING (3 plans, 2 waves). Plan 34-01 COMPLETE.
-**Plan:** 34-01 COMPLETE. DragHandle.vue created (pill w-8 h-1 rounded-full, aria-hidden, no script/props/emits, commit 9ee21cb). wallecx-overrides.css appended with 4 rule blocks: .p-button.p-button-icon-only 44px floor, .wallecx-main-tabs .p-tab 44px floor, sticky .wallecx-main-tabs .p-tablist + .wallecx-tab-toolbar (mobile), .p-drawer-bottom .p-drawer-content safe-area padding (commit 294c3b9). WallecxApp.vue: class="wallecx-main-tabs" added to <Tabs>. index.html LOCKED comment added before viewport meta (a16f9fe). dvh invariant confirmed 0 matches. All gates: type-check 0, test:unit 59/59, build 57 precache entries + 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered). Next: 34-02 sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area [LT-02/03/05/07].
+**Phase:** 34 Layout Audit & Touch Targets — EXECUTING (3 plans, 2 waves). Plans 34-01 and 34-02 COMPLETE.
+**Plan:** 34-02 COMPLETE. Sticky toolbar wrapper (`isMobile ? 'wallecx-tab-toolbar' : ''`) added in VaccinationsTab.vue, MembershipsTab.vue, and ExpensesListView.vue (f6586e3). 5 inline drag-handle pills swapped for shared `<DragHandle>` component across VaccinationsTab, MembershipsTab, ExpensesTab, ManageExpense, ManageBudget — VaccinationsTab uses `v-if="isMobile"` gate preserved (f29ba7a). MembershipDetail.vue scan overlay: `padding-top/bottom: env(safe-area-inset-top/bottom)` added; close button `top-4` replaced with `top: calc(1rem + env(safe-area-inset-top))` (4f177e6). BR-2: BarcodeDisplay.vue untouched, background:#ffffff unchanged. dvh invariant: 0 matches confirmed. All gates: type-check 0, test:unit 59/59, build 57 precache + 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered). Deviation: sticky wrapper applied in ExpensesListView.vue (where ExpensesToolbar actually renders) not ExpensesTab.vue (plan's file reference was one level too high due to Phase 26 refactor). Next: 34-03 human-verify checkpoint [ManageMembership + ManageVaccination Drawer branches].
 **Last activity:** 2026-05-27
 
 ## Shipped Milestones Summary
@@ -115,6 +115,12 @@ Plan: 2 of 3
 - **DragHandle.vue: no script/props/emits.** Purely presentational pill extracted from Phase-17 VaccinationsTab inline markup. Callers own v-if="isMobile" gating — component renders unconditionally.
 - **wallecx-main-tabs as discriminating class (D-34-01/D-34-02).** Single class on WallecxApp <Tabs> scopes both the tab-trigger min-height rule and the sticky TabList override to the top-level tabs only, leaving sub-tabs and period-tabs unaffected.
 - **dvh invariant confirmed CLEAN at Plan 01 close.** 0 matches for 100vh/h-screen/min-h-screen in src/components/projects/wallecx/. No migration required — already using dvh throughout.
+
+### Phase 34 Decisions (Plan 02 — sticky toolbar wrappers, DragHandle swap, scan overlay safe-area)
+
+- **Sticky wrapper applied in ExpensesListView.vue (not ExpensesTab.vue).** Plan 02 targeted ExpensesTab.vue for the `<ExpensesToolbar>` wrap, but the Phase 26 sub-component refactor moved `<ExpensesToolbar>` into `ExpensesListView.vue`. Wrapper correctly applied where the toolbar renders. `useIsMobile` import added to ExpensesListView.vue.
+- **VaccinationsTab DragHandle keeps v-if="isMobile" gate.** The VaccinationsGroup Drawer uses reactive `position` (bottom on mobile, right on desktop) — the pill only belongs when position=bottom. All other 4 Drawer sites are already in `v-else` (mobile-only) branches — no v-if needed.
+- **scan overlay safe-area via direct env() strings in inline style (no JS).** `padding-top: env(safe-area-inset-top)` etc. resolved natively by the browser. No composable import needed. Consistent with WallecxApp.vue's existing safe-area pattern (`:style="{ paddingBottom: 'env(safe-area-inset-bottom)' }"`).
 
 ### Phase 33 Decisions (Plan 03 — ANALYZE-gated bundle visualizer, FND-03)
 
@@ -304,9 +310,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T09:45:00.000Z
+**Last session:** 2026-05-27T10:00:03Z
 
-**Stopped at:** Phase 34 Plan 34-01 COMPLETE. DragHandle.vue created (9ee21cb). wallecx-overrides.css: 4 rule blocks appended — .p-button.p-button-icon-only 44px floor, .wallecx-main-tabs .p-tab 44px, sticky .p-tablist + .wallecx-tab-toolbar (mobile-only), .p-drawer-bottom .p-drawer-content safe-area (294c3b9). WallecxApp.vue class="wallecx-main-tabs" added. index.html LOCKED comment added (a16f9fe). dvh invariant: 0 matches confirmed. All gates PASSED: type-check 0, test:unit 59/59, build 57 precache 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered pre-existing). 34-01-SUMMARY.md written. Next: 34-02 (sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area).
+**Stopped at:** Phase 34 Plan 34-02 COMPLETE. Sticky toolbar wrapper `isMobile ? 'wallecx-tab-toolbar' : ''` added in VaccinationsTab.vue, MembershipsTab.vue, ExpensesListView.vue (f6586e3). 5 inline pills swapped for `<DragHandle>` across VaccinationsTab, MembershipsTab, ExpensesTab, ManageExpense, ManageBudget — VaccinationsTab `v-if="isMobile"` gate preserved (f29ba7a). MembershipDetail.vue scan overlay: env(safe-area-inset-top/bottom) padding added; close button top calc updated (4f177e6). BR-2 invariant intact. dvh: 0 matches. All gates: type-check 0, test:unit 59/59, build 57 precache 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered). Deviation: wrapper in ExpensesListView not ExpensesTab (Phase 26 sub-component location). 34-02-SUMMARY.md written, self-check PASSED. Next: 34-03 (ManageMembership + ManageVaccination Drawer branches + human-verify checkpoint).
 
 **Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
