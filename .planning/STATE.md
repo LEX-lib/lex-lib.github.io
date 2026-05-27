@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 33 executing — Plan 33-01 Task 1 done (version bump committed 931aef0, automated gate green); PAUSED at Task 2 checkpoint:human-verify (6-surface PrimeVue smoke-test + #7465 dark-mode flash)
-last_updated: "2026-05-27T07:40:00.000Z"
+stopped_at: Phase 33 executing — Plan 33-01 COMPLETE (FND-04 version bump + DatePicker fix-forward; smoke-test human-verify PASSED). Next: Plan 33-02 (useMobileEnv + App.vue beforeinstallprompt).
+last_updated: "2026-05-27T09:30:00.000Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -28,10 +28,10 @@ progress:
 ## Current Position
 
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Executing — Phase 33 Plan 33-01 Task 1 complete (version bump committed 931aef0); PAUSED at Task 2 human-verify checkpoint
+**Status:** Executing — Phase 33 Plan 33-01 COMPLETE (FND-04 delivered; human-verify smoke-test PASSED); next Plan 33-02
 **Phase:** 33 Mobile Foundation
-**Plan:** 33-01 (FND-04 version bumps) IN PROGRESS — Task 1 (bump + automated gate) done & committed; Task 2 (6-surface manual smoke-test) awaiting human. 33-02 (FND-01/02 useMobileEnv + App.vue listener), 33-03 (FND-03 visualizer) not started.
-**Last activity:** 2026-05-27 — 33-01 Task 1 executed; Vue 3.5.34 + PrimeVue 4.5.5 lockstep landed, type-check/build/49-tests/lint green
+**Plan:** 33-01 (FND-04 version bumps) COMPLETE — Vue 3.5.34 + PrimeVue 4.5.5 lockstep landed; Task 2 smoke-test PASSED with a fix-forward (ManageVaccination DatePicker rebind, D-33-01-A). 33-02 (FND-01/02 useMobileEnv + App.vue listener) is NEXT; 33-03 (FND-03 visualizer) not started.
+**Last activity:** 2026-05-27 — 33-01 completed; SUMMARY written, automated gate re-confirmed green on HEAD (type-check 0, test:unit 49/49)
 
 ## Shipped Milestones Summary
 
@@ -87,6 +87,11 @@ progress:
 - **ManageMembership BaseMobileDialog migration goes LAST in Phase 35.** Highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135). Order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (A-43-2).
 - **NFR-PERF-MEASURE gates Phase 38b conditional virtualization.** Production record counts unknown (personal vault scope). Phase 36 PF-05 instrumentation closes that knowledge gap; only then do we know whether virtualization is needed. Premature virtualization risks M-16 sessionStorage sort-restore regression.
 - **NFR/CON bind multiple phases.** Each NFR/CON requirement has a verification-owner phase AND binds every other phase that touches the affected surface. Documented in each phase's "Binds NFR/CON" section in ROADMAP.md.
+
+### Phase 33 Decisions (Plan 01 — Vue + PrimeVue version baseline, FND-04)
+
+- **v4.3 version baseline locked: Vue 3.5.34 + PrimeVue 4.5.5 lockstep.** `vue ^3.5.34`, `primevue ^4.5.5`, `@primevue/forms ^4.5.5`, `@primevue/auto-import-resolver ^4.5.5`. One clean baseline for the whole milestone — no pin-back (D-07 fix-forward held). Committed 931aef0.
+- **D-33-01-A — Form-bound DatePickers must use direct v-model on the 4.5 baseline.** PrimeVue Forms 4.4.0+ ignores `initialValues`/`setFieldValue` for a Form-bound DatePicker (primefaces/primevue#8191, #7806) — Edit mode rendered the date blank. Fix-forward: ManageVaccination's `date_administered` moved out of `@primevue/forms` into a direct v-model ref (`administeredDate`), seeded on the dialog-open rising edge via a `[visible, record]` watch, with manual required-validation. Mirrors the existing `expenseDate`/`expiryDate` pattern in ManageExpense.vue / ManageMembership.vue. Committed 2acd29f. **Any NEW Form-bound DatePicker introduced for the rest of v4.3 must use direct v-model, not @primevue/forms initialValues, until #8191 is fixed upstream.** Phase 35 BaseMobileDialog rollout must preserve ManageVaccination's direct-v-model date binding (do NOT fold it back into the Form).
 
 ### v2.1 PWA Architectural Decisions
 
@@ -268,13 +273,13 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T07:40:00.000Z
+**Last session:** 2026-05-27T09:30:00.000Z
 
-**Stopped at:** Phase 33 Plan 33-01 PAUSED at Task 2 checkpoint:human-verify. Task 1 done: vue@^3.5.34 + primevue@^4.5.5 + @primevue/forms@^4.5.5 + @primevue/auto-import-resolver@^4.5.5 installed; package.json committed (931aef0); automated gate green (type-check 0, build 0 with no precache-skip lines, test:unit 49/49, lint clean except grandfathered VaccinationDetail.vue:5); vite.config.ts untouched. Awaiting human 6-surface PrimeVue smoke-test (Drawer, Dialog, DatePicker touchUI, FileUpload capture, MultiSelect, ColorPicker direct-v-model) + HIGHEST-WATCH #7465 dark-mode no-white-flash on Dialog+Drawer. On "approved" paste-back, the continuation writes 33-01-SUMMARY.md and advances the plan counter. SUMMARY.md NOT yet written (plan incomplete).
+**Stopped at:** Phase 33 Plan 33-01 COMPLETE. Vue 3.5.34 + PrimeVue 4.5.5 lockstep baseline landed (931aef0); Task 2 human-verify 6-surface smoke-test + #7465 dark-mode no-flash PASSED after a fix-forward (2acd29f — ManageVaccination DatePicker rebound to direct v-model per D-33-01-A, PrimeVue Forms #8191/#7806). 33-01-SUMMARY.md written; STATE.md + ROADMAP.md mark 33-01 complete; automated gate re-confirmed on HEAD (type-check 0, test:unit 49/49). PrimeVue stayed at 4.5.5 (no pin-back). Next: Plan 33-02 (FND-01/02 useMobileEnv composable + App.vue beforeinstallprompt capture).
 
 **Prior stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
 
-**Next session entry point:** Run `/gsd-execute-phase 33` to execute Phase 33. Plans: `.planning/phases/33-mobile-foundation/33-0{1,2,3}-PLAN.md`.
+**Next session entry point:** Continue Phase 33 — execute Plan 33-02 (`.planning/phases/33-mobile-foundation/33-02-PLAN.md`), then 33-03. Plan 33-01 is complete.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
