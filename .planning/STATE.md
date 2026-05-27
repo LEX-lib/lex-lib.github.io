@@ -29,7 +29,7 @@ progress:
 
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Ready to execute
-**Phase:** 34 Layout Audit & Touch Targets — PLANNED (3 plans, 2 waves; plan-checker PASSED). Paused for user review before execution (auto-advance to execute intentionally NOT taken this session).
+**Phase:** 34 Layout Audit & Touch Targets — PLANNED (3 plans, 2 waves; plan-checker PASSED) + UI-SPEC APPROVED (ui-checker 5/6 PASS, 1 non-blocking typography FLAG = pre-existing 3 weights). Paused for user review before execution (auto-advance to execute intentionally NOT taken this session). NOTE: 34-UI-SPEC.md generated AFTER the 3 plans; checker confirmed it faithfully reflects all 6 CONTEXT decisions and no deferred items leaked, so existing plans remain valid — executor should also read 34-UI-SPEC.md for measurable contracts.
 **Plan:** 34 plans created & verified. 34-01 (wave 1, foundation): DragHandle.vue + wallecx-overrides.css (44px icon-button floor [closes main.ts p-button-sm 32px gap], sticky `.wallecx-main-tabs .p-tablist` + `.wallecx-tab-toolbar` stacked sticky, bottom-Drawer safe-area) + viewport-fit LOCKED comment + dvh grep-confirm [LT-01/04/05/09]. 34-02 (wave 2): sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area [LT-02/03/05/07]. 34-03 (wave 2): add mobile bottom-Drawer branches to ManageMembership + ManageVaccination (were Dialog-only; analog ManageExpense.vue) + BR-2 black-on-white reverify checkpoint [LT-02/07]. All 7 LT IDs covered; NFR-BR-2/DVH/VIEWPORT-FIT honored; threat models present (presentation-layer, no HIGH).
 **Last activity:** 2026-05-27 — Phase 34 discuss→plan→verify complete; awaiting `/gsd-execute-phase 34`.
 
