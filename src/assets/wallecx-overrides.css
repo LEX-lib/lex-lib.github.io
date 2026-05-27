@@ -76,9 +76,12 @@
 }
 
 /* Phase 34 LT-05/D-34-01: Sticky TabList on mobile (≤639px).
- * Overrides PrimeVue's .p-tablist default (position:relative; overflow:hidden).
+ * Overrides PrimeVue's .p-tablist default (position:relative).
  * The page (not the Card) is the scroll container for WallecxApp on mobile.
- * overflow:visible removes the clip so the active ink-bar renders correctly.
+ * An element's OWN overflow:hidden does NOT break its OWN position:sticky, so we
+ * keep PrimeVue's default overflow (hidden) and use clip-path: inset(0) to clip the
+ * active ink-bar to the border box — preventing the indigo bleed past the scroll
+ * arrows seen with overflow:visible (RESEARCH Open Q1 fix).
  * !important required — PrimeVue base CSS sets position:relative at equal specificity. */
 @media (max-width: 639px) {
   .wallecx-main-tabs .p-tablist {
@@ -86,7 +89,7 @@
     top: env(safe-area-inset-top);
     z-index: 10;
     background: var(--p-tabs-tablist-background);
-    overflow: visible !important;
+    clip-path: inset(0);
   }
 
   /* Phase 34 LT-05: Per-tab sticky toolbar. Class added by tab components (Plan 02)
@@ -110,11 +113,15 @@
 
 /* Phase 34 LT-03/D-34-04: Safe-area padding inside bottom Drawers.
  * Pads .p-drawer-content so the last form field / action button clears the
- * iOS home indicator / Android gesture bar.
+ * iOS home indicator / Android gesture bar, and so content clears the notch
+ * in landscape on devices with side insets.
  * Uses padding — does NOT change the 85dvh panel height.
- * max() ensures at least 1rem even on devices with no home indicator. */
+ * CRITICAL: each side uses max(env(...), <PrimeVue default>) so that on a
+ * portrait phone with NO side inset (env() resolves to 0) the drawer content
+ * KEEPS PrimeVue's default 1.25rem horizontal padding (overlay.modal.padding)
+ * instead of collapsing to 0 and stretching fields edge-to-edge. */
 .p-drawer-bottom .p-drawer-content {
-  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-bottom: max(env(safe-area-inset-bottom), 1.25rem);
+  padding-left: max(env(safe-area-inset-left), 1.25rem);
+  padding-right: max(env(safe-area-inset-right), 1.25rem);
 }
