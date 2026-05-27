@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 33 executing — Plan 33-02 COMPLETE (FND-01 useMobileEnv composable + @vueuse/core promotion; FND-02 App.vue beforeinstallprompt capture; spec added, 49→59 tests, type-check clean). Next: Plan 33-03 (ANALYZE-gated rollup-plugin-visualizer + analyze script, FND-03).
-last_updated: "2026-05-27T08:10:00.000Z"
+stopped_at: Phase 33 COMPLETE — all 3 plans done. Plan 33-03 COMPLETE (FND-03 ANALYZE-gated rollup-plugin-visualizer@^7.0.1 + cross-env@^10.1.0 devDeps; `npm run analyze` script; dist/stats.html treemap; gating verified both directions; PWA registerType/scope LOCKED comments byte-intact; type-check 0, test:unit 59/59). Next: Phase 34 Layout Audit & Touch Targets (not yet planned — run /gsd-plan-phase 34).
+last_updated: "2026-05-27T08:19:00.000Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 7
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -28,10 +28,10 @@ progress:
 ## Current Position
 
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Executing — Phase 33 Plan 33-02 COMPLETE (FND-01/FND-02 delivered); next Plan 33-03
-**Phase:** 33 Mobile Foundation
-**Plan:** 33-02 (FND-01 useMobileEnv composable + @vueuse/core promotion, FND-02 App.vue beforeinstallprompt capture) COMPLETE — 5-key composable lands with tri-state tiers, module-singleton install event, synchronous seeding; App.vue captures the event (preventDefault, capture-only) and clears on appinstalled; spec added (49→59 tests); type-check clean. 33-01 (FND-04) COMPLETE. 33-03 (FND-03 visualizer) is NEXT.
-**Last activity:** 2026-05-27 — 33-02 completed; SUMMARY written, self-check PASSED, automated gates green (type-check 0, test:unit 59/59)
+**Status:** Executing — Phase 33 Mobile Foundation COMPLETE (3/3 plans; FND-01..04 delivered); next Phase 34
+**Phase:** 33 Mobile Foundation — COMPLETE
+**Plan:** 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script) COMPLETE — visualizer wired into vite.config.ts behind `process.env.ANALYZE === 'true'`; `npm run analyze` (cross-env ANALYZE=true vite build) produces dist/stats.html treemap; plain `npm run build` never attaches it (gating verified both directions via node -e); PWA registerType 'prompt' + scope '/' LOCKED comments byte-intact; type-check 0, test:unit 59/59. 33-01 (FND-04) + 33-02 (FND-01/FND-02) COMPLETE. Phase 33 done.
+**Last activity:** 2026-05-27 — 33-03 completed; SUMMARY written, self-check PASSED, automated gates green (build 0 exceeds/skip-precache, type-check 0, test:unit 59/59)
 
 ## Shipped Milestones Summary
 
@@ -53,7 +53,7 @@ progress:
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 33 | Mobile Foundation | FND-01..04 | Planned (3 plans) — ready to execute |
+| 33 | Mobile Foundation | FND-01..04 | Complete (3/3 plans) |
 | 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | Not started |
 | 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | Not started |
 | 36 | Mobile Performance | PF-01,02,04,05,07,09 | Not started |
@@ -105,6 +105,14 @@ progress:
 - **Capture-only (M-9, D-05): `.prompt()` is NEVER called in Phase 33.** Phase 37 owns the user-gesture-gated call. Grep guard upheld: useMobileEnv.ts and App.vue contain no `.prompt(` invocation (only docblock/comment references).
 - **`@vueuse/core ^13.9.0` promoted to a direct `dependencies` entry (FND-01).** First direct use of @vueuse/core in the repo; already resolved transitively via `@vueuse/motion` (0 KB net) — promotion makes the import contract explicit.
 - **`PwaInstallBanner.vue` left untouched in Phase 33** (D-06; Android Install button + 30-day dismissal deferred to Phase 37).
+
+### Phase 33 Decisions (Plan 03 — ANALYZE-gated bundle visualizer, FND-03)
+
+- **`rollup-plugin-visualizer@^7.0.1` + `cross-env@^10.1.0` added as devDependencies; `"analyze": "cross-env ANALYZE=true vite build"` script added** after `build-only` in package.json. cross-env wraps the env-var set so Windows PowerShell contributors get the same `ANALYZE=true` behavior as POSIX shells (repo `engines` allows Node ^20.19.0 but inline `ANALYZE=true vite build` fails on PowerShell).
+- **Visualizer gated strictly on `process.env.ANALYZE === "true"` via spread-conditional** in vite.config.ts plugins array — `...(process.env.ANALYZE === "true" ? [visualizer({ filename: "dist/stats.html", template: "treemap", gzipSize: true, brotliSize: true })] : [])`. Mirrors the existing `vueDevTools` NODE_ENV spread idiom. The deployed `npm run build` pipeline NEVER attaches the plugin (T-33-07 information-disclosure mitigation — the report cannot be accidentally deployed).
+- **Report path = `dist/stats.html`** — inside the already-git-ignored `dist/` (no `.gitignore` change required), co-located with the build it describes, regenerated on demand and never committed. Gating proven both directions via a cross-platform `node -e` PRESENT/ABSENT check (Windows-PowerShell-safe): plain build → report ABSENT + 0 "exceeds"/"Skipping precaching" lines; `npm run analyze` → report PRESENT. Treemap is the artifact Phase 36 reviews before sequencing chunk-split work.
+- **PWA LOCKED invariants byte-intact (C-1 / CON-PWA-SCOPE upheld):** `registerType: "prompt"` (vite.config.ts:28) and `scope: "/"` (vite.config.ts:42) LOCKED comments verified unchanged via grep; VitePWA block, Workbox config, rolldown codeSplitting groups, and resolve alias all untouched (append-only edit to plugins array).
+- **`npm run analyze` build shows 58 precache entries vs plain build's 57** — the extra entry is `dist/stats.html` itself (Workbox globs it into the analyze-mode manifest). Harmless: dev-only artifact produced solely by the opt-in script; the deployed `npm run build` stays at 57 entries with no report.
 
 ### v2.1 PWA Architectural Decisions
 
@@ -286,9 +294,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T08:10:00.000Z
+**Last session:** 2026-05-27T08:19:00.000Z
 
-**Stopped at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
+**Stopped at:** Phase 33 COMPLETE (3/3 plans). Plan 33-03 COMPLETE (FND-03). `rollup-plugin-visualizer@^7.0.1` + `cross-env@^10.1.0` added as devDeps (commit 120a878); `"analyze": "cross-env ANALYZE=true vite build"` script added near build-only. Visualizer wired into vite.config.ts behind `process.env.ANALYZE === "true"` spread-conditional → `dist/stats.html` treemap (commit f39dfe0). Gating verified BOTH directions via cross-platform node -e: plain `npm run build` produces NO report + 0 "exceeds"/"Skipping precaching"; `npm run analyze` produces the report. PWA `registerType: "prompt"` + `scope: "/"` LOCKED comments byte-intact (grep-confirmed). dist/stats.html confirmed git-ignored. type-check 0, test:unit 59/59. 33-03-SUMMARY.md written, self-check PASSED. **Next: Phase 34 Layout Audit & Touch Targets — not yet planned; run `/gsd-plan-phase 34`.**
+
+**Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
 **Prior stopped-at:** Phase 33 Plan 33-01 COMPLETE. Vue 3.5.34 + PrimeVue 4.5.5 lockstep baseline landed (931aef0); Task 2 human-verify 6-surface smoke-test + #7465 dark-mode no-flash PASSED after a fix-forward (2acd29f — ManageVaccination DatePicker rebound to direct v-model per D-33-01-A, PrimeVue Forms #8191/#7806). 33-01-SUMMARY.md written; automated gate re-confirmed on HEAD (type-check 0, test:unit 49/49).
 

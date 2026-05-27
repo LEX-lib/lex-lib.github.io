@@ -173,7 +173,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 ### Phases
 
-- [ ] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring
+- [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock
 - [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, DatePicker touchUI
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
@@ -201,7 +201,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Plans:** 3 plans
 - [x] 33-01-PLAN.md — Vue 3.5.34 + PrimeVue 4.5.5 lockstep version bump + smoke-test gate (FND-04) — COMPLETE (smoke-test PASSED; fix-forward D-33-01-A: ManageVaccination DatePicker rebound to direct v-model per PrimeVue Forms #8191)
 - [x] 33-02-PLAN.md — useMobileEnv composable + App.vue beforeinstallprompt capture (FND-01, FND-02) — COMPLETE (5-key composable, tri-state tiers, module-singleton install event, @vueuse/core promoted; 49→59 tests; useIsMobile.ts + PwaInstallBanner.vue untouched)
-- [ ] 33-03-PLAN.md — ANALYZE-gated rollup-plugin-visualizer + analyze script (FND-03)
+- [x] 33-03-PLAN.md — ANALYZE-gated rollup-plugin-visualizer + analyze script (FND-03) — COMPLETE (visualizer gated on process.env.ANALYZE; `npm run analyze` → dist/stats.html treemap; plain build never attaches it; PWA registerType/scope LOCKED comments byte-intact; type-check 0, test:unit 59/59)
 **UI hint:** yes
 
 #### Phase 34: Layout Audit & Touch Targets
@@ -406,7 +406,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
-| 33. Mobile Foundation | v4.3 | 2/3 | In progress | — |
+| 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 34. Layout Audit & Touch Targets | v4.3 | 0/? | Not started | — |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 0/? | Not started | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
