@@ -175,7 +175,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
-- [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, DatePicker touchUI
+- [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, inline DatePicker on mobile (6 plans planned 2026-05-27)
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
 - [ ] **Phase 38: Mobile UAT Sweep + PWA-UAT-01** — Real iOS + real Android + iPad-820 viewport device matrix; closes PWA-UAT-01 deferred from Phase 22 V6
@@ -251,7 +251,13 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. After the `ManageMembership` BaseMobileDialog migration, the existing `membershipMapper.spec.ts` 11 tests still pass and `card_color` round-trips through save → re-load without acquiring or losing the `#` prefix
 6. Focused input is brought into view (above the keyboard) on both iOS Safari and Android Chrome — no input is obscured by the keyboard during typing
 
-**Plans:** TBD
+**Plans:** 6 plans
+- [ ] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS)
+- [ ] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04)
+- [ ] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard)
+- [ ] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved)
+- [ ] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved)
+- [ ] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint
 **UI hint:** yes
 
 #### Phase 36: Mobile Performance
