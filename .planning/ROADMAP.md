@@ -16,7 +16,7 @@
 - ✅ **v4.0 Daily Expense Tracker** — Phases 23–26 (shipped 2026-05-22) — [archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Gap Resolution & Feature Completeness** — Phases 27–30 (shipped 2026-05-25) — [archive](milestones/v4.1-ROADMAP.md)
 - ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (shipped 2026-05-26) — [archive](milestones/v4.2-ROADMAP.md)
-- 🚧 **v4.3 Wallecx Mobile Optimization** — Phases 33–38 (+ 38b conditional) — PLANNED 2026-05-26
+- 🚧 **v4.3 Wallecx Mobile Optimization** — Phases 33–38 (+ 38b conditional) — IN PROGRESS (Phase 33 complete 2026-05-27)
 
 ## Phases
 
@@ -223,7 +223,10 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 4. Internal scroll inside Manage dialogs and detail views works without double-scroll trap on small viewports — content scrolls, header + (eventual sticky action bar) remain pinned
 5. BarcodeDisplay.vue still renders black bars on white background in BOTH light and dark theme on the Memberships tab after the CSS sweep — visual check recorded
 
-**Plans:** TBD
+**Plans:** 3 plans
+- [ ] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09)
+- [ ] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07)
+- [ ] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07)
 **UI hint:** yes
 
 #### Phase 35: Forms & Dialogs on Small Screens
@@ -407,7 +410,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
-| 34. Layout Audit & Touch Targets | v4.3 | 0/? | Not started | — |
+| 34. Layout Audit & Touch Targets | v4.3 | 0/3 | Planned | — |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 0/? | Not started | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
 | 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
@@ -416,4 +419,4 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-26 — v4.3 Wallecx Mobile Optimization planned. 6 mandatory phases (33–38) + 1 conditional (38b). 32/32 functional requirements mapped; 16 NFR/CON bound to verification-owner phases. Next: `/gsd-plan-phase 33` for Mobile Foundation.*
+*Last updated: 2026-05-27 — Phase 33 Mobile Foundation complete (3/3 plans, verification passed 4/4, FND-01..04 shipped). Vue 3.5.34 + PrimeVue 4.5.5 baseline; useMobileEnv composable + App.vue beforeinstallprompt capture; ANALYZE-gated visualizer. Next: `/gsd-discuss-phase 34` (Layout Audit & Touch Targets).*
