@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: planning
-stopped_at: "Phase 34 COMPLETE (3/3 plans). Plan 34-03 COMPLETE. ManageMembership.vue + ManageVaccination.vue: mobile bottom-Drawer branches with DragHandle added (3dc3b73, b119c76). 3 layout regressions from Plan 34-01 CSS auto-fixed: bottom-Drawer content padding max(env(...), 1.25rem) + ink-bar clip-path:inset(0) (06a1238); sticky-toolbar border-bottom seam removed (78b2d45). BR-2 APPROVED at 375x667 light+dark — black-on-white confirmed in both themes. All 7 Wallecx bottom-sheet drag-handle sites complete. Automated gates: type-check 0, test:unit 59/59, build 57 precache 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered). 34-03-SUMMARY.md written, self-check PASSED. **Next: Phase 35 Forms & Dialogs on Small Screens — run `/gsd-plan-phase 35`.**"
-last_updated: "2026-05-27T11:19:38.786Z"
+stopped_at: Phase 35 context gathered (12 decisions D-35-01..13); BaseMobileDialog owns Dialog/Drawer split. Ready for /gsd-plan-phase 35.
+last_updated: "2026-05-27T11:40:43.075Z"
 last_activity: 2026-05-27
 progress:
   total_phases: 6
@@ -320,9 +320,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T12:00:00Z
+**Last session:** 2026-05-27T11:40:43.065Z
 
-**Stopped at:** Phase 34 COMPLETE (3/3 plans). Plan 34-03 COMPLETE. ManageMembership.vue + ManageVaccination.vue: mobile bottom-Drawer branches with DragHandle added (3dc3b73, b119c76). 3 layout regressions from Plan 34-01 CSS auto-fixed: bottom-Drawer content padding max(env(...), 1.25rem) + ink-bar clip-path:inset(0) (06a1238); sticky-toolbar border-bottom seam removed (78b2d45). BR-2 APPROVED at 375x667 light+dark — black-on-white confirmed in both themes. All 7 Wallecx bottom-sheet drag-handle sites complete. Automated gates: type-check 0, test:unit 59/59, build 57 precache 0 exceeds, lint clean (VaccinationDetail.vue:5 grandfathered). 34-03-SUMMARY.md written, self-check PASSED. **Next: Phase 35 Forms & Dialogs on Small Screens — run `/gsd-plan-phase 35`.**
+**Stopped at:** Phase 35 context gathered (12 decisions D-35-01..13); BaseMobileDialog owns Dialog/Drawer split. Ready for /gsd-plan-phase 35.
 
 **Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
