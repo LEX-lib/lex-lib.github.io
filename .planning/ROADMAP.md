@@ -174,7 +174,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 ### Phases
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
-- [ ] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock (2/3 plans complete)
+- [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
 - [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, DatePicker touchUI
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
@@ -225,8 +225,8 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 **Plans:** 3 plans
 - [x] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09) — COMPLETE (DragHandle.vue 9ee21cb; CSS rules + wallecx-main-tabs 294c3b9; LOCKED viewport meta a16f9fe; dvh 0 matches confirmed; type-check 0, test:unit 59/59)
-- [ ] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07)
-- [ ] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07)
+- [x] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07) — COMPLETE (f6586e3, f29ba7a, 4f177e6)
+- [x] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07) — COMPLETE (3dc3b73, b119c76; fixes 06a1238, 78b2d45; BR-2 APPROVED 375x667 light+dark)
 **UI hint:** yes
 
 #### Phase 35: Forms & Dialogs on Small Screens
@@ -410,7 +410,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
-| 34. Layout Audit & Touch Targets | v4.3 | 0/3 | Planned | — |
+| 34. Layout Audit & Touch Targets | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 0/? | Not started | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
 | 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
@@ -419,4 +419,4 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-27 — Phase 33 Mobile Foundation complete (3/3 plans, verification passed 4/4, FND-01..04 shipped). Vue 3.5.34 + PrimeVue 4.5.5 baseline; useMobileEnv composable + App.vue beforeinstallprompt capture; ANALYZE-gated visualizer. Next: `/gsd-discuss-phase 34` (Layout Audit & Touch Targets).*
+*Last updated: 2026-05-27 — Phase 34 Layout Audit & Touch Targets complete (3/3 plans, LT-01..05/07/09 shipped). DragHandle.vue + wallecx-overrides.css touch-target rules; sticky TabList + toolbar; scan-overlay safe-area; ManageMembership + ManageVaccination bottom-Drawer branches; BR-2 PASSED. All 7 bottom-sheet drag-handle sites done. Next: `/gsd-plan-phase 35` (Forms & Dialogs on Small Screens).*
