@@ -1,7 +1,7 @@
 ---
 phase: 35
 slug: forms-dialogs-on-small-screens
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-27
