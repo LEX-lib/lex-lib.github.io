@@ -168,7 +168,7 @@ const emit = defineEmits<{
     <div
       v-if="showScanOverlay"
       class="fixed inset-0 flex flex-col items-center justify-center"
-      style="z-index: 9999; background: #ffffff; filter: brightness(1.4);"
+      style="z-index: 9999; background: #ffffff; filter: brightness(1.4); padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);"
       role="dialog"
       aria-modal="true"
       aria-label="Barcode scan view"
@@ -176,8 +176,8 @@ const emit = defineEmits<{
     >
       <!-- Close button — always visible, top-right, 48px touch target -->
       <button
-        class="absolute top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full"
-        style="background: rgba(0,0,0,0.08);"
+        class="absolute right-4 w-12 h-12 flex items-center justify-center rounded-full"
+        style="top: calc(1rem + env(safe-area-inset-top)); background: rgba(0,0,0,0.08);"
         @click="closeScanOverlay"
         aria-label="Close scan view"
       >
