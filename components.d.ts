@@ -29,6 +29,7 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     Dialog: typeof import('primevue/dialog')['default']
     Divider: typeof import('primevue/divider')['default']
+    DragHandle: typeof import('./src/components/projects/wallecx/DragHandle.vue')['default']
     Drawer: typeof import('primevue/drawer')['default']
     Editor: typeof import('primevue/editor')['default']
     ExpenseItem: typeof import('./src/components/projects/wallecx/ExpenseItem.vue')['default']
