@@ -832,7 +832,9 @@ baseDialogRef.value?.closeWithoutGuard()
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three resolved before planning: (1) FD-04 → `:inline="isMobile"` locked in 35-CONTEXT.md D-35-13; (2) sticky action-bar slot forwarding confirmed clean in the BaseMobileDialog skeleton + plan 35-01; (3) ManageBudget `JSON.stringify` dirty-check is trivially fast for ~15 rows. Plans implement all three.
 
 1. **FD-04 approach: which of the three options?**
    - What we know: `touchUI` is gone; `inline`, `breakpoint`, or status-quo are the options.
