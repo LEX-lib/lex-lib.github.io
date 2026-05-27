@@ -75,7 +75,7 @@ onMounted(async () => {
     >
     <template #content>
       <h1 class="text-2xl font-bold mb-4" style="color: var(--color-typo-heading)">Wallecx</h1>
-      <Tabs v-model:value="activeTab">
+      <Tabs v-model:value="activeTab" class="wallecx-main-tabs">
         <TabList>
           <Tab value="vaccinations">
             <iconify-icon icon="mdi:needle" width="16" height="16" aria-hidden="true"></iconify-icon>

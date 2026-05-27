@@ -54,3 +54,67 @@
   --p-card-border-color: #2a3142;
   border: 1px solid var(--p-card-border-color);
 }
+
+/* Phase 34 LT-01: 44×44 touch-target floor for icon-only PrimeVue buttons.
+ *
+ * Root cause: main.ts applies p-button-sm globally via pt.button.root, and
+ * Aura's button.sm.iconOnlyWidth = 2rem (32px) — below the 44px floor.
+ * .p-button-icon-only is added by PrimeVue only when NO label text is present.
+ * Label buttons are unaffected (their height is set by padding + line-height).
+ * Does NOT use !important — specificity is sufficient over Aura element rules. */
+.p-button.p-button-icon-only {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Phase 34 LT-01: Top-level WallecxApp tab triggers only.
+ * WallecxApp.vue must add class="wallecx-main-tabs" to its <Tabs> wrapper.
+ * Period tabs (.wallecx-period-tabs) and sub-tabs (.wallecx-sub-tabs) are
+ * excluded — they manage their own min-height via scoped :deep rules. */
+.wallecx-main-tabs .p-tab {
+  min-height: 44px;
+}
+
+/* Phase 34 LT-05/D-34-01: Sticky TabList on mobile (≤639px).
+ * Overrides PrimeVue's .p-tablist default (position:relative; overflow:hidden).
+ * The page (not the Card) is the scroll container for WallecxApp on mobile.
+ * overflow:visible removes the clip so the active ink-bar renders correctly.
+ * !important required — PrimeVue base CSS sets position:relative at equal specificity. */
+@media (max-width: 639px) {
+  .wallecx-main-tabs .p-tablist {
+    position: sticky !important;
+    top: env(safe-area-inset-top);
+    z-index: 10;
+    background: var(--p-tabs-tablist-background);
+    overflow: visible !important;
+  }
+
+  /* Phase 34 LT-05: Per-tab sticky toolbar. Class added by tab components (Plan 02)
+   * via :class="isMobile ? 'wallecx-tab-toolbar' : ''". top offsets below tablist
+   * (≈44px tab height + env(safe-area-inset-top) for notch clearance). */
+  .wallecx-tab-toolbar {
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + 52px);
+    z-index: 9;
+    background: var(--p-card-background, white);
+    border-bottom: 1px solid var(--p-card-border-color, #e5e7eb);
+  }
+
+  /* Dark-mode toolbar background — matches the existing .my-app-dark .p-card
+   * override (--p-card-background: #1a1f2e). Hardcoded because the variable is
+   * set on .p-card, not :root, and the toolbar may sit outside .p-card. */
+  .my-app-dark .wallecx-tab-toolbar {
+    background: #1a1f2e;
+  }
+}
+
+/* Phase 34 LT-03/D-34-04: Safe-area padding inside bottom Drawers.
+ * Pads .p-drawer-content so the last form field / action button clears the
+ * iOS home indicator / Android gesture bar.
+ * Uses padding — does NOT change the 85dvh panel height.
+ * max() ensures at least 1rem even on devices with no home indicator. */
+.p-drawer-bottom .p-drawer-content {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
