@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import ExpensesToolbar from './ExpensesToolbar.vue'
 import ExpenseItem from './ExpenseItem.vue'
+import { useIsMobile } from '@/composables/useIsMobile'
 
 const props = defineProps<{
   expenses: Expenses[]
@@ -16,6 +17,8 @@ const emit = defineEmits<{
   preview:               [record: Expenses]
   'request-add-expense': []
 }>()
+
+const isMobile = useIsMobile()
 
 // Sort persistence — STATE.md locked key (moved verbatim from ExpensesTab.vue)
 const SORT_STORAGE_KEY = 'wallecx:expense-sort'
@@ -105,17 +108,22 @@ onMounted(() => {
 
 <template>
   <div>
-    <!-- Toolbar: search + sort + category MultiSelect + date range — hidden during loading skeleton only -->
-    <ExpensesToolbar
-      v-if="!isLoading"
-      v-model:search-query="searchQuery"
-      v-model:sort-mode="sortMode"
-      v-model:selected-categories="selectedCategories"
-      v-model:date-from="dateFrom"
-      v-model:date-to="dateTo"
-      :sort-options="expenseSortOptions"
-      :category-options="categoryOptions"
-    />
+    <!-- Sticky toolbar wrapper — class applied on mobile only (LT-05 / D-34-01) -->
+    <!-- Note: sticky wrapper lives here in ExpensesListView (not ExpensesTab) because
+         ExpensesToolbar renders here, inside the ExpensesListView sub-component shell. -->
+    <div :class="isMobile ? 'wallecx-tab-toolbar' : ''">
+      <!-- Toolbar: search + sort + category MultiSelect + date range — hidden during loading skeleton only -->
+      <ExpensesToolbar
+        v-if="!isLoading"
+        v-model:search-query="searchQuery"
+        v-model:sort-mode="sortMode"
+        v-model:selected-categories="selectedCategories"
+        v-model:date-from="dateFrom"
+        v-model:date-to="dateTo"
+        :sort-options="expenseSortOptions"
+        :category-options="categoryOptions"
+      />
+    </div>
 
     <!-- STATE 1: Loading — 3 skeleton rows at list-row height (3rem, not card height) -->
     <div v-if="isLoading" class="flex flex-col gap-1">

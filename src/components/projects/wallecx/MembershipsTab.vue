@@ -240,14 +240,17 @@ async function exportJson(): Promise<void> {
       />
     </div>
 
-    <!-- Toolbar: search + sort (ORG-01, ORG-02) — always visible -->
-    <WallecxToolbar
-      v-model:search-query="searchQuery"
-      v-model:sort-mode="sortMode"
-      :view-mode="'grid'"
-      :sort-options="membershipSortOptions"
-      :show-toggle="false"
-    />
+    <!-- Sticky toolbar wrapper — class applied on mobile only (LT-05 / D-34-01) -->
+    <div :class="isMobile ? 'wallecx-tab-toolbar' : ''">
+      <!-- Toolbar: search + sort (ORG-01, ORG-02) — always visible -->
+      <WallecxToolbar
+        v-model:search-query="searchQuery"
+        v-model:sort-mode="sortMode"
+        :view-mode="'grid'"
+        :sort-options="membershipSortOptions"
+        :show-toggle="false"
+      />
+    </div>
 
     <!-- Loading state: 3 skeleton tiles matching MembershipCard min-height -->
     <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">

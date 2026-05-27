@@ -342,14 +342,17 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       />
     </div>
 
-    <!-- Toolbar: search + sort (SEARCH-01, SORT-01) — always visible -->
-    <WallecxToolbar
-      v-model:search-query="searchQuery"
-      v-model:sort-mode="sortMode"
-      v-model:view-mode="viewMode"
-      :sort-options="vaccinationSortOptions"
-      :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0 && !isMobile"
-    />
+    <!-- Sticky toolbar wrapper — class applied on mobile only (LT-05 / D-34-01) -->
+    <div :class="isMobile ? 'wallecx-tab-toolbar' : ''">
+      <!-- Toolbar: search + sort (SEARCH-01, SORT-01) — always visible -->
+      <WallecxToolbar
+        v-model:search-query="searchQuery"
+        v-model:sort-mode="sortMode"
+        v-model:view-mode="viewMode"
+        :sort-options="vaccinationSortOptions"
+        :show-toggle="!isLoading && records.length > 0 && displayedGroups.length > 0 && !isMobile"
+      />
+    </div>
 
     <!-- Loading state: skeleton card grid -->
     <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
