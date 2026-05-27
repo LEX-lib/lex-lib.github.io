@@ -9,6 +9,10 @@ import dayjs from "dayjs";
 import { pb } from "@/lib/pocketbase";
 import { mapToUpdateVaccination } from "@/lib/pocketbase/vaccinationMapper";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
+import { useIsMobile } from "@/composables/useIsMobile";
+import DragHandle from "./DragHandle.vue";
+
+const isMobile = useIsMobile();
 
 const visible = defineModel("visible", { type: Boolean, default: false, required: true });
 const record = defineModel<Vaccinations | null>("record", { default: null });
@@ -207,7 +211,9 @@ function onHide(): void {
 </script>
 
 <template>
+  <!-- Desktop: centered Dialog -->
   <Dialog
+    v-if="!isMobile"
     modal
     v-model:visible="visible"
     :header="dialogHeader"
@@ -315,4 +321,122 @@ function onHide(): void {
       />
     </Form>
   </Dialog>
+
+  <!-- Mobile: bottom Drawer (85dvh cap via wallecx-overrides.css already applied) -->
+  <Drawer
+    v-else
+    v-model:visible="visible"
+    position="bottom"
+    :show-close-icon="!isSaving"
+    @hide="onHide"
+  >
+    <template #header>
+      <div class="flex flex-col items-center w-full gap-1">
+        <DragHandle />
+        <span class="font-semibold">{{ dialogHeader }}</span>
+      </div>
+    </template>
+
+    <!-- D-33-01-A / #8191: administeredDate is a direct v-model ref, outside the Form.
+         Two <Form> instances work here because only one renders at a time (v-if/v-else);
+         each provides its own inject context; fields bind by name, not ref. -->
+    <Form
+      v-slot="$form"
+      :initialValues="initialValues"
+      :resolver="resolver"
+      @submit="onSubmit"
+      validate-on-submit
+      class="space-y-4"
+    >
+      <!-- vaccine_type (required) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Type *</label>
+        <InputText
+          name="vaccine_type"
+          fluid
+          :disabled="isSaving"
+          placeholder="e.g., Flu, COVID-19, Pneumonia PCV23"
+        />
+        <Message v-if="$form.vaccine_type?.invalid" severity="error" size="small" variant="simple">
+          {{ $form.vaccine_type.error?.message }}
+        </Message>
+      </div>
+
+      <!-- vaccine_name (required) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Name *</label>
+        <InputText name="vaccine_name" fluid :disabled="isSaving" />
+        <Message v-if="$form.vaccine_name?.invalid" severity="error" size="small" variant="simple">
+          {{ $form.vaccine_name.error?.message }}
+        </Message>
+      </div>
+
+      <!-- date_administered (required, direct v-model — D-33-01-A, PrimeVue #8191) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
+        <DatePicker v-model="administeredDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
+        <Message v-if="dateAdministeredError" severity="error" size="small" variant="simple">
+          {{ dateAdministeredError }}
+        </Message>
+      </div>
+
+      <!-- dose_number (optional) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Dose Number</label>
+        <InputNumber name="dose_number" fluid :min="0" :max="20" :show-buttons="false" :disabled="isSaving" />
+        <Message v-if="$form.dose_number?.invalid" severity="error" size="small" variant="simple">
+          {{ $form.dose_number.error?.message }}
+        </Message>
+      </div>
+
+      <!-- lot_number (optional) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Lot Number</label>
+        <InputText name="lot_number" fluid :disabled="isSaving" />
+      </div>
+
+      <!-- manufacturer (optional) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</label>
+        <InputText name="manufacturer" fluid :disabled="isSaving" />
+      </div>
+
+      <!-- location (optional) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Location</label>
+        <InputText name="location" fluid :disabled="isSaving" />
+      </div>
+
+      <!-- notes (optional, Textarea 3 rows) -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
+        <Textarea name="notes" fluid :rows="3" :auto-resize="false" :disabled="isSaving" />
+      </div>
+
+      <!-- card attachment -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm" style="color: var(--color-typo-heading)">Card (image or PDF)</label>
+        <FileUpload
+          mode="basic"
+          :auto="false"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          :maxFileSize="10485760"
+          :disabled="isSaving"
+          @select="onFileSelect"
+        />
+        <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
+          {{ pendingFile.name }} selected
+        </p>
+      </div>
+
+      <!-- Submit button -->
+      <Button
+        type="submit"
+        :label="isEditMode ? 'Save Changes' : 'Add Vaccination'"
+        :loading="isSaving"
+        :disabled="isSaving"
+        fluid
+      />
+    </Form>
+  </Drawer>
 </template>
