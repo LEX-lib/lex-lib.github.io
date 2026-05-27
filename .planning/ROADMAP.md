@@ -198,7 +198,10 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 3. `npm run analyze` produces a treemap report at a known artifact path (`ANALYZE=true`-gated, `cross-env`-wrapped for Windows), and the report is reviewed before Phase 36 plan sequencing
 4. Vue patch-bump (3.5.18 → 3.5.34) + PrimeVue minor-bump (4.3.7 → 4.5.5) lockstep with `@primevue/auto-import-resolver` + `@primevue/forms` lands on `feat/wallecx` with a documented branch smoke-test confirming Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect + ColorPicker direct-v-model survive
 
-**Plans:** TBD
+**Plans:** 3 plans
+- [ ] 33-01-PLAN.md — Vue 3.5.34 + PrimeVue 4.5.5 lockstep version bump + smoke-test gate (FND-04)
+- [ ] 33-02-PLAN.md — useMobileEnv composable + App.vue beforeinstallprompt capture (FND-01, FND-02)
+- [ ] 33-03-PLAN.md — ANALYZE-gated rollup-plugin-visualizer + analyze script (FND-03)
 **UI hint:** yes
 
 #### Phase 34: Layout Audit & Touch Targets
@@ -403,7 +406,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 30. UAT Sweep | v4.1 | 8/8 | Complete (80/82 passed, 1 deferred) | 2026-05-25 |
 | 31. Re-create wallecx_expense_budgets collection | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
-| 33. Mobile Foundation | v4.3 | 0/? | Not started | — |
+| 33. Mobile Foundation | v4.3 | 0/3 | Not started | — |
 | 34. Layout Audit & Touch Targets | v4.3 | 0/? | Not started | — |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 0/? | Not started | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
