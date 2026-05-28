@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, defineAsyncComponent } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 import { pb } from "@/lib/pocketbase";
-import VaccinationsTab from "./VaccinationsTab.vue";
-import MembershipsTab from "./MembershipsTab.vue";
-import ExpensesTab from "./ExpensesTab.vue";
+import WallecxSkeleton from "./WallecxSkeleton.vue";
 import PwaInstallBanner from './PwaInstallBanner.vue';
 import '@/assets/wallecx-overrides.css';
+
+const VaccinationsTab = defineAsyncComponent(() => import("./VaccinationsTab.vue"));
+const MembershipsTab = defineAsyncComponent(() => import("./MembershipsTab.vue"));
+const ExpensesTab = defineAsyncComponent(() => import("./ExpensesTab.vue"));
 
 const router = useRouter();
 const activeTab = ref<string>("vaccinations");
@@ -92,13 +94,28 @@ onMounted(async () => {
         </TabList>
         <TabPanels>
           <TabPanel value="vaccinations">
-            <VaccinationsTab />
+            <Suspense>
+              <VaccinationsTab />
+              <template #fallback>
+                <WallecxSkeleton variant="vaccination-card" :count="3" />
+              </template>
+            </Suspense>
           </TabPanel>
           <TabPanel value="memberships">
-            <MembershipsTab />
+            <Suspense>
+              <MembershipsTab />
+              <template #fallback>
+                <WallecxSkeleton variant="membership-card" :count="3" />
+              </template>
+            </Suspense>
           </TabPanel>
           <TabPanel value="expenses">
-            <ExpensesTab />
+            <Suspense>
+              <ExpensesTab />
+              <template #fallback>
+                <WallecxSkeleton variant="expense-row" :count="3" />
+              </template>
+            </Suspense>
           </TabPanel>
         </TabPanels>
       </Tabs>
