@@ -155,7 +155,11 @@ const receiptThumbnailUrl = computed(() => {
   if (!isEditMode.value || !record.value?.receipt) return null
   const filename = record.value.receipt
   if (filename.toLowerCase().endsWith('.pdf')) return null
-  return pb.files.getURL(record.value, filename, { thumb: '100x100' })
+  // PocketBase thumb generator returns 404 for WebP sources (Phase 36 PF-07 receipts
+  // are now WebP). Fall back to the full file URL — browser scales via the 100×100
+  // CSS container. Bandwidth cost is minimal (compressToWebP caps at 1.5 MB).
+  const isWebP = filename.toLowerCase().endsWith('.webp')
+  return pb.files.getURL(record.value, filename, isWebP ? {} : { thumb: '100x100' })
 })
 
 const hasExistingPdf = computed(

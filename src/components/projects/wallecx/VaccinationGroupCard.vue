@@ -16,7 +16,14 @@ const emit = defineEmits<{
 
 function thumbUrl(record: Vaccinations): string {
   if (!record.card) return "";
-  return pb.files.getURL(record, record.card, { thumb: "100x100", token: props.listToken });
+  // PocketBase thumb generator returns 404 for WebP sources (Phase 36 PF-07 cards
+  // are now WebP). Fall back to the full file URL when .webp.
+  const isWebP = record.card.toLowerCase().endsWith(".webp");
+  return pb.files.getURL(
+    record,
+    record.card,
+    isWebP ? { token: props.listToken } : { thumb: "100x100", token: props.listToken },
+  );
 }
 
 function displayDate(iso: string): string {

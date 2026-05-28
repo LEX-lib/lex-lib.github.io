@@ -41,12 +41,17 @@ const tokenUrl = computed(() =>
   pb.files.getURL(props.record, (props.record as Record<string, string>)[props.attachmentField] ?? '', { token: props.token })
 )
 
-const thumbUrl = computed(() =>
-  pb.files.getURL(props.record, (props.record as Record<string, string>)[props.attachmentField] ?? '', {
-    thumb: "400x400",
-    token: props.token,
-  })
-)
+const thumbUrl = computed(() => {
+  const filename = (props.record as Record<string, string>)[props.attachmentField] ?? ''
+  // PocketBase thumb generator returns 404 for WebP sources (Phase 36 PF-07 images
+  // are now WebP). Fall back to the full file URL when .webp.
+  const isWebP = filename.toLowerCase().endsWith('.webp')
+  return pb.files.getURL(
+    props.record,
+    filename,
+    isWebP ? { token: props.token } : { thumb: "400x400", token: props.token },
+  )
+})
 
 function onPdfError(): void {
   pdfFailed.value = true;

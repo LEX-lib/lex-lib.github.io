@@ -140,14 +140,18 @@ const isDirty = computed<boolean>(() => {
 });
 
 // Thumbnail computed — D-03: returns URL only in edit mode with existing card_image
-const thumbnailUrl = computed(() =>
-  isEditMode.value && record.value?.card_image
-    ? pb.files.getURL(record.value, record.value.card_image, {
-        thumb: "100x100",
-        token: props.token,
-      })
-    : null,
-);
+const thumbnailUrl = computed(() => {
+  if (!isEditMode.value || !record.value?.card_image) return null;
+  const filename = record.value.card_image;
+  // PocketBase thumb generator returns 404 for WebP sources (Phase 36 PF-07 card
+  // images are now WebP). Fall back to the full file URL when .webp.
+  const isWebP = filename.toLowerCase().endsWith(".webp");
+  return pb.files.getURL(
+    record.value,
+    filename,
+    isWebP ? { token: props.token } : { thumb: "100x100", token: props.token },
+  );
+});
 
 // Zod schema (manual safeParse — D-07)
 const schema = z.object({
