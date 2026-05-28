@@ -125,6 +125,9 @@ export default defineConfig({
         codeSplitting: {
           groups: [
             { name: "leaflet", test: /\/leaflet/, priority: 30 },
+            { name: "chart-js", test: /\/chart\.js/, priority: 25 },
+            { name: "jsbarcode", test: /\/jsbarcode/, priority: 25 },
+            { name: "image-compression", test: /\/browser-image-compression/, priority: 25 },
             {
               name: "primevue",
               test: /\/primevue|\/@primevue|\/@primeuix/,
