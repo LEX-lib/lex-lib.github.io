@@ -856,7 +856,9 @@ export async function compressToWebP(file: File): Promise<File> {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> Both questions resolved before planning: (1) PrimeVue Tabs remount behaviour — implement as designed; if tabs remount on every switch the Suspense fallback shows briefly (acceptable UX), `<KeepAlive>` is the documented fallback (Plan 36-02 notes this). (2) VaccinationsTab requestKey gap — added `requestKey: 'vaccinations-getFullList'` as part of the instrumentation wrap in Plan 36-03.
 
 1. **PrimeVue Tabs remount behaviour on tab switch**
    - What we know: Phase 34 sticky TabList implementation did not encounter unmount issues; the ink-bar fix (`clip-path`) was about CSS overflow, not component lifecycle.
