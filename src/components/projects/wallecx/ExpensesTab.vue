@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from 'vue'
+import { ref, watch, onMounted, defineAsyncComponent } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
 import { instrumentedGetFullList } from '@/lib/pocketbase/perfInstrument'
@@ -20,6 +20,10 @@ const expenses = ref<Expenses[]>([])
 const isLoading = ref(false)
 const showManage = ref(false)
 const manageRecord = ref<Expenses | null>(null)
+// Edit-mode receipt thumbnail needs ?token on the file URL — wallecx_expenses
+// viewRule is `@request.auth.id != "" && user = @request.auth.id`. Mirrors
+// MembershipsTab/VaccinationsTab fileToken pattern.
+const manageToken = ref<string>('')
 const confirm = useConfirm()
 const isMobile = useIsMobile()
 const isExporting = ref(false)
@@ -79,10 +83,30 @@ onMounted(async () => {
   await loadBudgets({ context: 'mount' })
 })
 
-function openManage(record: Expenses | null) {
+async function openManage(record: Expenses | null) {
+  // Edit mode with an existing receipt needs a file token to render the thumbnail.
+  // Fetch unconditionally — cheap (one auth-scoped call) and keeps the prop shape stable.
+  // If token fetch fails, still open the dialog (form fields work without it; only the
+  // thumbnail will be blank), but surface the failure so the user knows why.
+  if (record !== null) {
+    try {
+      manageToken.value = await pb.files.getToken()
+    } catch (e: unknown) {
+      manageToken.value = ''
+      toast.error('Receipt preview unavailable. Form will still save.')
+      console.error('ExpensesTab: getToken (manage) failed', e)
+    }
+  } else {
+    manageToken.value = ''
+  }
   manageRecord.value = record
   showManage.value = true
 }
+
+// Clear the manage-token when the dialog closes (mirrors MembershipsTab @hide pattern).
+watch(showManage, (v) => {
+  if (!v) manageToken.value = ''
+})
 
 function onCreated(record: Expenses) {
   expenses.value.unshift(record)
@@ -225,6 +249,7 @@ async function exportJson(): Promise<void> {
       <ManageExpense
         v-model:visible="showManage"
         v-model:record="manageRecord"
+        :token="manageToken"
         @created="onCreated"
         @updated="onUpdated"
       />

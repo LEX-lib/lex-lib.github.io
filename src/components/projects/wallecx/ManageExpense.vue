@@ -11,6 +11,10 @@ import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types
 import { useMobileEnv } from '@/composables/useMobileEnv'
 import BaseMobileDialog from './BaseMobileDialog.vue'
 
+const props = defineProps<{
+  token?: string
+}>()
+
 const visible = defineModel('visible', { type: Boolean, default: false, required: true })
 const record = defineModel<Expenses | null>('record', { default: null })
 
@@ -160,7 +164,12 @@ const receiptThumbnailUrl = computed(() => {
   // compressToWebP rename fix may carry a `.jpg` extension with WebP bytes (the
   // .webp filename check would miss them). Browser scales via the existing CSS
   // container. Bandwidth cost is minimal — compressToWebP caps at 1.5 MB.
-  return pb.files.getURL(record.value, filename, {})
+  //
+  // Token is required: wallecx_expenses viewRule is `@request.auth.id != "" &&
+  // user = @request.auth.id`, so the file URL must carry ?token=<file-token>.
+  // Parent (ExpensesTab) fetches a token via pb.files.getToken() before opening
+  // the dialog and passes it as :token — mirrors ManageMembership/ManageVaccination.
+  return pb.files.getURL(record.value, filename, { token: props.token })
 })
 
 const hasExistingPdf = computed(
