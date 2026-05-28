@@ -58,9 +58,10 @@ Exceptions:
 | Body | 16px | 400 (regular) | 1.5 |
 | Label / Caption | 14px | 400 (regular) | 1.5 |
 | Heading | 24px (text-2xl) | 700 (bold) | 1.2 |
-| Display | 28px | 600 (semibold) | 1.2 |
+| Display | 28px | 700 (bold) | 1.2 |
 
 Notes:
+- **Exactly 2 weights declared:** `400 (regular)` and `700 (bold)`. Size differentiates Display (28px) from Heading (24px) — no need for a distinct semibold weight.
 - **Mobile input override (FD-01):** All `.p-inputtext`, `.p-inputnumber-input`, `.p-textarea`, `.p-select-label`, `.p-multiselect-label`, `.p-datepicker-input` are forced to `font-size: 16px !important` at `max-width: 640px` — existing rule in `wallecx-overrides.css`. Phase 37 does not add new form inputs, so no new instances of this rule are required.
 - Banner copy (`PwaInstallBanner.vue`, `OfflineBanner.vue`) uses `text-sm` (14px) with `color: #ffffff` on navy background. This is NOT a form input — FD-01 16px rule does not apply.
 
@@ -113,7 +114,7 @@ Accent reserved for:
 
 | Element | Copy |
 |---------|------|
-| Android Install banner CTA | "Install" |
+| Android Install banner CTA | "Install Wallecx" |
 | Android Install banner body | "Install Wallecx for faster access and home-screen shortcuts." |
 | Android Install banner dismiss | aria-label: "Dismiss install banner" (same as iOS branch) |
 | iOS Install banner body | "Tap **Share** then **Add to Home Screen** to install Wallecx" (UNCHANGED from existing) |
@@ -168,7 +169,7 @@ Components affected or created in Phase 37:
 - Legacy `'true'` migrates to `{ dismissedAt: <now-ISO>, platform: <detected> }` on first read (D-37-07)
 
 **Android Install button interaction (D-37-04):**
-1. User taps "Install"
+1. User taps "Install Wallecx"
 2. `installPromptEvent.prompt()` called (FIRST and ONLY call — M-9)
 3. `await event.userChoice` resolves
 4. On `accepted`: clear singleton via `clearInstallPromptEvent()` — Chrome fires `appinstalled` which also clears it (App.vue teardown)
