@@ -8,8 +8,8 @@ import { mapToUpdateExpense } from '@/lib/pocketbase/expenseMapper'
 import { expenseSchema, DEFAULT_EXPENSE_CATEGORIES } from '@/lib/wallecx/expenseSchema'
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
-import { useIsMobile } from '@/composables/useIsMobile'
-import DragHandle from './DragHandle.vue'
+import { useMobileEnv } from '@/composables/useMobileEnv'
+import BaseMobileDialog from './BaseMobileDialog.vue'
 
 const visible = defineModel('visible', { type: Boolean, default: false, required: true })
 const record = defineModel<Expenses | null>('record', { default: null })
@@ -19,11 +19,12 @@ const emit = defineEmits<{
   updated: [record: Expenses]
 }>()
 
-const isMobile = useIsMobile()
+const { isMobile } = useMobileEnv()
 const isSaving = ref(false)
 const pendingFile = ref<File | null>(null)
 const loadedCategories = ref<ExpenseCategories[]>([])
 const isLoadingCategories = ref(false)
+const baseDialogRef = ref<InstanceType<typeof BaseMobileDialog> | null>(null)
 
 const isEditMode = computed(() => record.value !== null)
 const dialogHeader = computed(() => (isEditMode.value ? 'Edit Expense' : 'Add Expense'))
@@ -40,6 +41,18 @@ const amountError = ref<string>('')
 const expenseDateError = ref<string>('')
 const categoryError = ref<string>('')
 const descriptionError = ref<string>('')
+
+// FD-09: Dirty snapshot — taken on dialog open
+interface ExpenseSnapshot {
+  amount: number | null
+  expenseDate: string
+  category: string
+  description: string
+  notes: string
+  hasPendingFile: boolean
+}
+
+const snapshot = ref<ExpenseSnapshot | null>(null)
 
 // Record watcher — initialises form refs when record prop changes (mirrors ManageMembership.vue watch pattern exactly)
 watch(
@@ -67,10 +80,36 @@ watch(
   { immediate: true },
 )
 
-// Visible watcher — loads categories when dialog opens (D-21)
+// Visible watcher — loads categories when dialog opens (D-21) + takes dirty snapshot
 watch(visible, async (isOpen) => {
-  if (!isOpen) return
+  if (!isOpen) {
+    // Reset pending file on close (S-3 pattern)
+    pendingFile.value = null
+    return
+  }
+  // Snapshot for dirty tracking (FD-09)
+  snapshot.value = {
+    amount: amount.value,
+    expenseDate: expenseDate.value.toISOString(),
+    category: category.value,
+    description: description.value,
+    notes: notes.value,
+    hasPendingFile: false,
+  }
   await loadCategories()
+})
+
+// FD-09: isDirty computed — passed to BaseMobileDialog
+const isDirty = computed<boolean>(() => {
+  if (!snapshot.value) return false
+  return (
+    amount.value !== snapshot.value.amount ||
+    expenseDate.value.toISOString() !== snapshot.value.expenseDate ||
+    category.value !== snapshot.value.category ||
+    description.value !== snapshot.value.description ||
+    notes.value !== snapshot.value.notes ||
+    pendingFile.value !== null
+  )
 })
 
 async function loadCategories(): Promise<void> {
@@ -124,6 +163,7 @@ const hasExistingPdf = computed(
 )
 
 // File select handler — EXIF strip + compression for images, direct assign for PDF (D-17)
+// DO NOT modify this function body — it enforces security-relevant 10MB + allowedTypes validation (T-35-04)
 async function onFileSelect(event: { files: File[] }): Promise<void> {
   const file = event.files[0]
   if (!file) return
@@ -172,8 +212,18 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
   }
 }
 
-function onHide(): void {
-  pendingFile.value = null
+// FD-05: Raw file input bridge — routes camera/gallery input through the EXIF/compression pipeline
+async function onRawFileChange(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  input.value = '' // reset so same file can be re-selected
+  await onFileSelect({ files: [file] })
+}
+
+// FD-09: Explicit Cancel — close without triggering dirty guard
+function onCancel(): void {
+  baseDialogRef.value?.closeWithoutGuard()
 }
 
 async function onSubmit(): Promise<void> {
@@ -252,7 +302,8 @@ async function onSubmit(): Promise<void> {
     }
 
     pendingFile.value = null
-    visible.value = false
+    // FD-09: bypass dirty guard on successful save
+    baseDialogRef.value?.closeWithoutGuard()
   } catch {
     toast.error('Failed to save. Please try again.')
   } finally {
@@ -262,18 +313,15 @@ async function onSubmit(): Promise<void> {
 </script>
 
 <template>
-  <!-- Desktop: centered Dialog -->
-  <Dialog
-    v-if="!isMobile"
-    modal
+  <BaseMobileDialog
+    ref="baseDialogRef"
     v-model:visible="visible"
-    :header="dialogHeader"
-    :style="{ width: '40vw' }"
-    :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
-    :closable="!isSaving && !isLoadingCategories"
-    @hide="onHide"
+    :title="dialogHeader"
+    :is-dirty="isDirty"
+    :is-saving="isSaving || isLoadingCategories"
   >
-    <form @submit.prevent="onSubmit" class="space-y-4">
+    <!-- #default slot: form body rendered ONCE (Pattern S-1) -->
+    <form @submit.prevent="onSubmit" id="manage-expense-form" class="space-y-4">
       <!-- Amount (required) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Amount *</label>
@@ -286,6 +334,9 @@ async function onSubmit(): Promise<void> {
             :maxFractionDigits="2"
             :min="0.01"
             :disabled="isSaving"
+            inputmode="decimal"
+            enterkeyhint="next"
+            autocomplete="off"
           />
         </div>
         <Message v-if="amountError" severity="error" size="small" variant="simple">
@@ -293,10 +344,17 @@ async function onSubmit(): Promise<void> {
         </Message>
       </div>
 
-      <!-- Date (required) -->
+      <!-- Date (required) — FD-04: :inline="isMobile" (D-35-13 CORRECTED — not touchUI) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Date *</label>
-        <DatePicker v-model="expenseDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
+        <DatePicker
+          v-model="expenseDate"
+          :inline="isMobile"
+          fluid
+          dateFormat="dd M yy"
+          showButtonBar
+          :disabled="isSaving"
+        />
         <Message v-if="expenseDateError" severity="error" size="small" variant="simple">
           {{ expenseDateError }}
         </Message>
@@ -315,6 +373,7 @@ async function onSubmit(): Promise<void> {
           :loading="isLoadingCategories"
           :disabled="isLoadingCategories || isSaving"
           :placeholder="isLoadingCategories ? 'Loading categories…' : 'Select or type a category'"
+          enterkeyhint="next"
         />
         <Message v-if="categoryError" severity="error" size="small" variant="simple">
           {{ categoryError }}
@@ -324,7 +383,15 @@ async function onSubmit(): Promise<void> {
       <!-- Description (required, char counter) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Description *</label>
-        <InputText v-model="description" fluid :maxlength="120" :disabled="isSaving" />
+        <InputText
+          v-model="description"
+          fluid
+          :maxlength="120"
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
         <div class="flex justify-end">
           <span class="text-xs" aria-live="polite" style="color: var(--color-typo-muted)">
             {{ description.length }}/120
@@ -341,13 +408,23 @@ async function onSubmit(): Promise<void> {
           Notes
           <span class="text-xs" style="color: var(--color-typo-muted)">(optional)</span>
         </label>
-        <Textarea v-model="notes" fluid :rows="3" :autoResize="false" :disabled="isSaving" />
+        <Textarea
+          v-model="notes"
+          fluid
+          :rows="3"
+          :autoResize="false"
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="done"
+          autocomplete="off"
+        />
       </div>
 
-      <!-- Receipt (optional, FileUpload + edit-mode thumbnail) -->
+      <!-- Receipt (optional, two-affordance mobile + FileUpload desktop) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Receipt</label>
 
+        <!-- Edit mode: thumbnail / PDF icon preview -->
         <template v-if="isEditMode && record?.receipt">
           <img
             v-if="receiptThumbnailUrl"
@@ -366,7 +443,38 @@ async function onSubmit(): Promise<void> {
           </p>
         </template>
 
+        <!-- FD-05: Mobile two-affordance — Take photo (camera) + Choose from gallery -->
+        <template v-if="isMobile">
+          <div class="flex gap-2">
+            <label class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-camera" aria-hidden="true"></i>
+              Take photo
+            </label>
+            <label class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-images" aria-hidden="true"></i>
+              Choose from gallery
+            </label>
+          </div>
+        </template>
+
+        <!-- Desktop: existing FileUpload -->
         <FileUpload
+          v-else
           mode="basic"
           :auto="false"
           accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -379,161 +487,28 @@ async function onSubmit(): Promise<void> {
           {{ pendingFile.name }} selected
         </p>
       </div>
-
-      <!-- Submit button -->
-      <Button
-        type="submit"
-        fluid
-        :label="isEditMode ? 'Save Changes' : 'Add Expense'"
-        :loading="isSaving || isLoadingCategories"
-        :disabled="isSaving || isLoadingCategories"
-      />
     </form>
-  </Dialog>
 
-  <!-- Mobile: bottom Drawer (85dvh cap via wallecx-overrides.css already applied) -->
-  <Drawer
-    v-else
-    v-model:visible="visible"
-    position="bottom"
-    :show-close-icon="!isSaving && !isLoadingCategories"
-    @hide="onHide"
-  >
-    <template #header>
-      <div class="flex flex-col items-center w-full gap-1">
-        <DragHandle />
-        <span class="font-semibold">{{ dialogHeader }}</span>
+    <!-- #actions slot: Save/Cancel buttons (UI-SPEC Contract 2) -->
+    <template #actions>
+      <div class="flex gap-2">
+        <Button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          fluid
+          :disabled="isSaving || isLoadingCategories"
+          @click="onCancel"
+        />
+        <Button
+          type="submit"
+          form="manage-expense-form"
+          :label="isEditMode ? 'Save Changes' : 'Add Expense'"
+          fluid
+          :loading="isSaving || isLoadingCategories"
+          :disabled="isSaving || isLoadingCategories"
+        />
       </div>
     </template>
-
-    <form @submit.prevent="onSubmit" class="space-y-4">
-      <!-- Amount (required) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Amount *</label>
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-medium" style="color: var(--color-typo-body)">PHP</span>
-          <InputNumber
-            v-model="amount"
-            fluid
-            :minFractionDigits="2"
-            :maxFractionDigits="2"
-            :min="0.01"
-            :disabled="isSaving"
-          />
-        </div>
-        <Message v-if="amountError" severity="error" size="small" variant="simple">
-          {{ amountError }}
-        </Message>
-      </div>
-
-      <!-- Date (required) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Date *</label>
-        <DatePicker v-model="expenseDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
-        <Message v-if="expenseDateError" severity="error" size="small" variant="simple">
-          {{ expenseDateError }}
-        </Message>
-      </div>
-
-      <!-- Category (required, editable Select) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Category *</label>
-        <Select
-          v-model="category"
-          fluid
-          editable
-          option-label="name"
-          option-value="name"
-          :options="loadedCategories"
-          :loading="isLoadingCategories"
-          :disabled="isLoadingCategories || isSaving"
-          :placeholder="isLoadingCategories ? 'Loading categories…' : 'Select or type a category'"
-        />
-        <Message v-if="categoryError" severity="error" size="small" variant="simple">
-          {{ categoryError }}
-        </Message>
-      </div>
-
-      <!-- Description (required, char counter) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Description *</label>
-        <InputText v-model="description" fluid :maxlength="120" :disabled="isSaving" />
-        <div class="flex justify-end">
-          <span class="text-xs" aria-live="polite" style="color: var(--color-typo-muted)">
-            {{ description.length }}/120
-          </span>
-        </div>
-        <Message v-if="descriptionError" severity="error" size="small" variant="simple">
-          {{ descriptionError }}
-        </Message>
-      </div>
-
-      <!-- Notes (optional) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">
-          Notes
-          <span class="text-xs" style="color: var(--color-typo-muted)">(optional)</span>
-        </label>
-        <Textarea v-model="notes" fluid :rows="3" :autoResize="false" :disabled="isSaving" />
-      </div>
-
-      <!-- Receipt (optional, FileUpload + edit-mode thumbnail) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Receipt</label>
-
-        <template v-if="isEditMode && record?.receipt">
-          <img
-            v-if="receiptThumbnailUrl"
-            :src="receiptThumbnailUrl"
-            class="w-24 h-24 object-cover rounded"
-            alt="Current receipt"
-          />
-          <div
-            v-else-if="hasExistingPdf"
-            class="w-24 h-24 flex items-center justify-center border rounded"
-          >
-            <i class="pi pi-file-pdf text-3xl" aria-label="Receipt (PDF)"></i>
-          </div>
-          <p class="text-sm" style="color: var(--color-typo-muted)">
-            Current receipt — select a new file to replace it
-          </p>
-        </template>
-
-        <FileUpload
-          mode="basic"
-          :auto="false"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
-          :chooseLabel="isEditMode && record?.receipt ? 'Replace file' : 'Choose File'"
-          :disabled="isSaving"
-          @select="onFileSelect"
-        />
-
-        <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
-          {{ pendingFile.name }} selected
-        </p>
-      </div>
-
-      <!-- Submit button -->
-      <Button
-        type="submit"
-        fluid
-        :label="isEditMode ? 'Save Changes' : 'Add Expense'"
-        :loading="isSaving || isLoadingCategories"
-        :disabled="isSaving || isLoadingCategories"
-      />
-    </form>
-  </Drawer>
+  </BaseMobileDialog>
 </template>
-
-<style scoped>
-:deep(.my-app-dark .p-dialog),
-:deep(.my-app-dark .p-dialog .p-dialog-content) {
-  background-color: var(--color-surface-card);
-  color: var(--color-typo-body);
-}
-:deep(.my-app-dark .p-drawer),
-:deep(.my-app-dark .p-drawer .p-drawer-content) {
-  background-color: var(--color-surface-card);
-  color: var(--color-typo-body);
-}
-</style>
