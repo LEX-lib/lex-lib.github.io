@@ -281,7 +281,14 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. `<link rel="preconnect">` + `<link rel="dns-prefetch">` for the PocketBase origin appear in `index.html` head; warm cellular cold-start time-to-first-`getFullList`-byte improves over baseline
 6. `npm run build` output contains 0 lines matching "exceeds" or "Skipping precaching"; all chunks fit under 3 MiB precache cap
 
-**Plans:** TBD
+**Plans:** 7 plans
+- [ ] 36-01-PLAN.md — Foundation: WallecxSkeleton + perfInstrument + compressToWebP + vite.config rolldown groups + pre-phase baseline (PF-01/02/04/05/07)
+- [ ] 36-02-PLAN.md — WallecxApp.vue async tabs + Suspense + WallecxSkeleton fallbacks (PF-02/04)
+- [ ] 36-03-PLAN.md — VaccinationsTab async ManageVaccination + instrument getFullList + add missing requestKey + skeleton consolidation (PF-02/04/05)
+- [ ] 36-04-PLAN.md — MembershipsTab async ManageMembership + instrument getFullList + skeleton consolidation (PF-02/04/05)
+- [ ] 36-05-PLAN.md — Expenses surfaces: ExpensesTab async ManageExpense + 3 instrumented getFullList + 3 skeleton consolidations (PF-02/04/05)
+- [ ] 36-06-PLAN.md — ManageExpense/Membership/Vaccination WebP migration via compressToWebP (PF-07)
+- [ ] 36-07-PLAN.md — index.html preconnect/dns-prefetch + post-phase analyze + automated gates + grep audits + STATE.md update + human-verify checkpoint (PF-01/09)
 
 #### Phase 37: PWA Install + Standalone Polish
 
