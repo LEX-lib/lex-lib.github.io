@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: planning
-stopped_at: "Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS (36203f3); FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache/0 exceeds, lint clean except VaccinationDetail.vue:5. Next: Phase 36 Mobile Performance — plan with `/gsd-plan-phase 36`."
-last_updated: "2026-05-28T02:29:45.742Z"
+stopped_at: Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
+last_updated: "2026-05-28T03:12:53.612Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
@@ -333,9 +333,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T03:30:00Z
+**Last session:** 2026-05-28T03:12:53.603Z
 
-**Stopped at:** Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS (36203f3); FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache/0 exceeds, lint clean except VaccinationDetail.vue:5. Next: Phase 36 Mobile Performance — plan with `/gsd-plan-phase 36`.
+**Stopped at:** Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
 
 **Prior stopped-at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache.
 
