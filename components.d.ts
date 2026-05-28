@@ -95,6 +95,7 @@ declare module 'vue' {
     VaccinationList: typeof import('./src/components/projects/wallecx/VaccinationList.vue')['default']
     VaccinationsTab: typeof import('./src/components/projects/wallecx/VaccinationsTab.vue')['default']
     WallecxApp: typeof import('./src/components/projects/wallecx/WallecxApp.vue')['default']
+    WallecxSkeleton: typeof import('./src/components/projects/wallecx/WallecxSkeleton.vue')['default']
     WallecxToolbar: typeof import('./src/components/projects/wallecx/WallecxToolbar.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }

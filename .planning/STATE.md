@@ -4,14 +4,14 @@ milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
 stopped_at: Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
-last_updated: "2026-05-28T03:50:51.637Z"
+last_updated: "2026-05-28T04:50:42.504Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 19
-  completed_plans: 12
-  percent: 63
+  completed_plans: 13
+  percent: 68
 ---
 
 # Project State
@@ -27,12 +27,12 @@ progress:
 
 ## Current Position
 
-Phase: 36 (Mobile Performance) — NEXT
-Plan: 0 of TBD
+Phase: 36 (Mobile Performance) — EXECUTING
+Plan: 1 of 7
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Ready to execute
+**Status:** Executing Phase 36
 **Phase:** 36
-**Plan:** Not started
+**Plan:** 1 of 7 complete
 **Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
@@ -333,9 +333,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T03:12:53.603Z
+**Last session:** 2026-05-28T12:42:17Z
 
-**Stopped at:** Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
+**Stopped at:** Phase 36 Plan 36-01 COMPLETE. Foundation: WallecxSkeleton.vue (5 variants, byte-matched dims), perfInstrument.ts (instrumentedGetFullList, sessionStorage+localStorage try/catch, requestKey preserved), compressToWebP.ts (fileType:webp + 3 preserved options), vite.config.ts (chart-js/jsbarcode/image-compression codeSplitting groups at priority 25). Pre-phase baseline: 64.09 KB gzip; after groups: 32.81 KB gzip (~49% reduction). type-check 0, test:unit 59/59, build 59 precache. Next: Plan 36-02 (async tab splits via defineAsyncComponent + Suspense in WallecxApp.vue).
+
+**Prior stopped-at:** Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
 
 **Prior stopped-at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache.
 
@@ -347,8 +349,8 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 **Earlier stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
 
-**Next session entry point:** Continue Phase 35 — execute Plan 35-05 (`.planning/phases/35-forms-dialogs-on-small-screens/35-05-PLAN.md`). Plans 35-01 through 35-04 are complete.
+**Next session entry point:** Continue Phase 36 — execute Plan 36-02 (`.planning/phases/36-mobile-performance/36-02-PLAN.md`). Plan 36-01 complete. WallecxSkeleton.vue, perfInstrument.ts, compressToWebP.ts, and vite.config.ts groups all in place.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
-*Last updated: 2026-05-26 — v4.3 Wallecx Mobile Optimization roadmap created; status `planned`; 7 phases (6 mandatory + 1 conditional); 32/32 functional requirements mapped; ready for `/gsd-plan-phase 33`*
+*Last updated: 2026-05-28 — Phase 36 Plan 36-01 complete. Foundation files created. WallecxApp chunk reduced from 64 KB → 32.81 KB gzip via codeSplitting groups.*
