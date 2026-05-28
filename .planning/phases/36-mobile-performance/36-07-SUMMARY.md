@@ -24,11 +24,13 @@ key_files:
     - .planning/STATE.md
     - src/components/projects/wallecx/ManageExpense.vue
     - src/components/projects/wallecx/ExpensesTab.vue
+    - src/components/projects/wallecx/MembershipsTab.vue
     - src/components/projects/wallecx/VaccinationsTab.vue
     - src/components/projects/wallecx/VaccinationList.vue
     - src/components/projects/wallecx/VaccinationGroupCard.vue
     - src/components/projects/wallecx/AttachmentPreview.vue
     - src/components/projects/wallecx/ManageMembership.vue
+    - src/lib/wallecx/compressToWebP.ts
 decisions:
   - "D-36-11 honored: preconnect scope ONLY for https://lexarium-backend.fly.dev — no other origins added (no scope creep)."
   - "LOCKED viewport comment + meta byte-intact verified by grep audit A8."
@@ -65,8 +67,9 @@ Three regressions surfaced during the first human-verify pass. All map directly 
 | 1 | `79dda03` | PocketBase `?thumb=*` returns 404 for WebP sources; 5 wallecx surfaces broke after PF-07. | `.webp` filename fallback added to: ManageMembership card, VaccinationGroupCard, VaccinationList, AttachmentPreview 400×400, ManageExpense receipt. |
 | 2 | `1d9747b` | `compressToWebP` stored WebP bytes under the original `.jpg` filename, so the `.webp` filename check (fix #1) missed receipts. | `compressToWebP` now renames its output to `.webp`; ManageExpense `onFileSelect` uses the helper output directly (drops the post-helper `new File` wrapper that re-applied `.jpg`); ManageExpense receipt thumbnail ALWAYS skips `?thumb` (also covers legacy DB records). |
 | 3 | `1bcf697` | Edit Expense "Current receipt" 404 — `pb.files.getURL(record, filename, {})` carried no token; `wallecx_expenses` viewRule is `@request.auth.id != "" && user = @request.auth.id`. Pre-existing latent bug; deterministic after fix #2 removed `?thumb`. | ExpensesTab fetches `manageToken` via `pb.files.getToken()` when openManage runs in edit mode; passes `:token` to `<ManageExpense>`; clears on dialog close. ManageExpense accepts `token?: string` prop and passes `{ token: props.token }` to `pb.files.getURL`. Mirrors MembershipsTab/VaccinationsTab + ManageMembership/ManageVaccination pattern exactly. |
+| 4 | `014e8e7` | **Code-review HIGH (`36-REVIEW.md`)** — MembershipsTab shared `fileToken` cleared by detail Dialog's async `@hide` handler AFTER ManageMembership opens, blanking the card-image thumbnail mid-render in edit-from-detail flow. Introduced in Phase 36-04 (`3cc013a`) when `:token="fileToken"` was added without an independent token lifecycle. | Mirrors fix #3 exactly: new `manageToken` ref separate from shared `fileToken`; `openEdit` + `openManage` made async; await `pb.files.getToken()` before opening (graceful fallback on failure); ManageMembership binds `:token="manageToken"`; `watch(showManage)` clears on close. Also picked up the MEDIUM (async openEdit) in the same commit. |
 
-**Total deviations:** 3 fix-forward commits, all in scope (Phase 36 WebP migration surface). No scope creep. Gates re-verified green after each.
+**Total deviations:** 4 fix-forward commits, all in scope (Phase 36 WebP / token-prop surface). No scope creep. Gates re-verified green after each. The 4th was discovered by the post-phase code-review agent (`36-REVIEW.md`, commit `7214b7c`) and resolved before phase close.
 
 ## Bundle Reduction (D-36-03) — Phase 36 Final Number
 

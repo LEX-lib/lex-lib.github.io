@@ -1,15 +1,35 @@
 ---
-status: findings
+status: clean
 phase: 36-mobile-performance
 reviewed: 2026-05-28
 commits_reviewed: 4d684aa..HEAD
 files_reviewed: 17
+resolved: 2026-05-28
 findings:
   blocker: 0
   high: 1
   medium: 1
   low: 0
   info: 2
+resolution:
+  high_resolved: 1
+  medium_resolved: 1
+  info_resolved: 1
+  info_accepted: 1
+  resolution_commits: [014e8e7, <documented below — compressToWebP comment + this doc update>]
+---
+
+## Resolution (post-review)
+
+All actionable findings resolved in-phase before phase close:
+
+- **HIGH** → fixed by `014e8e7 fix(36): give ManageMembership its own token lifecycle (race-condition with shared fileToken)`. ManageMembership now binds `:token="manageToken"` (separate from the detail Dialog's `fileToken`). `openEdit` + `openManage` are async and await `pb.files.getToken()` before opening; `watch(showManage)` clears on close. Pattern matches ExpensesTab (`1bcf697`) exactly.
+- **MEDIUM** → folded into the same commit (`openEdit` converted to `async`).
+- **INFO #1** (compressToWebP fast-path undocumented) → added 1-line clarifying comment in `compressToWebP.ts` immediately before the identity-return ternary.
+- **INFO #2** (perfInstrument console.info in production) → **ACCEPTED**. The console.info is intentional per PF-05 design (developer-visible baseline capture for the one-shot session gate). The wallecx feature surface is small-audience and the log carries only counts + bytes + ms (no record content per T-36-01 mitigation). If a future phase deems it noisy, the suggested `import.meta.env.DEV` guard or removal can land then.
+
+Post-resolution gates: type-check 0 errors, test:unit 59/59, lint clean except grandfathered VaccinationDetail.vue:5.
+
 ---
 
 # Phase 36 Code Review

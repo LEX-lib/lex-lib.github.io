@@ -24,6 +24,8 @@ export async function compressToWebP(file: File): Promise<File> {
   // filename matches the actual MIME — this also lets downstream consumers use
   // a simple filename.endsWith('.webp') check to decide thumb-vs-full URL.
   const webpName = compressed.name.replace(/\.[^.]+$/, '.webp')
+  // Already .webp (input was a .webp file, or browser-image-compression already renamed it
+  // for us) — no rename needed; return the compressed File directly and skip the allocation.
   return webpName === compressed.name
     ? compressed
     : new File([compressed], webpName, { type: 'image/webp' })
