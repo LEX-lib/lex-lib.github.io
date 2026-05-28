@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: "Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton)."
-last_updated: "2026-05-28T05:12:56.847Z"
+stopped_at: "Phase 36 Plan 36-05 COMPLETE. ExpensesTab.vue: ManageExpense async via defineAsyncComponent + Suspense + WallecxSkeleton expense-row fallback; instrumentedGetFullList wraps wallecx_expenses (requestKey: 'expenses-getFullList') and wallecx_expense_budgets (requestKey: 'expense-budgets-getFullList'); export-path 'expenses-export' untouched. ExpensesListView.vue: WallecxSkeleton variant=expense-row :count=3 replaces inline skeleton; sticky toolbar wrapper preserved. ExpensesReportsView.vue: pb removed; instrumentedGetFullList wraps wallecx_expense_categories (requestKey: 'expense-categories-getFullList'); WallecxSkeleton variant=reports-chart replaces inline 3-Skeleton block. AttachmentPreview.vue: WallecxSkeleton variant=attachment replaces Suspense fallback; VuePdfEmbed defineAsyncComponent byte-intact. type-check 0, test:unit 59/59, build 72 precache, 0 exceeds. Next: Plan 36-06 (ManageExpense/Membership/Vaccination WebP migration)."
+last_updated: "2026-05-28T05:19:58Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 19
-  completed_plans: 16
-  percent: 84
+  completed_plans: 17
+  percent: 89
 ---
 
 # Project State
@@ -333,9 +333,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T05:12:56.836Z
+**Last session:** 2026-05-28T05:19:58Z
 
-**Stopped at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
+**Stopped at:** Phase 36 Plan 36-05 COMPLETE. ExpensesTab.vue: ManageExpense async via defineAsyncComponent + Suspense + WallecxSkeleton expense-row fallback; instrumentedGetFullList wraps wallecx_expenses (requestKey: 'expenses-getFullList') and wallecx_expense_budgets (requestKey: 'expense-budgets-getFullList'); export-path 'expenses-export' untouched. ExpensesListView.vue: WallecxSkeleton variant=expense-row :count=3 replaces inline skeleton; sticky toolbar wrapper preserved. ExpensesReportsView.vue: pb removed; instrumentedGetFullList wraps wallecx_expense_categories (requestKey: 'expense-categories-getFullList'); WallecxSkeleton variant=reports-chart replaces inline 3-Skeleton block. AttachmentPreview.vue: WallecxSkeleton variant=attachment replaces Suspense fallback; VuePdfEmbed defineAsyncComponent byte-intact. type-check 0, test:unit 59/59, build 72 precache, 0 exceeds. Next: Plan 36-06 (WebP migration).
+
+**Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
 
 **Prior stopped-at:** Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue: 3 eager tab imports removed; WallecxSkeleton static import added; 3 defineAsyncComponent const declarations; each TabPanel wrapped in Suspense with WallecxSkeleton fallback (vaccination-card/membership-card/expense-row, :count=3 each). Suspense inside TabPanel (Pitfall 1), WallecxSkeleton eager (Pitfall 2). WallecxApp chunk: 64.09 KB gzip → 32.81 KB (Plan 36-01) → 2.45 KB gzip. type-check 0, test:unit 59/59, build 66 precache, 0 exceeds.
 
