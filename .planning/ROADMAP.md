@@ -253,7 +253,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 **Plans:** 6 plans
 - [x] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS) — COMPLETE (0141f40 BaseMobileDialog.vue, 0a916b1 CSS; type-check 0, test:unit 59/59, build clean; CON-CONFIRMDIALOG-SINGLETON upheld; Pitfall-6 flat padding confirmed)
-- [ ] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04)
+- [x] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04) — COMPLETE (c58645e ManageExpense migration, ad245f0 toolbar/reports DatePickers; type-check 0, test:unit 59/59, build clean; EXIF pipeline intact; 1 ConfirmDialog confirmed)
 - [ ] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard)
 - [ ] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved)
 - [ ] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved)
@@ -417,7 +417,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 34. Layout Audit & Touch Targets | v4.3 | 3/3 | Complete | 2026-05-27 |
-| 35. Forms & Dialogs on Small Screens | v4.3 | 1/6 | In progress | — |
+| 35. Forms & Dialogs on Small Screens | v4.3 | 2/6 | In progress | — |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
 | 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
 | 38. Mobile UAT Sweep + PWA-UAT-01 | v4.3 | 0/? | Not started | — |
@@ -425,4 +425,4 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-28 — Phase 35 Plan 35-01 complete. BaseMobileDialog.vue (FD-07) created with locked contract: Dialog/Drawer split, dirty-guard via Drawer before-hide + useConfirm singleton, DragHandle header, focusin scrollIntoView (FD-06), closeWithoutGuard exposed (FD-09). wallecx-overrides.css: FD-01 16px no-zoom rule + LT-08 sticky .wallecx-manage-actions (flat 0.5rem, Pitfall 6 clean). type-check 0, test:unit 59/59, build clean. Next: Plan 35-02 ManageExpense migration.*
+*Last updated: 2026-05-28 — Phase 35 Plan 35-02 complete. ManageExpense migrated to BaseMobileDialog (c58645e) — dual Dialog/Drawer branches collapsed to single wrapper, FD-03/04/05/09 fully applied (dirty snapshot, closeWithoutGuard, :inline=isMobile, camera+gallery affordances, inputmode/enterkeyhint). EXIF pipeline unchanged. ExpensesToolbar + ExpensesReportsView :inline=isMobile DatePickers (ad245f0). type-check 0, test:unit 59/59, build clean. 1 ConfirmDialog confirmed. Next: Plan 35-03 ManageBudget migration.*
