@@ -176,7 +176,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
 - [x] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, popup DatePicker on mobile (6/6 plans complete 2026-05-28)
-- [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation (1/7 plans complete)
+- [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation (2/7 plans complete)
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
 - [ ] **Phase 38: Mobile UAT Sweep + PWA-UAT-01** — Real iOS + real Android + iPad-820 viewport device matrix; closes PWA-UAT-01 deferred from Phase 22 V6
 - [ ] **Phase 38b (CONDITIONAL): List Virtualization** — Triggered only if Phase 36 PF-05 instrumentation reveals >16ms scroll jank or >500 rendered rows; likely skipped
@@ -282,8 +282,8 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 6. `npm run build` output contains 0 lines matching "exceeds" or "Skipping precaching"; all chunks fit under 3 MiB precache cap
 
 **Plans:** 7 plans
-- [ ] 36-01-PLAN.md — Foundation: WallecxSkeleton + perfInstrument + compressToWebP + vite.config rolldown groups + pre-phase baseline (PF-01/02/04/05/07)
-- [ ] 36-02-PLAN.md — WallecxApp.vue async tabs + Suspense + WallecxSkeleton fallbacks (PF-02/04)
+- [x] 36-01-PLAN.md — Foundation: WallecxSkeleton + perfInstrument + compressToWebP + vite.config rolldown groups + pre-phase baseline (PF-01/02/04/05/07) — COMPLETE (e247775..e20bfc9; WallecxApp 64.09 KB → 32.81 KB gzip via codeSplitting groups)
+- [x] 36-02-PLAN.md — WallecxApp.vue async tabs + Suspense + WallecxSkeleton fallbacks (PF-02/04) — COMPLETE (4f5c3a9; WallecxApp 32.81 KB → 2.45 KB gzip; all 3 tabs lazy-loaded; Suspense inside TabPanel; type-check 0, test:unit 59/59)
 - [ ] 36-03-PLAN.md — VaccinationsTab async ManageVaccination + instrument getFullList + add missing requestKey + skeleton consolidation (PF-02/04/05)
 - [ ] 36-04-PLAN.md — MembershipsTab async ManageMembership + instrument getFullList + skeleton consolidation (PF-02/04/05)
 - [ ] 36-05-PLAN.md — Expenses surfaces: ExpensesTab async ManageExpense + 3 instrumented getFullList + 3 skeleton consolidations (PF-02/04/05)
@@ -425,11 +425,11 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 34. Layout Audit & Touch Targets | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 6/6 | Complete | 2026-05-28 |
-| 36. Mobile Performance | v4.3 | 0/? | Not started | — |
+| 36. Mobile Performance | v4.3 | 2/7 | Executing | — |
 | 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
 | 38. Mobile UAT Sweep + PWA-UAT-01 | v4.3 | 0/? | Not started | — |
 | 38b. List Virtualization (CONDITIONAL) | v4.3 | 0/? | Not triggered (pending PF-05) | — |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-28 — Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS (36203f3); FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED — popup overlay on all DatePicker sites, mobile usability via 16px no-zoom); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache / 0 exceeds. Next: Phase 36 Mobile Performance.*
+*Last updated: 2026-05-28 — Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue async tabs: defineAsyncComponent + Suspense inside each TabPanel + WallecxSkeleton fallbacks (vaccination-card/membership-card/expense-row, :count=3). WallecxApp chunk: 64.09 KB → 32.81 KB (Plan 36-01 codeSplitting groups) → 2.45 KB gzip (this plan). All invariants preserved. type-check 0, test:unit 59/59, build 66 precache / 0 exceeds. Next: Plan 36-03 (VaccinationsTab async ManageVaccination + perfInstrument).*
