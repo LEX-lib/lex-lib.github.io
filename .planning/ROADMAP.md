@@ -175,7 +175,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
-- [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, inline DatePicker on mobile (6 plans planned 2026-05-27)
+- [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, inline DatePicker on mobile (4/6 plans complete 2026-05-28)
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
 - [ ] **Phase 38: Mobile UAT Sweep + PWA-UAT-01** — Real iOS + real Android + iPad-820 viewport device matrix; closes PWA-UAT-01 deferred from Phase 22 V6
@@ -255,7 +255,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 - [x] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS) — COMPLETE (0141f40 BaseMobileDialog.vue, 0a916b1 CSS; type-check 0, test:unit 59/59, build clean; CON-CONFIRMDIALOG-SINGLETON upheld; Pitfall-6 flat padding confirmed)
 - [x] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04) — COMPLETE (c58645e ManageExpense migration, ad245f0 toolbar/reports DatePickers; type-check 0, test:unit 59/59, build clean; EXIF pipeline intact; 1 ConfirmDialog confirmed)
 - [x] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard) — COMPLETE (bc2c198; FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty, closeWithoutGuard; type-check 0, test:unit 59/59, build clean)
-- [ ] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved)
+- [x] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved) — COMPLETE (1da4b1c; ColorPicker v-model=cardColor + card_color no-hash + {immediate:true} watcher all preserved; FD-03/04/05/09 applied; membershipMapper 11 tests green; type-check 0, test:unit 59/59, build clean)
 - [ ] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved)
 - [ ] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint
 **UI hint:** yes

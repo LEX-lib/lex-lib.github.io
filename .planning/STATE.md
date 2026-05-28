@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed, FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty snapshot, closeWithoutGuard on save/cancel. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-04 ManageMembership migration.
-last_updated: "2026-05-28T00:38:00.000Z"
+stopped_at: Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied (MembershipSnapshot isDirty, :inline=isMobile DatePicker, images-only two-affordance upload, inputmode/enterkeyhint). membershipMapper 11 tests green. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-05 ManageVaccination migration.
+last_updated: "2026-05-28T00:45:23Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
-  percent: 67
+  completed_plans: 9
+  percent: 75
 ---
 
 # Project State
@@ -320,9 +320,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T00:38:00.000Z
+**Last session:** 2026-05-28T00:45:23Z
 
-**Stopped at:** Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed to one, FD-03 inputmode/enterkeyhint on per-row InputNumbers, FD-09 JSON.stringify dirty snapshot on localRows, closeWithoutGuard on save/cancel paths. No upload added (D-35-11). localRows rebuild watch preserved verbatim. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-04 ManageMembership migration.
+**Stopped at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache. Next: Plan 35-05 ManageVaccination migration.
+
+**Prior stopped-at:** Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed to one, FD-03 inputmode/enterkeyhint on per-row InputNumbers, FD-09 JSON.stringify dirty snapshot on localRows, closeWithoutGuard on save/cancel paths. type-check 0, test:unit 59/59, build clean (57 precache).
 
 **Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
@@ -330,7 +332,7 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 **Earlier stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
 
-**Next session entry point:** Continue Phase 33 — execute Plan 33-03 (`.planning/phases/33-mobile-foundation/33-03-PLAN.md`). Plans 33-01 and 33-02 are complete.
+**Next session entry point:** Continue Phase 35 — execute Plan 35-05 (`.planning/phases/35-forms-dialogs-on-small-screens/35-05-PLAN.md`). Plans 35-01 through 35-04 are complete.
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
