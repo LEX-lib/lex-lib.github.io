@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useMobileEnv } from '@/composables/useMobileEnv'
+
+const { isMobile } = useMobileEnv()
+
 defineProps<{
   searchQuery: string
   sortMode: string
@@ -66,6 +70,7 @@ const emit = defineEmits<{
       />
       <DatePicker
         :model-value="dateFrom"
+        :inline="isMobile"
         placeholder="From date"
         dateFormat="dd M yy"
         class="w-32 min-h-[44px]"
@@ -74,6 +79,7 @@ const emit = defineEmits<{
       />
       <DatePicker
         :model-value="dateTo"
+        :inline="isMobile"
         placeholder="To date"
         dateFormat="dd M yy"
         class="w-32 min-h-[44px]"

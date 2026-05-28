@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import dayjs from 'dayjs'
+import { useMobileEnv } from '@/composables/useMobileEnv'
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
 import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
@@ -18,6 +19,8 @@ import {
   type Period,
 } from '@/lib/wallecx/period'
 import { useChartTheme } from '@/composables/useChartTheme'
+
+const { isMobile } = useMobileEnv()
 
 const props = defineProps<{
   expenses: Expenses[]
@@ -411,18 +414,22 @@ watch(period, (next) => {
         <label class="text-xs" style="color: var(--color-typo-muted)">From</label>
         <DatePicker
           v-model="customFrom"
+          :inline="isMobile"
           placeholder="From date"
           dateFormat="dd M yy"
           class="w-full min-h-[44px]"
+          showButtonBar
         />
       </div>
       <div class="flex flex-col gap-1 flex-1 sm:flex-none sm:w-40">
         <label class="text-xs" style="color: var(--color-typo-muted)">To</label>
         <DatePicker
           v-model="customTo"
+          :inline="isMobile"
           placeholder="To date"
           dateFormat="dd M yy"
           class="w-full min-h-[44px]"
+          showButtonBar
         />
       </div>
     </div>
