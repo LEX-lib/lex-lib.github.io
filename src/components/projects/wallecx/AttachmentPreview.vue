@@ -3,6 +3,7 @@ import { defineAsyncComponent, computed, ref } from "vue";
 import { pb } from "@/lib/pocketbase";
 import type { RecordModel } from 'pocketbase'
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import WallecxSkeleton from "./WallecxSkeleton.vue";
 
 const VuePdfEmbed = defineAsyncComponent(async () => {
   const { GlobalWorkerOptions } = await import("pdfjs-dist");
@@ -73,10 +74,7 @@ function onPdfError(): void {
           @loading-failed="onPdfError"
         />
         <template #fallback>
-          <div class="flex flex-col items-center py-6 gap-2">
-            <Skeleton height="12rem" class="w-full" />
-            <p class="text-sm" style="color: var(--color-typo-muted)">Loading PDF preview…</p>
-          </div>
+          <WallecxSkeleton variant="attachment" />
         </template>
       </Suspense>
 
