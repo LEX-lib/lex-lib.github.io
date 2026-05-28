@@ -5,6 +5,7 @@ import type { Expenses } from '@/types/wallecx/expenses/types'
 import ExpensesToolbar from './ExpensesToolbar.vue'
 import ExpenseItem from './ExpenseItem.vue'
 import { useIsMobile } from '@/composables/useIsMobile'
+import WallecxSkeleton from './WallecxSkeleton.vue'
 
 const props = defineProps<{
   expenses: Expenses[]
@@ -126,9 +127,7 @@ onMounted(() => {
     </div>
 
     <!-- STATE 1: Loading — 3 skeleton rows at list-row height (3rem, not card height) -->
-    <div v-if="isLoading" class="flex flex-col gap-1">
-      <Skeleton v-for="i in 3" :key="i" height="3rem" class="w-full rounded" />
-    </div>
+    <WallecxSkeleton v-if="isLoading" variant="expense-row" :count="3" />
 
     <!-- STATE 2: No records at all (check raw props.expenses, not filtered) -->
     <div
