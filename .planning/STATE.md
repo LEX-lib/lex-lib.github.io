@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 35 Plan 35-02 COMPLETE. ManageExpense migrated to BaseMobileDialog (c58645e) — branches collapsed, FD-03/04/05/09 applied, EXIF pipeline intact. ExpensesToolbar + ExpensesReportsView :inline=isMobile DatePickers (ad245f0). type-check 0, test:unit 59/59, build clean. Next: Plan 35-03 ManageBudget migration.
-last_updated: "2026-05-28T08:35:00.000Z"
+stopped_at: Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed, FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty snapshot, closeWithoutGuard on save/cancel. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-04 ManageMembership migration.
+last_updated: "2026-05-28T00:38:00.000Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
@@ -32,7 +32,7 @@ Plan: 1 of 6
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Executing Phase 35
 **Phase:** 35 Forms & Dialogs on Small Screens — PLANNED, ready to execute
-**Plan:** 35-03 ManageBudget migration to BaseMobileDialog. LOCKED order (A-43-2) continues: 35-03 ManageBudget (no upload); 35-04 ManageMembership (ColorPicker #8135 + card_color no-hash + membershipMapper 11 tests); 35-05 ManageVaccination (two-Form→one, administeredDate #8191); 35-06 gates + grep audits + device human-verify checkpoint. FD-04 expense sites complete (ManageExpense done; 35-03..05 will add remaining DatePicker sites).
+**Plan:** 35-04 ManageMembership migration to BaseMobileDialog. LOCKED order (A-43-2): 35-04 ManageMembership (ColorPicker #8135 + card_color no-hash + membershipMapper 11 tests + FD-04 inline DatePicker + FD-05 two-affordance upload); 35-05 ManageVaccination (two-Form→one, administeredDate #8191); 35-06 gates + grep audits + device human-verify checkpoint.
 **Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
@@ -320,9 +320,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T08:35:00.000Z
+**Last session:** 2026-05-28T00:38:00.000Z
 
-**Stopped at:** Phase 35 Plan 35-02 COMPLETE. ManageExpense migrated to BaseMobileDialog (c58645e) — branches collapsed to one, FD-03/04/05/09 applied (dirty snapshot, closeWithoutGuard, :inline=isMobile, camera+gallery affordances, inputmode/enterkeyhint). EXIF/compression pipeline unchanged. ExpensesToolbar + ExpensesReportsView :inline=isMobile DatePickers (ad245f0). type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-03 ManageBudget migration.
+**Stopped at:** Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed to one, FD-03 inputmode/enterkeyhint on per-row InputNumbers, FD-09 JSON.stringify dirty snapshot on localRows, closeWithoutGuard on save/cancel paths. No upload added (D-35-11). localRows rebuild watch preserved verbatim. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-04 ManageMembership migration.
 
 **Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 

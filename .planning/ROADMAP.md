@@ -254,7 +254,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Plans:** 6 plans
 - [x] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS) — COMPLETE (0141f40 BaseMobileDialog.vue, 0a916b1 CSS; type-check 0, test:unit 59/59, build clean; CON-CONFIRMDIALOG-SINGLETON upheld; Pitfall-6 flat padding confirmed)
 - [x] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04) — COMPLETE (c58645e ManageExpense migration, ad245f0 toolbar/reports DatePickers; type-check 0, test:unit 59/59, build clean; EXIF pipeline intact; 1 ConfirmDialog confirmed)
-- [ ] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard)
+- [x] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard) — COMPLETE (bc2c198; FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty, closeWithoutGuard; type-check 0, test:unit 59/59, build clean)
 - [ ] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved)
 - [ ] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved)
 - [ ] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint
