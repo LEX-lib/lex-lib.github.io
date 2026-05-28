@@ -73,7 +73,7 @@ Plan: 5 of 7 complete
 - **Tab shell, not sub-routes.** PrimeVue Tabs with string-typed `activeTab`; each tab owns its own state; no new Pinia store.
 - **Direct v-model refs for ManageMembership.vue.** PrimeVue ColorPicker issue #8135 — controlled system ignores initial value. This is the established pattern for membership write path.
 - **ConfirmDialog at WallecxApp.vue shell level only.** `useConfirm` broadcasts to single app-shell-level instance; not duplicated in tab components.
-- **requestKey per collection.** `'memberships-getFullList'` and `'vaccinations-getFullList'` and `'expenses-getFullList'` must stay distinct to prevent PocketBase auto-cancel.
+- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a sixth distinct key.
 - **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
 - **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
