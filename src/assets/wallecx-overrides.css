@@ -138,3 +138,43 @@
   padding-left: max(env(safe-area-inset-left), 1.25rem);
   padding-right: max(env(safe-area-inset-right), 1.25rem);
 }
+
+/* Phase 35 FD-01: iOS auto-zoom prevention — font-size >= 16px on all form inputs
+ * at mobile widths. iOS Safari auto-zooms when a focused input has font-size < 16px.
+ * Non-scoped to reach teleported overlay DOM (DatePicker panel, Select dropdown)
+ * outside .wallecx-root. .wallecx-root scoping intentionally NOT applied — teleported
+ * elements render outside the root and would be missed. 16px on inputs is benign site-wide.
+ * !important required — Aura sets ~0.875rem (14px) via --p-inputtext-font-size. */
+@media (max-width: 640px) {
+  .p-inputtext,
+  .p-inputnumber-input,
+  .p-textarea,
+  .p-select-label,
+  .p-multiselect-label,
+  .p-datepicker-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Phase 35 LT-08: Sticky Save/Cancel action bar.
+ * Sits at the bottom of .p-drawer-content / .p-dialog-content scroll container.
+ * Background matches the dialog surface to mask scrolling content.
+ *
+ * CRITICAL: padding-bottom is a FLAT 0.5rem (8px) — NOT env(safe-area-inset-bottom).
+ * The outer .p-drawer-content already pads the bottom via
+ * max(env(safe-area-inset-bottom), 1.25rem) from Phase 34 (rule above).
+ * Adding the env() a second time would double the home-indicator clearance
+ * (~34px + ~34px = 68px total on a notched iPhone). Pitfall 6 — flat padding only. */
+.wallecx-manage-actions {
+  position: sticky;
+  bottom: 0;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  background: var(--p-drawer-background, var(--p-overlay-modal-background));
+  border-top: 1px solid var(--color-surface-divider);
+  z-index: 1;
+}
+
+.my-app-dark .wallecx-manage-actions {
+  background: var(--color-surface-card);
+}
