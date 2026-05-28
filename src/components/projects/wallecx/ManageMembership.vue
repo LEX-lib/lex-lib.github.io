@@ -7,10 +7,10 @@ import dayjs from "dayjs";
 import { pb } from "@/lib/pocketbase";
 import { mapToUpdateMembership } from "@/lib/pocketbase/membershipMapper";
 import type { Memberships } from "@/types/wallecx/memberships/types";
-import { useIsMobile } from "@/composables/useIsMobile";
-import DragHandle from "./DragHandle.vue";
+import { useMobileEnv } from "@/composables/useMobileEnv";
+import BaseMobileDialog from "./BaseMobileDialog.vue";
 
-const isMobile = useIsMobile();
+const { isMobile } = useMobileEnv();
 
 const props = defineProps<{
   token?: string;
@@ -26,6 +26,7 @@ const emit = defineEmits<{
 
 const isSaving = ref(false);
 const pendingFile = ref<File | null>(null);
+const baseDialogRef = ref<InstanceType<typeof BaseMobileDialog> | null>(null);
 
 const isEditMode = computed(() => record.value !== null);
 const dialogHeader = computed(() => (isEditMode.value ? "Edit Card" : "Add Card"));
@@ -84,6 +85,55 @@ watch(barcodeType, (newType) => {
   if (newType === "number") {
     barcodeValue.value = "";
   }
+});
+
+// FD-09: Dirty snapshot — taken on dialog open
+interface MembershipSnapshot {
+  cardName: string;
+  barcodeType: string | null;
+  barcodeValue: string;
+  cardNumber: string;
+  cardColor: string;
+  expiryDate: string | null;
+  issuer: string;
+  notes: string;
+}
+
+const snapshot = ref<MembershipSnapshot | null>(null);
+
+// Visible watcher — takes dirty snapshot on open + resets pendingFile on close
+watch(visible, (isOpen) => {
+  if (!isOpen) {
+    pendingFile.value = null;
+    return;
+  }
+  // Snapshot for dirty tracking (FD-09) — taken on rising edge
+  snapshot.value = {
+    cardName: cardName.value,
+    barcodeType: barcodeType.value,
+    barcodeValue: barcodeValue.value,
+    cardNumber: cardNumber.value,
+    cardColor: cardColor.value,
+    expiryDate: expiryDate.value?.toISOString() ?? null,
+    issuer: issuer.value,
+    notes: notes.value,
+  };
+});
+
+// FD-09: isDirty computed — passed to BaseMobileDialog
+const isDirty = computed<boolean>(() => {
+  if (!snapshot.value) return false;
+  return (
+    cardName.value !== snapshot.value.cardName ||
+    barcodeType.value !== snapshot.value.barcodeType ||
+    barcodeValue.value !== snapshot.value.barcodeValue ||
+    cardNumber.value !== snapshot.value.cardNumber ||
+    cardColor.value !== snapshot.value.cardColor ||
+    (expiryDate.value?.toISOString() ?? null) !== snapshot.value.expiryDate ||
+    issuer.value !== snapshot.value.issuer ||
+    notes.value !== snapshot.value.notes ||
+    pendingFile.value !== null
+  );
 });
 
 // Thumbnail computed — D-03: returns URL only in edit mode with existing card_image
@@ -173,6 +223,20 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
   }
 }
 
+// FD-05: Raw file input bridge — routes camera/gallery input through the EXIF/compression pipeline
+async function onRawFileChange(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  input.value = ""; // reset so same file can be re-selected
+  await onFileSelect({ files: [file] });
+}
+
+// FD-09: Explicit Cancel — close without triggering dirty guard
+function onCancel(): void {
+  baseDialogRef.value?.closeWithoutGuard();
+}
+
 async function onSubmit(): Promise<void> {
   cardNameError.value = "";
   cardColorError.value = "";
@@ -205,7 +269,7 @@ async function onSubmit(): Promise<void> {
     if (barcodeType.value !== "number" && barcodeValue.value)
       formData.append("barcode_value", barcodeValue.value);
     if (cardNumber.value) formData.append("card_number", cardNumber.value);
-    formData.append("card_color", cardColor.value); // always set (default '002244')
+    formData.append("card_color", cardColor.value); // always set (default '002244') — CON-CARD-COLOR-NO-HASH: no '#' prefix
     if (expiryDate.value)
       formData.append("expiry_date", dayjs(expiryDate.value).format("YYYY-MM-DD"));
     if (issuer.value) formData.append("issuer", issuer.value);
@@ -236,8 +300,8 @@ async function onSubmit(): Promise<void> {
     }
 
     toast.success(isEditMode.value ? "Card updated." : "Card added.");
-    pendingFile.value = null; // HIGH-02: explicit reset before close
-    visible.value = false;
+    // FD-09: bypass dirty guard on successful save
+    baseDialogRef.value?.closeWithoutGuard();
   } catch (e: unknown) {
     toast.error("Failed to save. Please try again.");
     console.error("ManageMembership: save failed", e);
@@ -245,29 +309,29 @@ async function onSubmit(): Promise<void> {
     isSaving.value = false;
   }
 }
-
-function onHide(): void {
-  pendingFile.value = null; // HIGH-02: also reset on ESC / programmatic close
-}
 </script>
 
 <template>
-  <!-- Desktop: centered Dialog -->
-  <Dialog
-    v-if="!isMobile"
-    modal
+  <BaseMobileDialog
+    ref="baseDialogRef"
     v-model:visible="visible"
-    :header="dialogHeader"
-    :style="{ width: '40vw' }"
-    :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
-    :closable="!isSaving"
-    @hide="onHide"
+    :title="dialogHeader"
+    :is-dirty="isDirty"
+    :is-saving="isSaving"
   >
-    <form @submit.prevent="onSubmit" class="space-y-4">
+    <!-- #default slot: form body rendered ONCE (Pattern S-1) -->
+    <form @submit.prevent="onSubmit" id="manage-membership-form" class="space-y-4">
       <!-- card_name (required) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Card Name *</label>
-        <InputText v-model="cardName" fluid :disabled="isSaving" />
+        <InputText
+          v-model="cardName"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
         <Message v-if="cardNameError" severity="error" size="small" variant="simple">
           {{ cardNameError }}
         </Message>
@@ -289,16 +353,31 @@ function onHide(): void {
       <!-- barcode_value — conditional hide per D-02 (v-if NOT v-show) -->
       <div v-if="barcodeType !== 'number'" class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Barcode Value</label>
-        <InputText v-model="barcodeValue" fluid :disabled="isSaving" />
+        <InputText
+          v-model="barcodeValue"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
       <!-- card_number -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Card Number</label>
-        <InputText v-model="cardNumber" fluid :disabled="isSaving" />
+        <InputText
+          v-model="cardNumber"
+          fluid
+          :disabled="isSaving"
+          inputmode="numeric"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
-      <!-- card_color (ColorPicker + live swatch — D-01, D-03) -->
+      <!-- card_color (ColorPicker + live swatch — D-01, D-03 / PrimeVue #8135)
+           INVARIANT: cardColor ref stays here; direct v-model; BaseMobileDialog never owns it -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Card Colour</label>
         <div class="flex items-center gap-3">
@@ -318,25 +397,48 @@ function onHide(): void {
         </Message>
       </div>
 
-      <!-- expiry_date (DatePicker) -->
+      <!-- expiry_date (DatePicker — FD-04: :inline="isMobile") -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Expiry Date</label>
-        <DatePicker v-model="expiryDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
+        <DatePicker
+          v-model="expiryDate"
+          :inline="isMobile"
+          fluid
+          dateFormat="dd M yy"
+          showButtonBar
+          :disabled="isSaving"
+        />
       </div>
 
       <!-- issuer -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Issuer</label>
-        <InputText v-model="issuer" fluid :disabled="isSaving" />
+        <InputText
+          v-model="issuer"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
       <!-- notes (Textarea, 3 rows, no auto-resize per UI-SPEC) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
-        <Textarea v-model="notes" fluid :rows="3" :auto-resize="false" :disabled="isSaving" />
+        <Textarea
+          v-model="notes"
+          fluid
+          :rows="3"
+          :auto-resize="false"
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="done"
+          autocomplete="off"
+        />
       </div>
 
-      <!-- card_image (FileUpload with edit-mode thumbnail — D-03) -->
+      <!-- card_image (two-affordance mobile + FileUpload desktop — FD-05, images only per Phase 11 D-02) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Card Image</label>
         <div v-if="thumbnailUrl" class="flex flex-col gap-1 mb-1">
@@ -349,7 +451,43 @@ function onHide(): void {
             Current image — select a new file to replace it
           </p>
         </div>
+
+        <!-- FD-05: Mobile two-affordance — Take photo (camera) + Choose from gallery (images only) -->
+        <template v-if="isMobile">
+          <div class="flex gap-2">
+            <label
+              class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1"
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-camera" aria-hidden="true"></i>
+              Take photo
+            </label>
+            <label
+              class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1"
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-images" aria-hidden="true"></i>
+              Choose from gallery
+            </label>
+          </div>
+        </template>
+
+        <!-- Desktop: existing FileUpload (images only) -->
         <FileUpload
+          v-else
           mode="basic"
           :auto="false"
           accept="image/jpeg,image/png,image/webp"
@@ -358,145 +496,33 @@ function onHide(): void {
           :chooseLabel="isEditMode && record?.card_image ? 'Replace image' : undefined"
           @select="onFileSelect"
         />
+
         <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
           {{ pendingFile.name }} selected
         </p>
       </div>
-
-      <!-- Submit button -->
-      <Button
-        type="submit"
-        :label="isEditMode ? 'Save Changes' : 'Add Card'"
-        :loading="isSaving"
-        :disabled="isSaving"
-        fluid
-      />
     </form>
-  </Dialog>
 
-  <!-- Mobile: bottom Drawer (85dvh cap via wallecx-overrides.css already applied) -->
-  <Drawer
-    v-else
-    v-model:visible="visible"
-    position="bottom"
-    :show-close-icon="!isSaving"
-    @hide="onHide"
-  >
-    <template #header>
-      <div class="flex flex-col items-center w-full gap-1">
-        <DragHandle />
-        <span class="font-semibold">{{ dialogHeader }}</span>
+    <!-- #actions slot: Save/Cancel buttons (UI-SPEC Contract 2) -->
+    <template #actions>
+      <div class="flex gap-2">
+        <Button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          fluid
+          :disabled="isSaving"
+          @click="onCancel"
+        />
+        <Button
+          type="submit"
+          form="manage-membership-form"
+          :label="isEditMode ? 'Save Changes' : 'Add Membership'"
+          fluid
+          :loading="isSaving"
+          :disabled="isSaving"
+        />
       </div>
     </template>
-
-    <form @submit.prevent="onSubmit" class="space-y-4">
-      <!-- card_name (required) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Card Name *</label>
-        <InputText v-model="cardName" fluid :disabled="isSaving" />
-        <Message v-if="cardNameError" severity="error" size="small" variant="simple">
-          {{ cardNameError }}
-        </Message>
-      </div>
-
-      <!-- barcode_type (Select with BARCODE_TYPE_OPTIONS) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Barcode Type</label>
-        <Select
-          v-model="barcodeType"
-          :options="BARCODE_TYPE_OPTIONS"
-          option-label="label"
-          option-value="value"
-          fluid
-          :disabled="isSaving"
-        />
-      </div>
-
-      <!-- barcode_value — conditional hide per D-02 (v-if NOT v-show) -->
-      <div v-if="barcodeType !== 'number'" class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Barcode Value</label>
-        <InputText v-model="barcodeValue" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- card_number -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Card Number</label>
-        <InputText v-model="cardNumber" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- card_color (ColorPicker + live swatch — D-01, D-03 / PrimeVue #8135) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Card Colour</label>
-        <div class="flex items-center gap-3">
-          <ColorPicker
-            v-model="cardColor"
-            aria-label="Card colour picker"
-            :disabled="isSaving"
-          />
-          <span
-            class="inline-block w-8 h-8 rounded"
-            :style="{ backgroundColor: '#' + cardColor }"
-            aria-hidden="true"
-          ></span>
-        </div>
-        <Message v-if="cardColorError" severity="error" size="small" variant="simple">
-          {{ cardColorError }}
-        </Message>
-      </div>
-
-      <!-- expiry_date (DatePicker) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Expiry Date</label>
-        <DatePicker v-model="expiryDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
-      </div>
-
-      <!-- issuer -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Issuer</label>
-        <InputText v-model="issuer" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- notes (Textarea, 3 rows, no auto-resize per UI-SPEC) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
-        <Textarea v-model="notes" fluid :rows="3" :auto-resize="false" :disabled="isSaving" />
-      </div>
-
-      <!-- card_image (FileUpload with edit-mode thumbnail — D-03) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Card Image</label>
-        <div v-if="thumbnailUrl" class="flex flex-col gap-1 mb-1">
-          <img
-            :src="thumbnailUrl"
-            class="w-24 h-24 object-cover rounded"
-            alt="Current card image"
-          />
-          <p class="text-sm" style="color: var(--color-typo-muted)">
-            Current image — select a new file to replace it
-          </p>
-        </div>
-        <FileUpload
-          mode="basic"
-          :auto="false"
-          accept="image/jpeg,image/png,image/webp"
-          :maxFileSize="10485760"
-          :disabled="isSaving"
-          :chooseLabel="isEditMode && record?.card_image ? 'Replace image' : undefined"
-          @select="onFileSelect"
-        />
-        <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
-          {{ pendingFile.name }} selected
-        </p>
-      </div>
-
-      <!-- Submit button -->
-      <Button
-        type="submit"
-        :label="isEditMode ? 'Save Changes' : 'Add Card'"
-        :loading="isSaving"
-        :disabled="isSaving"
-        fluid
-      />
-    </form>
-  </Drawer>
+  </BaseMobileDialog>
 </template>
