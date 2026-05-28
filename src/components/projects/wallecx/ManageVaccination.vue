@@ -9,10 +9,10 @@ import dayjs from "dayjs";
 import { pb } from "@/lib/pocketbase";
 import { mapToUpdateVaccination } from "@/lib/pocketbase/vaccinationMapper";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
-import { useIsMobile } from "@/composables/useIsMobile";
-import DragHandle from "./DragHandle.vue";
+import { useMobileEnv } from "@/composables/useMobileEnv";
+import BaseMobileDialog from "./BaseMobileDialog.vue";
 
-const isMobile = useIsMobile();
+const { isMobile } = useMobileEnv();
 
 const visible = defineModel("visible", { type: Boolean, default: false, required: true });
 const record = defineModel<Vaccinations | null>("record", { default: null });
@@ -24,6 +24,7 @@ const emit = defineEmits<{
 
 const isSaving = ref(false);
 const pendingFile = ref<File | null>(null);
+const baseDialogRef = ref<InstanceType<typeof BaseMobileDialog> | null>(null);
 
 // date_administered is controlled by a direct v-model ref, NOT @primevue/forms.
 // PrimeVue Forms 4.4.0+ ignores initialValues/setFieldValue for a Form-bound DatePicker
@@ -60,6 +61,57 @@ watch(
   },
   { immediate: true },
 );
+
+// FD-09: Dirty snapshot — taken on dialog open
+interface VaccinationSnapshot {
+  vaccineType: string;
+  vaccineName: string;
+  doseNumber: number | null;
+  lotNumber: string;
+  manufacturer: string;
+  location: string;
+  notes: string;
+  administeredDate: string | null;
+}
+
+const snapshot = ref<VaccinationSnapshot | null>(null);
+
+// Visible watcher — takes dirty snapshot on open + resets pendingFile on close
+watch(visible, (isOpen) => {
+  if (!isOpen) {
+    pendingFile.value = null;
+    return;
+  }
+  // Snapshot for dirty tracking (FD-09) — taken on rising edge
+  const iv = initialValues.value;
+  snapshot.value = {
+    vaccineType: (iv.vaccine_type as string) ?? "",
+    vaccineName: (iv.vaccine_name as string) ?? "",
+    doseNumber: (iv.dose_number as number | null | undefined) ?? null,
+    lotNumber: (iv.lot_number as string) ?? "",
+    manufacturer: (iv.manufacturer as string) ?? "",
+    location: (iv.location as string) ?? "",
+    notes: (iv.notes as string) ?? "",
+    administeredDate: administeredDate.value?.toISOString() ?? null,
+  };
+});
+
+// FD-09: isDirty computed — passed to BaseMobileDialog
+const isDirty = computed<boolean>(() => {
+  if (!snapshot.value) return false;
+  const iv = initialValues.value;
+  return (
+    ((iv.vaccine_type as string) ?? "") !== snapshot.value.vaccineType ||
+    ((iv.vaccine_name as string) ?? "") !== snapshot.value.vaccineName ||
+    (((iv.dose_number as number | null | undefined) ?? null)) !== snapshot.value.doseNumber ||
+    ((iv.lot_number as string) ?? "") !== snapshot.value.lotNumber ||
+    ((iv.manufacturer as string) ?? "") !== snapshot.value.manufacturer ||
+    ((iv.location as string) ?? "") !== snapshot.value.location ||
+    ((iv.notes as string) ?? "") !== snapshot.value.notes ||
+    (administeredDate.value?.toISOString() ?? null) !== snapshot.value.administeredDate ||
+    pendingFile.value !== null
+  );
+});
 
 const schema = z.object({
   vaccine_type: z.string().min(1, { message: "Vaccine type is required." }),
@@ -140,6 +192,20 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
   }
 }
 
+// FD-05: Raw file input bridge — routes camera/gallery input through the EXIF/compression pipeline
+async function onRawFileChange(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  input.value = ""; // reset so same file can be re-selected
+  await onFileSelect({ files: [file] });
+}
+
+// FD-09: Explicit Cancel — close without triggering dirty guard
+function onCancel(): void {
+  baseDialogRef.value?.closeWithoutGuard();
+}
+
 async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
   if (!valid) return;
   // date_administered is validated manually (it lives outside the Form — see administeredDate)
@@ -194,8 +260,8 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
     }
 
     toast.success(isEditMode.value ? "Vaccination updated." : "Vaccination added.");
-    pendingFile.value = null; // HIGH-02: explicit reset — do not rely solely on @hide timing
-    visible.value = false;
+    // FD-09: bypass dirty guard on successful save
+    baseDialogRef.value?.closeWithoutGuard();
   } catch (e: unknown) {
     toast.error("Failed to save. Please try again.");
     console.error("ManageVaccination: save failed", e);
@@ -203,26 +269,21 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
     isSaving.value = false;
   }
 }
-
-function onHide(): void {
-  pendingFile.value = null;
-  dateAdministeredError.value = "";
-}
 </script>
 
 <template>
-  <!-- Desktop: centered Dialog -->
-  <Dialog
-    v-if="!isMobile"
-    modal
+  <BaseMobileDialog
+    ref="baseDialogRef"
     v-model:visible="visible"
-    :header="dialogHeader"
-    :style="{ width: '40vw' }"
-    :breakpoints="{ '960px': '75vw', '641px': '92vw' }"
-    :closable="!isSaving"
-    @hide="onHide"
+    :title="dialogHeader"
+    :is-dirty="isDirty"
+    :is-saving="isSaving"
   >
+    <!-- #default slot: ONE Form body rendered once (Pattern S-1 — two-Form collapse)
+         D-33-01-A / #8191: administeredDate is a direct v-model ref declared above,
+         sitting inside the Form's visual layout but NOT name-bound to @primevue/forms. -->
     <Form
+      id="manage-vaccination-form"
       v-slot="$form"
       :initialValues="initialValues"
       :resolver="resolver"
@@ -238,6 +299,9 @@ function onHide(): void {
           fluid
           :disabled="isSaving"
           placeholder="e.g., Flu, COVID-19, Pneumonia PCV23"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
         />
         <Message v-if="$form.vaccine_type?.invalid" severity="error" size="small" variant="simple">
           {{ $form.vaccine_type.error?.message }}
@@ -247,16 +311,31 @@ function onHide(): void {
       <!-- vaccine_name (required) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Name *</label>
-        <InputText name="vaccine_name" fluid :disabled="isSaving" />
+        <InputText
+          name="vaccine_name"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
         <Message v-if="$form.vaccine_name?.invalid" severity="error" size="small" variant="simple">
           {{ $form.vaccine_name.error?.message }}
         </Message>
       </div>
 
-      <!-- date_administered (required, DatePicker per D-04) -->
+      <!-- date_administered (required, direct v-model — D-33-01-A, PrimeVue #8191)
+           NOT name-bound; administeredDate ref is validated manually in onSubmit. -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
-        <DatePicker v-model="administeredDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
+        <DatePicker
+          v-model="administeredDate"
+          :inline="isMobile"
+          fluid
+          dateFormat="dd M yy"
+          showButtonBar
+          :disabled="isSaving"
+        />
         <Message v-if="dateAdministeredError" severity="error" size="small" variant="simple">
           {{ dateAdministeredError }}
         </Message>
@@ -265,7 +344,17 @@ function onHide(): void {
       <!-- dose_number (optional, InputNumber per discretion decision in RESEARCH.md) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Dose Number</label>
-        <InputNumber name="dose_number" fluid :min="0" :max="20" :show-buttons="false" :disabled="isSaving" />
+        <InputNumber
+          name="dose_number"
+          fluid
+          :min="0"
+          :max="20"
+          :show-buttons="false"
+          :disabled="isSaving"
+          inputmode="numeric"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
         <Message v-if="$form.dose_number?.invalid" severity="error" size="small" variant="simple">
           {{ $form.dose_number.error?.message }}
         </Message>
@@ -274,31 +363,99 @@ function onHide(): void {
       <!-- lot_number (optional) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Lot Number</label>
-        <InputText name="lot_number" fluid :disabled="isSaving" />
+        <InputText
+          name="lot_number"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
       <!-- manufacturer (optional) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</label>
-        <InputText name="manufacturer" fluid :disabled="isSaving" />
+        <InputText
+          name="manufacturer"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
       <!-- location (optional) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Location</label>
-        <InputText name="location" fluid :disabled="isSaving" />
+        <InputText
+          name="location"
+          fluid
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="next"
+          autocomplete="off"
+        />
       </div>
 
       <!-- notes (optional, Textarea 3 rows per D-05) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
-        <Textarea name="notes" fluid :rows="3" :auto-resize="false" :disabled="isSaving" />
+        <Textarea
+          name="notes"
+          fluid
+          :rows="3"
+          :auto-resize="false"
+          :disabled="isSaving"
+          inputmode="text"
+          enterkeyhint="done"
+          autocomplete="off"
+        />
       </div>
 
-      <!-- card attachment (FileUpload per WRITE-02 — mode="basic" :auto="false" @select ONLY) -->
+      <!-- card attachment — FD-05: two-affordance mobile (images+PDF for vaccination records)
+           Camera input is images-only (capture=environment cannot produce PDFs).
+           Gallery input accepts images + PDF (vaccination cards can be scanned PDFs). -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Card (image or PDF)</label>
+
+        <!-- FD-05: Mobile two-affordance — Take photo (camera, images only) + Choose from gallery (images + PDF) -->
+        <template v-if="isMobile">
+          <div class="flex gap-2">
+            <label
+              class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1"
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-camera" aria-hidden="true"></i>
+              Take photo
+            </label>
+            <label
+              class="p-button p-button-outlined p-button-secondary p-button-sm min-h-[44px] cursor-pointer flex items-center gap-2 flex-1"
+            >
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                class="hidden"
+                :disabled="isSaving"
+                @change="onRawFileChange"
+              />
+              <i class="pi pi-images" aria-hidden="true"></i>
+              Choose from gallery
+            </label>
+          </div>
+        </template>
+
+        <!-- Desktop: existing FileUpload (images + PDF per WRITE-02) -->
         <FileUpload
+          v-else
           mode="basic"
           :auto="false"
           accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -306,137 +463,33 @@ function onHide(): void {
           :disabled="isSaving"
           @select="onFileSelect"
         />
+
         <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
           {{ pendingFile.name }} selected
         </p>
       </div>
-
-      <!-- Submit button (WRITE-07: disabled + loading spinner while isSaving) -->
-      <Button
-        type="submit"
-        :label="isEditMode ? 'Save Changes' : 'Add Vaccination'"
-        :loading="isSaving"
-        :disabled="isSaving"
-        fluid
-      />
     </Form>
-  </Dialog>
 
-  <!-- Mobile: bottom Drawer (85dvh cap via wallecx-overrides.css already applied) -->
-  <Drawer
-    v-else
-    v-model:visible="visible"
-    position="bottom"
-    :show-close-icon="!isSaving"
-    @hide="onHide"
-  >
-    <template #header>
-      <div class="flex flex-col items-center w-full gap-1">
-        <DragHandle />
-        <span class="font-semibold">{{ dialogHeader }}</span>
-      </div>
-    </template>
-
-    <!-- D-33-01-A / #8191: administeredDate is a direct v-model ref, outside the Form.
-         Two <Form> instances work here because only one renders at a time (v-if/v-else);
-         each provides its own inject context; fields bind by name, not ref. -->
-    <Form
-      v-slot="$form"
-      :initialValues="initialValues"
-      :resolver="resolver"
-      @submit="onSubmit"
-      validate-on-submit
-      class="space-y-4"
-    >
-      <!-- vaccine_type (required) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Type *</label>
-        <InputText
-          name="vaccine_type"
+    <!-- #actions slot: Save/Cancel buttons (UI-SPEC Contract 2) -->
+    <template #actions>
+      <div class="flex gap-2">
+        <Button
+          type="button"
+          label="Cancel"
+          severity="secondary"
           fluid
           :disabled="isSaving"
-          placeholder="e.g., Flu, COVID-19, Pneumonia PCV23"
+          @click="onCancel"
         />
-        <Message v-if="$form.vaccine_type?.invalid" severity="error" size="small" variant="simple">
-          {{ $form.vaccine_type.error?.message }}
-        </Message>
-      </div>
-
-      <!-- vaccine_name (required) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Name *</label>
-        <InputText name="vaccine_name" fluid :disabled="isSaving" />
-        <Message v-if="$form.vaccine_name?.invalid" severity="error" size="small" variant="simple">
-          {{ $form.vaccine_name.error?.message }}
-        </Message>
-      </div>
-
-      <!-- date_administered (required, direct v-model — D-33-01-A, PrimeVue #8191) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
-        <DatePicker v-model="administeredDate" fluid dateFormat="dd M yy" :disabled="isSaving" />
-        <Message v-if="dateAdministeredError" severity="error" size="small" variant="simple">
-          {{ dateAdministeredError }}
-        </Message>
-      </div>
-
-      <!-- dose_number (optional) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Dose Number</label>
-        <InputNumber name="dose_number" fluid :min="0" :max="20" :show-buttons="false" :disabled="isSaving" />
-        <Message v-if="$form.dose_number?.invalid" severity="error" size="small" variant="simple">
-          {{ $form.dose_number.error?.message }}
-        </Message>
-      </div>
-
-      <!-- lot_number (optional) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Lot Number</label>
-        <InputText name="lot_number" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- manufacturer (optional) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</label>
-        <InputText name="manufacturer" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- location (optional) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Location</label>
-        <InputText name="location" fluid :disabled="isSaving" />
-      </div>
-
-      <!-- notes (optional, Textarea 3 rows) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
-        <Textarea name="notes" fluid :rows="3" :auto-resize="false" :disabled="isSaving" />
-      </div>
-
-      <!-- card attachment -->
-      <div class="flex flex-col gap-1">
-        <label class="text-sm" style="color: var(--color-typo-heading)">Card (image or PDF)</label>
-        <FileUpload
-          mode="basic"
-          :auto="false"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
-          :maxFileSize="10485760"
+        <Button
+          type="submit"
+          form="manage-vaccination-form"
+          :label="isEditMode ? 'Save Changes' : 'Add Vaccination'"
+          fluid
+          :loading="isSaving"
           :disabled="isSaving"
-          @select="onFileSelect"
         />
-        <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
-          {{ pendingFile.name }} selected
-        </p>
       </div>
-
-      <!-- Submit button -->
-      <Button
-        type="submit"
-        :label="isEditMode ? 'Save Changes' : 'Add Vaccination'"
-        :loading="isSaving"
-        :disabled="isSaving"
-        fluid
-      />
-    </Form>
-  </Drawer>
+    </template>
+  </BaseMobileDialog>
 </template>
