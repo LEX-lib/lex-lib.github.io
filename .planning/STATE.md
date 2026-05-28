@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue tabs converted to defineAsyncComponent + Suspense + WallecxSkeleton fallbacks. WallecxApp chunk: 64.09 KB gzip → 32.81 KB (Plan 36-01 groups) → 2.45 KB gzip (this plan). Next: Plan 36-03 (VaccinationsTab async ManageVaccination + perfInstrument).
-last_updated: "2026-05-28T05:01:00Z"
+stopped_at: "Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts: RecordFullListOptions type fix. ManageVaccination now 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton)."
+last_updated: "2026-05-28T05:06:22.178Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 19
-  completed_plans: 14
-  percent: 74
+  completed_plans: 15
+  percent: 79
 ---
 
 # Project State
@@ -28,11 +28,11 @@ progress:
 ## Current Position
 
 Phase: 36 (Mobile Performance) — EXECUTING
-Plan: 2 of 7
+Plan: 3 of 7 complete
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Executing Phase 36
 **Phase:** 36
-**Plan:** 2 of 7 complete
+**Plan:** 3 of 7 complete
 **Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
@@ -333,9 +333,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T04:53:44Z
+**Last session:** 2026-05-28T05:04:10Z
 
-**Stopped at:** Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue: 3 eager tab imports removed; WallecxSkeleton static import added; 3 defineAsyncComponent const declarations; each TabPanel wrapped in Suspense with WallecxSkeleton fallback (vaccination-card/membership-card/expense-row, :count=3 each). Suspense inside TabPanel (Pitfall 1), WallecxSkeleton eager (Pitfall 2). WallecxApp chunk: 64.09 KB gzip → 32.81 KB (Plan 36-01) → 2.45 KB gzip. type-check 0, test:unit 59/59, build 66 precache, 0 exceeds. Next: Plan 36-03 (VaccinationsTab async ManageVaccination + perfInstrument + skeleton consolidation).
+**Stopped at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
+
+**Prior stopped-at:** Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue: 3 eager tab imports removed; WallecxSkeleton static import added; 3 defineAsyncComponent const declarations; each TabPanel wrapped in Suspense with WallecxSkeleton fallback (vaccination-card/membership-card/expense-row, :count=3 each). Suspense inside TabPanel (Pitfall 1), WallecxSkeleton eager (Pitfall 2). WallecxApp chunk: 64.09 KB gzip → 32.81 KB (Plan 36-01) → 2.45 KB gzip. type-check 0, test:unit 59/59, build 66 precache, 0 exceeds.
 
 **Prior stopped-at:** Phase 36 Plan 36-01 COMPLETE. Foundation: WallecxSkeleton.vue (5 variants, byte-matched dims), perfInstrument.ts (instrumentedGetFullList, sessionStorage+localStorage try/catch, requestKey preserved), compressToWebP.ts (fileType:webp + 3 preserved options), vite.config.ts (chart-js/jsbarcode/image-compression codeSplitting groups at priority 25). Pre-phase baseline: 64.09 KB gzip; after groups: 32.81 KB gzip (~49% reduction). type-check 0, test:unit 59/59, build 59 precache. Next: Plan 36-02 (async tab splits via defineAsyncComponent + Suspense in WallecxApp.vue).
 

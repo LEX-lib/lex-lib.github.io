@@ -30,9 +30,9 @@
 ### Mobile Performance (PF)
 
 - [ ] **PF-01**: Bundle visualizer report generated; chunk-split decisions documented (which libs accidentally in Wallecx critical path — suspects: `leaflet`, `quill`, `vue-pdf-embed`, `dompurify`); concrete split actions taken in this phase
-- [ ] **PF-02**: WallecxApp.vue tabs (`VaccinationsTab`, `MembershipsTab`, `ExpensesTab`) converted to `defineAsyncComponent`; per-Manage* dialog also async; initial Wallecx chunk drops at least 50%
-- [ ] **PF-04**: Skeleton states (matching final layout dimensions) replace blank-spinner states in VaccinationsTab, MembershipsTab, ExpensesListView, ExpensesReportsView, and AttachmentPreview; CLS ≤ 0.1 verified
-- [ ] **PF-05**: `performance.mark/measure` instrumentation logs payload size + duration for each `wallecx_*` `getFullList` on mobile cellular; baseline recorded in milestone close
+- [x] **PF-02**: WallecxApp.vue tabs (`VaccinationsTab`, `MembershipsTab`, `ExpensesTab`) converted to `defineAsyncComponent`; per-Manage* dialog also async; initial Wallecx chunk drops at least 50%
+- [x] **PF-04**: Skeleton states (matching final layout dimensions) replace blank-spinner states in VaccinationsTab, MembershipsTab, ExpensesListView, ExpensesReportsView, and AttachmentPreview; CLS ≤ 0.1 verified
+- [x] **PF-05**: `performance.mark/measure` instrumentation logs payload size + duration for each `wallecx_*` `getFullList` on mobile cellular; baseline recorded in milestone close
 - [ ] **PF-06** *(conditional)*: List virtualization integrated in `ExpensesListView` ONLY IF PF-05 instrumentation reveals >16ms scroll jank or any collection exceeds ~500 rendered rows on test devices; otherwise deferred to a future milestone
 - [ ] **PF-07**: Receipt/scan upload pipeline passes `fileType: 'image/webp'` to `browser-image-compression`; output mime confirmed WebP; storage size reduction documented
 - [ ] **PF-09**: `<link rel="preconnect">` + `<link rel="dns-prefetch">` hints for the PocketBase origin in `index.html`; warm cellular cold-start cut
@@ -142,9 +142,9 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | LT-08 | Phase 35 | Complete (35-01..05) |
 | LT-09 | Phase 34 | Complete |
 | PF-01 | Phase 36 | Pending |
-| PF-02 | Phase 36 | Pending |
-| PF-04 | Phase 36 | Pending |
-| PF-05 | Phase 36 | Pending |
+| PF-02 | Phase 36 | Complete |
+| PF-04 | Phase 36 | Complete |
+| PF-05 | Phase 36 | Complete |
 | PF-06 | Phase 38b | Conditional (triggered by PF-05 instrumentation) |
 | PF-07 | Phase 36 | Pending |
 | PF-09 | Phase 36 | Pending |
