@@ -175,7 +175,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
-- [ ] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, inline DatePicker on mobile (5/6 plans complete 2026-05-28)
+- [x] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, popup DatePicker on mobile (6/6 plans complete 2026-05-28)
 - [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
 - [ ] **Phase 38: Mobile UAT Sweep + PWA-UAT-01** — Real iOS + real Android + iPad-820 viewport device matrix; closes PWA-UAT-01 deferred from Phase 22 V6
@@ -231,7 +231,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 #### Phase 35: Forms & Dialogs on Small Screens
 
-**Goal:** All 4 Manage dialogs (`ManageExpense`, `ManageBudget`, `ManageMembership`, `ManageVaccination`) render through a shared `BaseMobileDialog.vue` wrapper with sticky bottom action bars that stay above the virtual keyboard, iOS auto-zoom-on-focus is eliminated via a global ≥16px `.p-inputtext` rule, every input carries appropriate `inputmode` / `autocomplete` / `enterkeyhint`, DatePicker uses the default tap-to-open popup overlay on mobile (inline tried then reverted per D-35-13; mobile usability via the 16px no-zoom rule), FileUpload opens the device camera via `capture="environment"` with a gallery-picker fallback, focused inputs auto-scroll into view when the keyboard opens, and Drawer dismissal on a dirty form gates discard via `useConfirm`. Per-dialog migration order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (ColorPicker direct-v-model invariant preserved; PrimeVue #8135 workaround intact).
+**Goal:** All 4 Manage dialogs (`ManageExpense`, `ManageBudget`, `ManageMembership`, `ManageVaccination`) render through a shared `BaseMobileDialog.vue` wrapper with sticky bottom action bars that stay above the virtual keyboard, iOS auto-zoom-on-focus is eliminated via a global ≥16px `.p-inputtext` rule, every input carries appropriate `inputmode` / `autocomplete` / `enterkeyhint`, DatePicker uses the default tap-to-open popup overlay on ALL sites — inline was tried but reverted after UAT revealed crowding on the always-visible ExpensesToolbar/ExpensesReportsView pickers (D-35-13 RE-CORRECTED; mobile usability via the 16px no-zoom rule), FileUpload opens the device camera via `capture="environment"` with a gallery-picker fallback, focused inputs auto-scroll into view when the keyboard opens, and Drawer dismissal on a dirty form gates discard via `useConfirm`. Per-dialog migration order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (ColorPicker direct-v-model invariant preserved; PrimeVue #8135 workaround intact). COMPLETE 2026-05-28.
 
 **Depends on:** Phase 33 (`useMobileEnv`), Phase 34 (safe-area inset wiring is the substrate for sticky bottom action bars)
 **Requirements:** LT-08, FD-01, FD-03, FD-04, FD-05, FD-06, FD-07, FD-09
@@ -257,7 +257,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 - [x] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard) — COMPLETE (bc2c198; FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty, closeWithoutGuard; type-check 0, test:unit 59/59, build clean)
 - [x] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved) — COMPLETE (1da4b1c; ColorPicker v-model=cardColor + card_color no-hash + {immediate:true} watcher all preserved; FD-03/04/05/09 applied; membershipMapper 11 tests green; type-check 0, test:unit 59/59, build clean)
 - [x] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved) — COMPLETE (c21b5d3; two-Form → ONE Form confirmed safe, administeredDate direct v-model + [visible,record] tuple watch {immediate:true} preserved, FD-03/04/05/09 applied; camera images-only + gallery images+PDF; VaccinationSnapshot isDirty; type-check 0, test:unit 59/59, build 57 precache)
-- [ ] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint
+- [x] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint — COMPLETE (36203f3 gates PASS; f8eb9c7 FD-04 popup revert; human APPROVED 6 behaviors at 390px emulation; D-35-13 RE-CORRECTED)
 **UI hint:** yes
 
 #### Phase 36: Mobile Performance
@@ -417,7 +417,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 32. Decouple budgets fetch in ExpensesTab.vue | v4.2 | 1/1 | Complete | 2026-05-26 |
 | 33. Mobile Foundation | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 34. Layout Audit & Touch Targets | v4.3 | 3/3 | Complete | 2026-05-27 |
-| 35. Forms & Dialogs on Small Screens | v4.3 | 2/6 | In progress | — |
+| 35. Forms & Dialogs on Small Screens | v4.3 | 6/6 | Complete | 2026-05-28 |
 | 36. Mobile Performance | v4.3 | 0/? | Not started | — |
 | 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
 | 38. Mobile UAT Sweep + PWA-UAT-01 | v4.3 | 0/? | Not started | — |
@@ -425,4 +425,4 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-28 — Phase 35 Plan 35-02 complete. ManageExpense migrated to BaseMobileDialog (c58645e) — dual Dialog/Drawer branches collapsed to single wrapper, FD-03/04/05/09 fully applied (dirty snapshot, closeWithoutGuard, :inline=isMobile, camera+gallery affordances, inputmode/enterkeyhint). EXIF pipeline unchanged. ExpensesToolbar + ExpensesReportsView :inline=isMobile DatePickers (ad245f0). type-check 0, test:unit 59/59, build clean. 1 ConfirmDialog confirmed. Next: Plan 35-03 ManageBudget migration.*
+*Last updated: 2026-05-28 — Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS (36203f3); FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED — popup overlay on all DatePicker sites, mobile usability via 16px no-zoom); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache / 0 exceeds. Next: Phase 36 Mobile Performance.*

@@ -24,7 +24,7 @@
 - [x] **LT-04**: All `100vh` / `h-screen` occurrences in `src/components/projects/wallecx/` replaced with `100dvh` (with `100svh` fallback); audit pass confirms 0 raw `100vh` matches
 - [x] **LT-05**: WallecxApp.vue TabList + each tab's filter/sort toolbar pinned to the top on scroll (mobile only); long lists keep tab context visible
 - [x] **LT-07**: All 4 Manage dialogs and detail views verify internal-scroll behavior on small viewports — content scrolls, header + sticky action bar remain pinned, no double-scroll trap
-- [ ] **LT-08**: All 4 Manage dialogs (`ManageVaccination`, `ManageMembership`, `ManageExpense`, `ManageBudget`) render sticky bottom action bars (Save/Cancel) that remain visible above the virtual keyboard on mobile
+- [x] **LT-08**: All 4 Manage dialogs (`ManageVaccination`, `ManageMembership`, `ManageExpense`, `ManageBudget`) render sticky bottom action bars (Save/Cancel) that remain visible above the virtual keyboard on mobile
 - [x] **LT-09**: `<meta name="viewport">` in `index.html` includes `viewport-fit=cover` (required for `env(safe-area-inset-*)` non-zero values); locked with an inline LOCKED comment
 
 ### Mobile Performance (PF)
@@ -40,12 +40,12 @@
 ### Forms & Dialogs on Small Screens (FD)
 
 - [x] **FD-01**: Global `@media (max-width: 640px)` CSS rule in `wallecx-overrides.css` sets `font-size: 16px !important` on `.p-inputtext`, `.p-inputnumber-input`, `.p-textarea`, `.p-select-label`, `.p-multiselect-label`, `.p-datepicker-input` to prevent iOS auto-zoom-on-focus
-- [ ] **FD-03**: Every input across all 4 Manage dialogs carries appropriate `inputmode`, `autocomplete`, and `enterkeyhint` attributes (e.g., `inputmode="decimal"` on Amount, `enterkeyhint="done"` on last field)
+- [x] **FD-03**: Every input across all 4 Manage dialogs carries appropriate `inputmode`, `autocomplete`, and `enterkeyhint` attributes (e.g., `inputmode="decimal"` on Amount, `enterkeyhint="done"` on last field)
 - [ ] **FD-04**: PrimeVue DatePicker uses the default tap-to-open popup overlay on mobile at every site (ManageExpense date, ExpensesToolbar From/To, ExpensesReportsView Custom range, ManageVaccination date, ManageMembership expiry); usability on mobile is provided by the FD-01 16px no-zoom rule. *(History: PrimeVue 4.5.5 dropped the `touchUI` prop; `:inline="isMobile"` was tried 2026-05-27 then reverted 2026-05-28 after UAT showed inline calendars crowd the always-rendered filter/range pickers — see 35-CONTEXT.md D-35-13 RE-CORRECTED.)*
-- [ ] **FD-05**: PrimeVue FileUpload (or raw `<input type="file">` fallback) on receipt/scan affordances opens the device camera via `capture="environment"`; gallery-picker fallback also offered separately for iOS standalone reliability
-- [ ] **FD-06**: Focused input auto-scrolls into view when the virtual keyboard opens (both iOS overlay and Android `interactive-widget=resizes-content` paths verified)
+- [x] **FD-05**: PrimeVue FileUpload (or raw `<input type="file">` fallback) on receipt/scan affordances opens the device camera via `capture="environment"`; gallery-picker fallback also offered separately for iOS standalone reliability
+- [x] **FD-06**: Focused input auto-scrolls into view when the virtual keyboard opens (both iOS overlay and Android `interactive-widget=resizes-content` paths verified)
 - [x] **FD-07**: `BaseMobileDialog.vue` wrapper component established; per-dialog migration in order ManageExpense → ManageBudget → ManageMembership → ManageVaccination; `ManageMembership` migration explicitly preserves the ColorPicker direct-v-model invariant (PrimeVue #8135 workaround)
-- [ ] **FD-09**: Dirty-state guard — backdrop tap / swipe-down on a mobile Drawer containing a CRUD form prompts `useConfirm` ("Discard changes?") before dismissing; reusing the existing shell-level ConfirmDialog instance
+- [x] **FD-09**: Dirty-state guard — backdrop tap / swipe-down on a mobile Drawer containing a CRUD form prompts `useConfirm` ("Discard changes?") before dismissing; reusing the existing shell-level ConfirmDialog instance
 
 ### PWA Install + Standalone Polish (PWA)
 
@@ -139,7 +139,7 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | LT-04 | Phase 34 | Complete |
 | LT-05 | Phase 34 | Complete |
 | LT-07 | Phase 34 | Complete |
-| LT-08 | Phase 35 | Pending |
+| LT-08 | Phase 35 | Complete (35-01..05) |
 | LT-09 | Phase 34 | Complete |
 | PF-01 | Phase 36 | Pending |
 | PF-02 | Phase 36 | Pending |
@@ -149,12 +149,12 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | PF-07 | Phase 36 | Pending |
 | PF-09 | Phase 36 | Pending |
 | FD-01 | Phase 35 | Complete (35-01) |
-| FD-03 | Phase 35 | Pending |
-| FD-04 | Phase 35 | Pending |
-| FD-05 | Phase 35 | Pending |
-| FD-06 | Phase 35 | Pending |
+| FD-03 | Phase 35 | Complete (35-02..05) |
+| FD-04 | Phase 35 | Complete (35-02..05, revert f8eb9c7 — popup-everywhere) |
+| FD-05 | Phase 35 | Complete (35-02, 35-04, 35-05) |
+| FD-06 | Phase 35 | Complete (35-01..05) |
 | FD-07 | Phase 35 | Complete (35-01) |
-| FD-09 | Phase 35 | Pending |
+| FD-09 | Phase 35 | Complete (35-02..05) |
 | PWA-01 | Phase 37 | Pending |
 | PWA-02 | Phase 37 | Pending |
 | PWA-04 | Phase 37 | Pending |
@@ -166,17 +166,17 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | NFR-BR-2-PRESERVED | Phase 38 (final owner; binds 34, 35, 37) | Pending |
 | NFR-REQUESTKEY-UNIQUE | Phase 36 (owner; binds 38b) | Pending |
 | NFR-DVH-NOT-VH | Phase 34 (owner; binds milestone-close audit) | Pending |
-| NFR-IOS-NO-ZOOM | Phase 35 (owner; binds 34 grep audit, 38 UAT) | Pending |
+| NFR-IOS-NO-ZOOM | Phase 35 (owner; binds 34 grep audit, 38 UAT) | Complete (35-01 rule; 35-06 grep audit PASS; real-device deferred to 38) |
 | NFR-PWA-PRECACHE-FITS | Phase 36 (owner; binds 37) | Pending |
 | CON-PB-COUNT-BUG | Phase 36 (owner; binds 38b) | Pending |
 | CON-PWA-SCOPE | Phase 37 (owner; binds 38) | Pending |
 | CON-VIEWPORT-FIT | Phase 34 (owner; binds 37 PWA) | Pending |
-| NFR-DRAWER-DIRTY-GUARD | Phase 35 (owner; binds 38 UAT) | Pending |
+| NFR-DRAWER-DIRTY-GUARD | Phase 35 (owner; binds 38 UAT) | Complete (35-02..05; human-verify APPROVED) |
 | NFR-PWA-BANNER-FREQUENCY | Phase 37 (owner; binds 38 UAT) | Pending |
 | NFR-IOS-EVICTION-UX | Phase 37 (owner; binds 38 UAT) | Pending |
 | NFR-IOS-SPLASH | Phase 37 (owner; binds 38 UAT) | Pending |
-| CON-CARD-COLOR-NO-HASH | Phase 35 (owner; ManageMembership migration) | Pending |
-| CON-CONFIRMDIALOG-SINGLETON | Phase 35 (owner; binds 38 UAT) | Pending |
+| CON-CARD-COLOR-NO-HASH | Phase 35 (owner; ManageMembership migration) | Complete (35-04; 35-06 grep audit PASS; membershipMapper 11 tests green) |
+| CON-CONFIRMDIALOG-SINGLETON | Phase 35 (owner; binds 38 UAT) | Complete (35-06 grep audit: exactly 1 <ConfirmDialog in WallecxApp.vue) |
 | NFR-PERF-MEASURE | Phase 36 (owner; gates Phase 38b conditional) | Pending |
 
 **Coverage:**

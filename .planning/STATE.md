@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 35 Plan 35-05 COMPLETE. ManageVaccination migrated to BaseMobileDialog (c21b5d3) — two-Form collapse confirmed safe (Dialog+Drawer Forms → ONE Form in #default slot), administeredDate direct v-model (#8191/D-33-01-A) preserved, [visible,record] tuple watch {immediate:true} preserved verbatim, FD-03/04/05/09 applied (VaccinationSnapshot isDirty, :inline=isMobile DatePicker, camera images-only + gallery images+PDF two-affordance, inputmode/enterkeyhint). All 4 Manage dialogs now on BaseMobileDialog. type-check 0, test:unit 59/59, build 57 precache. Next: Plan 35-06 gates + grep audits + device human-verify checkpoint.
-last_updated: "2026-05-28T00:55:11Z"
+stopped_at: "Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS; FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache. Next: Phase 36 Mobile Performance."
+last_updated: "2026-05-28T03:30:00Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 10
-  percent: 83
+  completed_plans: 12
+  percent: 92
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Phase 35 — Forms & Dialogs on Small Screens
+**Current focus:** Phase 36 — Mobile Performance
 
 ## Current Position
 
-Phase: 35 (Forms & Dialogs on Small Screens) — EXECUTING
-Plan: 1 of 6
+Phase: 36 (Mobile Performance) — NEXT
+Plan: 0 of TBD
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Executing Phase 35
-**Phase:** 35 Forms & Dialogs on Small Screens — PLANNED, ready to execute
-**Plan:** 35-05 ManageVaccination migration COMPLETE. All 4 Manage dialogs now on BaseMobileDialog. Next: 35-06 gates + grep audits + device human-verify checkpoint.
+**Status:** Phase 35 COMPLETE — ready to execute Phase 36
+**Phase:** 35 Forms & Dialogs on Small Screens — COMPLETE (6/6 plans, 2026-05-28)
+**Plan:** 35-06 gates + human-verify COMPLETE. FD-04 popup revert (f8eb9c7). All 6 behaviors APPROVED. Next: Plan 36-01 Mobile Performance.
 **Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
@@ -107,6 +107,12 @@ Plan: 1 of 6
 - **Capture-only (M-9, D-05): `.prompt()` is NEVER called in Phase 33.** Phase 37 owns the user-gesture-gated call. Grep guard upheld: useMobileEnv.ts and App.vue contain no `.prompt(` invocation (only docblock/comment references).
 - **`@vueuse/core ^13.9.0` promoted to a direct `dependencies` entry (FND-01).** First direct use of @vueuse/core in the repo; already resolved transitively via `@vueuse/motion` (0 KB net) — promotion makes the import contract explicit.
 - **`PwaInstallBanner.vue` left untouched in Phase 33** (D-06; Android Install button + 30-day dismissal deferred to Phase 37).
+
+### Phase 35 Decisions (Plan 06 — Automated gates + grep audits + human-verify close)
+
+- **D-35-13 RE-CORRECTED: DatePicker popup-everywhere (not inline).** Plans 35-01..05 wired `:inline="isMobile"` on all DatePicker sites to provide an always-visible calendar on mobile. During Plan 35-06 human-verify UAT (item 4), the ExpensesToolbar From/To pickers and ExpensesReportsView custom-range pickers rendered as two huge always-visible inline calendar grids stacked above the expense list, crowding it to near-unusable. Root cause: these pickers are NOT inside a dialog — they render inline in always-visible toolbar/view components. Fix: revert `:inline` and `showButtonBar` on ALL 5 DatePicker sites to default tap-to-open popup overlay (f8eb9c7). Mobile usability is preserved by the FD-01 16px no-zoom rule (users can tap and interact with popup without zoom). Dialog-internal pickers (ManageExpense, ManageMembership, ManageVaccination) also revert to popup — consistent and simpler. ROADMAP.md + REQUIREMENTS.md FD-04 language updated. **Phase 35 canonical behavior: DatePicker = popup-everywhere; no `:inline` prop.**
+- **Phase 35 automated gate protocol established.** 35-06-AUDIT.md records 4 automated gates + 12 grep audits at phase close as a permanent evidence artifact. Pattern carried to Phase 36+.
+- **Real-device deferral to Phase 38.** Human APPROVED at 390px devtools emulation. iOS no-zoom zoom=1.0 (FD-01), actual camera launch (FD-05), and sticky-above-keyboard on a real device (LT-08/FD-06) carried to Phase 38 Mobile UAT Sweep per documented deferral path (35-CONTEXT.md Deferred Ideas). Accepted — devtools emulation is the established approval path for v4.3 mid-phase checkpoints.
 
 ### Phase 35 Decisions (Plan 05 — ManageVaccination migration, final two-Form collapse)
 
@@ -327,9 +333,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T00:55:11Z
+**Last session:** 2026-05-28T03:30:00Z
 
-**Stopped at:** Phase 35 Plan 35-05 COMPLETE. ManageVaccination migrated to BaseMobileDialog (c21b5d3) — two-Form collapse (Dialog+Drawer Forms → ONE Form), administeredDate direct v-model (#8191/D-33-01-A) + [visible,record] tuple watch {immediate:true} preserved verbatim, FD-03/04/05/09 applied, camera images-only + gallery images+PDF two-affordance upload, VaccinationSnapshot isDirty. All 4 Manage dialogs on BaseMobileDialog. type-check 0, test:unit 59/59, build 57 precache. Next: Plan 35-06 gates + grep audits + device human-verify checkpoint.
+**Stopped at:** Phase 35 COMPLETE (6/6 plans). Plan 35-06: 16/16 automated gates + grep audits PASS (36203f3); FD-04 :inline reverted to popup-everywhere after UAT crowding (f8eb9c7, D-35-13 RE-CORRECTED); human APPROVED all 6 behaviors at 390px devtools emulation; real-device deferral to Phase 38. type-check 0, test:unit 59/59, build 57 precache/0 exceeds, lint clean except VaccinationDetail.vue:5. Next: Phase 36 Mobile Performance — plan with `/gsd-plan-phase 36`.
 
 **Prior stopped-at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache.
 
