@@ -344,15 +344,15 @@ async function onSubmit(): Promise<void> {
         </Message>
       </div>
 
-      <!-- Date (required) — FD-04: :inline="isMobile" (D-35-13 CORRECTED — not touchUI) -->
+      <!-- Date (required) — FD-04: tap-to-open popup overlay on all viewports.
+           Inline mode reverted (it crowded the form/page); the FD-01 16px rule keeps
+           the popup usable on mobile without iOS zoom. -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Date *</label>
         <DatePicker
           v-model="expenseDate"
-          :inline="isMobile"
           fluid
           dateFormat="dd M yy"
-          showButtonBar
           :disabled="isSaving"
         />
         <Message v-if="expenseDateError" severity="error" size="small" variant="simple">

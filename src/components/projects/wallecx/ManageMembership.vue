@@ -397,15 +397,13 @@ async function onSubmit(): Promise<void> {
         </Message>
       </div>
 
-      <!-- expiry_date (DatePicker — FD-04: :inline="isMobile") -->
+      <!-- expiry_date (DatePicker — FD-04: tap-to-open popup overlay; inline reverted) -->
       <div class="flex flex-col gap-1">
         <label class="text-sm" style="color: var(--color-typo-heading)">Expiry Date</label>
         <DatePicker
           v-model="expiryDate"
-          :inline="isMobile"
           fluid
           dateFormat="dd M yy"
-          showButtonBar
           :disabled="isSaving"
         />
       </div>

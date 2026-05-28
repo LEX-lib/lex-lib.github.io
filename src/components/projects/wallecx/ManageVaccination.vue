@@ -330,10 +330,8 @@ async function onSubmit({ valid, values }: FormSubmitEvent): Promise<void> {
         <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
         <DatePicker
           v-model="administeredDate"
-          :inline="isMobile"
           fluid
           dateFormat="dd M yy"
-          showButtonBar
           :disabled="isSaving"
         />
         <Message v-if="dateAdministeredError" severity="error" size="small" variant="simple">
