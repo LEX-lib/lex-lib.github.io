@@ -1,3 +1,4 @@
+import type { RecordFullListOptions } from 'pocketbase'
 import { pb } from './index'
 
 const STORAGE_KEY = 'wallecx:perf-baseline'
@@ -13,7 +14,7 @@ interface PerfRecord {
 
 export async function instrumentedGetFullList<T>(
   collection: string,
-  options: Parameters<ReturnType<typeof pb.collection>['getFullList']>[0]
+  options: RecordFullListOptions
 ): Promise<T[]> {
   const markStart = `perf:${collection}:start`
   const markEnd = `perf:${collection}:end`

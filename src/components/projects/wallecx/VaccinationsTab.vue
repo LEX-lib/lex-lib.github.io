@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from "vue";
 import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { useConfirm } from "primevue/useconfirm";
 import { pb } from "@/lib/pocketbase";
 import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
-import ManageVaccination from "./ManageVaccination.vue";
+import { instrumentedGetFullList } from "@/lib/pocketbase/perfInstrument";
+import WallecxSkeleton from "./WallecxSkeleton.vue";
+const ManageVaccination = defineAsyncComponent(() => import("./ManageVaccination.vue"));
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 import WallecxToolbar from './WallecxToolbar.vue';
@@ -151,9 +153,10 @@ onMounted(async () => {
   }
   isLoading.value = true;
   try {
-    records.value = await pb
-      .collection("wallecx_vaccinations")
-      .getFullList<Vaccinations>({ sort: "-date_administered" });
+    records.value = await instrumentedGetFullList<Vaccinations>("wallecx_vaccinations", {
+      sort: "-date_administered",
+      requestKey: "vaccinations-getFullList",  // NEW — closes NFR-REQUESTKEY-UNIQUE gap (Pitfall 3)
+    });
     listToken.value = await pb.files.getToken();
     listTokenTimer = setInterval(async () => {
       try {
@@ -356,13 +359,7 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
     </div>
 
     <!-- Loading state: skeleton card grid -->
-    <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Card v-for="i in 3" :key="i">
-        <template #content>
-          <Skeleton height="6rem" />
-        </template>
-      </Card>
-    </div>
+    <WallecxSkeleton v-if="isLoading" variant="vaccination-card" :count="3" />
 
     <!-- Empty state (GROUP-05 edge case: zero records total) -->
     <div v-else-if="records.length === 0" class="flex flex-col items-center py-12 gap-3">
@@ -443,13 +440,18 @@ async function deleteRecord(record: Vaccinations): Promise<void> {
       />
     </Drawer>
 
-    <!-- ManageVaccination: unified create/edit dialog -->
-    <ManageVaccination
-      v-model:visible="showManage"
-      v-model:record="manageRecord"
-      @created="onCreated"
-      @updated="onUpdated"
-    />
+    <!-- ManageVaccination: unified create/edit dialog — async-loaded on first open -->
+    <Suspense>
+      <ManageVaccination
+        v-model:visible="showManage"
+        v-model:record="manageRecord"
+        @created="onCreated"
+        @updated="onUpdated"
+      />
+      <template #fallback>
+        <WallecxSkeleton variant="vaccination-card" />
+      </template>
+    </Suspense>
 
     <!-- VaccinationDetail dialog — unchanged from Phase 2 -->
     <Dialog
