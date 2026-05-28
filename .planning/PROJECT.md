@@ -132,10 +132,11 @@ If everything else fails, these capabilities must work: the vaccination history 
 - ✓ Structured Phase 30 UAT sweep over 8 ROADMAP-named phases (10, 11, 12, 18, 20, 21, 22, 25) — 80/82 scenarios passed, 1 deferred (PWA standalone install), 0 regressions; BR-2 barcode invariant verified twice — v4.1
 - ✓ **BUG-01** — `wallecx_expense_budgets` PocketBase collection re-created in production with locked Phase 28-01 schema (4 fields, 5 rules with v0.29.3 `@request.body.user` createRule); paste-back gated Admin UI flow + `getFullList` 200 + empty array smoke verify; D-13 architectural invariant locked into STATE.md as workflow-layer prevention of silent-no-op checkpoints — v4.2
 - ✓ **BUG-02** — `ExpensesTab.vue` `onMounted` refactored to independent try/catches; `loadBudgets()` gained `opts: { context: 'mount' | 'refresh' }` parameter with ternary toast (`'Failed to load budgets.'` vs `'Failed to refresh budgets after save. Reload to see changes.'`); `isLoading` wraps only the expenses fetch; budgets-only failure no longer fires misleading toast or blocks expenses list (UAT 1 close-the-loop signal verified) — v4.2
+- ✓ **PF-01/02/04/05/07/09** — Wallecx mobile performance: vendor code-splitting (chart-js, jsbarcode, image-compression as priority-25 rolldown groups); WallecxApp.vue tabs + per-Manage* dialogs converted to `defineAsyncComponent` + Suspense; WallecxSkeleton with 5 byte-matched variants replacing 5 inline skeletons + 6 Suspense fallbacks (CLS ≤ 0.1 emulation-confirmed at 390×844); `perfInstrument.ts` `instrumentedGetFullList` wrapping all 5 mount-path getFullList calls with one-shot sessionStorage gate + localStorage `wallecx:perf-baseline` writes; shared `compressToWebP.ts` helper (fileType: image/webp, .webp filename rename) adopted in all 3 Manage* upload paths; index.html PocketBase-origin preconnect + dns-prefetch hints. Wallecx route chunk gzip 64.09 KB → 2.13 KB (−96.7%; target ≥50% met 15×). NFR-REQUESTKEY-UNIQUE closed (all 5 mount-path keys distinct + explicit in STATE.md). Phase 38 carry-overs: real-device PF-05 baseline reading, real-device CLS final-check, ManageVaccination current-card thumbnail polish — v4.3
 
 ### Active
 
-v4.3 Wallecx Mobile Optimization — requirements TBD (REQUIREMENTS.md to be created in the next workflow step). Scope: Wallecx-wide mobile layout & touch-target audit, mobile performance, forms & dialogs on small screens, PWA install + standalone polish.
+v4.3 Wallecx Mobile Optimization — Phases 33–36 complete (2026-05-28). Phase 37 next: PWA Install + Standalone Polish (PWA-01/02/04/06/07/09). Then Phase 38: Mobile UAT Sweep + PWA-UAT-01 + close out the 3 carry-overs (real-device PF-05 baseline, real-device CLS final-check, ManageVaccination current-card thumbnail). Phase 38b (conditional list virtualization) pending the real-device PF-05 read. See `REQUIREMENTS.md` for the canonical traceability table.
 
 ### Future candidates
 
@@ -272,4 +273,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-26 — v4.3 Wallecx Mobile Optimization milestone started. Goal: make Wallecx feel native-grade on mobile across all 3 tabs and the PWA install/standalone surfaces. Scope locked to mobile (HEALTH-01, UAT-28/29-CLOSE, PB-REALTIME explicitly deferred to a later milestone). Target viewports: iOS Safari ~390px, Android Chrome ~360–412px, iPad ~768–820px. REQUIREMENTS.md + ROADMAP.md next.*
+*Last updated: 2026-05-28 — Phase 36 (Mobile Performance) complete. v4.3 progress: phases 33–36 done; phase 37 (PWA Install + Standalone Polish) next. Wallecx route chunk gzip 64.09 KB → 2.13 KB after 36-01..36-07. 3 carry-overs to Phase 38 UAT sweep recorded in 36-HUMAN-UAT.md.*
