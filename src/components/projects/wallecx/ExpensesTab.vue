@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
+import { instrumentedGetFullList } from '@/lib/pocketbase/perfInstrument'
 import type { Expenses } from '@/types/wallecx/expenses/types'
 import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
 import { useIsMobile } from '@/composables/useIsMobile'
 import DragHandle from './DragHandle.vue'
+import WallecxSkeleton from './WallecxSkeleton.vue'
 import dayjs from 'dayjs'
-import ManageExpense from './ManageExpense.vue'
 import AttachmentPreview from './AttachmentPreview.vue'
 import ExpensesListView from './ExpensesListView.vue'
 import ExpensesReportsView from './ExpensesReportsView.vue'
+
+const ManageExpense = defineAsyncComponent(() => import('./ManageExpense.vue'))
 
 const expenses = ref<Expenses[]>([])
 const isLoading = ref(false)
@@ -26,11 +29,9 @@ const budgets = ref<ExpenseBudget[]>([])
 
 async function loadBudgets(opts: { context: 'mount' | 'refresh' } = { context: 'refresh' }): Promise<void> {
   try {
-    budgets.value = await pb
-      .collection('wallecx_expense_budgets')
-      .getFullList<ExpenseBudget>({
-        requestKey: 'expense-budgets-getFullList',  // STATE.md invariant — distinct key
-      })
+    budgets.value = await instrumentedGetFullList<ExpenseBudget>('wallecx_expense_budgets', {
+      requestKey: 'expense-budgets-getFullList',  // STATE.md invariant — distinct key
+    })
   } catch (e: unknown) {
     const msg = opts.context === 'mount'
       ? 'Failed to load budgets.'
@@ -65,12 +66,10 @@ async function openReceiptPreview(record: Expenses): Promise<void> {
 onMounted(async () => {
   isLoading.value = true
   try {
-    expenses.value = await pb
-      .collection('wallecx_expenses')
-      .getFullList<Expenses>({
-        sort: '-expense_date,-created',
-        requestKey: 'expenses-getFullList',  // STATE.md: must not collide with other collection keys
-      })
+    expenses.value = await instrumentedGetFullList<Expenses>('wallecx_expenses', {
+      sort: '-expense_date,-created',
+      requestKey: 'expenses-getFullList',  // STATE.md: must not collide with other collection keys
+    })
   } catch (e: unknown) {
     toast.error('Failed to load expenses. Pull to refresh or reload the page.')
     console.error('ExpensesTab: getFullList failed', e)
@@ -222,12 +221,17 @@ async function exportJson(): Promise<void> {
     </Tabs>
 
     <!-- ManageExpense dialog/drawer (preserved from Phase 24/25) -->
-    <ManageExpense
-      v-model:visible="showManage"
-      v-model:record="manageRecord"
-      @created="onCreated"
-      @updated="onUpdated"
-    />
+    <Suspense>
+      <ManageExpense
+        v-model:visible="showManage"
+        v-model:record="manageRecord"
+        @created="onCreated"
+        @updated="onUpdated"
+      />
+      <template #fallback>
+        <WallecxSkeleton variant="expense-row" />
+      </template>
+    </Suspense>
 
     <!-- Receipt preview: Dialog on desktop, bottom Drawer on mobile (preserved from Phase 25) -->
     <Dialog
