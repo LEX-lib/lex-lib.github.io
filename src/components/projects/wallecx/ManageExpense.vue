@@ -155,11 +155,12 @@ const receiptThumbnailUrl = computed(() => {
   if (!isEditMode.value || !record.value?.receipt) return null
   const filename = record.value.receipt
   if (filename.toLowerCase().endsWith('.pdf')) return null
-  // PocketBase thumb generator returns 404 for WebP sources (Phase 36 PF-07 receipts
-  // are now WebP). Fall back to the full file URL — browser scales via the 100×100
-  // CSS container. Bandwidth cost is minimal (compressToWebP caps at 1.5 MB).
-  const isWebP = filename.toLowerCase().endsWith('.webp')
-  return pb.files.getURL(record.value, filename, isWebP ? {} : { thumb: '100x100' })
+  // ALWAYS use the full file URL — never ?thumb. PocketBase's thumb generator
+  // returns 404 for WebP content, and legacy receipts uploaded before the
+  // compressToWebP rename fix may carry a `.jpg` extension with WebP bytes (the
+  // .webp filename check would miss them). Browser scales via the existing CSS
+  // container. Bandwidth cost is minimal — compressToWebP caps at 1.5 MB.
+  return pb.files.getURL(record.value, filename, {})
 })
 
 const hasExistingPdf = computed(
@@ -206,8 +207,11 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
       ),
     )
     const strippedFile = new File([strippedBlob], file.name, { type: file.type })
-    const compressed = await compressToWebP(strippedFile)
-    pendingFile.value = new File([compressed], file.name, { type: 'image/webp' })
+    // compressToWebP renames the output to `.webp` so PocketBase's thumb generator
+    // sees a matching extension+content (#bug WebP-as-JPG thumbnail 404). Use the
+    // helper's output directly — do NOT wrap it back into a File with the original
+    // .jpg name, which would re-introduce the extension/content mismatch.
+    pendingFile.value = await compressToWebP(strippedFile)
     toast.info('Location data removed.')
   } catch {
     toast.error('Failed to process image. Please try again.')

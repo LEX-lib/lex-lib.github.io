@@ -12,10 +12,19 @@ import imageCompression from 'browser-image-compression'
  * (Phase 36 D-36-09: PRESERVE THESE). The new option is fileType: 'image/webp' (D-36-10).
  */
 export async function compressToWebP(file: File): Promise<File> {
-  return imageCompression(file, {
+  const compressed = await imageCompression(file, {
     maxSizeMB: 1.5,
     maxWidthOrHeight: 2048,
     useWebWorker: true,
     fileType: 'image/webp',
   })
+  // PocketBase serves files by the stored filename's extension; if we keep the
+  // original `.jpg`/`.png`/etc on a WebP-content file, PocketBase's thumb
+  // generator returns 404 (extension/content mismatch). Rename so the stored
+  // filename matches the actual MIME — this also lets downstream consumers use
+  // a simple filename.endsWith('.webp') check to decide thumb-vs-full URL.
+  const webpName = compressed.name.replace(/\.[^.]+$/, '.webp')
+  return webpName === compressed.name
+    ? compressed
+    : new File([compressed], webpName, { type: 'image/webp' })
 }
