@@ -5,7 +5,8 @@ import type { Expenses } from '@/types/wallecx/expenses/types'
 import type { ExpenseBudget } from '@/types/wallecx/expense-budgets/types'
 import type { ExpenseCategories } from '@/types/wallecx/expense-categories/types'
 import { toast } from 'vue-sonner'
-import { pb } from '@/lib/pocketbase'
+import { instrumentedGetFullList } from '@/lib/pocketbase/perfInstrument'
+import WallecxSkeleton from './WallecxSkeleton.vue'
 import ManageBudget from './ManageBudget.vue'
 import { formatCurrency } from '@/lib/wallecx/currency'
 import {
@@ -248,11 +249,9 @@ async function openManageBudgets(): Promise<void> {
 async function loadCategoriesForBudget(): Promise<void> {
   isLoadingCategories.value = true
   try {
-    budgetCategories.value = await pb
-      .collection('wallecx_expense_categories')
-      .getFullList<ExpenseCategories>({
-        requestKey: 'expense-categories-getFullList',  // shared with ManageExpense.vue — safe per RESEARCH Q2
-      })
+    budgetCategories.value = await instrumentedGetFullList<ExpenseCategories>('wallecx_expense_categories', {
+      requestKey: 'expense-categories-getFullList',  // shared with ManageExpense.vue — safe per RESEARCH Q2
+    })
   } catch (e: unknown) {
     toast.error('Failed to load categories. Please try again.')
     console.error('ExpensesReportsView: loadCategoriesForBudget failed', e)
@@ -428,11 +427,7 @@ watch(period, (next) => {
     </div>
 
     <!-- STATE 1: Loading — skeleton blocks for label, number, and chart area -->
-    <div v-if="isLoading" class="mt-6 flex flex-col items-center gap-3">
-      <Skeleton width="12rem" height="2.5rem" />
-      <Skeleton width="8rem" height="3rem" />
-      <Skeleton width="100%" height="220px" class="rounded" />
-    </div>
+    <WallecxSkeleton v-if="isLoading" variant="reports-chart" />
 
     <!-- STATE 2: Invalid custom range -->
     <p
