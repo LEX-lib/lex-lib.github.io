@@ -48,3 +48,17 @@ Recorded at phase close in 36-SUMMARY.md (Plan 36-07).
 The three rolldown codeSplitting groups added in Plan 36-01 (chart-js, jsbarcode,
 image-compression at priority 25) plus the async tab/dialog defineAsyncComponent splits
 in Plans 36-02/36-03 are the primary mechanism for achieving this reduction.
+
+## Post-Plan-36-01 interim measurement (codeSplitting groups only)
+
+After adding the 3 codeSplitting groups (chart-js/jsbarcode/image-compression at priority 25),
+a plain `npm run build` shows the WallecxApp chunk has ALREADY dropped to:
+
+- **WallecxApp raw (post-groups):** 113.95 KB (was 230.21 KB, -50.5%)
+- **WallecxApp gzip (post-groups):** 32.81 KB (was 64.09 KB, -48.8%)
+- chart-js-*.js (extracted): 203.21 KB raw / 69.66 KB gzip
+- jsbarcode-*.js (extracted): 64.22 KB raw / 11.32 KB gzip
+- image-compression-*.js (extracted): 51.91 KB raw / 19.90 KB gzip
+
+This interim result nearly meets the ≤32 KB target already. Plans 36-02/36-03
+(async tab/dialog splits) will push it below 32 KB definitively.
