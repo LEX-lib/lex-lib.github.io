@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, defineAsyncComponent } from 'vue'
 import { toast } from 'vue-sonner'
 import { pb } from '@/lib/pocketbase'
 import type { Memberships } from '@/types/wallecx/memberships/types'
+import { instrumentedGetFullList } from '@/lib/pocketbase/perfInstrument'
+import WallecxSkeleton from './WallecxSkeleton.vue'
+const ManageMembership = defineAsyncComponent(() => import('./ManageMembership.vue'))
 import MembershipCard from './MembershipCard.vue'
 import MembershipDetail from './MembershipDetail.vue'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
-import ManageMembership from './ManageMembership.vue'
 import WallecxToolbar from './WallecxToolbar.vue'
 import DragHandle from './DragHandle.vue'
 import { useIsMobile } from '@/composables/useIsMobile'
@@ -94,12 +96,10 @@ onMounted(async () => {
   }
   isLoading.value = true
   try {
-    records.value = await pb
-      .collection('wallecx_memberships')
-      .getFullList<Memberships>({
-        sort: '-created',
-        requestKey: 'memberships-getFullList', // STATE.md MR-5: distinct from vaccinations key
-      })
+    records.value = await instrumentedGetFullList<Memberships>('wallecx_memberships', {
+      sort: '-created',
+      requestKey: 'memberships-getFullList', // STATE.md MR-5: distinct from vaccinations key
+    })
   } catch (e: unknown) {
     toast.error('Failed to load membership cards.')
     console.error('MembershipsTab: getFullList failed', e)
@@ -254,13 +254,7 @@ async function exportJson(): Promise<void> {
     </div>
 
     <!-- Loading state: 3 skeleton tiles matching MembershipCard min-height -->
-    <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Card v-for="i in 3" :key="i">
-        <template #content>
-          <Skeleton height="8rem" />
-        </template>
-      </Card>
-    </div>
+    <WallecxSkeleton v-if="isLoading" variant="membership-card" :count="3" />
 
     <!-- Empty state: no records at all -->
     <div
@@ -367,12 +361,17 @@ async function exportJson(): Promise<void> {
     </Drawer>
 
     <!-- ManageMembership dialog — create and edit (Plan 13-02) -->
-    <ManageMembership
-      v-model:visible="showManage"
-      v-model:record="manageRecord"
-      :token="fileToken"
-      @created="onCreated"
-      @updated="onUpdated"
-    />
+    <Suspense>
+      <ManageMembership
+        v-model:visible="showManage"
+        v-model:record="manageRecord"
+        :token="fileToken"
+        @created="onCreated"
+        @updated="onUpdated"
+      />
+      <template #fallback>
+        <WallecxSkeleton variant="membership-card" />
+      </template>
+    </Suspense>
   </div>
 </template>
