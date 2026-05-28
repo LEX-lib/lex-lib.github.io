@@ -16,7 +16,7 @@
 - ✅ **v4.0 Daily Expense Tracker** — Phases 23–26 (shipped 2026-05-22) — [archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Gap Resolution & Feature Completeness** — Phases 27–30 (shipped 2026-05-25) — [archive](milestones/v4.1-ROADMAP.md)
 - ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (shipped 2026-05-26) — [archive](milestones/v4.2-ROADMAP.md)
-- 🚧 **v4.3 Wallecx Mobile Optimization** — Phases 33–38 (+ 38b conditional) — IN PROGRESS (Phase 33 complete 2026-05-27)
+- 🚧 **v4.3 Wallecx Mobile Optimization** — Phases 33–38 (+ 38b conditional) — IN PROGRESS (Phases 33–36 complete 2026-05-28; 37 + 38 pending)
 
 ## Phases
 
@@ -176,7 +176,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 - [x] **Phase 33: Mobile Foundation** — `useMobileEnv` composable, App.vue-scope `beforeinstallprompt` capture, Vue/PrimeVue version bumps, visualizer dev wiring (3/3 plans complete 2026-05-27)
 - [x] **Phase 34: Layout Audit & Touch Targets** — 44×44 touch-target sweep, safe-area insets, 100dvh migration, sticky TabList/toolbar, viewport-fit lock, bottom-Drawer branches + BR-2 reverify (3/3 plans complete 2026-05-27)
 - [x] **Phase 35: Forms & Dialogs on Small Screens** — BaseMobileDialog rollout (4 dialogs), iOS 16px fix, sticky action bars, dirty-state guard, camera capture, popup DatePicker on mobile (6/6 plans complete 2026-05-28)
-- [ ] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation (2/7 plans complete)
+- [x] **Phase 36: Mobile Performance** — Visualizer-driven chunk splits, per-tab + per-Manage `defineAsyncComponent`, skeleton states, WebP uploads, preconnect, payload instrumentation (7/7 plans complete; Wallecx route chunk gzip 64.09 KB → 2.13 KB / −96.7%; completed 2026-05-28)
 - [ ] **Phase 37: PWA Install + Standalone Polish** — iOS meta tags, splash screens, per-color-scheme theme-color, Android `beforeinstallprompt` UI, SW-update toast safe-area, manifest shortcuts, offline banner
 - [ ] **Phase 38: Mobile UAT Sweep + PWA-UAT-01** — Real iOS + real Android + iPad-820 viewport device matrix; closes PWA-UAT-01 deferred from Phase 22 V6
 - [ ] **Phase 38b (CONDITIONAL): List Virtualization** — Triggered only if Phase 36 PF-05 instrumentation reveals >16ms scroll jank or >500 rendered rows; likely skipped
@@ -281,14 +281,14 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. `<link rel="preconnect">` + `<link rel="dns-prefetch">` for the PocketBase origin appear in `index.html` head; warm cellular cold-start time-to-first-`getFullList`-byte improves over baseline
 6. `npm run build` output contains 0 lines matching "exceeds" or "Skipping precaching"; all chunks fit under 3 MiB precache cap
 
-**Plans:** 5/7 plans executed
+**Plans:** 7/7 plans complete
 - [x] 36-01-PLAN.md — Foundation: WallecxSkeleton + perfInstrument + compressToWebP + vite.config rolldown groups + pre-phase baseline (PF-01/02/04/05/07) — COMPLETE (e247775..e20bfc9; WallecxApp 64.09 KB → 32.81 KB gzip via codeSplitting groups)
 - [x] 36-02-PLAN.md — WallecxApp.vue async tabs + Suspense + WallecxSkeleton fallbacks (PF-02/04) — COMPLETE (4f5c3a9; WallecxApp 32.81 KB → 2.45 KB gzip; all 3 tabs lazy-loaded; Suspense inside TabPanel; type-check 0, test:unit 59/59)
 - [x] 36-03-PLAN.md — VaccinationsTab async ManageVaccination + instrument getFullList + add missing requestKey + skeleton consolidation (PF-02/04/05)
 - [x] 36-04-PLAN.md — MembershipsTab async ManageMembership + instrument getFullList + skeleton consolidation (PF-02/04/05)
 - [x] 36-05-PLAN.md — Expenses surfaces: ExpensesTab async ManageExpense + 3 instrumented getFullList + 3 skeleton consolidations (PF-02/04/05) — COMPLETE (fee625f, b7998d5, 2505df3, 14a0baa; type-check 0, test:unit 59/59, build 72 precache, 0 exceeds)
-- [ ] 36-06-PLAN.md — ManageExpense/Membership/Vaccination WebP migration via compressToWebP (PF-07)
-- [ ] 36-07-PLAN.md — index.html preconnect/dns-prefetch + post-phase analyze + automated gates + grep audits + STATE.md update + human-verify checkpoint (PF-01/09)
+- [x] 36-06-PLAN.md — ManageExpense/Membership/Vaccination WebP migration via compressToWebP (PF-07)
+- [x] 36-07-PLAN.md — index.html preconnect/dns-prefetch + post-phase analyze + automated gates + grep audits + STATE.md update + human-verify checkpoint (PF-01/09)
 
 #### Phase 37: PWA Install + Standalone Polish
 
