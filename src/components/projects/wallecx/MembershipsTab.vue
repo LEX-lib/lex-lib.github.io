@@ -21,6 +21,11 @@ const showDetail = ref(false)
 const fileToken = ref<string>('')
 const showManage = ref<boolean>(false)
 const manageRecord = ref<Memberships | null>(null)
+// Separate token lifecycle for the Manage dialog — the shared `fileToken` is cleared
+// by the detail Dialog's @hide handler asynchronously (after the close animation), which
+// would blank the token mid-render of ManageMembership in the openEdit flow (showDetail=false
+// → showManage=true → detail @hide fires later → fileToken=''). Mirrors ExpensesTab pattern.
+const manageToken = ref<string>('')
 const confirm = useConfirm()
 const isMobile = useIsMobile()
 const isExporting = ref(false)
@@ -124,16 +129,49 @@ async function openDetail(record: Memberships): Promise<void> {
   showDetail.value = true
 }
 
-function openEdit(record: Memberships): void {
+async function openEdit(record: Memberships): Promise<void> {
+  // Fetch the manage-dialog's own token BEFORE switching dialogs so the value is
+  // stable for the entire lifetime of the open ManageMembership. Failure falls
+  // back to opening the dialog with an empty token — form fields still work,
+  // only the thumbnail will be blank (toast surfaces the failure).
+  if (record.card_image) {
+    try {
+      manageToken.value = await pb.files.getToken()
+    } catch (e: unknown) {
+      manageToken.value = ''
+      toast.error('Card image preview unavailable. Form will still save.')
+      console.error('MembershipsTab: getToken (manage) failed', e)
+    }
+  } else {
+    manageToken.value = ''
+  }
   manageRecord.value = record
   showDetail.value = false      // close detail dialog first
   showManage.value = true       // then open manage dialog
 }
 
-function openManage(record: Memberships | null): void {
+async function openManage(record: Memberships | null): Promise<void> {
+  // Same token-fetch contract as openEdit — needed when opening edit directly
+  // from the toolbar/card flow (not via the detail Dialog).
+  if (record !== null && record.card_image) {
+    try {
+      manageToken.value = await pb.files.getToken()
+    } catch (e: unknown) {
+      manageToken.value = ''
+      toast.error('Card image preview unavailable. Form will still save.')
+      console.error('MembershipsTab: getToken (manage) failed', e)
+    }
+  } else {
+    manageToken.value = ''
+  }
   manageRecord.value = record
   showManage.value = true
 }
+
+// Clear the manage-token when the dialog closes (mirrors detail @hide pattern).
+watch(showManage, (v) => {
+  if (!v) manageToken.value = ''
+})
 
 function openDelete(record: Memberships): void {
   confirm.require({
@@ -365,7 +403,7 @@ async function exportJson(): Promise<void> {
       <ManageMembership
         v-model:visible="showManage"
         v-model:record="manageRecord"
-        :token="fileToken"
+        :token="manageToken"
         @created="onCreated"
         @updated="onUpdated"
       />
