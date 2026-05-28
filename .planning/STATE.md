@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: "Phase 36 Plan 36-05 COMPLETE. ExpensesTab.vue: ManageExpense async via defineAsyncComponent + Suspense + WallecxSkeleton expense-row fallback; instrumentedGetFullList wraps wallecx_expenses (requestKey: 'expenses-getFullList') and wallecx_expense_budgets (requestKey: 'expense-budgets-getFullList'); export-path 'expenses-export' untouched. ExpensesListView.vue: WallecxSkeleton variant=expense-row :count=3 replaces inline skeleton; sticky toolbar wrapper preserved. ExpensesReportsView.vue: pb removed; instrumentedGetFullList wraps wallecx_expense_categories (requestKey: 'expense-categories-getFullList'); WallecxSkeleton variant=reports-chart replaces inline 3-Skeleton block. AttachmentPreview.vue: WallecxSkeleton variant=attachment replaces Suspense fallback; VuePdfEmbed defineAsyncComponent byte-intact. type-check 0, test:unit 59/59, build 72 precache, 0 exceeds. Next: Plan 36-06 (ManageExpense/Membership/Vaccination WebP migration)."
-last_updated: "2026-05-28T05:19:58Z"
+stopped_at: "Phase 36 Plan 36-06 COMPLETE. ManageExpense.vue: imageCompression import removed; compressToWebP(strippedFile) replaces inline block; new File wrapper type changed from file.type to 'image/webp' (Pitfall 4). ManageMembership.vue + ManageVaccination.vue: same imageCompression→compressToWebP swap; direct pendingFile.value = compressed assignment preserved (no File wrapper). All PDF bypass + EXIF strip + toast + ColorPicker + card_color + administeredDate + watcher invariants byte-intact. type-check 0, test:unit 59/59, lint clean (VaccinationDetail.vue:5 grandfathered). Next: Plan 36-07 (post-phase audit + sample comparison)."
+last_updated: "2026-05-28T13:25:00Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 89
 ---
 
@@ -28,7 +28,7 @@ progress:
 ## Current Position
 
 Phase: 36 (Mobile Performance) — EXECUTING
-Plan: 4 of 7 complete
+Plan: 5 of 7 complete
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Ready to execute
 **Phase:** 36
