@@ -39,12 +39,12 @@
 
 ### Forms & Dialogs on Small Screens (FD)
 
-- [ ] **FD-01**: Global `@media (max-width: 640px)` CSS rule in `wallecx-overrides.css` sets `font-size: 16px !important` on `.p-inputtext`, `.p-inputnumber-input`, `.p-textarea`, `.p-select-label`, `.p-multiselect-label`, `.p-datepicker-input` to prevent iOS auto-zoom-on-focus
+- [x] **FD-01**: Global `@media (max-width: 640px)` CSS rule in `wallecx-overrides.css` sets `font-size: 16px !important` on `.p-inputtext`, `.p-inputnumber-input`, `.p-textarea`, `.p-select-label`, `.p-multiselect-label`, `.p-datepicker-input` to prevent iOS auto-zoom-on-focus
 - [ ] **FD-03**: Every input across all 4 Manage dialogs carries appropriate `inputmode`, `autocomplete`, and `enterkeyhint` attributes (e.g., `inputmode="decimal"` on Amount, `enterkeyhint="done"` on last field)
 - [ ] **FD-04**: PrimeVue DatePicker uses inline mode (`:inline="isMobile"`) on mobile wherever it appears (ManageExpense date field, ExpensesToolbar From/To range, ExpensesReportsView Custom range, ManageVaccination date, ManageMembership expiry). *(Corrected 2026-05-27: PrimeVue 4.5.5 dropped the `touchUI` prop from PrimeVue 3 Calendar; `:inline="isMobile"` delivers the full-screen mobile calendar intent — see 35-CONTEXT.md D-35-13.)*
 - [ ] **FD-05**: PrimeVue FileUpload (or raw `<input type="file">` fallback) on receipt/scan affordances opens the device camera via `capture="environment"`; gallery-picker fallback also offered separately for iOS standalone reliability
 - [ ] **FD-06**: Focused input auto-scrolls into view when the virtual keyboard opens (both iOS overlay and Android `interactive-widget=resizes-content` paths verified)
-- [ ] **FD-07**: `BaseMobileDialog.vue` wrapper component established; per-dialog migration in order ManageExpense → ManageBudget → ManageMembership → ManageVaccination; `ManageMembership` migration explicitly preserves the ColorPicker direct-v-model invariant (PrimeVue #8135 workaround)
+- [x] **FD-07**: `BaseMobileDialog.vue` wrapper component established; per-dialog migration in order ManageExpense → ManageBudget → ManageMembership → ManageVaccination; `ManageMembership` migration explicitly preserves the ColorPicker direct-v-model invariant (PrimeVue #8135 workaround)
 - [ ] **FD-09**: Dirty-state guard — backdrop tap / swipe-down on a mobile Drawer containing a CRUD form prompts `useConfirm` ("Discard changes?") before dismissing; reusing the existing shell-level ConfirmDialog instance
 
 ### PWA Install + Standalone Polish (PWA)
@@ -148,12 +148,12 @@ Populated by gsd-roadmapper during ROADMAP.md creation (2026-05-26). Each functi
 | PF-06 | Phase 38b | Conditional (triggered by PF-05 instrumentation) |
 | PF-07 | Phase 36 | Pending |
 | PF-09 | Phase 36 | Pending |
-| FD-01 | Phase 35 | Pending |
+| FD-01 | Phase 35 | Complete (35-01) |
 | FD-03 | Phase 35 | Pending |
 | FD-04 | Phase 35 | Pending |
 | FD-05 | Phase 35 | Pending |
 | FD-06 | Phase 35 | Pending |
-| FD-07 | Phase 35 | Pending |
+| FD-07 | Phase 35 | Complete (35-01) |
 | FD-09 | Phase 35 | Pending |
 | PWA-01 | Phase 37 | Pending |
 | PWA-02 | Phase 37 | Pending |

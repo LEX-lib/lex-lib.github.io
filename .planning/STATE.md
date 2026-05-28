@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 35 context gathered (12 decisions D-35-01..13); BaseMobileDialog owns Dialog/Drawer split. Ready for /gsd-plan-phase 35.
-last_updated: "2026-05-27T12:28:48.867Z"
-last_activity: 2026-05-27
+stopped_at: Phase 35 Plan 35-01 COMPLETE. BaseMobileDialog.vue created (0141f40) — Dialog/Drawer split, dirty-guard via Drawer before-hide + useConfirm singleton, DragHandle header, focusin scrollIntoView, closeWithoutGuard exposed. wallecx-overrides.css FD-01 + LT-08 appended (0a916b1) — 16px no-zoom rule + flat 0.5rem sticky bar (Pitfall 6 clean). type-check 0, test:unit 59/59, build clean. Next: Plan 35-02 ManageExpense migration.
+last_updated: "2026-05-28T08:11:00.000Z"
+last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 12
-  completed_plans: 6
-  percent: 50
+  completed_plans: 7
+  percent: 58
 ---
 
 # Project State
@@ -23,15 +23,17 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Phase 35 — Forms & Dialogs on Small Screens (not yet planned)
+**Current focus:** Phase 35 — Forms & Dialogs on Small Screens
 
 ## Current Position
 
+Phase: 35 (Forms & Dialogs on Small Screens) — EXECUTING
+Plan: 1 of 6
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Phase 34 COMPLETE (3/3). Phase 35 PLANNED (6 plans, 6 sequential waves) + UI-SPEC APPROVED (6/6) + plan-checker PASSED. Paused for user review before execution (auto-advance to execute intentionally NOT taken this session).
+**Status:** Executing Phase 35
 **Phase:** 35 Forms & Dialogs on Small Screens — PLANNED, ready to execute
-**Plan:** 35-01 BaseMobileDialog.vue + wallecx-overrides.css (FD-01 16px no-zoom rule, sticky `.wallecx-manage-actions` bar 16px/8px flat-pad per Pitfall 6, dirty-guard via Drawer before-hide + useConfirm shell singleton, focusin scrollIntoView) [FD-07/09/01/06, LT-08]. Then migrations in LOCKED order (A-43-2): 35-02 ManageExpense + ExpensesToolbar/ReportsView inline DatePickers; 35-03 ManageBudget (no upload); 35-04 ManageMembership (ColorPicker #8135 + card_color no-hash + membershipMapper 11 tests); 35-05 ManageVaccination (two-Form→one, administeredDate #8191); 35-06 gates + grep audits + device human-verify checkpoint. FD-04 = `:inline="isMobile"` (touchUI dropped in PrimeVue 4.5.5 — D-35-13 corrected). All 8 req IDs covered; threat models present (presentation-layer).
-**Last activity:** 2026-05-27 — Phase 35 discuss→ui-spec→plan→verify complete; awaiting `/gsd-execute-phase 35`.
+**Plan:** 35-02 ManageExpense migration to BaseMobileDialog + ExpensesToolbar/ReportsView inline DatePickers (FD-04). Then in LOCKED order (A-43-2): 35-03 ManageBudget (no upload); 35-04 ManageMembership (ColorPicker #8135 + card_color no-hash + membershipMapper 11 tests); 35-05 ManageVaccination (two-Form→one, administeredDate #8191); 35-06 gates + grep audits + device human-verify checkpoint. FD-04 = `:inline="isMobile"` (touchUI dropped in PrimeVue 4.5.5 — D-35-13 corrected). All 8 req IDs covered; threat models present (presentation-layer).
+**Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
 
@@ -318,9 +320,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-27T11:40:43.065Z
+**Last session:** 2026-05-28T08:11:00.000Z
 
-**Stopped at:** Phase 35 context gathered (12 decisions D-35-01..13); BaseMobileDialog owns Dialog/Drawer split. Ready for /gsd-plan-phase 35.
+**Stopped at:** Phase 35 Plan 35-01 COMPLETE. BaseMobileDialog.vue created (0141f40) — Dialog/Drawer split, dirty-guard via Drawer before-hide + useConfirm singleton, DragHandle header, focusin scrollIntoView, closeWithoutGuard exposed. wallecx-overrides.css FD-01 + LT-08 appended (0a916b1) — 16px no-zoom rule + flat 0.5rem sticky bar (Pitfall 6 clean). type-check 0, test:unit 59/59, build clean. Next: Plan 35-02 ManageExpense migration.
 
 **Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
 
