@@ -49,19 +49,6 @@ const initialValues = computed(() => {
   };
 });
 
-// Seed the date on every dialog open (visible rising edge), not just on record change —
-// reopening the same record object would not re-fire a record-only watch, leaving the
-// field stale-blank. Reading record here keeps add (null → empty) and edit in sync.
-watch(
-  () => [visible.value, record.value] as const,
-  ([isVisible, rec]) => {
-    if (!isVisible) return;
-    administeredDate.value = rec ? new Date(rec.date_administered) : null;
-    dateAdministeredError.value = "";
-  },
-  { immediate: true },
-);
-
 // FD-09: Dirty snapshot — taken on dialog open
 interface VaccinationSnapshot {
   vaccineType: string;
@@ -76,25 +63,42 @@ interface VaccinationSnapshot {
 
 const snapshot = ref<VaccinationSnapshot | null>(null);
 
-// Visible watcher — takes dirty snapshot on open + resets pendingFile on close
-watch(visible, (isOpen) => {
-  if (!isOpen) {
-    pendingFile.value = null;
-    return;
-  }
-  // Snapshot for dirty tracking (FD-09) — taken on rising edge
-  const iv = initialValues.value;
-  snapshot.value = {
-    vaccineType: (iv.vaccine_type as string) ?? "",
-    vaccineName: (iv.vaccine_name as string) ?? "",
-    doseNumber: (iv.dose_number as number | null | undefined) ?? null,
-    lotNumber: (iv.lot_number as string) ?? "",
-    manufacturer: (iv.manufacturer as string) ?? "",
-    location: (iv.location as string) ?? "",
-    notes: (iv.notes as string) ?? "",
-    administeredDate: administeredDate.value?.toISOString() ?? null,
-  };
-});
+// Single merged watcher (WR-02): seeds administeredDate AND takes the dirty snapshot in one
+// deterministic tick — the snapshot used to live in a separate `watch(visible, ...)` that
+// relied on Vue's registration-order watcher firing to see the freshly-seeded date. Merging
+// removes that fragility (if the watchers were ever reordered, an Edit-opened form would look
+// "clean" until a field was touched). Watching [visible, record] here also fixes the D-33-01-A
+// stale-blank case: reopening the SAME record object would not re-fire a record-only watch,
+// leaving the field blank. {immediate: true} preserves the original first-mount behavior.
+watch(
+  () => [visible.value, record.value] as const,
+  ([isVisible, rec]) => {
+    if (!isVisible) {
+      pendingFile.value = null;
+      // WR-01: reset transient save state so a dialog dismissed mid-save (e.g. via the FD-09
+      // discard guard) does not reopen with the Save button stuck disabled. Mirrors ManageBudget.
+      isSaving.value = false;
+      return;
+    }
+    // 1) Seed the direct-v-model date FIRST (#8191 — DatePicker lives outside @primevue/forms)
+    administeredDate.value = rec ? new Date(rec.date_administered) : null;
+    dateAdministeredError.value = "";
+    // 2) THEN take the dirty snapshot — guaranteed to see the seeded administeredDate
+    //    because both writes happen in the same watcher callback tick.
+    const iv = initialValues.value;
+    snapshot.value = {
+      vaccineType: (iv.vaccine_type as string) ?? "",
+      vaccineName: (iv.vaccine_name as string) ?? "",
+      doseNumber: (iv.dose_number as number | null | undefined) ?? null,
+      lotNumber: (iv.lot_number as string) ?? "",
+      manufacturer: (iv.manufacturer as string) ?? "",
+      location: (iv.location as string) ?? "",
+      notes: (iv.notes as string) ?? "",
+      administeredDate: administeredDate.value?.toISOString() ?? null,
+    };
+  },
+  { immediate: true },
+);
 
 // FD-09: isDirty computed — passed to BaseMobileDialog
 const isDirty = computed<boolean>(() => {

@@ -105,6 +105,9 @@ const snapshot = ref<MembershipSnapshot | null>(null);
 watch(visible, (isOpen) => {
   if (!isOpen) {
     pendingFile.value = null;
+    // WR-01: reset transient save state so a dialog dismissed mid-save (e.g. via the FD-09
+    // discard guard) does not reopen with the Save button stuck disabled. Mirrors ManageBudget.
+    isSaving.value = false;
     return;
   }
   // Snapshot for dirty tracking (FD-09) — taken on rising edge
