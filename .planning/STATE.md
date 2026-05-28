@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
-stopped_at: Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied (MembershipSnapshot isDirty, :inline=isMobile DatePicker, images-only two-affordance upload, inputmode/enterkeyhint). membershipMapper 11 tests green. type-check 0, test:unit 59/59, build clean (57 precache). Next: Plan 35-05 ManageVaccination migration.
-last_updated: "2026-05-28T00:45:23Z"
+stopped_at: Phase 35 Plan 35-05 COMPLETE. ManageVaccination migrated to BaseMobileDialog (c21b5d3) — two-Form collapse confirmed safe (Dialog+Drawer Forms → ONE Form in #default slot), administeredDate direct v-model (#8191/D-33-01-A) preserved, [visible,record] tuple watch {immediate:true} preserved verbatim, FD-03/04/05/09 applied (VaccinationSnapshot isDirty, :inline=isMobile DatePicker, camera images-only + gallery images+PDF two-affordance, inputmode/enterkeyhint). All 4 Manage dialogs now on BaseMobileDialog. type-check 0, test:unit 59/59, build 57 precache. Next: Plan 35-06 gates + grep audits + device human-verify checkpoint.
+last_updated: "2026-05-28T00:55:11Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 12
-  completed_plans: 9
-  percent: 75
+  completed_plans: 10
+  percent: 83
 ---
 
 # Project State
@@ -32,7 +32,7 @@ Plan: 1 of 6
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
 **Status:** Executing Phase 35
 **Phase:** 35 Forms & Dialogs on Small Screens — PLANNED, ready to execute
-**Plan:** 35-04 ManageMembership migration to BaseMobileDialog. LOCKED order (A-43-2): 35-04 ManageMembership (ColorPicker #8135 + card_color no-hash + membershipMapper 11 tests + FD-04 inline DatePicker + FD-05 two-affordance upload); 35-05 ManageVaccination (two-Form→one, administeredDate #8191); 35-06 gates + grep audits + device human-verify checkpoint.
+**Plan:** 35-05 ManageVaccination migration COMPLETE. All 4 Manage dialogs now on BaseMobileDialog. Next: 35-06 gates + grep audits + device human-verify checkpoint.
 **Last activity:** 2026-05-28
 
 ## Shipped Milestones Summary
@@ -107,6 +107,13 @@ Plan: 1 of 6
 - **Capture-only (M-9, D-05): `.prompt()` is NEVER called in Phase 33.** Phase 37 owns the user-gesture-gated call. Grep guard upheld: useMobileEnv.ts and App.vue contain no `.prompt(` invocation (only docblock/comment references).
 - **`@vueuse/core ^13.9.0` promoted to a direct `dependencies` entry (FND-01).** First direct use of @vueuse/core in the repo; already resolved transitively via `@vueuse/motion` (0 KB net) — promotion makes the import contract explicit.
 - **`PwaInstallBanner.vue` left untouched in Phase 33** (D-06; Android Install button + 30-day dismissal deferred to Phase 37).
+
+### Phase 35 Decisions (Plan 05 — ManageVaccination migration, final two-Form collapse)
+
+- **Two-Form collapse confirmed safe for ManageVaccination.** The Dialog branch Form (~line 225) and Drawer branch Form (~line 343) were byte-identical; with BaseMobileDialog, ONE Form in the #default slot is correct. Vue's provide/inject for @primevue/forms follows DOM parentage through the slot boundary (RESEARCH Pitfall 4). `v-if/v-else` mutual exclusivity was never needed for correctness — it was a structural artifact of the Phase-34 dual-branch approach.
+- **VaccinationSnapshot reads from `initialValues` computed** (not individual field refs) because ManageVaccination uses `@primevue/forms` Form with named fields. `initialValues` is the canonical field-value source at open time. `administeredDate` is included separately as `administeredDate.value?.toISOString() ?? null` (the only direct-v-model field outside the Form).
+- **Gallery accept includes `application/pdf`; camera input remains images-only.** Vaccination cards can be scanned PDF documents, so gallery follows the same allowlist as the desktop FileUpload. Camera (`capture=environment`) cannot produce PDFs — images-only accept on the camera input. This is correct and differs from ManageMembership (images-only per Phase 11 D-02).
+- **Form id wired via `id="manage-vaccination-form"`** on the `<Form>` component. PrimeVue Form passes unknown attrs to its underlying `<form>` element via Vue attr inheritance. The external Save button in `#actions` slot references it via `form="manage-vaccination-form"` across the slot boundary.
 
 ### Phase 34 Decisions (Plan 01 — CSS foundation, DragHandle, viewport lock)
 
@@ -320,9 +327,11 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T00:45:23Z
+**Last session:** 2026-05-28T00:55:11Z
 
-**Stopped at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache. Next: Plan 35-05 ManageVaccination migration.
+**Stopped at:** Phase 35 Plan 35-05 COMPLETE. ManageVaccination migrated to BaseMobileDialog (c21b5d3) — two-Form collapse (Dialog+Drawer Forms → ONE Form), administeredDate direct v-model (#8191/D-33-01-A) + [visible,record] tuple watch {immediate:true} preserved verbatim, FD-03/04/05/09 applied, camera images-only + gallery images+PDF two-affordance upload, VaccinationSnapshot isDirty. All 4 Manage dialogs on BaseMobileDialog. type-check 0, test:unit 59/59, build 57 precache. Next: Plan 35-06 gates + grep audits + device human-verify checkpoint.
+
+**Prior stopped-at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache.
 
 **Prior stopped-at:** Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed to one, FD-03 inputmode/enterkeyhint on per-row InputNumbers, FD-09 JSON.stringify dirty snapshot on localRows, closeWithoutGuard on save/cancel paths. type-check 0, test:unit 59/59, build clean (57 precache).
 
