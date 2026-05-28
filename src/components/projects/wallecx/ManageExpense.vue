@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import imageCompression from 'browser-image-compression'
+import { compressToWebP } from '@/lib/wallecx/compressToWebP'
 import { toast } from 'vue-sonner'
 import dayjs from 'dayjs'
 import { pb } from '@/lib/pocketbase'
@@ -202,12 +202,8 @@ async function onFileSelect(event: { files: File[] }): Promise<void> {
       ),
     )
     const strippedFile = new File([strippedBlob], file.name, { type: file.type })
-    const compressed = await imageCompression(strippedFile, {
-      maxSizeMB: 1.5,
-      maxWidthOrHeight: 2048,
-      useWebWorker: true,
-    })
-    pendingFile.value = new File([compressed], file.name, { type: file.type })
+    const compressed = await compressToWebP(strippedFile)
+    pendingFile.value = new File([compressed], file.name, { type: 'image/webp' })
     toast.info('Location data removed.')
   } catch {
     toast.error('Failed to process image. Please try again.')
