@@ -251,7 +251,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. After the `ManageMembership` BaseMobileDialog migration, the existing `membershipMapper.spec.ts` 11 tests still pass and `card_color` round-trips through save → re-load without acquiring or losing the `#` prefix
 6. Focused input is brought into view (above the keyboard) on both iOS Safari and Android Chrome — no input is obscured by the keyboard during typing
 
-**Plans:** 6 plans
+**Plans:** 6/6 plans complete
 - [x] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS) — COMPLETE (0141f40 BaseMobileDialog.vue, 0a916b1 CSS; type-check 0, test:unit 59/59, build clean; CON-CONFIRMDIALOG-SINGLETON upheld; Pitfall-6 flat padding confirmed)
 - [x] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04) — COMPLETE (c58645e ManageExpense migration, ad245f0 toolbar/reports DatePickers; type-check 0, test:unit 59/59, build clean; EXIF pipeline intact; 1 ConfirmDialog confirmed)
 - [x] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard) — COMPLETE (bc2c198; FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty, closeWithoutGuard; type-check 0, test:unit 59/59, build clean)
