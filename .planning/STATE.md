@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: planning
-stopped_at: "Phase 36 COMPLETE — 7/7 plans. Wallecx route chunk gzip 64.09 KB → 2.13 KB (-96.7%, target ≥50% met 15×). All 6 PF requirements satisfied (PF-01, PF-02, PF-04, PF-05, PF-07, PF-09). 4 fix-forward commits folded under 36-07: 79dda03 (WebP ?thumb skip × 5 sites), 1d9747b (compressToWebP .webp rename + ManageExpense always-skip thumb), 1bcf697 (ManageExpense token prop), 014e8e7 (MembershipsTab manageToken lifecycle — code-review HIGH). Verifier passed 15/15 must-haves + 7/7 NFR/CON gates; code review status clean (HIGH/MEDIUM/INFO#1 resolved, INFO#2 accepted per design). 36-HUMAN-UAT.md records emulation pass + 3 Phase-38 carry-overs (real-device PF-05 baseline, real-device CLS check, ManageVaccination current-card thumbnail). Next: /gsd-discuss-phase 37 (PWA Install + Standalone Polish)."
-last_updated: "2026-05-28T07:51:47.648Z"
+stopped_at: Phase 37 context gathered — 16 decisions (D-37-01..16); Android Install button + offline banner + manifest shortcuts + 30-day dismissal JSON schema all locked. ROADMAP/REQUIREMENTS PWA-07 retry-affordance wording flagged for planner edit (D-37-12).
+last_updated: "2026-05-28T09:55:48.438Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 19
   completed_plans: 19
-  percent: 100
+  percent: 67
 ---
 
 # Project State
@@ -333,9 +333,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T05:19:58Z
+**Last session:** 2026-05-28T09:55:48.426Z
 
-**Stopped at:** Phase 36 Plan 36-05 COMPLETE. ExpensesTab.vue: ManageExpense async via defineAsyncComponent + Suspense + WallecxSkeleton expense-row fallback; instrumentedGetFullList wraps wallecx_expenses (requestKey: 'expenses-getFullList') and wallecx_expense_budgets (requestKey: 'expense-budgets-getFullList'); export-path 'expenses-export' untouched. ExpensesListView.vue: WallecxSkeleton variant=expense-row :count=3 replaces inline skeleton; sticky toolbar wrapper preserved. ExpensesReportsView.vue: pb removed; instrumentedGetFullList wraps wallecx_expense_categories (requestKey: 'expense-categories-getFullList'); WallecxSkeleton variant=reports-chart replaces inline 3-Skeleton block. AttachmentPreview.vue: WallecxSkeleton variant=attachment replaces Suspense fallback; VuePdfEmbed defineAsyncComponent byte-intact. type-check 0, test:unit 59/59, build 72 precache, 0 exceeds. Next: Plan 36-06 (WebP migration).
+**Stopped at:** Phase 37 context gathered — 16 decisions (D-37-01..16); Android Install button + offline banner + manifest shortcuts + 30-day dismissal JSON schema all locked. ROADMAP/REQUIREMENTS PWA-07 retry-affordance wording flagged for planner edit (D-37-12).
 
 **Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
 
