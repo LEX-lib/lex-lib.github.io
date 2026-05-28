@@ -1,10 +1,11 @@
 ---
 phase: 37
 slug: pwa-install-standalone-polish
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-28
+reviewed_at: 2026-05-28
 ---
 
 # Phase 37 — UI Design Contract
