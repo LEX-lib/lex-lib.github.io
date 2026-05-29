@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, defineAsyncComponent } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, watch, defineAsyncComponent, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { useRegisterSW } from "virtual:pwa-register/vue";
 import { pb } from "@/lib/pocketbase";
+import { useMobileEnv } from "@/composables/useMobileEnv";
 import WallecxSkeleton from "./WallecxSkeleton.vue";
 import PwaInstallBanner from './PwaInstallBanner.vue';
 import '@/assets/wallecx-overrides.css';
@@ -12,8 +13,22 @@ const VaccinationsTab = defineAsyncComponent(() => import("./VaccinationsTab.vue
 const MembershipsTab = defineAsyncComponent(() => import("./MembershipsTab.vue"));
 const ExpensesTab = defineAsyncComponent(() => import("./ExpensesTab.vue"));
 
+const route = useRoute();
 const router = useRouter();
 const activeTab = ref<string>("vaccinations");
+const { isStandalone } = useMobileEnv();
+const pendingAction = ref<string | null>(null);
+const ACTION_TAB_MAP: Record<string, string> = {
+  'add-expense': 'expenses',
+  'add-vaccination': 'vaccinations',
+  'add-membership': 'memberships',
+  'open-reports': 'expenses',
+};
+
+function isIosSafari(): boolean {
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/i.test(ua);
+}
 
 // --- PWA-06: SW update prompt ---
 // needRefresh becomes true when a new SW has installed and is waiting to activate.
@@ -24,6 +39,7 @@ watch(needRefresh, (val) => {
   if (!val) return;
   toast.info("A new version of Wallecx is available.", {
     duration: Infinity,
+    style: { paddingBottom: 'env(safe-area-inset-bottom)' },
     action: {
       label: "Refresh",
       onClick: () => updateServiceWorker(true),
@@ -57,11 +73,22 @@ onMounted(async () => {
   //   - Catches iOS 8-day dormancy scenario where token expires while app is backgrounded
   // Do NOT use useAuthStore().isLoggedIn here — it checks !!user.value, not token expiry.
   if (!pb.authStore.isValid) {
-    toast.info("Your session has expired. Please sign in again.");
+    const evictionMessage = (isIosSafari() || isStandalone.value)
+      ? "iOS may have cleared local data after 7 days without opening the app. Please sign in again. Tip: pin Wallecx to your home screen to prevent this."
+      : "Your session has expired. Please sign in again.";
+    toast.info(evictionMessage);
     await router.push({
       name: "login",
       query: { redirect: "/projects/wallecx" },
     });
+  }
+
+  const action = route.query.action;
+  if (typeof action === 'string' && ACTION_TAB_MAP[action]) {
+    activeTab.value = ACTION_TAB_MAP[action];
+    await nextTick();   // Pitfall 4: let Suspense begin resolving the active tab before pendingAction set
+    pendingAction.value = action;
+    router.replace({ query: {} });
   }
 });
 </script>
@@ -95,7 +122,7 @@ onMounted(async () => {
         <TabPanels>
           <TabPanel value="vaccinations">
             <Suspense>
-              <VaccinationsTab />
+              <VaccinationsTab :pending-action="pendingAction" />
               <template #fallback>
                 <WallecxSkeleton variant="vaccination-card" :count="3" />
               </template>
@@ -103,7 +130,7 @@ onMounted(async () => {
           </TabPanel>
           <TabPanel value="memberships">
             <Suspense>
-              <MembershipsTab />
+              <MembershipsTab :pending-action="pendingAction" />
               <template #fallback>
                 <WallecxSkeleton variant="membership-card" :count="3" />
               </template>
@@ -111,7 +138,7 @@ onMounted(async () => {
           </TabPanel>
           <TabPanel value="expenses">
             <Suspense>
-              <ExpensesTab />
+              <ExpensesTab :pending-action="pendingAction" />
               <template #fallback>
                 <WallecxSkeleton variant="expense-row" :count="3" />
               </template>

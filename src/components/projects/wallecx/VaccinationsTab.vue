@@ -8,6 +8,9 @@ import type { Vaccinations } from "@/types/wallecx/vaccinations/types";
 import { instrumentedGetFullList } from "@/lib/pocketbase/perfInstrument";
 import WallecxSkeleton from "./WallecxSkeleton.vue";
 const ManageVaccination = defineAsyncComponent(() => import("./ManageVaccination.vue"));
+
+const props = defineProps<{ pendingAction?: string | null }>();
+
 import VaccinationGroupCard from "./VaccinationGroupCard.vue";
 import VaccinationGroupPanel from "./VaccinationGroupPanel.vue";
 import WallecxToolbar from './WallecxToolbar.vue';
@@ -205,6 +208,17 @@ function openManage(record: Vaccinations | null): void {
   manageRecord.value = record;
   showManage.value = true;
 }
+
+// PWA-09: pendingAction watcher — immediate:true catches values set before this watcher registers (Pitfall 4)
+watch(
+  () => props.pendingAction,
+  (action) => {
+    if (action === 'add-vaccination') {
+      openManage(null);
+    }
+  },
+  { immediate: true }
+)
 
 function openGroupPanel(group: VaccineGroup): void {
   selectedGroup.value = group;

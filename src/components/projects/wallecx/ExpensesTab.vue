@@ -16,6 +16,8 @@ import ExpensesReportsView from './ExpensesReportsView.vue'
 
 const ManageExpense = defineAsyncComponent(() => import('./ManageExpense.vue'))
 
+const props = defineProps<{ pendingAction?: string | null }>()
+
 const expenses = ref<Expenses[]>([])
 const isLoading = ref(false)
 const showManage = ref(false)
@@ -107,6 +109,19 @@ async function openManage(record: Expenses | null) {
 watch(showManage, (v) => {
   if (!v) manageToken.value = ''
 })
+
+// PWA-09: pendingAction watcher — immediate:true catches values set before this watcher registers (Pitfall 4)
+watch(
+  () => props.pendingAction,
+  (action) => {
+    if (action === 'add-expense') {
+      openManage(null);
+    } else if (action === 'open-reports') {
+      activeSubTab.value = 'reports';
+    }
+  },
+  { immediate: true }
+)
 
 function onCreated(record: Expenses) {
   expenses.value.unshift(record)
