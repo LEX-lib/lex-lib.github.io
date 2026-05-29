@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 import CustomNavBar from "@/components/CustomNavBar.vue";
+import OfflineBanner from "@/components/OfflineBanner.vue";
 import { Toaster } from "vue-sonner";
 import { SpeedInsights } from "@vercel/speed-insights/vue";
 import {
@@ -38,6 +39,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <OfflineBanner />
   <CustomNavBar class="mb-1" :style="{ paddingTop: 'env(safe-area-inset-top)' }" />
   <RouterView />
   <Toaster />
