@@ -4,7 +4,7 @@ milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: executing
 stopped_at: Phase 37 UI-SPEC approved
-last_updated: "2026-05-29T01:07:25.098Z"
+last_updated: "2026-05-29T01:11:05.137Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 6
@@ -23,14 +23,14 @@ progress:
 **Project:** Lexarium — Wallecx
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
 **Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Phase 37 — PWA Install + Standalone Polish (next)
+**Current focus:** Phase 37 — pwa-install-standalone-polish
 
 ## Current Position
 
-Phase: 36 (Mobile Performance) — COMPLETE 2026-05-28 (7/7 plans)
-Plan: 7 of 7 complete
+Phase: 37 (pwa-install-standalone-polish) — EXECUTING
+Plan: 1 of 5
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Ready to execute
+**Status:** Executing Phase 37
 **Phase:** 37
 **Plan:** Not started
 **Last activity:** 2026-05-29

@@ -199,9 +199,11 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 4. Vue patch-bump (3.5.18 → 3.5.34) + PrimeVue minor-bump (4.3.7 → 4.5.5) lockstep with `@primevue/auto-import-resolver` + `@primevue/forms` lands on `feat/wallecx` with a documented branch smoke-test confirming Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect + ColorPicker direct-v-model survive
 
 **Plans:** 3 plans
+
 - [x] 33-01-PLAN.md — Vue 3.5.34 + PrimeVue 4.5.5 lockstep version bump + smoke-test gate (FND-04) — COMPLETE (smoke-test PASSED; fix-forward D-33-01-A: ManageVaccination DatePicker rebound to direct v-model per PrimeVue Forms #8191)
 - [x] 33-02-PLAN.md — useMobileEnv composable + App.vue beforeinstallprompt capture (FND-01, FND-02) — COMPLETE (5-key composable, tri-state tiers, module-singleton install event, @vueuse/core promoted; 49→59 tests; useIsMobile.ts + PwaInstallBanner.vue untouched)
 - [x] 33-03-PLAN.md — ANALYZE-gated rollup-plugin-visualizer + analyze script (FND-03) — COMPLETE (visualizer gated on process.env.ANALYZE; `npm run analyze` → dist/stats.html treemap; plain build never attaches it; PWA registerType/scope LOCKED comments byte-intact; type-check 0, test:unit 59/59)
+
 **UI hint:** yes
 
 #### Phase 34: Layout Audit & Touch Targets
@@ -211,6 +213,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phase 33 (`useMobileEnv` for `safeAreaInsets`, `isMobile`)
 **Requirements:** LT-01, LT-02, LT-03, LT-04, LT-05, LT-07, LT-09
 **Binds NFR/CON:**
+
 - **CON-VIEWPORT-FIT** — `<meta name="viewport">` in `index.html` retains `viewport-fit=cover` with inline LOCKED comment (LT-09 verification owner; required prerequisite for any non-zero `env(safe-area-inset-*)` value)
 - **NFR-DVH-NOT-VH** — Milestone-close grep audit in `src/components/projects/wallecx/` returns 0 `100vh` / `h-screen` matches (LT-04 verification owner)
 - **NFR-BR-2-PRESERVED** — CSS sweep does NOT regress BarcodeDisplay.vue black-on-white invariant; visual check in both themes during touch-target sweep; final coverage owned by Phase 38
@@ -224,9 +227,11 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 5. BarcodeDisplay.vue still renders black bars on white background in BOTH light and dark theme on the Memberships tab after the CSS sweep — visual check recorded
 
 **Plans:** 3/3 plans complete
+
 - [x] 34-01-PLAN.md — DragHandle component + wallecx-overrides.css rules (44px touch floor, sticky TabList + toolbar, bottom-Drawer safe-area) + wallecx-main-tabs class + viewport-fit LOCKED comment + dvh confirm (LT-01/04/05/09) — COMPLETE (DragHandle.vue 9ee21cb; CSS rules + wallecx-main-tabs 294c3b9; LOCKED viewport meta a16f9fe; dvh 0 matches confirmed; type-check 0, test:unit 59/59)
 - [x] 34-02-PLAN.md — Sticky toolbar wrappers in 3 tabs + DragHandle swap in 5 existing pills + scan-overlay safe-area insets (LT-02/03/05/07) — COMPLETE (f6586e3, f29ba7a, 4f177e6)
 - [x] 34-03-PLAN.md — Mobile bottom-Drawer branches for ManageMembership + ManageVaccination + BR-2 black-on-white reverify checkpoint (LT-02/07) — COMPLETE (3dc3b73, b119c76; fixes 06a1238, 78b2d45; BR-2 APPROVED 375x667 light+dark)
+
 **UI hint:** yes
 
 #### Phase 35: Forms & Dialogs on Small Screens
@@ -236,6 +241,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phase 33 (`useMobileEnv`), Phase 34 (safe-area inset wiring is the substrate for sticky bottom action bars)
 **Requirements:** LT-08, FD-01, FD-03, FD-04, FD-05, FD-06, FD-07, FD-09
 **Binds NFR/CON:**
+
 - **NFR-IOS-NO-ZOOM** — FD-01 global `@media (max-width: 640px)` rule enforced; grep audit flags `text-xs` / `text-sm` on any input (FD-01 verification owner)
 - **NFR-DRAWER-DIRTY-GUARD** — FD-09 `useConfirm` "Discard changes?" gate before backdrop-tap / swipe-down dismissal of a dirty form (FD-09 verification owner)
 - **CON-CARD-COLOR-NO-HASH** — `ManageMembership` BaseMobileDialog migration preserves the `card_color` (no `#` prefix on save, prepend on read) invariant; `membershipMapper.spec.ts` re-runs and extends if ColorPicker is swapped for a native picker (verification owner; migrates LAST in this phase per A-43-2 risk-ordering)
@@ -252,12 +258,14 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 6. Focused input is brought into view (above the keyboard) on both iOS Safari and Android Chrome — no input is obscured by the keyboard during typing
 
 **Plans:** 6/6 plans complete
+
 - [x] 35-01-PLAN.md — BaseMobileDialog wrapper + wallecx-overrides.css (FD-01 16px rule, sticky action bar CSS) — COMPLETE (0141f40 BaseMobileDialog.vue, 0a916b1 CSS; type-check 0, test:unit 59/59, build clean; CON-CONFIRMDIALOG-SINGLETON upheld; Pitfall-6 flat padding confirmed)
 - [x] 35-02-PLAN.md — ManageExpense migration + ExpensesToolbar/ExpensesReportsView inline DatePickers (FD-04) — COMPLETE (c58645e ManageExpense migration, ad245f0 toolbar/reports DatePickers; type-check 0, test:unit 59/59, build clean; EXIF pipeline intact; 1 ConfirmDialog confirmed)
 - [x] 35-03-PLAN.md — ManageBudget migration (no upload; JSON-snapshot dirty guard) — COMPLETE (bc2c198; FD-03 per-row inputmode/enterkeyhint, FD-09 JSON.stringify dirty, closeWithoutGuard; type-check 0, test:unit 59/59, build clean)
 - [x] 35-04-PLAN.md — ManageMembership migration (ColorPicker #8135 + card_color no-hash preserved) — COMPLETE (1da4b1c; ColorPicker v-model=cardColor + card_color no-hash + {immediate:true} watcher all preserved; FD-03/04/05/09 applied; membershipMapper 11 tests green; type-check 0, test:unit 59/59, build clean)
 - [x] 35-05-PLAN.md — ManageVaccination migration (two-Form collapse; administeredDate #8191 preserved) — COMPLETE (c21b5d3; two-Form → ONE Form confirmed safe, administeredDate direct v-model + [visible,record] tuple watch {immediate:true} preserved, FD-03/04/05/09 applied; camera images-only + gallery images+PDF; VaccinationSnapshot isDirty; type-check 0, test:unit 59/59, build 57 precache)
 - [x] 35-06-PLAN.md — Automated gates + grep audits + device-dependent human-verify checkpoint — COMPLETE (36203f3 gates PASS; f8eb9c7 FD-04 popup revert; human APPROVED 6 behaviors at 390px emulation; D-35-13 RE-CORRECTED)
+
 **UI hint:** yes
 
 #### Phase 36: Mobile Performance
@@ -267,6 +275,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phase 33 (visualizer wiring, version bumps), Phase 34 (visual layer stable so regressions are easier to detect), Phase 35 (Manage dialogs ready to be wrapped in async loaders)
 **Requirements:** PF-01, PF-02, PF-04, PF-05, PF-07, PF-09
 **Binds NFR/CON:**
+
 - **NFR-PERF-MEASURE** — PF-05 instrumentation logs payload + duration per `wallecx_*` `getFullList` on mid-tier mobile cellular; results recorded in MILESTONES.md at close; gates Phase 38b (verification owner)
 - **NFR-PWA-PRECACHE-FITS** — `npm run build` log scan for "exceeds" / "Skipping precaching" returns 0 matches; chunk-split decisions stay under the 3 MiB Workbox `maximumFileSizeToCacheInBytes` cap (verification owner; locked since v2.1 Plan 14-04)
 - **CON-PB-COUNT-BUG** — Any new `getList(` call against `wallecx_*` in async-loader paths passes `{ skipTotal: true }`; code review rejects otherwise. `getFullList()` remains the default per D-31-B (verification owner)
@@ -282,6 +291,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 6. `npm run build` output contains 0 lines matching "exceeds" or "Skipping precaching"; all chunks fit under 3 MiB precache cap
 
 **Plans:** 7/7 plans complete
+
 - [x] 36-01-PLAN.md — Foundation: WallecxSkeleton + perfInstrument + compressToWebP + vite.config rolldown groups + pre-phase baseline (PF-01/02/04/05/07) — COMPLETE (e247775..e20bfc9; WallecxApp 64.09 KB → 32.81 KB gzip via codeSplitting groups)
 - [x] 36-02-PLAN.md — WallecxApp.vue async tabs + Suspense + WallecxSkeleton fallbacks (PF-02/04) — COMPLETE (4f5c3a9; WallecxApp 32.81 KB → 2.45 KB gzip; all 3 tabs lazy-loaded; Suspense inside TabPanel; type-check 0, test:unit 59/59)
 - [x] 36-03-PLAN.md — VaccinationsTab async ManageVaccination + instrument getFullList + add missing requestKey + skeleton consolidation (PF-02/04/05)
@@ -297,6 +307,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phase 33 (`installPromptEvent` captured at App.vue scope), Phase 34 (safe-area wiring is substrate for status-bar black-translucent and SW-toast inset), Phase 36 (reduced bundle so PWA precache fits under 3 MiB)
 **Requirements:** PWA-01, PWA-02, PWA-04, PWA-06, PWA-07, PWA-09
 **Binds NFR/CON:**
+
 - **NFR-PWA-AUTOUPDATE** — `vite.config.ts` `registerType: 'prompt'` LOCKED comment preserved; any diff that flips to `'autoUpdate'` blocked. Reason: CRUD forms have unsaved state (verification owner; locked since v2.1)
 - **CON-PWA-SCOPE** — Manifest `scope: '/'` retained; not narrowed to `/projects/wallecx` (verification owner)
 - **NFR-PWA-BANNER-FREQUENCY** — Install banner does NOT show in standalone mode (`display-mode: standalone` OR `navigator.standalone === true`) and respects localStorage dismissal record (re-show only after ≥30 days) (verification owner)
@@ -314,12 +325,14 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 6. After dismissing the install banner once, re-launching the app does not re-show the banner for at least 30 days; in standalone mode the banner never shows regardless of dismissal record
 7. `registerType: 'prompt'` and `scope: '/'` are confirmed unchanged in `vite.config.ts` (LOCKED comments intact)
 
-**Plans:** 5 plans
-- [ ] 37-01-PLAN.md — pwa-assets.config.ts + generate splash + shortcut PNGs (PWA-02, PWA-09 assets)
-- [ ] 37-02-PLAN.md — OfflineBanner.vue + App.vue mount + ROADMAP/REQUIREMENTS D-37-12 reword (PWA-07)
-- [ ] 37-03-PLAN.md — PwaInstallBanner.vue Android branch + JSON dismissal schema + lazy migration (PWA-04)
+**Plans:** 3/5 plans executed
+
+- [x] 37-01-PLAN.md — pwa-assets.config.ts + generate splash + shortcut PNGs (PWA-02, PWA-09 assets)
+- [x] 37-02-PLAN.md — OfflineBanner.vue + App.vue mount + ROADMAP/REQUIREMENTS D-37-12 reword (PWA-07)
+- [x] 37-03-PLAN.md — PwaInstallBanner.vue Android branch + JSON dismissal schema + lazy migration (PWA-04)
 - [ ] 37-04-PLAN.md — index.html iOS meta tags + per-color-scheme theme-color + 3 splash link tags (PWA-01, PWA-02)
 - [ ] 37-05-PLAN.md — vite.config.ts manifest.shortcuts + WallecxApp.vue (SW toast safe-area + iOS eviction copy + pendingAction dispatch) + 3 tab prop watchers + guard.spec.ts query-preservation test (PWA-06, PWA-09, NFR-IOS-EVICTION-UX, D-37-16)
+
 **UI hint:** yes
 
 #### Phase 38: Mobile UAT Sweep + PWA-UAT-01
@@ -329,6 +342,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phases 33–37 all shipped (this is the milestone-close UAT)
 **Requirements:** PWA-05
 **Binds NFR/CON:**
+
 - **NFR-BR-2-PRESERVED** — Final verification owner for the milestone: BarcodeDisplay.vue renders black-on-white in light, dark, and PWA standalone modes at all 3 test viewports (390/360/768); regression caught here would block ship
 - **NFR-IOS-EVICTION-UX** — Real-device 7-day eviction or simulated forced eviction surfaces the eviction-specific copy (not generic "Session expired"); verified during PWA-UAT-01 walkthrough
 - All Phase 33–37 NFR/CON gates re-affirmed in installed standalone mode (autoupdate-locked, banner-frequency, viewport-fit, dvh-not-vh, ios-no-zoom, confirmdialog-singleton, drawer-dirty-guard, requestkey-unique, pb-count-bug, pwa-scope, pwa-precache-fits, perf-measure, ios-splash, card-color-no-hash)
@@ -351,6 +365,7 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 **Depends on:** Phase 36 (PF-05 instrumentation is the gating signal)
 **Requirements:** PF-06 *(conditional — triggered by PF-05 instrumentation)*
 **Binds NFR/CON:**
+
 - **CON-PB-COUNT-BUG** — Phase 38b prefers client-side virtualization over `getList()` pagination to avoid D-31-B; if pagination is ever needed, `{ skipTotal: true }` mandatory (verification owner if triggered)
 - **NFR-REQUESTKEY-UNIQUE** — Any windowed refetch must register a NEW distinct `requestKey` (verification owner if triggered)
 
