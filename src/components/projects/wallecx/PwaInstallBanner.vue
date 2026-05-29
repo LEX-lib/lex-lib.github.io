@@ -75,11 +75,11 @@ function isDismissed(): boolean {
  * Writes a new dismissal record with the given platform and current timestamp.
  * Degrades silently on failure.
  */
-function writeDismissalRecord(platformVal: 'ios' | 'android'): void {
+function writeDismissalRecord(platform: 'ios' | 'android'): void {
   try {
     // D-37-06 schema: { dismissedAt: ISO8601, platform: 'ios'|'android' }
     const record: DismissalRecord =
-      platformVal === 'ios'
+      platform === 'ios'
         ? { dismissedAt: new Date().toISOString(), platform: 'ios' }
         : { dismissedAt: new Date().toISOString(), platform: 'android' };
     localStorage.setItem(BANNER_DISMISSED_KEY, JSON.stringify(record));
