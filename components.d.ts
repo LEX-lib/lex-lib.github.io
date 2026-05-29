@@ -74,6 +74,7 @@ declare module 'vue' {
     Menubar: typeof import('primevue/menubar')['default']
     Message: typeof import('primevue/message')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
+    OfflineBanner: typeof import('./src/components/OfflineBanner.vue')['default']
     Password: typeof import('primevue/password')['default']
     PwaInstallBanner: typeof import('./src/components/projects/wallecx/PwaInstallBanner.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

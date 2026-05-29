@@ -54,7 +54,7 @@
 - [ ] **PWA-04**: Android Chrome `BeforeInstallPromptEvent` captured at App.vue scope (via FND-02); `PwaInstallBanner.vue` extended with an Android Install button that calls `event.prompt()`; iOS instructional path coexists in the same component
 - [ ] **PWA-05**: PWA-UAT-01 (deferred from Phase 22 V6) closed — viewport-tagged install + force-quit + relaunch + dark-mode toggle + auth survival UAT executed on real iOS device, real Android device, and iPad-820 viewport; results recorded
 - [ ] **PWA-06**: SW-update toast ("Refresh / Later") respects safe-area-inset on iPhone with notch / dynamic island; verified in standalone
-- [ ] **PWA-07**: Offline banner backed by `useOnline` shows when navigator goes offline (in addition to existing NetworkOnly /api/* toast behavior); retry affordance offered on reconnect
+- [ ] **PWA-07**: Offline banner backed by `useOnline` shows when navigator goes offline (in addition to existing NetworkOnly /api/* toast behavior); banner auto-clears when navigator goes back online (useOnline reactive)
 - [ ] **PWA-09**: Web App Manifest declares `shortcuts` array — Quick Actions for long-press home-screen icon (Add Expense, Add Vaccination, Add Membership, Open Reports)
 
 ### Non-Functional Requirements & Constraints (NFR / CON)
