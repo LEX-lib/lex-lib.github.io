@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: Wallecx Mobile Optimization
 status: planning
-stopped_at: Phase 37 context gathered — 16 decisions (D-37-01..16); Android Install button + offline banner + manifest shortcuts + 30-day dismissal JSON schema all locked. ROADMAP/REQUIREMENTS PWA-07 retry-affordance wording flagged for planner edit (D-37-12).
-last_updated: "2026-05-28T09:55:48.438Z"
+stopped_at: Phase 37 UI-SPEC approved
+last_updated: "2026-05-29T00:18:06.023Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 6
@@ -333,9 +333,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-28T09:55:48.426Z
+**Last session:** 2026-05-29T00:18:06.009Z
 
-**Stopped at:** Phase 37 context gathered — 16 decisions (D-37-01..16); Android Install button + offline banner + manifest shortcuts + 30-day dismissal JSON schema all locked. ROADMAP/REQUIREMENTS PWA-07 retry-affordance wording flagged for planner edit (D-37-12).
+**Stopped at:** Phase 37 UI-SPEC approved
 
 **Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
 
