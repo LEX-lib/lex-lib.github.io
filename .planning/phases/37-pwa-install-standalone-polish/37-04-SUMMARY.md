@@ -31,7 +31,7 @@ decisions:
 metrics:
   duration: "175s (approx 3 minutes)"
   completed_date: "2026-05-29"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
   files_created: 0
   files_modified: 1
@@ -106,15 +106,13 @@ Lines inserted (after original line 9, before original line 10):
 
 ## Human Checkpoint Outcome
 
-**Task 2 (checkpoint:human-verify) — PENDING**
+**Task 2 (checkpoint:human-verify) — PASSED. User approved.**
 
-The checkpoint requires human verification on a real iOS device or DevTools iPhone preset:
-1. Branded splash renders on install (NOT white flash)
+Human approved the iOS meta tag implementation. Verified:
+1. Branded splash renders correctly (iOS-controlled duration: 0.5–2s)
 2. Status bar uses `black-translucent` style with title "Wallecx"
-3. Theme-color meta flips between `#002244` (light) and `#0d1117` (dark) when system color scheme toggles
-4. BarcodeDisplay still renders black-on-white in both themes (NFR-BR-2-PRESERVED)
-
-**Resume signal:** User types "approved" after verification.
+3. Theme-color meta flips between `#002244` (light) and `#0d1117` (dark) with system color scheme
+4. BarcodeDisplay renders correctly in both themes (NFR-BR-2-PRESERVED)
 
 ## Deviations from Plan
 
