@@ -5,7 +5,7 @@ status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-05-28
-reviewed_at: 2026-05-28
+reviewed_at: 2026-05-29
 ---
 
 # Phase 37 — UI Design Contract
@@ -79,7 +79,7 @@ Notes:
 | Secondary (30%) — light | `#ffffff` (`--color-surface-card`) | Cards, drawer surfaces, dialog interiors |
 | Secondary (30%) — dark | `#1a1a2e` (`--color-surface-card` dark) | Cards and overlays in dark mode |
 | Brand navy | `#002244` (`--color-brand-primary`) | Install banner background, manifest `theme_color`, manifest `background_color`, iOS meta `theme-color` (light mode), splash screen background |
-| Brand navy dark | `#0d1117` (`--color-surface-page` dark) | iOS meta `theme-color` (dark mode) — matches dark surface background per D-37-12 (planner confirms exact hex by reading `--color-surface-page` from `base.css`) |
+| Brand navy dark | `#0d1117` (`--color-surface-page` dark) | iOS meta `theme-color` (dark mode) — matches dark surface background per D-37-12; confirmed as `--color-surface-page` value in `base.css` line 59 |
 | Accent (10%) | `#e89820` (`--color-brand-accent`) | Install banner share icon, inline emphasis |
 | Status warning | `#e89820` (`--color-status-warning`) | Offline banner background tone |
 | Destructive | `#c0392b` (`--color-status-error`) | Not applicable to Phase 37 — no destructive actions in scope |
@@ -115,7 +115,7 @@ Accent reserved for:
 
 | Element | Copy |
 |---------|------|
-| Android Install banner CTA | "Install Wallecx" |
+| Android Install banner button label | "Install" |
 | Android Install banner body | "Install Wallecx for faster access and home-screen shortcuts." |
 | Android Install banner dismiss | aria-label: "Dismiss install banner" (same as iOS branch) |
 | iOS Install banner body | "Tap **Share** then **Add to Home Screen** to install Wallecx" (UNCHANGED from existing) |
@@ -130,7 +130,8 @@ Accent reserved for:
 | Destructive confirmation | None — no destructive actions in Phase 37 scope |
 
 **Copy sourcing notes:**
-- Android banner copy from D-37-03 (exact string locked).
+- Android banner button label from D-37-03: "Right-aligned **'Install'** button" — one-word label, not "Install Wallecx".
+- Android banner body copy from D-37-03 (exact string locked).
 - Offline banner copy from D-37-11 (exact string locked; no retry button).
 - iOS eviction copy from NFR-IOS-EVICTION-UX + Claude's Discretion (37-CONTEXT.md); planner applies this copy at the `WallecxApp.vue` line 60 `toast.info` site, gated on `isIosSafari()` OR `isStandalone === true` at the time of auth expiry detection.
 
@@ -170,7 +171,7 @@ Components affected or created in Phase 37:
 - Legacy `'true'` migrates to `{ dismissedAt: <now-ISO>, platform: <detected> }` on first read (D-37-07)
 
 **Android Install button interaction (D-37-04):**
-1. User taps "Install Wallecx"
+1. User taps "Install"
 2. `installPromptEvent.prompt()` called (FIRST and ONLY call — M-9)
 3. `await event.userChoice` resolves
 4. On `accepted`: clear singleton via `clearInstallPromptEvent()` — Chrome fires `appinstalled` which also clears it (App.vue teardown)
@@ -217,7 +218,7 @@ Added to `index.html` `<head>` near line 9:
 <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
 ```
 
-Dark `theme-color` `#0d1117` matches `--color-surface-page` in `.my-app-dark` (base.css line 59). Planner confirms this hex against the computed token before shipping.
+Dark `theme-color` `#0d1117` confirmed against `--color-surface-page` in `.my-app-dark` (base.css line 59).
 
 ### iOS Splash Screens (PWA-02)
 
@@ -264,11 +265,11 @@ No shadcn `components.json` found in project root. Project uses PrimeVue 4.5.5 +
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-05-29
