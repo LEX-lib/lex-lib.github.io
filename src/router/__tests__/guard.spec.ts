@@ -72,6 +72,15 @@ describe("requiresAuth guard — /projects/wallecx", () => {
     expect(router.currentRoute.value.query.redirect).toBe("/projects/wallecx");
   });
 
+  it("preserves query string in redirect when not authenticated", async () => {
+    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: false });
+    const router = buildRouter();
+    addGuard(router);
+    await router.push("/projects/wallecx?action=add-expense");
+    expect(router.currentRoute.value.name).toBe("login");
+    expect(router.currentRoute.value.query.redirect).toBe("/projects/wallecx?action=add-expense");
+  });
+
   it("allows navigation when authenticated", async () => {
     (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: true });
     const router = buildRouter();

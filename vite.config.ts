@@ -76,6 +76,32 @@ export default defineConfig({
             label: "Wallecx — Vaccination & Membership Card Vault (Desktop)",
           },
         ],
+        shortcuts: [
+          {
+            name: "Add Expense",
+            short_name: "Add Expense",
+            url: "/projects/wallecx?action=add-expense",
+            icons: [{ src: "shortcuts/shortcut-add-expense.png", sizes: "96x96", type: "image/png", purpose: "any" }],
+          },
+          {
+            name: "Add Vaccination",
+            short_name: "Add Vaccination",
+            url: "/projects/wallecx?action=add-vaccination",
+            icons: [{ src: "shortcuts/shortcut-add-vaccination.png", sizes: "96x96", type: "image/png", purpose: "any" }],
+          },
+          {
+            name: "Add Membership",
+            short_name: "Add Membership",
+            url: "/projects/wallecx?action=add-membership",
+            icons: [{ src: "shortcuts/shortcut-add-membership.png", sizes: "96x96", type: "image/png", purpose: "any" }],
+          },
+          {
+            name: "Open Reports",
+            short_name: "Open Reports",
+            url: "/projects/wallecx?action=open-reports",
+            icons: [{ src: "shortcuts/shortcut-open-reports.png", sizes: "96x96", type: "image/png", purpose: "any" }],
+          },
+        ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
