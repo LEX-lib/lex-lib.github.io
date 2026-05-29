@@ -314,7 +314,12 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 6. After dismissing the install banner once, re-launching the app does not re-show the banner for at least 30 days; in standalone mode the banner never shows regardless of dismissal record
 7. `registerType: 'prompt'` and `scope: '/'` are confirmed unchanged in `vite.config.ts` (LOCKED comments intact)
 
-**Plans:** TBD
+**Plans:** 5 plans
+- [ ] 37-01-PLAN.md — pwa-assets.config.ts + generate splash + shortcut PNGs (PWA-02, PWA-09 assets)
+- [ ] 37-02-PLAN.md — OfflineBanner.vue + App.vue mount + ROADMAP/REQUIREMENTS D-37-12 reword (PWA-07)
+- [ ] 37-03-PLAN.md — PwaInstallBanner.vue Android branch + JSON dismissal schema + lazy migration (PWA-04)
+- [ ] 37-04-PLAN.md — index.html iOS meta tags + per-color-scheme theme-color + 3 splash link tags (PWA-01, PWA-02)
+- [ ] 37-05-PLAN.md — vite.config.ts manifest.shortcuts + WallecxApp.vue (SW toast safe-area + iOS eviction copy + pendingAction dispatch) + 3 tab prop watchers + guard.spec.ts query-preservation test (PWA-06, PWA-09, NFR-IOS-EVICTION-UX, D-37-16)
 **UI hint:** yes
 
 #### Phase 38: Mobile UAT Sweep + PWA-UAT-01
@@ -426,10 +431,10 @@ The phase structure follows category-grouped ordering per A-43-9 (one pattern es
 | 34. Layout Audit & Touch Targets | v4.3 | 3/3 | Complete | 2026-05-27 |
 | 35. Forms & Dialogs on Small Screens | v4.3 | 6/6 | Complete | 2026-05-28 |
 | 36. Mobile Performance | v4.3 | 2/7 | Executing | — |
-| 37. PWA Install + Standalone Polish | v4.3 | 0/? | Not started | — |
+| 37. PWA Install + Standalone Polish | v4.3 | 0/5 | Planned | — |
 | 38. Mobile UAT Sweep + PWA-UAT-01 | v4.3 | 0/? | Not started | — |
 | 38b. List Virtualization (CONDITIONAL) | v4.3 | 0/? | Not triggered (pending PF-05) | — |
 
 ---
 *Roadmap created: 2026-05-10*
-*Last updated: 2026-05-28 — Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue async tabs: defineAsyncComponent + Suspense inside each TabPanel + WallecxSkeleton fallbacks (vaccination-card/membership-card/expense-row, :count=3). WallecxApp chunk: 64.09 KB → 32.81 KB (Plan 36-01 codeSplitting groups) → 2.45 KB gzip (this plan). All invariants preserved. type-check 0, test:unit 59/59, build 66 precache / 0 exceeds. Next: Plan 36-03 (VaccinationsTab async ManageVaccination + perfInstrument).*
+*Last updated: 2026-05-29 — Phase 37 PLANNED (5 plans, 2 waves). Wave 1 parallel: 37-01 PWA assets, 37-02 OfflineBanner + docs reword, 37-03 PwaInstallBanner Android branch. Wave 2 parallel: 37-04 index.html iOS meta + splash links, 37-05 vite.config shortcuts + WallecxApp polish + 3 tabs + guard spec. Both Wave 2 plans depend on 37-01 for PNG assets. Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue async tabs: defineAsyncComponent + Suspense inside each TabPanel + WallecxSkeleton fallbacks (vaccination-card/membership-card/expense-row, :count=3). WallecxApp chunk: 64.09 KB → 32.81 KB (Plan 36-01 codeSplitting groups) → 2.45 KB gzip (this plan). All invariants preserved. type-check 0, test:unit 59/59, build 66 precache / 0 exceeds. Next: Plan 36-03 (VaccinationsTab async ManageVaccination + perfInstrument).*
