@@ -6,6 +6,9 @@ import type { Memberships } from '@/types/wallecx/memberships/types'
 import { instrumentedGetFullList } from '@/lib/pocketbase/perfInstrument'
 import WallecxSkeleton from './WallecxSkeleton.vue'
 const ManageMembership = defineAsyncComponent(() => import('./ManageMembership.vue'))
+
+const props = defineProps<{ pendingAction?: string | null }>()
+
 import MembershipCard from './MembershipCard.vue'
 import MembershipDetail from './MembershipDetail.vue'
 import { useConfirm } from 'primevue/useconfirm'   // explicit — NOT auto-resolved by PrimeVueResolver
@@ -172,6 +175,17 @@ async function openManage(record: Memberships | null): Promise<void> {
 watch(showManage, (v) => {
   if (!v) manageToken.value = ''
 })
+
+// PWA-09: pendingAction watcher — immediate:true catches values set before this watcher registers (Pitfall 4)
+watch(
+  () => props.pendingAction,
+  (action) => {
+    if (action === 'add-membership') {
+      openManage(null);
+    }
+  },
+  { immediate: true }
+)
 
 function openDelete(record: Memberships): void {
   confirm.require({
