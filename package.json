@@ -13,6 +13,7 @@
     "test:unit": "vitest",
     "build-only": "vite build",
     "analyze": "cross-env ANALYZE=true vite build",
+    "generate-pwa-assets": "pwa-assets-generator",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix",
