@@ -41,7 +41,7 @@ decisions:
 metrics:
   duration: "455s (7 minutes)"
   completed_date: "2026-05-29"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 8
   files_modified: 1
@@ -121,13 +121,13 @@ Note: The @vite-pwa/assets-generator generated its own HTML head link snippet (p
 
 ## Human Checkpoint Outcome
 
-**Task 3 (checkpoint:human-verify) — PENDING human approval.**
+**Task 3 (checkpoint:human-verify) — PASSED. User approved.**
 
-The 7 PNGs are staged and ready for visual inspection. Human must confirm:
-1. Splash PNGs show Wallecx branding logo on solid navy `#002244` background (not white, not cropped)
+Human visually verified all 7 PNGs and confirmed:
+1. Splash PNGs show Wallecx branding logo on solid navy `#002244` background
 2. Shortcut PNGs (96x96) show recognizable branded icon (not blank/empty)
-3. None of the splash PNGs exceed 3 MiB
-4. Navy color in splash PNGs matches app navy
+3. None of the splash PNGs exceed 3 MiB (largest is 22 KB)
+4. Navy color in splash PNGs matches app navy `#002244`
 
 ## Deviations from Plan
 
