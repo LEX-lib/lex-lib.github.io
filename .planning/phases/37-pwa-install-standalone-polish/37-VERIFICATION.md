@@ -1,26 +1,17 @@
 ---
 phase: 37-pwa-install-standalone-polish
-verified: 2026-05-29T02:00:00Z
-status: gaps_found
-score: 10/12 must-haves verified
+verified: 2026-06-05T08:00:00Z
+status: human_needed
+score: 12/12 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "isStandalone === true ALWAYS suppresses banner branches (D-37-08)"
-    status: failed
-    reason: "useMobileEnv.ts lines 104-109: isStandalone is seeded from detectStandalone() at construction time but the standaloneMatch ref is NOT watched — if the user accepts an install prompt mid-session, standaloneMatch flips to true but isStandalone stays frozen at false. PwaInstallBanner.vue's v-else-if='installPromptEvent && !isStandalone' guard and WallecxApp.vue's isStandalone.value check in the eviction toast can misfire. Standalone-on-launch is correctly detected; runtime display-mode flip is not. Documented as CR-01 in 37-REVIEW.md."
-    artifacts:
-      - path: "src/composables/useMobileEnv.ts"
-        issue: "Lines 107-109: bare if (standaloneMatch.value) sets isStandalone once; no watch() wires standaloneMatch changes forward"
-    missing:
-      - "Add watch(standaloneMatch, (matched) => { if (matched) isStandalone.value = true }, { immediate: false }) in useMobileEnv.ts to make isStandalone reactive to runtime display-mode changes"
-  - truth: "Each tab component watches props.pendingAction with { immediate: true } and opens the appropriate Manage dialog on match"
-    status: partial
-    reason: "The watch and immediate:true are correctly implemented in all three tab components. However pendingAction is never reset to null after dispatch in WallecxApp.vue — the ref retains the action string for the entire session. If <Suspense> remounts a tab (e.g., component GC), the immediate watcher re-fires with the stale action, triggering openManage(null) or activeSubTab switch a second time without user gesture. Documented as CR-02 in 37-REVIEW.md."
-    artifacts:
-      - path: "src/components/projects/wallecx/WallecxApp.vue"
-        issue: "Lines 87-92: pendingAction.value = action is set but never reset to null after dispatch; router.replace clears the URL but not the ref"
-    missing:
-      - "After pendingAction.value = action and router.replace({ query: {} }), add: await nextTick(); pendingAction.value = null to prevent replay on tab remount"
+re_verification:
+  previous_status: gaps_found
+  previous_score: 10/12
+  gaps_closed:
+    - "isStandalone === true ALWAYS suppresses banner branches (D-37-08) — watch(standaloneMatch, ...) wired; one-shot if-block removed"
+    - "Each tab component watches props.pendingAction with { immediate: true } — pendingAction.value = null reset added after dispatch in WallecxApp.vue"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "iOS branded splash on install"
     expected: "Tapping the home-screen icon for the Wallecx PWA on iOS 390x844 shows the Wallecx branding logo on navy #002244 background — not a white flash — for 0.5-2 seconds"
@@ -54,9 +45,9 @@ human_verification:
 # Phase 37: PWA Install + Standalone Polish — Verification Report
 
 **Phase Goal:** Ship PWA install and standalone polish for Wallecx — iOS splash screens, Android install banner, site-wide offline banner, Android Quick Actions, SW update toast, and eviction-aware copy.
-**Verified:** 2026-05-29T02:00:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-06-05T08:00:00Z
+**Status:** human_needed
+**Re-verification:** Yes — after gap closure (plans 37-06); previous status was gaps_found (10/12)
 
 ---
 
@@ -66,26 +57,26 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | iOS splash PNGs exist with correct pixel dimensions (1179x2556, 1080x2340, 1536x2048) | VERIFIED | PNG IHDR bytes confirmed: all 3 match expected dimensions; sizes 7 KB, 22 KB, 9 KB (all under 3 MiB cap) |
-| 2 | Four 96x96 shortcut PNGs exist on disk for 4 manifest shortcuts | VERIFIED | All 4 exist at public/shortcuts/, each 37 KB (well above 1 KiB floor) |
-| 3 | pwa-assets.config.ts drives assets-generator with combinePresetAndAppleSplashScreens + #002244 background | VERIFIED | File exists, contains combinePresetAndAppleSplashScreens, #002244, branding_logo.svg, headLinkOptions preset:'2023' |
-| 4 | OfflineBanner.vue shows when offline, auto-clears when online, NO retry button | VERIFIED | useOnline() imported from @vueuse/core; v-if="!isOnline"; exact copy locked; zero <button> elements; Teleport to body; role=status, aria-live=polite; z-50, top-0; paddingTop env(safe-area-inset-top) |
-| 5 | OfflineBanner mounted site-wide in App.vue | VERIFIED | <OfflineBanner /> first element in App.vue template; import present; Phase 33 substrate (handleBeforeInstallPrompt, setInstallPromptEvent, clearInstallPromptEvent) intact |
-| 6 | PwaInstallBanner.vue has two branches: iOS (v-if isIosVisible) and Android (v-else-if installPromptEvent && !isStandalone && !_dismissed) | VERIFIED | File confirmed: iOS branch v-if="isIosVisible", Android branch v-else-if="installPromptEvent && !isStandalone && !_dismissed"; DismissalRecord interface present; THIRTY_DAYS_MS constant present; handleAndroidInstall calls event.prompt() synchronously before any await; clearInstallPromptEvent called after userChoice; legacy 'true' migration branch present; writeDismissalRecord with explicit platform branches |
-| 7 | isStandalone === true ALWAYS suppresses banner branches (D-37-08) | FAILED | useMobileEnv.ts lines 104-109: standaloneMatch (reactive) is NOT watched — isStandalone is seeded from detectStandalone() once at construction time. The if (standaloneMatch.value) block at line 107 is a one-shot check, not a reactive watcher. Standalone detection on launch is correct; mid-session display-mode flip (user accepts install prompt) is NOT propagated. See CR-01 in 37-REVIEW.md. |
-| 8 | index.html declares apple-mobile-web-app-capable, status-bar-style black-translucent, title Wallecx, 2 theme-color metas, 3 apple-touch-startup-image links | VERIFIED | All 6 meta/link tags present with correct values; LOCKED viewport-fit comment byte-intact; color-scheme meta count=1 (not duplicated); no manual <link rel=manifest> added; 2 theme-color tags (light #002244, dark #0d1117) |
-| 9 | vite.config.ts manifest.shortcuts array has 4 entries targeting /projects/wallecx?action=... | VERIFIED | 4 entries confirmed: add-expense, add-vaccination, add-membership, open-reports; each with correct 96x96 PNG icon src and purpose:'any'; LOCKED registerType:'prompt' and scope:'/' comments byte-intact |
-| 10 | WallecxApp.vue reads route.query.action, maps via ACTION_TAB_MAP, awaits nextTick, sets pendingAction, calls router.replace | VERIFIED | All elements present: ACTION_TAB_MAP with 4 keys, await nextTick() before pendingAction.value = action, router.replace({ query: {} }); SW toast style:{paddingBottom:'env(safe-area-inset-bottom)'} present; isIosSafari() || isStandalone.value gating for eviction copy; exact eviction string byte-intact |
-| 11 | Each tab component watches props.pendingAction with { immediate: true } and opens the appropriate Manage dialog on match | PARTIAL | All 3 tabs have defineProps, watch(() => props.pendingAction, ..., { immediate: true }), correct action handling. HOWEVER pendingAction is never reset to null in WallecxApp.vue after dispatch — stale ref may replay on tab remount. See CR-02 in 37-REVIEW.md. |
-| 12 | guard.spec.ts contains test asserting query.redirect === '/projects/wallecx?action=add-expense' after redirect | VERIFIED | "preserves query string in redirect when not authenticated" test exists at line 75-82; asserts router.currentRoute.value.query.redirect === '/projects/wallecx?action=add-expense' |
+| 1 | iOS splash PNGs exist with correct pixel dimensions (1179x2556, 1080x2340, 1536x2048) | VERIFIED | PNG IHDR bytes confirmed: all 3 match expected dimensions; sizes 7 KB, 22 KB, 9 KB (all under 3 MiB cap). No regression — file untouched by 37-06. |
+| 2 | Four 96x96 shortcut PNGs exist on disk for 4 manifest shortcuts | VERIFIED | All 4 exist at public/shortcuts/, each 37 KB. No regression — files untouched by 37-06. |
+| 3 | pwa-assets.config.ts drives assets-generator with combinePresetAndAppleSplashScreens + #002244 background | VERIFIED | File exists, contains combinePresetAndAppleSplashScreens, #002244, branding_logo.svg, headLinkOptions preset:'2023'. No regression. |
+| 4 | OfflineBanner.vue shows when offline, auto-clears when online, NO retry button | VERIFIED | useOnline() imported from @vueuse/core; v-if="!isOnline"; exact copy locked; zero button elements; Teleport to body; role=status, aria-live=polite. No regression — file untouched by 37-06. |
+| 5 | OfflineBanner mounted site-wide in App.vue | VERIFIED | <OfflineBanner /> first element in App.vue template; import present. No regression — file untouched by 37-06. |
+| 6 | PwaInstallBanner.vue has two branches: iOS (v-if isIosVisible) and Android (v-else-if installPromptEvent && !isStandalone && !_dismissed) | VERIFIED | iOS branch v-if="isIosVisible", Android branch v-else-if="installPromptEvent && !isStandalone && !_dismissed"; handleAndroidInstall calls event.prompt() synchronously before any await. No regression — file untouched by 37-06. |
+| 7 | isStandalone === true ALWAYS suppresses banner branches (D-37-08) | VERIFIED (was FAILED) | useMobileEnv.ts line 1: `import { ref, watch, type Ref } from 'vue'` — watch imported. Lines 110-112: `watch(standaloneMatch, (matched) => { if (matched) isStandalone.value = true }, { immediate: false })` reactive watcher present. One-shot `if (standaloneMatch.value)` block is GONE (grep confirmed: 0 matches). Seed `const isStandalone = ref(detectStandalone())` at line 109 unchanged. Regression tests: 'reactively flips isStandalone false->true when display-mode changes to standalone mid-session (CR-01)' and 'isStandalone remains true after a subsequent display-mode change back to non-standalone (one-directional, CR-01)' both present in spec. Full suite 76/76 per SUMMARY. |
+| 8 | index.html declares apple-mobile-web-app-capable, status-bar-style black-translucent, title Wallecx, 2 theme-color metas, 3 apple-touch-startup-image links | VERIFIED | All 6 meta/link tags present with correct values. No regression — file untouched by 37-06. |
+| 9 | vite.config.ts manifest.shortcuts array has 4 entries targeting /projects/wallecx?action=... | VERIFIED | 4 entries confirmed: add-expense, add-vaccination, add-membership, open-reports; each with correct 96x96 PNG icon src and purpose:'any'. No regression — file untouched by 37-06. |
+| 10 | WallecxApp.vue reads route.query.action, maps via ACTION_TAB_MAP, awaits nextTick, sets pendingAction, calls router.replace | VERIFIED | ACTION_TAB_MAP with 4 keys present; await nextTick() before pendingAction.value = action (line 89); router.replace({ query: {} }) (line 91); SW toast style:{paddingBottom:'env(safe-area-inset-bottom)'} present; isIosSafari() || isStandalone.value gating for eviction copy. No regression to existing logic. |
+| 11 | Each tab component watches props.pendingAction with { immediate: true } and opens the appropriate Manage dialog on match | VERIFIED (was PARTIAL) | All 3 tab components unchanged and still have defineProps + watch with immediate:true. WallecxApp.vue lines 92-93 now add a second `await nextTick()` followed by `pendingAction.value = null` after router.replace — preventing stale action replay on Suspense tab remount. Grep confirmed: `pendingAction.value = null` at line 93; two separate `await nextTick()` calls at lines 89 and 92. No tab component was modified (git log confirmed). |
+| 12 | guard.spec.ts contains test asserting query.redirect === '/projects/wallecx?action=add-expense' after redirect | VERIFIED | "preserves query string in redirect when not authenticated" test exists; asserts router.currentRoute.value.query.redirect === '/projects/wallecx?action=add-expense'. No regression — file untouched by 37-06. |
 
-**Score: 10/12 truths verified (2 failed/partial)**
+**Score: 12/12 truths verified**
 
 ---
 
 ### Deferred Items
 
-None — all Phase 37 scope items were attempted.
+None — all Phase 37 scope items were attempted and now verified.
 
 ---
 
@@ -93,24 +84,26 @@ None — all Phase 37 scope items were attempted.
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `pwa-assets.config.ts` | Asset generator config (preset 2023 + Apple splash combine + #002244 bg) | VERIFIED | 637B, correct combinePresetAndAppleSplashScreens shape |
-| `public/splash/apple-splash-portrait-1179x2556.png` | iPhone 14 Pro splash, 1179x2556px | VERIFIED | 7224B, dimensions confirmed via IHDR |
-| `public/splash/apple-splash-portrait-1080x2340.png` | Android-class 360x780@3x splash | VERIFIED | 22208B, generated via sharp inline (D-37-01-A) |
-| `public/splash/apple-splash-portrait-1536x2048.png` | iPad 768x1024@2x splash | VERIFIED | 9251B, dimensions confirmed |
-| `public/shortcuts/shortcut-add-expense.png` | 96x96 shortcut icon | VERIFIED | 37102B |
-| `public/shortcuts/shortcut-add-vaccination.png` | 96x96 shortcut icon | VERIFIED | 37102B |
-| `public/shortcuts/shortcut-add-membership.png` | 96x96 shortcut icon | VERIFIED | 37102B |
-| `public/shortcuts/shortcut-open-reports.png` | 96x96 shortcut icon | VERIFIED | 37102B |
-| `src/components/OfflineBanner.vue` | Site-wide offline banner, useOnline-driven, Teleport to body | VERIFIED | 590B, fully substantive (23 lines) |
-| `src/App.vue` | OfflineBanner mount above CustomNavBar | VERIFIED | Contains import + <OfflineBanner /> |
-| `src/components/projects/wallecx/PwaInstallBanner.vue` | Two-branch install banner (iOS + Android) | VERIFIED | 8161B (221 lines); two branches present and wired |
-| `index.html` | iOS standalone meta tags + 3 splash link tags | VERIFIED | 3080B; all 9 new lines present |
-| `vite.config.ts` | manifest.shortcuts array — 4 entries | VERIFIED | 4 shortcuts confirmed with correct URLs and icons |
-| `src/components/projects/wallecx/WallecxApp.vue` | pendingAction dispatch + SW toast safe-area + iOS eviction-aware copy | VERIFIED | 5922B; all 5 zones confirmed |
-| `src/components/projects/wallecx/ExpensesTab.vue` | pendingAction prop + immediate watcher | VERIFIED | defineProps + watch with immediate:true + add-expense + open-reports handling |
-| `src/components/projects/wallecx/VaccinationsTab.vue` | pendingAction prop + immediate watcher | VERIFIED | defineProps + watch with immediate:true + add-vaccination handling |
-| `src/components/projects/wallecx/MembershipsTab.vue` | pendingAction prop + immediate watcher | VERIFIED | defineProps + watch with immediate:true + add-membership handling |
-| `src/router/__tests__/guard.spec.ts` | Query-preservation test (D-37-16) | VERIFIED | "preserves query string in redirect when not authenticated" test at line 75 |
+| `pwa-assets.config.ts` | Asset generator config (preset 2023 + Apple splash combine + #002244 bg) | VERIFIED | Unchanged from initial verification |
+| `public/splash/apple-splash-portrait-1179x2556.png` | iPhone 14 Pro splash, 1179x2556px | VERIFIED | Unchanged |
+| `public/splash/apple-splash-portrait-1080x2340.png` | Android-class 360x780@3x splash | VERIFIED | Unchanged |
+| `public/splash/apple-splash-portrait-1536x2048.png` | iPad 768x1024@2x splash | VERIFIED | Unchanged |
+| `public/shortcuts/shortcut-add-expense.png` | 96x96 shortcut icon | VERIFIED | Unchanged |
+| `public/shortcuts/shortcut-add-vaccination.png` | 96x96 shortcut icon | VERIFIED | Unchanged |
+| `public/shortcuts/shortcut-add-membership.png` | 96x96 shortcut icon | VERIFIED | Unchanged |
+| `public/shortcuts/shortcut-open-reports.png` | 96x96 shortcut icon | VERIFIED | Unchanged |
+| `src/components/OfflineBanner.vue` | Site-wide offline banner, useOnline-driven, Teleport to body | VERIFIED | Unchanged |
+| `src/App.vue` | OfflineBanner mount above CustomNavBar | VERIFIED | Unchanged |
+| `src/components/projects/wallecx/PwaInstallBanner.vue` | Two-branch install banner (iOS + Android) | VERIFIED | Unchanged |
+| `index.html` | iOS standalone meta tags + 3 splash link tags | VERIFIED | Unchanged |
+| `vite.config.ts` | manifest.shortcuts array — 4 entries | VERIFIED | Unchanged |
+| `src/components/projects/wallecx/WallecxApp.vue` | pendingAction dispatch + SW toast safe-area + iOS eviction-aware copy + CR-02 reset | VERIFIED | Lines 92-93 added: second await nextTick() + pendingAction.value = null |
+| `src/components/projects/wallecx/ExpensesTab.vue` | pendingAction prop + immediate watcher | VERIFIED | Unchanged — null-tolerant watcher confirmed |
+| `src/components/projects/wallecx/VaccinationsTab.vue` | pendingAction prop + immediate watcher | VERIFIED | Unchanged |
+| `src/components/projects/wallecx/MembershipsTab.vue` | pendingAction prop + immediate watcher | VERIFIED | Unchanged |
+| `src/router/__tests__/guard.spec.ts` | Query-preservation test (D-37-16) | VERIFIED | Unchanged |
+| `src/composables/useMobileEnv.ts` | Reactive standalone propagation via watch(standaloneMatch, ...) | VERIFIED (new — CR-01) | watch imported from 'vue' (line 1); watch(standaloneMatch, ...) at lines 110-112; one-shot if-block removed |
+| `src/composables/__tests__/useMobileEnv.spec.ts` | CR-01 regression tests: reactive flip + one-directional invariant | VERIFIED (new — CR-01) | Two new tests in 'standalone detection' describe block; fireStandaloneChange() helper implemented; standaloneListeners capture array wired |
 
 ---
 
@@ -118,16 +111,18 @@ None — all Phase 37 scope items were attempted.
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| pwa-assets.config.ts | public/branding_logo.svg | images: ['public/branding_logo.svg'] | WIRED | String present in file |
-| package.json | @vite-pwa/assets-generator CLI | generate-pwa-assets script | WIRED | "generate-pwa-assets": "pwa-assets-generator" confirmed |
-| index.html splash links | public/splash/*.png (Plan 01 outputs) | href="/splash/apple-splash-portrait-*" | WIRED | 3 link tags reference files that exist on disk |
-| OfflineBanner.vue | @vueuse/core useOnline | import { useOnline } from '@vueuse/core' | WIRED | Import present, useOnline() called, v-if="!isOnline" drives visibility |
-| App.vue | OfflineBanner.vue | import OfflineBanner + <OfflineBanner /> | WIRED | Both import and template usage confirmed |
-| PwaInstallBanner.vue | useMobileEnv.installPromptEvent singleton | import { useMobileEnv, clearInstallPromptEvent } | WIRED | Import, destructure, and usage confirmed in both template and handler |
-| PwaInstallBanner.vue Android handler | BeforeInstallPromptEvent.prompt() | event.prompt() synchronous before await | WIRED | Confirmed synchronous call at line 124 before await event.userChoice |
-| vite.config.ts manifest.shortcuts | WallecxApp ACTION_TAB_MAP keys | URL ?action= matches 4 keys | WIRED | 4 URLs match 4 ACTION_TAB_MAP keys exactly |
-| WallecxApp.vue pendingAction | Tab :pending-action prop | :pending-action="pendingAction" | WIRED | 3 occurrences confirmed in template (VaccinationsTab, MembershipsTab, ExpensesTab) |
-| router.beforeEach query preservation | WallecxApp.vue dispatch after login | to.fullPath includes ?action=..., redirects as query.redirect | WIRED | guard.spec.ts test proves query.redirect === '/projects/wallecx?action=add-expense' |
+| pwa-assets.config.ts | public/branding_logo.svg | images: ['public/branding_logo.svg'] | WIRED | Unchanged from initial verification |
+| package.json | @vite-pwa/assets-generator CLI | generate-pwa-assets script | WIRED | Unchanged |
+| index.html splash links | public/splash/*.png | href="/splash/apple-splash-portrait-*" | WIRED | Unchanged |
+| OfflineBanner.vue | @vueuse/core useOnline | import { useOnline } from '@vueuse/core' | WIRED | Unchanged |
+| App.vue | OfflineBanner.vue | import OfflineBanner + <OfflineBanner /> | WIRED | Unchanged |
+| PwaInstallBanner.vue | useMobileEnv.installPromptEvent singleton | import { useMobileEnv, clearInstallPromptEvent } | WIRED | Unchanged |
+| PwaInstallBanner.vue Android handler | BeforeInstallPromptEvent.prompt() | event.prompt() synchronous before await | WIRED | Unchanged |
+| vite.config.ts manifest.shortcuts | WallecxApp ACTION_TAB_MAP keys | URL ?action= matches 4 keys | WIRED | Unchanged |
+| WallecxApp.vue pendingAction | Tab :pending-action prop | :pending-action="pendingAction" | WIRED | Unchanged |
+| router.beforeEach query preservation | WallecxApp.vue dispatch after login | to.fullPath includes ?action=..., redirects as query.redirect | WIRED | Unchanged |
+| useMobileEnv.ts standaloneMatch | isStandalone ref | watch(standaloneMatch, (matched) => { if (matched) isStandalone.value = true }, { immediate: false }) | WIRED (new — CR-01) | Reactive watcher at line 110 confirmed; one-directional false->true |
+| WallecxApp.vue dispatch block | pendingAction ref (reset) | await nextTick(); pendingAction.value = null after router.replace | WIRED (new — CR-02) | Lines 92-93 confirmed; second nextTick precedes null assignment |
 
 ---
 
@@ -137,19 +132,24 @@ None — all Phase 37 scope items were attempted.
 |----------|---------------|--------|--------------------|--------|
 | OfflineBanner.vue | isOnline (Ref<boolean>) | useOnline() from @vueuse/core | Yes — reactively seeded from navigator.onLine | FLOWING |
 | PwaInstallBanner.vue | installPromptEvent | useMobileEnv() module singleton written by App.vue | Yes — written by real browser beforeinstallprompt event | FLOWING |
-| WallecxApp.vue | pendingAction | route.query.action (real router state) | Yes — reads actual URL query param; ACTION_TAB_MAP allowlist gates | FLOWING (with CR-02 caveat — never reset) |
-| WallecxApp.vue | evictionMessage | isIosSafari() || isStandalone.value | Conditional — isStandalone has reactivity gap (CR-01) | PARTIAL |
+| WallecxApp.vue | pendingAction | route.query.action (real router state) | Yes — reads actual URL query param; reset to null after dispatch (CR-02 closed) | FLOWING |
+| WallecxApp.vue | evictionMessage | isIosSafari() || isStandalone.value | Conditional — isStandalone now reactive to mid-session flip (CR-01 closed) | FLOWING |
+| useMobileEnv.ts | isStandalone | detectStandalone() seed + watch(standaloneMatch) watcher | Yes — synchronous seed on construction; watcher propagates runtime display-mode flip | FLOWING (CR-01 closed) |
 
 ---
 
 ### Behavioral Spot-Checks
 
-Step 7b is SKIPPED for PWA-specific behaviors (splash rendering, install prompt, offline network toggle) — these require a running browser with network control and cannot be exercised with a single CLI command. The guard spec test is the one runnable behavioral check.
+Step 7b is SKIPPED for PWA-specific behaviors (splash rendering, install prompt, offline network toggle) — these require a running browser with network control and cannot be exercised with a single CLI command.
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| Guard query-preservation test exists and passes | guard.spec.ts line 75-82 (static read) | 4th test present, asserts query.redirect === '/projects/wallecx?action=add-expense' | PASS (static verification) |
-| No debt markers in modified files | Scanned pwa-assets.config.ts, OfflineBanner.vue, App.vue, PwaInstallBanner.vue, index.html, vite.config.ts, WallecxApp.vue, ExpensesTab.vue, VaccinationsTab.vue, MembershipsTab.vue, guard.spec.ts | 0 TBD / FIXME / XXX markers found | PASS |
+| Guard query-preservation test exists and passes | guard.spec.ts static read + SUMMARY reports 76/76 | 4th test present; full suite green | PASS |
+| watch(standaloneMatch) present in useMobileEnv.ts | grep | Line 110 confirmed | PASS |
+| one-shot if(standaloneMatch.value) block absent | grep | 0 matches confirmed | PASS |
+| pendingAction.value = null present after router.replace | grep | Line 93 confirmed; second nextTick at line 92 precedes it | PASS |
+| No edits to VERIFIED Phase 37 files outside the two declared targets | git log --since=initial-verify on 9 protected files | 0 commits returned | PASS |
+| No debt markers in modified files | Pattern scan on useMobileEnv.ts, useMobileEnv.spec.ts, WallecxApp.vue | 0 TBD / FIXME / XXX markers found | PASS |
 
 ---
 
@@ -163,12 +163,12 @@ No probes declared in plans or discoverable at scripts/*/tests/probe-*.sh. SKIPP
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|----------|
-| PWA-01 | 37-04 | iOS standalone meta tags (apple-mobile-web-app-capable, status-bar-style black-translucent, title Wallecx, per-color-scheme theme-color) | SATISFIED | All 6 tags present in index.html; confirmed in codebase |
-| PWA-02 | 37-01, 37-04 | Per-device-resolution iOS splash screens (390x844, 360x780, 768x1024); branded splash on install | SATISFIED (code) / NEEDS HUMAN (device) | 3 PNGs exist at correct paths with correct dimensions; apple-touch-startup-image links in index.html; human visual check of branded content passed (Task 3 checkpoint approved) |
-| PWA-04 | 37-03 | Android Chrome BeforeInstallPromptEvent surfaced via Install button in PwaInstallBanner.vue; iOS instructional path coexists | SATISFIED | Two-branch component wired to module singleton; synchronous prompt(); M-9 single-use cleanup |
+| PWA-01 | 37-04 | iOS standalone meta tags (apple-mobile-web-app-capable, status-bar-style black-translucent, title Wallecx, per-color-scheme theme-color) | SATISFIED | All 6 tags present in index.html; unchanged from initial verification |
+| PWA-02 | 37-01, 37-04 | Per-device-resolution iOS splash screens (390x844, 360x780, 768x1024); branded splash on install | SATISFIED (code) / NEEDS HUMAN (device) | 3 PNGs exist at correct paths with correct dimensions; apple-touch-startup-image links in index.html |
+| PWA-04 | 37-03, 37-06 | Android Chrome BeforeInstallPromptEvent surfaced via Install button in PwaInstallBanner.vue; isStandalone hard-gate now fully reactive (CR-01 closed) | SATISFIED | Two-branch component wired to module singleton; synchronous prompt(); isStandalone reactive watcher ensures banner self-extinguishes on mid-session install |
 | PWA-06 | 37-05 | SW-update toast respects safe-area-inset on iPhone | SATISFIED (code) / NEEDS HUMAN (device) | style: { paddingBottom: 'env(safe-area-inset-bottom)' } in watch(needRefresh) toast call |
 | PWA-07 | 37-02 | Offline banner backed by useOnline; banner auto-clears when navigator goes back online | SATISFIED | OfflineBanner.vue with useOnline(), v-if="!isOnline", no retry button, mounted in App.vue |
-| PWA-09 | 37-01, 37-05 | manifest shortcuts array (4 Quick Actions); deep-link dispatch in WallecxApp | SATISFIED (code) / NEEDS HUMAN (device) | manifest.shortcuts 4 entries in vite.config.ts; ACTION_TAB_MAP dispatch wired; tab watchers with immediate:true |
+| PWA-09 | 37-01, 37-05, 37-06 | manifest shortcuts array (4 Quick Actions); deep-link dispatch in WallecxApp; pendingAction reset prevents replay (CR-02 closed) | SATISFIED (code) / NEEDS HUMAN (device) | manifest.shortcuts 4 entries in vite.config.ts; ACTION_TAB_MAP dispatch wired; pendingAction.value = null reset in place |
 | PWA-05 | NOT in Phase 37 | PWA-UAT-01 close | NOT Phase 37 scope — assigned to Phase 38 (ROADMAP confirmed) | N/A |
 
 ---
@@ -177,16 +177,18 @@ No probes declared in plans or discoverable at scripts/*/tests/probe-*.sh. SKIPP
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| src/composables/useMobileEnv.ts | 104-109 | isStandalone seeded once from detectStandalone() — standaloneMatch ref NOT watched; runtime display-mode flip does not propagate | BLOCKER (CR-01) | PwaInstallBanner standalone hard-gate and WallecxApp eviction copy branch can misfire if user installs PWA mid-session |
-| src/components/projects/wallecx/WallecxApp.vue | 87-92 | pendingAction.value = action never reset to null after dispatch — stale ref can replay immediate watchers on tab remount | BLOCKER (CR-02) | openManage(null) or activeSubTab switch fires again without user gesture if Suspense remounts a tab |
-| src/components/projects/wallecx/PwaInstallBanner.vue | 27-30 + WallecxApp.vue 28-31 | isIosSafari() duplicated verbatim in two files | WARNING (WR-02) | Logic drift risk if UA detection needs updating |
-| src/components/projects/wallecx/WallecxApp.vue | 91 | router.replace({ query: {} }) not awaited — navigation errors silently discarded | WARNING (WR-03) | No immediate runtime impact but masks guard-cancelled navigation |
-| src/components/projects/wallecx/VaccinationsTab.vue | 168, 173, 199 | console.error prefix "WallecxApp: ..." — stale name for moved logic | INFO (WR-04) | Debugging friction only |
-| src/components/OfflineBanner.vue | 16 | color: '#0d1117' hardcoded hex instead of CSS variable | INFO (IN-03) | Minor maintainability — no functional impact if palette is stable |
+| src/components/projects/wallecx/PwaInstallBanner.vue | 27-30 + WallecxApp.vue 28-31 | isIosSafari() duplicated verbatim in two files | WARNING (WR-02) | Logic drift risk if UA detection needs updating — out of gap-closure scope, unchanged |
+| src/components/projects/wallecx/WallecxApp.vue | 91 | router.replace({ query: {} }) not awaited — navigation errors silently discarded | WARNING (WR-03) | No immediate runtime impact — out of gap-closure scope, unchanged |
+| src/components/projects/wallecx/VaccinationsTab.vue | 168, 173, 199 | console.error prefix "WallecxApp: ..." — stale name for moved logic | INFO (WR-04) | Debugging friction only — out of scope |
+| src/components/OfflineBanner.vue | 16 | color: '#0d1117' hardcoded hex instead of CSS variable | INFO (IN-03) | Minor maintainability — out of scope |
+
+No new anti-patterns introduced by 37-06. The two former BLOCKERs (CR-01, CR-02) are resolved.
 
 ---
 
 ### Human Verification Required
+
+The following 9 device-dependent behaviors require human testing on real iOS/Android hardware or installed PWA sessions. These are unchanged from the initial verification — they are not code defects and cannot be verified programmatically.
 
 #### 1. iOS Branded Splash on Install
 
@@ -236,23 +238,28 @@ No probes declared in plans or discoverable at scripts/*/tests/probe-*.sh. SKIPP
 **Expected:** Toast shows "iOS may have cleared local data after 7 days without opening the app. Please sign in again. Tip: pin Wallecx to your home screen to prevent this." (not the generic copy).
 **Why human:** Requires real iOS UA string for isIosSafari() to return true; token expiry requires either waiting or simulated token manipulation.
 
+#### 9. Shortcut deep-link dispatch when authenticated
+
+**Test:** Tap the Add Expense Android shortcut while authenticated. Confirm ManageExpense dialog opens in create mode and ?action= is absent from the URL bar after dispatch.
+**Expected:** Expense dialog opens once; URL is clean; action does not replay if navigating away and back to the Expenses tab.
+**Why human:** End-to-end Suspense timing and pendingAction reset (CR-02) cannot be reliably asserted in jsdom; requires app running with auth session.
+
 ---
 
 ### Gaps Summary
 
-Two gaps block full goal achievement:
+Both BLOCKER gaps from the initial verification are now closed. No code-level gaps remain.
 
-**Gap 1 (BLOCKER — CR-01): isStandalone reactivity break in useMobileEnv.ts**
+**CR-01 (CLOSED):** `watch(standaloneMatch, (matched) => { if (matched) isStandalone.value = true }, { immediate: false })` added to `useMobileEnv.ts` (line 110). The one-shot `if (standaloneMatch.value)` block is gone. The synchronous seed `ref(detectStandalone())` is preserved. Two regression tests (reactive flip + one-directional invariant) added to `useMobileEnv.spec.ts`. Full test suite 76/76 green.
 
-The Phase 37 must-have "isStandalone === true ALWAYS suppresses" is only partially met. On PWA launch, `detectStandalone()` correctly returns `true` and `isStandalone` is seeded correctly for the banner hard-gate. However, if a user accepts an Android install prompt MID-SESSION (banner shown in browser, user taps Install, browser transitions to standalone), `standaloneMatch` flips reactively but `isStandalone` stays stale at `false`. The banner will not self-extinguish via the standalone gate. The fix requires one `watch(standaloneMatch, ...)` call in `useMobileEnv.ts`.
+**CR-02 (CLOSED):** `await nextTick(); pendingAction.value = null;` appended at lines 92-93 of `WallecxApp.vue` dispatch block, after `router.replace({ query: {} })`. The second `nextTick` ensures tab watchers consume the action value before the ref is cleared. No tab component was modified; null is a no-op in all three tab watcher branches.
 
-**Gap 2 (BLOCKER — CR-02): pendingAction not reset after dispatch**
+Remaining open items (WR-02, WR-03, WR-04, IN-03) are warnings and info items explicitly excluded from gap-closure scope.
 
-The shortcut deep-link dispatch is wired correctly. The gap is that `pendingAction.value` is never reset to `null` after the action is consumed. With `{ immediate: true }` on all three tab watchers, any future unmount-and-remount of a tab component (e.g., Suspense GC, route navigation away and back) will re-trigger `openManage(null)` or `activeSubTab.value = 'reports'` without user gesture. The fix is to add `await nextTick(); pendingAction.value = null;` after the dispatch block.
-
-Both gaps were identified in the 37-REVIEW.md (CR-01 and CR-02) committed at de39872. The code review report is already present in the phase directory.
+Phase 37 code-level goal is **fully achieved**. Status is `human_needed` because 9 device-dependent behaviors still await human verification on real iOS/Android hardware.
 
 ---
 
-_Verified: 2026-05-29T02:00:00Z_
+_Verified: 2026-06-05T08:00:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Re-verification after: 37-06 gap closure (commits a8928b5, c6f76b4, b3ed18f)_
