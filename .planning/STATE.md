@@ -1,0 +1,362 @@
+---
+gsd_state_version: 1.0
+milestone: v4.3
+milestone_name: milestone
+status: v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
+stopped_at: Phase 37 UI-SPEC approved
+last_updated: "2026-06-05T10:04:49.031Z"
+last_activity: 2026-06-05 — shipped v4.3 code PR to master
+progress:
+  total_phases: 28
+  completed_phases: 27
+  total_plans: 84
+  completed_plans: 83
+  percent: 96
+---
+
+# Project State
+
+**Last updated:** 2026-05-26 — v4.3 Wallecx Mobile Optimization planned. ROADMAP.md created with 6 mandatory phases (33–38) + 1 conditional (38b). 32/32 functional requirements mapped; 16 NFR/CON bound to verification-owner phases. Next: `/gsd-plan-phase 33` for Mobile Foundation.
+
+## Project Reference
+
+**Project:** Lexarium — Wallecx
+**Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
+**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
+**Current focus:** Phase 37 — pwa-install-standalone-polish
+
+## Current Position
+
+Phase: 37 (pwa-install-standalone-polish) — EXECUTING
+Plan: 1 of 6
+**Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
+**Status:** v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
+**Phase:** 37
+**Plan:** Not started
+**Last activity:** 2026-06-05 — shipped v4.3 code PR to master
+
+## Shipped Milestones Summary
+
+| Milestone | Phases | Plans | Shipped |
+|-----------|--------|-------|---------|
+| v1.0 MVP | 0–4 | 17 | 2026-05-12 |
+| v1.1 Vaccine Grouping | 5–6 | 4 | 2026-05-12 |
+| v1.2 Search, Sort & View Toggle | 7–9 | 5 | 2026-05-13 |
+| v2.0 Membership Cards | 10–13 | 12 | 2026-05-14 |
+| v2.1 Mobile PWA | 14–15 | 8 | 2026-05-14 |
+| v2.2 Sort and Search for Membership Cards | 16 | 2 | 2026-05-15 |
+| v2.3 UX Polish | 17–18 | 4 | 2026-05-18 |
+| v3.0 Site-Wide Dark Mode | 19–22 | 7 | 2026-05-19 |
+| v4.0 Daily Expense Tracker | 23–26 | 9 | 2026-05-22 |
+| v4.1 Gap Resolution & Feature Completeness | 27–30 | 15 | 2026-05-25 |
+| v4.2 Budget Recovery & Hardening | 31–32 | 2 | 2026-05-26 |
+
+## v4.3 Phase Structure
+
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 33 | Mobile Foundation | FND-01..04 | Complete (3/3 plans) |
+| 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | Not started |
+| 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | Not started |
+| 36 | Mobile Performance | PF-01,02,04,05,07,09 | Complete (7/7 plans) — 2026-05-28 |
+| 37 | PWA Install + Standalone Polish | PWA-01,02,04,06,07,09 | Not started |
+| 38 | Mobile UAT Sweep + PWA-UAT-01 | PWA-05 | Not started |
+| 38b | List Virtualization (CONDITIONAL) | PF-06 | Not triggered |
+
+## Accumulated Context
+
+### Architectural Invariants (locked)
+
+- **Mini-app, not separate deployment.** Wallecx ships as a Lexarium mini-app at `/projects/wallecx`.
+- **Specific collections, not polymorphic vault.** Each record type has its own PocketBase collection (`wallecx_vaccinations`, `wallecx_memberships`, `wallecx_expenses`).
+- **Server-side per-user isolation is the auth boundary.** All five PocketBase rules enforce ownership; the route guard is UX only.
+- **Tab shell, not sub-routes.** PrimeVue Tabs with string-typed `activeTab`; each tab owns its own state; no new Pinia store.
+- **Direct v-model refs for ManageMembership.vue.** PrimeVue ColorPicker issue #8135 — controlled system ignores initial value. This is the established pattern for membership write path.
+- **ConfirmDialog at WallecxApp.vue shell level only.** `useConfirm` broadcasts to single app-shell-level instance; not duplicated in tab components.
+- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a sixth distinct key.
+- **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
+- **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
+- **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
+- **Admin-UI checkpoints require text paste-back + downstream smoke verify.** When a phase configures a live external artifact (PocketBase collection schema, rules, env vars, dashboard settings), the checkpoint MUST require the user to paste back the actual configured values as text AND a code-side smoke verification must run against the live system. Acknowledgment-only signals ("approved", "done") are insufficient. See BUG-01 post-mortem: Phase 28-01 Task 1 → Phase 31.
+
+### v4.3 Phase Structure Decisions (pre-planning, 2026-05-26)
+
+- **Category-grouped phases per A-43-9.** One pattern established once and applied across all 3 tabs. Tab-by-tab ordering rejected — would rediscover the same patterns 3× and produce less reviewable diffs.
+- **Foundation phase first (33).** `useMobileEnv` composable + App.vue-scope `beforeinstallprompt` listener must land before any consumer phase. Late listener registration silently drops Android install affordance (A-43-4).
+- **Shell before dialogs (34 → 35).** Layout audit fixes the frame; forms phase fixes the content. LT-08 (sticky bottom action bars in 4 dialogs) groups with Phase 35 forms work — the dialogs are where the sticky bars live — not with Phase 34 layout audit, to keep the Manage dialog migration coherent.
+- **Performance after visual layer stable (35 → 36).** Bundle splits and async components are easier to verify (and easier to detect regressions in) once the visual surface is stable. Skeleton states (PF-04) are sized against the final layout from Phase 34/35.
+- **PWA polish last before UAT (36 → 37 → 38).** Status-bar + splash + install affordance need safe-area wiring (34), sticky bars (35), and reduced bundle (36) all in place to feel native-grade.
+- **ManageMembership BaseMobileDialog migration goes LAST in Phase 35.** Highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135). Order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (A-43-2).
+- **NFR-PERF-MEASURE gates Phase 38b conditional virtualization.** Production record counts unknown (personal vault scope). Phase 36 PF-05 instrumentation closes that knowledge gap; only then do we know whether virtualization is needed. Premature virtualization risks M-16 sessionStorage sort-restore regression.
+- **NFR/CON bind multiple phases.** Each NFR/CON requirement has a verification-owner phase AND binds every other phase that touches the affected surface. Documented in each phase's "Binds NFR/CON" section in ROADMAP.md.
+
+### Phase 33 Decisions (Plan 01 — Vue + PrimeVue version baseline, FND-04)
+
+- **v4.3 version baseline locked: Vue 3.5.34 + PrimeVue 4.5.5 lockstep.** `vue ^3.5.34`, `primevue ^4.5.5`, `@primevue/forms ^4.5.5`, `@primevue/auto-import-resolver ^4.5.5`. One clean baseline for the whole milestone — no pin-back (D-07 fix-forward held). Committed 931aef0.
+- **D-33-01-A — Form-bound DatePickers must use direct v-model on the 4.5 baseline.** PrimeVue Forms 4.4.0+ ignores `initialValues`/`setFieldValue` for a Form-bound DatePicker (primefaces/primevue#8191, #7806) — Edit mode rendered the date blank. Fix-forward: ManageVaccination's `date_administered` moved out of `@primevue/forms` into a direct v-model ref (`administeredDate`), seeded on the dialog-open rising edge via a `[visible, record]` watch, with manual required-validation. Mirrors the existing `expenseDate`/`expiryDate` pattern in ManageExpense.vue / ManageMembership.vue. Committed 2acd29f. **Any NEW Form-bound DatePicker introduced for the rest of v4.3 must use direct v-model, not @primevue/forms initialValues, until #8191 is fixed upstream.** Phase 35 BaseMobileDialog rollout must preserve ManageVaccination's direct-v-model date binding (do NOT fold it back into the Form).
+
+### Phase 33 Decisions (Plan 02 — useMobileEnv composable + App.vue beforeinstallprompt, FND-01/FND-02)
+
+- **`useMobileEnv()` returns ONE 5-key object (D-01): `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`.** The single mobile primitive Phases 34–37 destructure from. Lives at `src/composables/useMobileEnv.ts`.
+- **639px has a single source of truth (D-02): `isMobile` delegates to `useIsMobile()` internally.** `useMobileEnv` EXTENDS, does not replace, `useIsMobile.ts` — the existing composable is byte-for-byte unchanged and its callers are NOT migrated (backward-compatible, A-43-1). No second hardcoded 639.
+- **Tri-state tiers via `useMediaQuery` (@vueuse/core), mutually exclusive: isMobile ≤639, isTablet 640–1023, desktop ≥1024.** iPad portrait (768–820) reads `isTablet === true` / `isMobile === false` (D-03/D-04, first-class tablet tier — substrate for Phase 35 Drawer-vs-Dialog split). `useMediaQuery` seeds synchronously from `window.matchMedia(...).matches` (M-6 race avoided) and self-manages listener cleanup.
+- **`isStandalone` lifts PwaInstallBanner's detector** (`matchMedia('(display-mode: standalone)')` OR iOS `navigator.standalone`); seeded synchronously, kept reactive via the display-mode media query. One shared detector for the banner (P37) and any standalone-gated UI.
+- **`safeAreaInsets` = static CSS `env()` strings `{ top, right, bottom, left }`.** Simplest correct default; Phase 34 binds them directly into `padding`/`inset` and the browser resolves real pixels per device/orientation.
+- **`installPromptEvent` is a MODULE-SCOPE singleton ref (A-43-4, D-05) — NOT a Pinia store.** Written via exported `setInstallPromptEvent(e)` / cleared via `clearInstallPromptEvent()`. The same singleton is returned from every `useMobileEnv()` call so App.vue's write is visible to deep-linked future readers (Phase 37 Install button).
+- **App.vue (not WallecxApp.vue) captures `beforeinstallprompt` (FND-02).** `onMounted` registers `beforeinstallprompt` (calls `e.preventDefault()` to suppress Chrome's auto-banner, writes the module singleton) + `appinstalled` (clears the singleton); `onUnmounted` removes both. App.vue scope ensures the event survives in-app navigation to `/projects/wallecx`.
+- **Capture-only (M-9, D-05): `.prompt()` is NEVER called in Phase 33.** Phase 37 owns the user-gesture-gated call. Grep guard upheld: useMobileEnv.ts and App.vue contain no `.prompt(` invocation (only docblock/comment references).
+- **`@vueuse/core ^13.9.0` promoted to a direct `dependencies` entry (FND-01).** First direct use of @vueuse/core in the repo; already resolved transitively via `@vueuse/motion` (0 KB net) — promotion makes the import contract explicit.
+- **`PwaInstallBanner.vue` left untouched in Phase 33** (D-06; Android Install button + 30-day dismissal deferred to Phase 37).
+
+### Phase 35 Decisions (Plan 06 — Automated gates + grep audits + human-verify close)
+
+- **D-35-13 RE-CORRECTED: DatePicker popup-everywhere (not inline).** Plans 35-01..05 wired `:inline="isMobile"` on all DatePicker sites to provide an always-visible calendar on mobile. During Plan 35-06 human-verify UAT (item 4), the ExpensesToolbar From/To pickers and ExpensesReportsView custom-range pickers rendered as two huge always-visible inline calendar grids stacked above the expense list, crowding it to near-unusable. Root cause: these pickers are NOT inside a dialog — they render inline in always-visible toolbar/view components. Fix: revert `:inline` and `showButtonBar` on ALL 5 DatePicker sites to default tap-to-open popup overlay (f8eb9c7). Mobile usability is preserved by the FD-01 16px no-zoom rule (users can tap and interact with popup without zoom). Dialog-internal pickers (ManageExpense, ManageMembership, ManageVaccination) also revert to popup — consistent and simpler. ROADMAP.md + REQUIREMENTS.md FD-04 language updated. **Phase 35 canonical behavior: DatePicker = popup-everywhere; no `:inline` prop.**
+- **Phase 35 automated gate protocol established.** 35-06-AUDIT.md records 4 automated gates + 12 grep audits at phase close as a permanent evidence artifact. Pattern carried to Phase 36+.
+- **Real-device deferral to Phase 38.** Human APPROVED at 390px devtools emulation. iOS no-zoom zoom=1.0 (FD-01), actual camera launch (FD-05), and sticky-above-keyboard on a real device (LT-08/FD-06) carried to Phase 38 Mobile UAT Sweep per documented deferral path (35-CONTEXT.md Deferred Ideas). Accepted — devtools emulation is the established approval path for v4.3 mid-phase checkpoints.
+
+### Phase 35 Decisions (Plan 05 — ManageVaccination migration, final two-Form collapse)
+
+- **Two-Form collapse confirmed safe for ManageVaccination.** The Dialog branch Form (~line 225) and Drawer branch Form (~line 343) were byte-identical; with BaseMobileDialog, ONE Form in the #default slot is correct. Vue's provide/inject for @primevue/forms follows DOM parentage through the slot boundary (RESEARCH Pitfall 4). `v-if/v-else` mutual exclusivity was never needed for correctness — it was a structural artifact of the Phase-34 dual-branch approach.
+- **VaccinationSnapshot reads from `initialValues` computed** (not individual field refs) because ManageVaccination uses `@primevue/forms` Form with named fields. `initialValues` is the canonical field-value source at open time. `administeredDate` is included separately as `administeredDate.value?.toISOString() ?? null` (the only direct-v-model field outside the Form).
+- **Gallery accept includes `application/pdf`; camera input remains images-only.** Vaccination cards can be scanned PDF documents, so gallery follows the same allowlist as the desktop FileUpload. Camera (`capture=environment`) cannot produce PDFs — images-only accept on the camera input. This is correct and differs from ManageMembership (images-only per Phase 11 D-02).
+- **Form id wired via `id="manage-vaccination-form"`** on the `<Form>` component. PrimeVue Form passes unknown attrs to its underlying `<form>` element via Vue attr inheritance. The external Save button in `#actions` slot references it via `form="manage-vaccination-form"` across the slot boundary.
+
+### Phase 34 Decisions (Plan 01 — CSS foundation, DragHandle, viewport lock)
+
+- **CSS-only sticky via .wallecx-main-tabs .p-tablist override.** No JS wrapper div needed. `position: sticky !important; overflow: visible !important` at `@media (max-width: 639px)` beats PrimeVue's `position: relative; overflow: hidden` without requiring structural Tabs changes (TabPanels must stay inside Tabs for provide/inject context).
+- **52px hardcoded offset for .wallecx-tab-toolbar top.** `calc(env(safe-area-inset-top) + 52px)` — accepted approximation per RESEARCH.md A3. Avoids CSS variable complexity. Plan 02 can tune if post-implementation visual check reveals offset error.
+- **DragHandle.vue: no script/props/emits.** Purely presentational pill extracted from Phase-17 VaccinationsTab inline markup. Callers own v-if="isMobile" gating — component renders unconditionally.
+- **wallecx-main-tabs as discriminating class (D-34-01/D-34-02).** Single class on WallecxApp <Tabs> scopes both the tab-trigger min-height rule and the sticky TabList override to the top-level tabs only, leaving sub-tabs and period-tabs unaffected.
+- **dvh invariant confirmed CLEAN at Plan 01 close.** 0 matches for 100vh/h-screen/min-h-screen in src/components/projects/wallecx/. No migration required — already using dvh throughout.
+
+### Phase 34 Decisions (Plan 03 — ManageMembership + ManageVaccination bottom-Drawer branches, BR-2 reverify)
+
+- **Template duplication over abstraction for Dialog/Drawer conditional (Phase 34 scope).** ManageMembership and ManageVaccination now have Dialog/Drawer branches that duplicate form-field markup. Phase 35 BaseMobileDialog rollout will DRY this up; Phase 34 stays presentation-layer-only per A-43-9.
+- **Two `<Form>` instances (Dialog + Drawer) are safe.** `v-if/v-else` ensures mutual exclusivity — only one Form is mounted at a time; each provides its own inject context; fields bind by `name`, not by ref (RESEARCH.md Pitfall 3 / Open Question 2). No resolver/handler duplication.
+- **administeredDate direct-v-model replicated verbatim in Drawer branch.** D-33-01-A invariant holds in both branches of ManageVaccination: `administeredDate` ref seeded via `[visible, record]` watch, manual `dateAdministeredError` required-check, NOT folded into the @primevue/forms Form. Phase 35 migration must preserve this.
+- **Bottom-Drawer content padding: `max(env(safe-area-inset-left/right), 1.25rem)` per side (06a1238).** `env()` resolves to `0` in portrait on most devices, collapsing PrimeVue's default Drawer padding to zero. `max()` guarantees the 1.25rem minimum regardless of env() resolution.
+- **Sticky TabList ink-bar: `clip-path: inset(0)` (06a1238).** `overflow: visible` on `.wallecx-main-tabs .p-tablist` (required for the sticky toolbar to peek below) caused the ink-bar to bleed past the `<>` scroll arrows. `clip-path: inset(0)` clips the ink-bar within bounds without conflicting with overflow:visible.
+- **Sticky toolbar border-bottom seam removed (78b2d45).** `.wallecx-tab-toolbar` border-bottom rendered a "weird color shelf" below search/sort in dark mode. Removed; seamless same-color background retained.
+- **BR-2 PASSED at 375x667 (light + dark mode, 2026-05-27).** BarcodeDisplay.vue: black bars on white background confirmed in light mode and dark mode after full Phase 34 CSS sweep.
+
+### Phase 34 Decisions (Plan 02 — sticky toolbar wrappers, DragHandle swap, scan overlay safe-area)
+
+- **Sticky wrapper applied in ExpensesListView.vue (not ExpensesTab.vue).** Plan 02 targeted ExpensesTab.vue for the `<ExpensesToolbar>` wrap, but the Phase 26 sub-component refactor moved `<ExpensesToolbar>` into `ExpensesListView.vue`. Wrapper correctly applied where the toolbar renders. `useIsMobile` import added to ExpensesListView.vue.
+- **VaccinationsTab DragHandle keeps v-if="isMobile" gate.** The VaccinationsGroup Drawer uses reactive `position` (bottom on mobile, right on desktop) — the pill only belongs when position=bottom. All other 4 Drawer sites are already in `v-else` (mobile-only) branches — no v-if needed.
+- **scan overlay safe-area via direct env() strings in inline style (no JS).** `padding-top: env(safe-area-inset-top)` etc. resolved natively by the browser. No composable import needed. Consistent with WallecxApp.vue's existing safe-area pattern (`:style="{ paddingBottom: 'env(safe-area-inset-bottom)' }"`).
+
+### Phase 33 Decisions (Plan 03 — ANALYZE-gated bundle visualizer, FND-03)
+
+- **`rollup-plugin-visualizer@^7.0.1` + `cross-env@^10.1.0` added as devDependencies; `"analyze": "cross-env ANALYZE=true vite build"` script added** after `build-only` in package.json. cross-env wraps the env-var set so Windows PowerShell contributors get the same `ANALYZE=true` behavior as POSIX shells (repo `engines` allows Node ^20.19.0 but inline `ANALYZE=true vite build` fails on PowerShell).
+- **Visualizer gated strictly on `process.env.ANALYZE === "true"` via spread-conditional** in vite.config.ts plugins array — `...(process.env.ANALYZE === "true" ? [visualizer({ filename: "dist/stats.html", template: "treemap", gzipSize: true, brotliSize: true })] : [])`. Mirrors the existing `vueDevTools` NODE_ENV spread idiom. The deployed `npm run build` pipeline NEVER attaches the plugin (T-33-07 information-disclosure mitigation — the report cannot be accidentally deployed).
+- **Report path = `dist/stats.html`** — inside the already-git-ignored `dist/` (no `.gitignore` change required), co-located with the build it describes, regenerated on demand and never committed. Gating proven both directions via a cross-platform `node -e` PRESENT/ABSENT check (Windows-PowerShell-safe): plain build → report ABSENT + 0 "exceeds"/"Skipping precaching" lines; `npm run analyze` → report PRESENT. Treemap is the artifact Phase 36 reviews before sequencing chunk-split work.
+- **PWA LOCKED invariants byte-intact (C-1 / CON-PWA-SCOPE upheld):** `registerType: "prompt"` (vite.config.ts:28) and `scope: "/"` (vite.config.ts:42) LOCKED comments verified unchanged via grep; VitePWA block, Workbox config, rolldown codeSplitting groups, and resolve alias all untouched (append-only edit to plugins array).
+- **`npm run analyze` build shows 58 precache entries vs plain build's 57** — the extra entry is `dist/stats.html` itself (Workbox globs it into the analyze-mode manifest). Harmless: dev-only artifact produced solely by the opt-in script; the deployed `npm run build` stays at 57 entries with no report.
+
+### v2.1 PWA Architectural Decisions
+
+- **registerType: 'prompt' only — never autoUpdate.** Both CRUD forms have unsaved state; a silent SW reload would destroy it.
+- **All PocketBase API calls: NetworkOnly.** Auth token lives in localStorage (inaccessible to SW context); stale data risk is unacceptable for a personal vault.
+- **navigateFallback: 'index.html' is mandatory.** Without it, navigating to `/projects/wallecx` offline = white screen (SPA routing requirement).
+- **vercel.json must ship in the same deployment as the first SW.** Vercel may cache sw.js indefinitely without `Cache-Control: no-cache` headers.
+- **navigator.storage.persist() on WallecxApp.vue mount.** Mitigates (does not guarantee) iOS 7-day localStorage eviction of PocketBase auth token.
+- **scope: '/' not '/projects/wallecx'.** Scoping to sub-path breaks cross-route navigation within the installed PWA.
+- **Do NOT add `<link rel="manifest">` manually.** vite-plugin-pwa auto-injects it at build time.
+
+### v2.1 PWA Build Decisions (Plan 14-04)
+
+- **globIgnores: ['**/about-me-photo*']** — the about-me home page photo (9.85 MB) is excluded from Workbox precache; not needed offline for Wallecx PWA functionality.
+- **maximumFileSizeToCacheInBytes: 3 MiB** — vendor bundle (2.57 MiB, contains Vue/Pinia/Router) must be precached for app shell offline; 3 MiB limit accommodates it.
+- **Task 2 human-verify auto-approved** — per auto_advance:true config; Chrome DevTools verification instructions documented in 14-04-SUMMARY.md for async follow-up.
+
+### v2.2 Toolbar Implementation Notes
+
+- **Reuse WallecxToolbar.vue** — already implements search + sort + view toggle for VaccinationsTab. Adapt for MembershipsTab via a prop to hide the view toggle (membership cards are always grid-view).
+- **State lives in MembershipsTab.vue** — `searchQuery` ref + `sortMode` ref → `filteredSortedMemberships` computed → passed to card grid. Mirrors the VaccinationsTab pattern.
+- **No new PocketBase queries.** All filtering and sorting is client-side on the already-loaded `memberships` ref.
+- **Sort modes:** Name A–Z, Issuer A–Z, Expiry Date (soonest first; cards without expiry sorted last), Recently Added.
+- **Session retention for sort mode** via `sessionStorage` — same approach as VaccinationsTab.
+- **Empty state** when search matches zero cards — informative message, not a blank area.
+- **sortOptions is a required prop on WallecxToolbar** — each tab must pass its own sort options array. VaccinationsTab passes `vaccinationSortOptions`; MembershipsTab will pass `membershipSortOptions`. (Established in Plan 16-01.)
+
+### v2.3 Architectural Decisions (pre-planning)
+
+- **Bottom sheet strategy: conditional `position` prop on PrimeVue Drawer.** VaccinationGroupPanel already uses `<Drawer position="right">`; switch to `position="bottom"` below 640px using `useWindowSize` from `@vueuse/core`. MembershipDetail currently uses `<Dialog>`; on mobile replace with `<Drawer position="bottom">` or conditionally render a bottom-anchored `<Drawer>` vs `<Dialog>`.
+- **Reactive breakpoint via `useWindowSize`.** Already available in `@vueuse/core` (no new packages). Derive `const isMobile = computed(() => width.value < 640)`.
+- **MOB-09 via existing `showToggle` prop pattern.** WallecxToolbar already accepts `showToggle`; add a responsive computed to VaccinationsTab that sets `showToggle` to `false` when `isMobile` is true and resets the active view to `'list'` on mount when mobile.
+- **Dark mode fix strategy: scoped CSS variable overrides.** Target `.my-app-dark .p-card`, `.my-app-dark .p-dialog`, `.my-app-dark .p-drawer` etc. with CSS custom property overrides inside each Wallecx component's `<style scoped>`. No new packages required.
+- **No new npm packages unless strictly necessary.** `useWindowSize` and Tailwind `sm:` breakpoints cover all detection needs.
+
+### v4.0 Expense Tracker Foundation (Phase 23)
+
+- **PocketBase listRule returns 200+empty (not 403) for unauthenticated requests.** `@request.auth.id != ""` is a filter expression; when false, all rows are filtered out. A 403 requires `null` rule (admin-only). Data isolation is intact.
+- **@request.body.user on createRule is the correct v0.29.3 syntax.** Use `@request.auth.id != "" && @request.body.user = @request.auth.id` on createRule. The deprecated `@request.data.user` form causes create requests to return 403. Confirmed against the live PocketBase 0.29.3 instance in Phase 28. (Earlier note that claimed the opposite was incorrect — superseded.)
+- **Locked requestKey names for Phase 24+:** `'expenses-getFullList'` and `'expense-categories-getFullList'` (must not collide with vaccinations/memberships keys).
+- **DEFAULT_EXPENSE_CATEGORIES defined in Phase 23, seeded lazily in Phase 24.** Phase 24's ManageExpense.vue seeds per-user on first dialog open — no PocketBase signup hook.
+- **receipt File field: protected=true.** File URLs require short-lived token; direct URL access without token returns 403.
+- **src/lib/wallecx/ module pattern established.** Non-PocketBase Wallecx utilities (schemas, constants, formatters) live here. Separate from src/lib/pocketbase/.
+- **WR-01/WR-02 code review findings (advisory):** `mapToUpdateExpense` includes `notes: undefined` key unconditionally; test uses `toBeUndefined()` instead of `not.toHaveProperty('notes')`. Carried into Phase 27 (CQ-02).
+- **WR-03 advisory:** `expense_date` regex accepts invalid calendar dates. Add `.refine()` using dayjs before Phase 24. Carried into Phase 27 (CQ-01).
+
+### Phase 25 Decisions
+
+- **DatePicker @update:model-value cast pattern.** PrimeVue DatePicker emits `Date | Date[] | (Date|null)[] | null | undefined`; components that bind to `Date | null` must use `($event instanceof Date ? $event : null)` cast. Established in 25-01 ExpensesToolbar.vue.
+- **categoryOptions must derive from RAW expenses.value array, not from filteredSortedExpenses.** Using the filtered output causes a feedback loop where selected categories disappear from the MultiSelect once they no longer appear in filtered results. Locked in 25-02 ExpensesTab.vue (RESEARCH.md Pitfall 3).
+- **v-if chain order locked: isLoading → raw expenses empty → filtered empty → data list.** If raw expenses array is empty, filteredSortedExpenses is also empty — so the raw-empty check must come first to avoid showing the wrong empty state (RESEARCH.md Pitfall 4).
+- **sessionStorage sort restoration runs BEFORE getFullList in onMounted.** Restoring after the load would cause a flash of the default sort mode before the persisted sort applies.
+- **`requestKey: 'expenses-getFullList'` confirmed distinct.** Verified non-colliding with `'memberships-getFullList'` and `'vaccinations-getFullList'`. STATE.md locked invariant upheld.
+
+### Phase 26 Decisions (Plan 03 — Wave 3 Reports view + sub-tab wiring)
+
+- **Period selector uses PrimeVue Tabs (scrollable), NOT SelectButton.** Tabs is the established PrimeVue pattern for mutually-exclusive horizontal options and the `scrollable` prop handles narrow-viewport overflow gracefully when the 4 period tabs + inline custom-range DatePickers compete for width.
+- **Custom From/To persisted as YYYY-MM-DD strings, not Date objects or ISO datetimes.** Keeps sessionStorage timezone-stable; rehydrated via `dayjs(stored, 'YYYY-MM-DD').toDate()` in onMounted.
+- **Chart palette is fully reactive via useChartTheme refs (no manual remount on dark-mode toggle).** All chart colors (palette + axis + grid + muted + heading + surface + divider) live inside the `chartOptions` computed; PrimeVue Chart's deep-watch on options re-renders the chart automatically when `.my-app-dark` flips on `<html>`. Plan 26-01's MutationObserver-based composable design proves itself here.
+- **prefers-reduced-motion → animation.duration: 0 (else 200ms).** Read via `window.matchMedia('(prefers-reduced-motion: reduce)').matches` inline in a `reducedMotion` computed — no @vueuse/core dependency added.
+- **Chart container height = `Math.max(220, n_categories * 36)`.** Prevents single-category state from collapsing to one thick bar; gives 8-category state breathing room.
+- **Invalid custom range (From > To) is a soft state.** Period selector stays interactive, chart + Grand Total hide, inline `role='alert'` message appears below DatePickers in `var(--color-status-error)`. No toast, no dialog.
+- **Sub-tab persistence intentionally OUT of scope.** UI-SPEC defers `activeSubTab` persistence; no sessionStorage key added. List is always default on tab entry. May be added later if user feedback warrants.
+- **No explicit Chart import in ExpensesReportsView.vue.** PrimeVueResolver auto-imports it; chart.js@^4.5.1 from Plan 26-01 is the runtime dep PrimeVue dynamically imports at mount.
+- **Scoped `:deep(.wallecx-sub-tabs .p-tablist .p-tab)` sets sub-tab visual nesting.** `min-height: 44px` + `padding: 0 0.75rem` gives a visual cue that this Tabs is nested under the parent WallecxApp top-level Tabs. No global CSS change.
+- **Both sibling views consume the same `:expenses` + `:is-loading` from the shell.** Single `getFullList` call with locked requestKey `'expenses-getFullList'` preserved — Reports view does NOT make its own PocketBase queries. Filtering by period is fully client-side via YYYY-MM-DD string comparison on the already-loaded expenses array.
+
+### Phase 26 Decisions (Plan 02 — Wave 2 refactor)
+
+- **Parent-shell + child-view SFC split established for Wallecx tabs.** ExpensesTab is now a thin parent shell that owns data (expenses ref, isLoading), CRUD operations (deleteExpense, openManage, onCreated, onUpdated), and modal/preview UI (ManageExpense dialog, AttachmentPreview Dialog/Drawer with token gate). ExpensesListView is the child sibling view that owns view-specific UI state (5 filter/sort refs, sessionStorage sort persistence, 4-state template) and emits semantic intent events (edit, delete, preview, request-add-expense) back up to the shell. Plan 26-03 will use the same pattern to add ExpensesReportsView as a second sibling view, with the sub-tab toggle living in the shell.
+- **Props are unwrapped in setup — child uses `props.expenses` (no `.value`).** Confirmed via working type-check that categoryOptions and filteredSortedExpenses computeds dereference `props.expenses` directly, matching Vue 3 Composition API behavior where defineProps returns a reactive proxy whose property reads track reactively without `.value`.
+- **sessionStorage persistence belongs with the state owner.** Sort mode persistence (`wallecx:expense-sort` + VALID_SORT_MODES whitelist + read in onMounted + write in watch) moved entirely to ExpensesListView in this refactor. The shell does not touch sort state, simplifying Plan 26-03 (which will add period state, NOT sort state, to ExpensesReportsView).
+- **Receipt preview state stays in the shell, not the list view.** Even though preview is triggered by a list-row paperclip click, the showPreview/previewRecord/previewToken state and Dialog/Drawer rendering live in ExpensesTab. This avoids re-extraction when Plan 26-03 introduces ExpensesReportsView (which does NOT need receipt preview).
+- **All Phase 25 user-visible copy preserved verbatim.** Every string (`'No expenses yet.'`, `'No expenses match your filters.'`, `'Add expense'`, `'Clear filters'`, delete confirmation header/body/labels, error toasts) and every visual element (mdi:cash-multiple, mdi:filter-remove-outline icons, py-12 spacing, Skeleton h=3rem) carried across the refactor without edit. Zero visual diff target met.
+
+### Phase 26 Decisions (Plan 01 — Wave 1 foundation)
+
+- **dayjs format token `Q` is NOT extended by the quarterOfYear plugin.** Despite plan + RESEARCH.md asserting that `now.format('[Q]Q YYYY')` would produce "Q2 2026", empirically (Node REPL after `dayjs.extend(quarterOfYear)`) it produces "QQ 2026" — the plugin patches `.quarter()` / `.startOf('quarter')` / `.endOf('quarter')` accessors but does NOT extend `format()` token grammar. Use `` `Q${now.quarter()} ${now.format('YYYY')}` `` template literal instead. Locked in `src/lib/wallecx/period.ts` `formatPeriodLabel` with an inline NOTE comment.
+- **MutationObserver attaches to `document.documentElement`, not `document.body`.** Project's `useTheme.ts` puts `.my-app-dark` on `<html>`. The UI-SPEC sample code observing `<body>` was wrong for this project. `useChartTheme` defensively observes both elements at negligible cost.
+- **Chart palette is fully CSS-resident (16 tokens).** `--color-chart-1..8` declared in BOTH the `@theme` block (light) AND the `.my-app-dark` block (dark) in `src/assets/base.css`. The `useChartTheme` composable just re-reads via `getComputedStyle` on class mutation — no JS palette lookup table. Bars auto-swap colors on dark-mode toggle.
+- **chart.js installed as runtime dep (NOT devDep).** PrimeVue 4.3.x performs dynamic `import('chart.js/auto')` at component mount; without the package the import silently resolves to nothing and the chart never renders (no error, no warning). PrimeVue does NOT declare chart.js as a peer dep.
+
+### v4.1 Phase 29 Decisions (Period Comparison)
+
+- **Inline period comparison line pattern.** Single `<div v-if="visibleComparison !== null">` rendered between Grand Total hero and Manage Budgets button inside STATE 4 of ExpensesReportsView.vue. Format: `{arrow} ${absolute} ({±%}) vs last {period}`. Single helper-driven render — no separate component.
+- **Period coverage: Month + Quarter only.** `visibleComparison` returns null for `this-year` and `custom` (mirrors Phase 28 D-09 hiding pattern — DOM absent, not just hidden). Year/custom extension deferred.
+- **Inline dayjs subtraction for prior-period boundaries.** `previousPeriodRange` uses inline `dayjs().subtract(1, 'month'|'quarter').startOf().endOf()` — no new helpers added to `src/lib/wallecx/period.ts`. `dayjs.quarterOfYear` plugin is transitively active via period.ts module-top extension; no re-extend needed.
+- **Color semantics for delta: error=overspending, success=underspending, muted=flat.** `comparisonColor` maps direction to `var(--color-status-error/success/typo-muted)`. Consistent with Phase 28 Budget vs Actual color mapping — single mental model across the Reports view.
+- **Typography: U+2212 minus character (−) for negative percentage.** NOT ASCII hyphen-minus (-). Locked in line 176 of ExpensesReportsView.vue.
+- **Zero prior period → omit percentage, append "(no prior spend)".** `percentage: null` branch in ComparisonResult; comparisonText renders absolute-only string. No `+Infinity%` or fake `+100%`.
+- **Accessibility: role="status" + semantic aria-label.** `comparisonAriaLabel` renders "Spending up 23 percent versus last month" (semantic English words; not Unicode arrows in screen-reader copy).
+
+### v4.1 Phase 28 Decisions (Budget Tracking)
+
+- **Mapper documentation pattern.** `src/lib/pocketbase/expenseBudgetMapper.ts` exports `mapToUpdateExpenseBudget` but ManageBudget.vue builds PATCH payloads inline (bulk upsert with per-row `{ category, budget_type, amount }`). The mapper exists primarily as docblock documentation of the locked requestKey `'expense-budgets-getFullList'`. Future single-record budget readers (none planned yet) may adopt it.
+- **Bulk-upsert UI pattern: Promise.all over rows, delete-on-zero.** ManageBudget.vue iterates `localRows` and dispatches concurrent create/update/delete via `Promise.all`. Blank-or-zero amount on an existing record triggers delete; non-zero on new triggers create; non-zero on existing triggers update. Partial failure is accepted (parent re-fetches on 'saved' to reflect actual server state).
+- **Shell-owns-data invariant applied to budgets.** ExpensesTab.vue owns the `budgets` ref and `loadBudgets` helper. ExpensesReportsView accepts `:budgets` prop and emits `'budgets-saved'`. ManageBudget.vue receives both `:categories` and `:budgets` as props and does NOT fetch.
+- **Period-gated visibleBudgets pattern.** Budget vs Actual section uses `v-if="visibleBudgets.length > 0"` with a computed that returns monthly budgets for `this-month`, yearly for `this-year`, and `[]` for `this-quarter`/`custom`. Section is entirely absent from DOM (not just hidden) for non-applicable periods.
+- **Manage Budgets button placement: STATE 4 only.** Button lives inside `<template v-else>` (chart rendering state) so it's hidden during loading, invalid range, and empty period states.
+- **Categories lazy-loaded on Manage Budgets click.** ExpensesReportsView fetches `wallecx_expense_categories` with `requestKey: 'expense-categories-getFullList'` (shared with ManageExpense.vue, safe per RESEARCH Q2) only when the user clicks the button — not on view mount.
+
+### v4.1 Phase 27 Pre-Planning Notes
+
+- **JSON export pattern reference: vaccination export (v1.0).** Same shape: fetch all user records, `JSON.stringify(records, null, 2)`, create Blob, anchor download. Memberships and expenses follow this pattern.
+- **CQ-01 implementation:** Add `.refine((val) => dayjs(val, 'YYYY-MM-DD', true).isValid(), { message: 'Invalid calendar date' })` to the `expense_date` Zod field in the expense schema. The `strict: true` argument to `dayjs()` enforces calendar validity (Feb 31 rejected).
+- **CQ-02 implementation:** In `mapToUpdateExpense`, change the notes field from unconditional `notes: record.notes` to a conditional spread: `...(record.notes !== undefined && { notes: record.notes })`. Update the test assertion from `expect(result.notes).toBeUndefined()` to `expect(result).not.toHaveProperty('notes')`.
+- **Budget collection requestKey:** Use `'expense-budgets-getFullList'` to stay consistent with locked requestKey naming convention.
+
+### Open Todos
+
+None.
+
+### Active Blockers
+
+None.
+
+## Deferred Items
+
+Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 00: 00-HUMAN-UAT.md | partial — 1 pending scenario |
+| uat_gap | Phase 08: 08-HUMAN-UAT.md | partial — 4 pending scenarios |
+| verification_gap | Phase 00: 00-VERIFICATION.md | human_needed |
+| verification_gap | Phase 02: 02-VERIFICATION.md | human_needed |
+| verification_gap | Phase 04: 04-VERIFICATION.md | human_needed |
+| verification_gap | Phase 05: 05-VERIFICATION.md | human_needed |
+| verification_gap | Phase 08: 08-VERIFICATION.md | human_needed |
+
+| uat_gap | Phase 14: 14-HUMAN-UAT.md | partial — 3 pending scenarios (Chrome DevTools PWA install, iOS standalone, offline precache) |
+Known deferred items at close: 8 (7 from v1.0 + 1 from Phase 14)
+
+Items acknowledged and deferred at v4.0 milestone close on 2026-05-22:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 10: 10-HUMAN-UAT.md | partial — 2 pending scenarios |
+| uat_gap | Phase 11: 11-HUMAN-UAT.md | partial — 1 pending scenario |
+| uat_gap | Phase 12: 12-HUMAN-UAT.md | partial — 6 pending scenarios |
+| uat_gap | Phase 18: 18-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 20: 20-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 21: 21-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 22: 22-HUMAN-UAT.md | unknown status |
+| uat_gap | Phase 23: 23-HUMAN-UAT.md | partial — 0 pending (file format) |
+| uat_gap | Phase 24: 24-HUMAN-UAT.md | partial — 0 pending (file format) |
+| uat_gap | Phase 25: 25-HUMAN-UAT.md | partial — 7 pending scenarios |
+| verification_gap | Phase 10: 10-VERIFICATION.md | human_needed |
+| verification_gap | Phase 11: 11-VERIFICATION.md | human_needed |
+| verification_gap | Phase 12: 12-VERIFICATION.md | human_needed |
+| verification_gap | Phase 13: 13-VERIFICATION.md | human_needed |
+| verification_gap | Phase 14: 14-VERIFICATION.md | human_needed |
+| verification_gap | Phase 16: 16-VERIFICATION.md | human_needed |
+| verification_gap | Phase 17: 17-VERIFICATION.md | human_needed |
+| verification_gap | Phase 18: 18-VERIFICATION.md | human_needed |
+| verification_gap | Phase 19: 19-VERIFICATION.md | human_needed |
+| verification_gap | Phase 20: 20-VERIFICATION.md | human_needed |
+| verification_gap | Phase 21: 21-VERIFICATION.md | human_needed |
+| verification_gap | Phase 23: 23-VERIFICATION.md | human_needed |
+| verification_gap | Phase 24: 24-VERIFICATION.md | human_needed |
+| verification_gap | Phase 25: 25-VERIFICATION.md | human_needed |
+| context_question | Phase 26: 26-CONTEXT.md | 3 questions (answered by shipped implementation) |
+Known deferred items at v4.0 close: 39 (8 carried from prior closes + 31 new at v4.0)
+
+Note: UAT gaps for phases 10–25 are the primary target of Phase 30 (QA-01).
+
+Items acknowledged and deferred at v4.1 milestone close on 2026-05-25:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 28: 28-HUMAN-UAT.md | partial — 9 pending scenarios (just-shipped budget tracking UAT; out of Phase 30 scope per ROADMAP) |
+| uat_gap | Phase 29: 29-HUMAN-UAT.md | partial — 7 pending scenarios (just-shipped period comparison UAT; out of Phase 30 scope) |
+| uat_gap | Phase 22: 22-HUMAN-UAT.md V6 | deferred — PWA standalone install + toggle (needs install flow) — TARGETED BY v4.3 Phase 38 PWA-UAT-01 |
+| verification_gap | Phase 27: 27-VERIFICATION.md | human_needed (sweep approved 2026-05-22 via 27-HUMAN-UAT.md) |
+| verification_gap | Phase 28: 28-VERIFICATION.md | human_needed (9 UAT items already deferred in 28-HUMAN-UAT.md) |
+| verification_gap | Phase 29: 29-VERIFICATION.md | human_needed (7 UAT items already deferred in 29-HUMAN-UAT.md) |
+
+Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previously-deferred Phase 00/08/14 carry forward). Phase 30 resolved 80/82 in-scope scenarios from earlier milestones.
+
+## Session Continuity
+
+**Last session:** 2026-05-29T00:18:06.009Z
+
+**Stopped at:** Phase 37 UI-SPEC approved
+
+**Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
+
+**Prior stopped-at:** Phase 36 Plan 36-02 COMPLETE. WallecxApp.vue: 3 eager tab imports removed; WallecxSkeleton static import added; 3 defineAsyncComponent const declarations; each TabPanel wrapped in Suspense with WallecxSkeleton fallback (vaccination-card/membership-card/expense-row, :count=3 each). Suspense inside TabPanel (Pitfall 1), WallecxSkeleton eager (Pitfall 2). WallecxApp chunk: 64.09 KB gzip → 32.81 KB (Plan 36-01) → 2.45 KB gzip. type-check 0, test:unit 59/59, build 66 precache, 0 exceeds.
+
+**Prior stopped-at:** Phase 36 Plan 36-01 COMPLETE. Foundation: WallecxSkeleton.vue (5 variants, byte-matched dims), perfInstrument.ts (instrumentedGetFullList, sessionStorage+localStorage try/catch, requestKey preserved), compressToWebP.ts (fileType:webp + 3 preserved options), vite.config.ts (chart-js/jsbarcode/image-compression codeSplitting groups at priority 25). Pre-phase baseline: 64.09 KB gzip; after groups: 32.81 KB gzip (~49% reduction). type-check 0, test:unit 59/59, build 59 precache. Next: Plan 36-02 (async tab splits via defineAsyncComponent + Suspense in WallecxApp.vue).
+
+**Prior stopped-at:** Phase 36 context gathered (11 decisions D-36-01..11); aggressive async split + shared WallecxSkeleton + perf-baseline localStorage + WebP helper. Ready for /gsd-plan-phase 36.
+
+**Prior stopped-at:** Phase 35 Plan 35-04 COMPLETE. ManageMembership migrated to BaseMobileDialog (1da4b1c) — ColorPicker direct v-model (#8135) preserved, card_color no-hash (CON-CARD-COLOR-NO-HASH) preserved, {immediate:true} record watcher preserved, FD-03/04/05/09 applied. membershipMapper 11 tests green, test:unit 59/59, type-check 0, build 57 precache.
+
+**Prior stopped-at:** Phase 35 Plan 35-03 COMPLETE. ManageBudget migrated to BaseMobileDialog (bc2c198) — Dialog/Drawer branches collapsed to one, FD-03 inputmode/enterkeyhint on per-row InputNumbers, FD-09 JSON.stringify dirty snapshot on localRows, closeWithoutGuard on save/cancel paths. type-check 0, test:unit 59/59, build clean (57 precache).
+
+**Prior stopped-at:** Phase 33 Plan 33-02 COMPLETE. FND-01: `src/composables/useMobileEnv.ts` created (e1b6489) — 5-key object `{ isMobile, isTablet, isStandalone, installPromptEvent, safeAreaInsets }`, isMobile delegates to useIsMobile() (single 639 source of truth), tri-state tiers via useMediaQuery (640–1023 tablet, iPad=tablet), module-singleton installPromptEvent with set/clear helpers, static env() safe-area strings; `@vueuse/core` promoted to direct dep. FND-02: App.vue captures beforeinstallprompt (preventDefault, capture-only, writes singleton) + clears on appinstalled, onUnmounted teardown (938e56b). useMobileEnv.spec.ts added (10 tests: M-6 synchronous-seeding guard, 639/640/800/1024 boundary tiers, standalone, capture-then-clear, shared singleton). test:unit 49→59 green, type-check 0. useIsMobile.ts + PwaInstallBanner.vue untouched (verified). 33-02-SUMMARY.md written, self-check PASSED. Next: Plan 33-03 (FND-03 ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script).
+
+**Prior stopped-at:** Phase 33 Plan 33-01 COMPLETE. Vue 3.5.34 + PrimeVue 4.5.5 lockstep baseline landed (931aef0); Task 2 human-verify 6-surface smoke-test + #7465 dark-mode no-flash PASSED after a fix-forward (2acd29f — ManageVaccination DatePicker rebound to direct v-model per D-33-01-A, PrimeVue Forms #8191/#7806). 33-01-SUMMARY.md written; automated gate re-confirmed on HEAD (type-check 0, test:unit 49/49).
+
+**Earlier stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
+
+**Next session entry point:** Continue Phase 36 — execute Plan 36-02 (`.planning/phases/36-mobile-performance/36-02-PLAN.md`). Plan 36-01 complete. WallecxSkeleton.vue, perfInstrument.ts, compressToWebP.ts, and vite.config.ts groups all in place.
+
+---
+*State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
+*Last updated: 2026-05-28 — Phase 36 Plan 36-01 complete. Foundation files created. WallecxApp chunk reduced from 64 KB → 32.81 KB gzip via codeSplitting groups.*

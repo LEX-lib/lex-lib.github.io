@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-21T00:00:00.000Z",
+  "phase": "25",
+  "phase_name": "Read Path — List View",
+  "phase_dir": ".planning/phases/25-read-path-list-view",
+  "plan": 2,
+  "task": 1,
+  "total_tasks": 2,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": "25-01-T1", "name": "Create ExpenseItem.vue — compact expense list row", "status": "done", "commit": "e05b206"},
+    {"id": "25-01-T2", "name": "Create ExpensesToolbar.vue — search + sort + category + date range toolbar", "status": "done", "commit": "a8cf273"}
+  ],
+  "remaining_tasks": [
+    {"id": "25-02-T1", "name": "Add script section additions to ExpensesTab.vue (refs, computed, functions, lifecycle)", "status": "not_started"},
+    {"id": "25-02-T2", "name": "Add template section to ExpensesTab.vue (toolbar, skeleton, empty states, list, receipt preview)", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {
+      "decision": "@vueuse/core NOT installed — no debounce for search",
+      "rationale": "Package is absent from package.json. Reactive instant filtering matches existing VaccinationsTab + MembershipsTab pattern. No new package needed.",
+      "phase": "25"
+    },
+    {
+      "decision": "PrimeVue DatePicker emits union type wider than Date | null — use instanceof Date cast",
+      "rationale": "TypeScript overload safety. Executor auto-fixed in ExpensesToolbar.vue @update:model-value handlers.",
+      "phase": "25"
+    }
+  ],
+  "uncommitted_files": [
+    ".planning/STATE.md",
+    "components.d.ts",
+    ".planning/phases/25-read-path-list-view/25-PATTERNS.md"
+  ],
+  "next_action": "Run /gsd-execute-phase 25 — Wave 1 already done, executor will skip 25-01 (SUMMARY.md exists) and proceed directly to Wave 2 (25-02: ExpensesTab.vue full wiring).",
+  "context_notes": "Phase 25 planned and Wave 1 executed in same session. Plan checker verified all 12 dimensions passed. No architectural surprises. Wave 2 is the largest task — full ExpensesTab.vue template + script wiring — but all analog code has been read and patterns are well-documented in RESEARCH.md and PATTERNS.md."
+}
