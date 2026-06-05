@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import { useIsMobile } from './useIsMobile'
 
@@ -99,14 +99,17 @@ export function useMobileEnv(): MobileEnv {
   // window.matchMedia(...).matches and self-manages listener cleanup.
   const isTablet = useMediaQuery('(min-width: 640px) and (max-width: 1023px)')
 
-  // isStandalone: display-mode rarely changes at runtime; seed synchronously.
-  // Kept reactive via the same media query so an install during the session flips it.
+  // isStandalone: seeded synchronously so both the iOS navigator.standalone path
+  // and the standalone-on-launch case are correct on first render (M-6 guard).
+  // Kept reactive via a one-directional watcher on the display-mode media query:
+  // once true (either from the seed or from a mid-session install), it stays true.
+  // { immediate: false } so the synchronous seed above is the SINGLE source for
+  // the initial value; the watcher only handles subsequent runtime flips.
   const standaloneMatch = useMediaQuery('(display-mode: standalone)')
   const isStandalone = ref(detectStandalone())
-  // Mirror runtime display-mode changes while preserving the iOS navigator.standalone seed.
-  if (standaloneMatch.value) {
-    isStandalone.value = true
-  }
+  watch(standaloneMatch, (matched) => {
+    if (matched) isStandalone.value = true
+  }, { immediate: false })
 
   // safeAreaInsets: static CSS env() strings. The simplest correct default —
   // Phase 34 binds these directly into `padding`/`inset` styles; the browser
