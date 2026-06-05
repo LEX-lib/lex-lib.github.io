@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import aboutMePhoto from "@/assets/about-me-photo.png";
+import {Image, type Transformation} from "@imagekit/vue";
+
+const imagekit_url = import.meta.env.VITE_IMAGEKIT_URL as string;
+const aboutMePhoto = "/about-me-photo.png";
+const aboutMePhotoTransformation : Array<Transformation> = [{ format: "auto", width: 600, aspectRatio: '3-4', crop: 'maintain_ratio' }];
 </script>
 
 <template>
@@ -143,10 +147,13 @@ import aboutMePhoto from "@/assets/about-me-photo.png";
             ></div>
 
             <!-- Photo -->
-            <img
-              :src="aboutMePhoto"
-              class="relative rounded-xl w-full h-auto shadow-2xl z-10 grayscale hover:grayscale-0 transition-all duration-700"
-              alt="About Me"
+            <Image
+                :url-endpoint="imagekit_url"
+                :src="aboutMePhoto"
+                class="relative rounded-xl w-full h-auto shadow-2xl z-10 grayscale hover:grayscale-0 transition-all duration-700"
+                alt="About Me"
+                loading="lazy"
+                :transformation="aboutMePhotoTransformation"
             />
 
             <!-- Corner accent -->
