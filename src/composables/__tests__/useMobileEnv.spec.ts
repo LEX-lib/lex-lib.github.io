@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest'
+import { nextTick } from 'vue'
 import {
   useMobileEnv,
   setInstallPromptEvent,
@@ -15,6 +16,11 @@ import {
  * `standalone` flag. addEventListener/removeEventListener are spies so the
  * composable's listener wiring does not throw — the synchronous-seeding test
  * deliberately reads values WITHOUT dispatching any 'change' event.
+ *
+ * For the reactive-flip test (CR-01), the standalone media-query object
+ * captures its registered 'change' listeners in `standaloneListeners` so they
+ * can be invoked explicitly. A non-standalone query still uses vi.fn() (no-op)
+ * because breakpoint tests never need to fire change events.
  */
 interface MatchMediaState {
   width: number
@@ -22,6 +28,9 @@ interface MatchMediaState {
 }
 
 const state: MatchMediaState = { width: 1024, standalone: false }
+
+/** Captured 'change' listeners registered by useMediaQuery on the standalone query. */
+const standaloneListeners: Array<(e: { matches: boolean }) => void> = []
 
 function evaluateQuery(query: string): boolean {
   if (query.includes('display-mode: standalone')) {
@@ -35,19 +44,45 @@ function evaluateQuery(query: string): boolean {
   return state.width >= min && state.width <= max
 }
 
+/**
+ * Simulate the standalone display-mode changing to `matched` by:
+ * 1. Mutating `state.standalone` so subsequent `.matches` reads return the new value.
+ * 2. Calling each captured 'change' listener with a synthetic MediaQueryListEvent.
+ */
+function fireStandaloneChange(matched: boolean): void {
+  state.standalone = matched
+  const syntheticEvent = { matches: matched } as MediaQueryListEvent
+  for (const handler of standaloneListeners) {
+    handler(syntheticEvent)
+  }
+}
+
 function installMatchMediaMock(): void {
-  vi.stubGlobal('matchMedia', (query: string) => ({
-    media: query,
-    get matches() {
-      return evaluateQuery(query)
-    },
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }))
+  // Clear captured standalone listeners before each test.
+  standaloneListeners.length = 0
+
+  vi.stubGlobal('matchMedia', (query: string) => {
+    const isStandaloneQuery = query.includes('display-mode: standalone')
+
+    const addEventListenerImpl = isStandaloneQuery
+      ? ((_type: string, listener: (e: { matches: boolean }) => void) => {
+          standaloneListeners.push(listener)
+        }) as unknown as Mock
+      : vi.fn()
+
+    return {
+      media: query,
+      get matches() {
+        return evaluateQuery(query)
+      },
+      onchange: null,
+      addEventListener: addEventListenerImpl,
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }
+  })
 }
 
 describe('useMobileEnv', () => {
@@ -124,6 +159,33 @@ describe('useMobileEnv', () => {
       state.standalone = false
       const { isStandalone } = useMobileEnv()
       expect(isStandalone.value).toBe(false)
+    })
+
+    it('reactively flips isStandalone false->true when display-mode changes to standalone mid-session (CR-01)', async () => {
+      // Start with non-standalone (seeded false synchronously).
+      state.standalone = false
+      const { isStandalone } = useMobileEnv()
+      expect(isStandalone.value).toBe(false)
+
+      // Simulate the display-mode media query matching true at runtime (PWA install completes).
+      fireStandaloneChange(true)
+      await nextTick()
+
+      expect(isStandalone.value).toBe(true)
+    })
+
+    it('isStandalone remains true after a subsequent display-mode change back to non-standalone (one-directional, CR-01)', async () => {
+      // Start standalone.
+      state.standalone = true
+      const { isStandalone } = useMobileEnv()
+      expect(isStandalone.value).toBe(true)
+
+      // Simulate a spurious "back to non-standalone" event — should be ignored.
+      fireStandaloneChange(false)
+      await nextTick()
+
+      // One-directional: once true, stays true (matches iOS navigator.standalone seed-preservation contract).
+      expect(isStandalone.value).toBe(true)
     })
   })
 
