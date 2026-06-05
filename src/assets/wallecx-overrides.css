@@ -1,0 +1,180 @@
+/*
+ * wallecx-overrides.css
+ *
+ * MOB-05: PrimeVue Dialog content height constraint for Wallecx dialogs.
+ * Imported exclusively from WallecxApp.vue so the rule is bundled with the
+ * Wallecx lazy-loaded chunk, keeping it out of the global stylesheet for
+ * other routes (LexTrack, Gift Exchange, etc.).
+ *
+ * A non-scoped approach is required because PrimeVue's <Dialog> teleports
+ * its DOM to <body>, so scoped data-v- attributes do not reach the rendered
+ * .p-dialog-content element. A dedicated CSS file imported from the Wallecx
+ * entry component is the safest scoping strategy available.
+ *
+ * Covers: ManageVaccination, ManageMembership, VaccinationDetail, MembershipDetail dialogs;
+ *         and the bottom-anchored Drawer used by VaccinationGroupPanel and MembershipDetail
+ *         wrappers on mobile (Phase 17 D-01, D-02).
+ */
+.p-dialog-content {
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+
+/* Phase 17 D-01, D-02: bottom-anchored Drawer height (mobile bottom sheets).
+ *
+ * PrimeVue's base style sets `.p-drawer-bottom .p-drawer { height: 10rem }`,
+ * which would leave the sheet as a thin 160px strip at the bottom. We override
+ * the inner `.p-drawer` panel to 85dvh so the sheet slides up to 85% of the
+ * viewport (iOS bottom-sheet pattern), leaving ~15% as tappable backdrop
+ * (CONTEXT.md D-01).
+ *
+ * Targeting `.p-drawer-bottom .p-drawer` (not `.p-drawer-bottom` itself) is
+ * required because the wrapper has the position class, but the actual panel
+ * with the explicit height rule is the inner `.p-drawer` element. The selector
+ * also leaves right-position Drawers (desktop VaccinationGroupPanel) untouched.
+ *
+ * `!important` is required because PrimeVue's base stylesheet injects
+ * `.p-drawer-bottom .p-drawer { height: 10rem }` at the same selector
+ * specificity AFTER our override in source order, so it would otherwise win. */
+.p-drawer-bottom .p-drawer {
+  height: 85dvh !important;
+}
+
+/* Phase 18 D-03 fallback: PrimeVue Card visible separation in dark mode.
+ *
+ * Aura's dark color scheme sets `--p-card-background` very close to the page
+ * background (~#0d1117), causing VaccinationGroupCard and MembershipCard tiles
+ * to blend into the page in dark mode — the cards look like one continuous
+ * dark area with text floating on it.
+ *
+ * Lift the card surface and add a subtle border to restore visible separation.
+ * Scoped to `.my-app-dark` so light mode is untouched. */
+.my-app-dark .p-card {
+  --p-card-background: #1a1f2e;
+  --p-card-border-color: #2a3142;
+  border: 1px solid var(--p-card-border-color);
+}
+
+/* Phase 34 LT-01: 44×44 touch-target floor for icon-only PrimeVue buttons.
+ *
+ * Root cause: main.ts applies p-button-sm globally via pt.button.root, and
+ * Aura's button.sm.iconOnlyWidth = 2rem (32px) — below the 44px floor.
+ * .p-button-icon-only is added by PrimeVue only when NO label text is present.
+ * Label buttons are unaffected (their height is set by padding + line-height).
+ *
+ * Scoped under .wallecx-root (the WallecxApp Card) so the floor applies ONLY to
+ * Wallecx in-root content and does NOT leak to other mini-apps (e.g. LexTrack's
+ * ActivityCard icon button) once the Wallecx chunk loads in a session (HR-01).
+ * Wallecx's teleported Drawer/Dialog overlays use PrimeVue's own
+ * .p-drawer-close-button / .p-dialog-close-button (not .p-button-icon-only), so
+ * none of those lose the floor; explicit overlay-button sizing is Phase 35's scope.
+ * Does NOT use !important — specificity is sufficient over Aura element rules. */
+.wallecx-root .p-button.p-button-icon-only {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Phase 34 LT-01: Top-level WallecxApp tab triggers only.
+ * WallecxApp.vue must add class="wallecx-main-tabs" to its <Tabs> wrapper.
+ * Period tabs (.wallecx-period-tabs) and sub-tabs (.wallecx-sub-tabs) are
+ * excluded — they manage their own min-height via scoped :deep rules. */
+.wallecx-main-tabs .p-tab {
+  min-height: 44px;
+}
+
+/* Phase 34 LT-05/D-34-01: Sticky TabList on mobile (≤639px).
+ * Overrides PrimeVue's .p-tablist default (position:relative).
+ * The page (not the Card) is the scroll container for WallecxApp on mobile.
+ * An element's OWN overflow:hidden does NOT break its OWN position:sticky, so we
+ * keep PrimeVue's default overflow (hidden) and use clip-path: inset(0) to clip the
+ * active ink-bar to the border box — preventing the indigo bleed past the scroll
+ * arrows seen with overflow:visible (RESEARCH Open Q1 fix).
+ * !important required — PrimeVue base CSS sets position:relative at equal specificity. */
+@media (max-width: 639px) {
+  .wallecx-main-tabs .p-tablist {
+    position: sticky !important;
+    top: env(safe-area-inset-top);
+    z-index: 10;
+    background: var(--p-tabs-tablist-background);
+    clip-path: inset(0);
+  }
+
+  /* Phase 34 LT-05: Per-tab sticky toolbar. Class added by tab components (Plan 02)
+   * via :class="isMobile ? 'wallecx-tab-toolbar' : ''". top offsets below tablist
+   * (≈44px tab height + env(safe-area-inset-top) for notch clearance).
+   *
+   * Background MUST match the surrounding .p-card content exactly so the sticky
+   * toolbar masks scrolling content seamlessly. NO border-bottom: the inner
+   * WallecxToolbar root carries `mb-4`, so a bottom border + that filled margin
+   * rendered as a "weird color shelf" below the inputs in dark mode. A seamless
+   * same-color background is the correct sticky pattern — content simply
+   * disappears under the toolbar with no visible seam. */
+  .wallecx-tab-toolbar {
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + 52px);
+    z-index: 9;
+    background: var(--p-card-background, white);
+  }
+
+  /* Dark-mode toolbar background — matches the .my-app-dark .p-card override
+   * (--p-card-background: #1a1f2e) exactly so the toolbar is seamless with the
+   * card content even where the variable does not cascade. */
+  .my-app-dark .wallecx-tab-toolbar {
+    background: #1a1f2e;
+  }
+}
+
+/* Phase 34 LT-03/D-34-04: Safe-area padding inside bottom Drawers.
+ * Pads .p-drawer-content so the last form field / action button clears the
+ * iOS home indicator / Android gesture bar, and so content clears the notch
+ * in landscape on devices with side insets.
+ * Uses padding — does NOT change the 85dvh panel height.
+ * CRITICAL: each side uses max(env(...), <PrimeVue default>) so that on a
+ * portrait phone with NO side inset (env() resolves to 0) the drawer content
+ * KEEPS PrimeVue's default 1.25rem horizontal padding (overlay.modal.padding)
+ * instead of collapsing to 0 and stretching fields edge-to-edge. */
+.p-drawer-bottom .p-drawer-content {
+  padding-bottom: max(env(safe-area-inset-bottom), 1.25rem);
+  padding-left: max(env(safe-area-inset-left), 1.25rem);
+  padding-right: max(env(safe-area-inset-right), 1.25rem);
+}
+
+/* Phase 35 FD-01: iOS auto-zoom prevention — font-size >= 16px on all form inputs
+ * at mobile widths. iOS Safari auto-zooms when a focused input has font-size < 16px.
+ * Non-scoped to reach teleported overlay DOM (DatePicker panel, Select dropdown)
+ * outside .wallecx-root. .wallecx-root scoping intentionally NOT applied — teleported
+ * elements render outside the root and would be missed. 16px on inputs is benign site-wide.
+ * !important required — Aura sets ~0.875rem (14px) via --p-inputtext-font-size. */
+@media (max-width: 640px) {
+  .p-inputtext,
+  .p-inputnumber-input,
+  .p-textarea,
+  .p-select-label,
+  .p-multiselect-label,
+  .p-datepicker-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Phase 35 LT-08: Sticky Save/Cancel action bar.
+ * Sits at the bottom of .p-drawer-content / .p-dialog-content scroll container.
+ * Background matches the dialog surface to mask scrolling content.
+ *
+ * CRITICAL: padding-bottom is a FLAT 0.5rem (8px) — NOT env(safe-area-inset-bottom).
+ * The outer .p-drawer-content already pads the bottom via
+ * max(env(safe-area-inset-bottom), 1.25rem) from Phase 34 (rule above).
+ * Adding the env() a second time would double the home-indicator clearance
+ * (~34px + ~34px = 68px total on a notched iPhone). Pitfall 6 — flat padding only. */
+.wallecx-manage-actions {
+  position: sticky;
+  bottom: 0;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  background: var(--p-drawer-background, var(--p-overlay-modal-background));
+  border-top: 1px solid var(--color-surface-divider);
+  z-index: 1;
+}
+
+.my-app-dark .wallecx-manage-actions {
+  background: var(--color-surface-card);
+}
