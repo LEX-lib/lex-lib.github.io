@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { defineComponent } from "vue";
 import { setActivePinia, createPinia } from "pinia";
@@ -47,7 +47,7 @@ function buildRouter() {
  */
 function addGuard(router: ReturnType<typeof buildRouter>) {
   router.beforeEach((to, _from, next) => {
-    const auth = (useAuthStore as unknown as ReturnType<typeof vi.fn>)();
+    const auth = (useAuthStore as MockedFunction<typeof useAuthStore>)();
     if (to.matched.some((r) => r.meta?.requiresAuth)) {
       if (!auth.isLoggedIn) {
         next({ name: "login", query: { redirect: to.fullPath } });
@@ -64,7 +64,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("redirects to /login when not authenticated", async () => {
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: false });
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx");
@@ -73,7 +73,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("preserves query string in redirect when not authenticated", async () => {
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: false });
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx?action=add-expense");
@@ -82,7 +82,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("allows navigation when authenticated", async () => {
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: true });
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: true } as any);
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx");
@@ -90,7 +90,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("allows unauthenticated access to non-guarded routes", async () => {
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isLoggedIn: false });
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
     const router = buildRouter();
     addGuard(router);
     await router.push("/");
