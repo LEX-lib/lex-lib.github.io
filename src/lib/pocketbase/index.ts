@@ -1,4 +1,4 @@
-import PocketBase from 'pocketbase';
+import PocketBase from "pocketbase";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 

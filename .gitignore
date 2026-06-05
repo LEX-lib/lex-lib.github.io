@@ -2,6 +2,14 @@
 .idea
 node_modules/
 dist/
+# TLS/SSL certificates and private keys — never commit
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
 # Exclude ALL .env files to prevent credential leaks
 .env
 .env.local
@@ -29,9 +37,9 @@ pnpm-lock.yaml
 # Optional: ignore build cache
 .cache/
 # Optional: ignore test output
-*.test.js
-*.spec.js
-*.test.ts
-*.spec.ts
+# Note: *.spec.ts and *.test.ts intentionally NOT ignored — test files must be tracked in git
 # Optional: ignore output from Vite
 vite.svg
+
+# User-defined files
+local.jsonc
