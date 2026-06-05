@@ -89,6 +89,8 @@ onMounted(async () => {
     await nextTick();   // Pitfall 4: let Suspense begin resolving the active tab before pendingAction set
     pendingAction.value = action;
     router.replace({ query: {} });
+    await nextTick();   // CR-02: let tab watchers consume the action before clearing
+    pendingAction.value = null;  // CR-02: prevent replay on Suspense tab remount with { immediate: true } watchers
   }
 });
 </script>
