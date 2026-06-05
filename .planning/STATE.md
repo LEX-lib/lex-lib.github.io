@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
 status: v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
-stopped_at: Phase 37 UI-SPEC approved
-last_updated: "2026-06-05T10:04:49.031Z"
+stopped_at: Phase 38 context gathered
+last_updated: "2026-06-05T10:37:21.649Z"
 last_activity: 2026-06-05 — shipped v4.3 code PR to master
 progress:
-  total_phases: 28
-  completed_phases: 27
-  total_plans: 84
-  completed_plans: 83
-  percent: 96
+  total_phases: 7
+  completed_phases: 5
+  total_plans: 25
+  completed_plans: 25
+  percent: 71
 ---
 
 # Project State
@@ -333,9 +333,9 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 ## Session Continuity
 
-**Last session:** 2026-05-29T00:18:06.009Z
+**Last session:** 2026-06-05T10:37:21.638Z
 
-**Stopped at:** Phase 37 UI-SPEC approved
+**Stopped at:** Phase 38 context gathered
 
 **Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
 
