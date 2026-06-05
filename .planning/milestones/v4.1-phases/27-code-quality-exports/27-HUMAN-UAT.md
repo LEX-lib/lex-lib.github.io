@@ -1,0 +1,29 @@
+---
+status: approved
+phase: 27-code-quality-exports
+source: [27-VERIFICATION.md]
+started: 2026-05-22T00:00:00.000Z
+updated: 2026-05-22T00:00:00.000Z
+---
+
+## Current Test
+
+approved by user 2026-05-22
+
+## Tests
+
+### 1. Export downloads work in dark mode and on mobile viewport
+
+expected: With dark mode enabled, navigate to Memberships tab and Expenses tab. The "Download records" button is visible, styled correctly (secondary severity, small size, download icon). Click each button while authenticated — a valid JSON file downloads. Repeat at 375px viewport width: button is visible and tappable (min 44px touch target). Downloaded JSON is valid (no parse errors).
+result: approved
+
+## Summary
+
+total: 1
+passed: 1
+issues: 0
+pending: 0
+skipped: 0
+blocked: 0
+
+## Gaps

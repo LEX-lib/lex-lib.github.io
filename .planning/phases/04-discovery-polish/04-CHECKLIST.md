@@ -1,0 +1,92 @@
+# Phase 4: Discovery & Polish — "Looks Done But Isn't" Checklist
+
+**Run by:** Claude executor (04-02-PLAN.md Task 2; finalized in 04-04-PLAN.md Task 2)
+**Date:** 2026-05-12
+**Status:** PASS — all 19 items signed off
+
+---
+
+## POLISH-02: Design Token Audit
+
+**Audit command:**
+```bash
+grep -rn "#[0-9a-fA-F]{3,8}|rgb\(|hsl\(|color:\s*[a-z]" \
+  src/components/projects/wallecx/ --include="*.vue"
+```
+
+**Result:**
+```
+src/components/projects/wallecx/AttachmentPreview.vue:74:            <p class="text-sm" style="color: var(--color-typo-muted)">Loading PDF preview…</p>
+src/components/projects/wallecx/AttachmentPreview.vue:81:        <p class="text-sm" style="color: var(--color-typo-muted)">
+src/components/projects/wallecx/AttachmentPreview.vue:84:        <a :href="tokenUrl" download class="text-sm underline" style="color: var(--color-typo-link)">
+src/components/projects/wallecx/AttachmentPreview.vue:92:      <p class="text-sm" style="color: var(--color-typo-muted)">
+src/components/projects/wallecx/AttachmentPreview.vue:95:      <a :href="tokenUrl" download class="text-sm underline" style="color: var(--color-typo-link)">
+src/components/projects/wallecx/AttachmentPreview.vue:102:  <p v-else class="text-sm" style="color: var(--color-typo-muted)">No attachment.</p>
+src/components/projects/wallecx/ManageVaccination.vue:206:        <label class="text-sm" style="color: var(--color-typo-heading)">Vaccine Name *</label>
+src/components/projects/wallecx/ManageVaccination.vue:215:        <label class="text-sm" style="color: var(--color-typo-heading)">Date Administered *</label>
+src/components/projects/wallecx/ManageVaccination.vue:224:        <label class="text-sm" style="color: var(--color-typo-heading)">Dose Number</label>
+src/components/projects/wallecx/ManageVaccination.vue:233:        <label class="text-sm" style="color: var(--color-typo-heading)">Lot Number</label>
+src/components/projects/wallecx/ManageVaccination.vue:239:        <label class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</label>
+src/components/projects/wallecx/ManageVaccination.vue:245:        <label class="text-sm" style="color: var(--color-typo-heading)">Location</label>
+src/components/projects/wallecx/ManageVaccination.vue:251:        <label class="text-sm" style="color: var(--color-typo-heading)">Notes</label>
+src/components/projects/wallecx/ManageVaccination.vue:257:        <label class="text-sm" style="color: var(--color-typo-heading)">Card (image or PDF)</label>
+src/components/projects/wallecx/ManageVaccination.vue:266:        <p v-if="pendingFile" class="text-sm" style="color: var(--color-typo-muted)">
+src/components/projects/wallecx/VaccinationDetail.vue:20:        <p class="text-sm" style="color: var(--color-typo-heading)">Vaccine</p>
+src/components/projects/wallecx/VaccinationDetail.vue:21:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.vaccine_name }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:24:        <p class="text-sm" style="color: var(--color-typo-heading)">Date Administered</p>
+src/components/projects/wallecx/VaccinationDetail.vue:25:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.date_administered }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:28:        <p class="text-sm" style="color: var(--color-typo-heading)">Dose Number</p>
+src/components/projects/wallecx/VaccinationDetail.vue:29:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.dose_number ?? '—' }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:32:        <p class="text-sm" style="color: var(--color-typo-heading)">Lot Number</p>
+src/components/projects/wallecx/VaccinationDetail.vue:33:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.lot_number || '—' }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:36:        <p class="text-sm" style="color: var(--color-typo-heading)">Manufacturer</p>
+src/components/projects/wallecx/VaccinationDetail.vue:37:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.manufacturer || '—' }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:40:        <p class="text-sm" style="color: var(--color-typo-heading)">Location</p>
+src/components/projects/wallecx/VaccinationDetail.vue:41:        <p class="text-sm" style="color: var(--color-typo-body)">{{ record.location || '—' }}</p>
+src/components/projects/wallecx/VaccinationDetail.vue:47:      <p class="text-sm" style="color: var(--color-typo-heading)">Notes</p>
+src/components/projects/wallecx/VaccinationDetail.vue:48:        <p class="text-sm whitespace-pre-wrap" style="color: var(--color-typo-body)">{{ record.notes }}</p>
+src/components/projects/wallecx/VaccinationList.vue:60:      style="color: var(--color-brand-primary)"
+src/components/projects/wallecx/VaccinationList.vue:62:    <p class="text-sm" style="color: var(--color-typo-heading)">No vaccination records yet.</p>
+src/components/projects/wallecx/VaccinationList.vue:86:          style="color: var(--color-typo-muted)"
+src/components/projects/wallecx/WallecxApp.vue:118:        <h1 class="text-2xl font-bold" style="color: var(--color-typo-heading)">Wallecx</h1>
+```
+
+**Verdict:** PASS — all color references use `var(--color-*)` design tokens. Every match is `style="color: var(--color-...)"` — zero raw hex values, zero `rgb()`, zero `hsl()`, zero hardcoded color names.
+
+**Violations:** None.
+
+---
+
+## PITFALLS.md "Looks Done But Isn't" — All 19 Items
+
+| # | Item | Status | Evidence |
+|---|------|--------|----------|
+| 1 | Per-user isolation: user B can't see user A's records | SIGNED OFF | Phase 1 BACK-03 verified; two-user smoke test passed (01-02-PLAN) |
+| 2 | Filter injection: vaccine_name with `"`, `\`, `\|\|` saves + retrieves correctly | SIGNED OFF | WRITE-08 implemented; parameterised `{:name}` syntax; no template-literal filter strings in codebase |
+| 3 | File access without token: incognito returns 403 | SIGNED OFF | Phase 1 BACK-02 protected:true; verified in 01-02 smoke test |
+| 4 | Save round-trip: create, edit, save → one record on server | SIGNED OFF | WRITE-04 Object.assign id-refresh; vaccinationMapper.spec.ts covers contract |
+| 5 | Delete actually deletes: getOne after delete → 404 + file URL 404 | SIGNED OFF | WRITE-06 server-first delete; confirmed in Phase 3 UAT |
+| 6 | EXIF stripped: exiftool shows no GPS after upload | SIGNED OFF | WRITE-03 canvas re-encode; confirmed in Phase 3 UAT |
+| 7 | pdfjs-dist ≥ 4.2.67 in package.json | SIGNED OFF | FRONT-01; `grep "pdfjs-dist" package.json` shows version |
+| 8 | CSP not regressed: only worker-src added, script-src unchanged | SIGNED OFF | 02-01-PLAN; index.html CSP verified |
+| 9 | No v-html in Wallecx: git grep returns nothing | SIGNED OFF | `grep -rn "v-html" src/components/projects/wallecx/` — only match is a comment (`// D-09: plain text interpolation — NEVER v-html`) in WallecxApp.vue:140; no v-html directive in any template |
+| 10 | No template-literal filters: git grep returns nothing | SIGNED OFF | `grep -rn "\`\${" src/components/projects/wallecx/ --include="*.vue"` — 2 matches: AttachmentPreview.vue:57 and VaccinationList.vue:78, both are `:alt` attribute strings (image alt text), NOT PocketBase filter strings; no filter injection vectors present |
+| 11 | Watcher fires on mount: no empty-state flash | SIGNED OFF | onMounted fetch in WallecxApp.vue; READ-05 implemented |
+| 12 | Save button disables during save: double-click → one record | SIGNED OFF | WRITE-07 isSaving; both form and button disabled during in-flight request |
+| 13 | Auth token not in production bundle | SIGNED OFF | `grep -r "VITE_LOGIN_" dist/` returns no matches — CLEAN. Build fixed in 04-04-PLAN (App.vue import.meta.env.PROD moved to const isProd). Phase 0 CLEAN-01..03 confirmed effective. |
+| 14 | Mapper test: vaccinationMapper.spec.ts passes | SIGNED OFF | `npm run test:unit` exits 0; 10 tests passing |
+| 15 | Route guard test: guard.spec.ts covers wallecx redirect | SIGNED OFF | `src/router/__tests__/guard.spec.ts` created in 04-04-PLAN Task 1; 3 test cases pass: unauthenticated redirect → /login?redirect=/projects/wallecx, authenticated → stays on /projects/wallecx, public route → no redirect; npm run test:unit exits 0 (13 tests total) |
+| 16 | Data-export feature works | SIGNED OFF | `exportJson()` added to WallecxApp.vue in 04-03-PLAN; "Download records" Button in header; getFullList fetches user's records; card_url uses pb.files.getURL with NO token; Blob/URL.createObjectURL triggers browser download; isExporting guard prevents double-click |
+| 17 | Subcomponent names: no Wallecx component collides with PrimeVue | SIGNED OFF | components.d.ts confirmed: WallecxApp, ManageVaccination, VaccinationList, VaccinationDetail, AttachmentPreview — all distinct from PrimeVue component names |
+| 18 | Vercel/GitHub Pages deploy: /projects/wallecx hard-refresh resolves | SIGNED OFF | dist/404.html SPA rewrite; build script `cp dist/index.html dist/404.html` confirmed |
+| 19 | Speed Insights gated: v-if PROD | SIGNED OFF | Fixed in 04-04-PLAN Task 1: `const isProd = import.meta.env.PROD` in script setup; `<SpeedInsights v-if="isProd" />` in template. Build blocker resolved — `npm run build` exits 0. |
+
+---
+
+## Open Items Before Final Sign-Off
+
+No open items. Checklist complete.
+
+---
+
+*Checklist finalized 2026-05-12 — all 19 items signed off. Wallecx milestone POLISH-05 complete.*
