@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
-status: executing
+status: v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
 stopped_at: Phase 37 UI-SPEC approved
-last_updated: "2026-06-05T06:46:41.812Z"
-last_activity: 2026-06-05
+last_updated: "2026-06-05T10:04:49.031Z"
+last_activity: 2026-06-05 — shipped v4.3 code PR to master
 progress:
   total_phases: 28
   completed_phases: 27
@@ -30,10 +30,10 @@ progress:
 Phase: 37 (pwa-install-standalone-polish) — EXECUTING
 Plan: 1 of 6
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** Executing Phase 37
+**Status:** v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
 **Phase:** 37
 **Plan:** Not started
-**Last activity:** 2026-06-05
+**Last activity:** 2026-06-05 — shipped v4.3 code PR to master
 
 ## Shipped Milestones Summary
 
