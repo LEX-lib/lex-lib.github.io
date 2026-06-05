@@ -1,8 +1,9 @@
 ---
 phase: 37-pwa-install-standalone-polish
 verified: 2026-06-05T08:00:00Z
-status: human_needed
+status: passed
 score: 12/12 must-haves verified
+human_verification_status: all 9 device checks passed (see 37-UAT.md, 2026-06-05); 1 post-merge gap fixed (iOS splash matrix, commit e8770ae); 1 known platform constraint recorded (Android Quick Actions require Chrome/Samsung WebAPK — Edge unsupported)
 overrides_applied: 0
 re_verification:
   previous_status: gaps_found
