@@ -1,5 +1,6 @@
 ---
-status: testing
+status: cancelled
+cancelled_reason: Wallecx migrated to a separate repo on 2026-06-05; v4.3 Phase 38 dropped in this repo. Checklist preserved for carry-forward to the new Wallecx repo.
 phase: 38-mobile-uat-sweep
 source:
   - 38-CONTEXT.md (D-03 net-new checks)
