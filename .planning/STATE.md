@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
-status: v4.3 CLOSED — Phases 33–37 shipped to master; Phase 38 + 38b cancelled (Wallecx migrated to separate repo, 2026-06-05)
+status: Awaiting next milestone
 stopped_at: Phase 38 context gathered
-last_updated: "2026-06-08T08:38:45.131Z"
-last_activity: 2026-06-05 — shipped v4.3 code PR to master
+last_updated: "2026-06-08T08:49:30.943Z"
+last_activity: 2026-06-08 — Milestone v4.3 completed and archived
 progress:
   total_phases: 7
   completed_phases: 5
@@ -27,13 +27,10 @@ progress:
 
 ## Current Position
 
-Phase: 37 (pwa-install-standalone-polish) — EXECUTING
-Plan: 1 of 6
-**Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** v4.3 CLOSED — Phases 33–37 shipped to master; Phase 38 + 38b cancelled (Wallecx migrated to separate repo, 2026-06-05)
-**Phase:** 37
-**Plan:** Not started
-**Last activity:** 2026-06-05 — shipped v4.3 code PR to master
+Phase: Milestone v4.3 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-08 — Milestone v4.3 completed and archived
 
 ## Shipped Milestones Summary
 
@@ -270,6 +267,14 @@ None.
 
 ## Deferred Items
 
+Items acknowledged and deferred at **v4.3 milestone close on 2026-06-08** (Wallecx migrated to a separate repo):
+
+| Category | Item | Status |
+|----------|------|--------|
+| v4.3 (Wallecx → new repo) | Phase 38 Mobile UAT Sweep + 38b | Cancelled — real-device PWA-05 + bound NFR/CON confirmations move to the new Wallecx repo |
+| v4.3 device-deferred | Phases 34/35/36 HUMAN-UAT (partial) + 34/35 VERIFICATION (human_needed) | Real-device confirmation was deferred to Phase 38; now moot here |
+| pre-existing | Phases 00–22 HUMAN-UAT / VERIFICATION open items | Carried from v1.0–v4.2; not v4.3 scope — accumulated planning cruft, run `/gsd:cleanup` to archive |
+
 Items acknowledged and deferred at v1.0 milestone close on 2026-05-13:
 
 | Category | Item | Status |
@@ -360,3 +365,7 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
 *Last updated: 2026-05-28 — Phase 36 Plan 36-01 complete. Foundation files created. WallecxApp chunk reduced from 64 KB → 32.81 KB gzip via codeSplitting groups.*
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd:new-milestone

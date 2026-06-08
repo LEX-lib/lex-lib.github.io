@@ -130,6 +130,38 @@
 
 ---
 
+## Milestone: v4.3 — Wallecx Mobile Optimization
+
+**Shipped:** 2026-06-08
+**Phases:** 5 completed (33–37) of 7 | **Plans:** 25
+
+### What Was Built
+Mobile foundation (`useMobileEnv`, safe-area substrate, install-prompt capture), app-wide layout/touch-target audit, BaseMobileDialog small-screen form/dialog system with dirty-guards, mobile performance work (async TabPanels + Suspense skeletons, WebP compression, vendor chunking, per-collection requestKeys), and PWA install + iOS standalone polish (splash matrix, install banner, offline banner, Quick Actions, SW-update toast, eviction copy).
+
+### What Worked
+- Category-grouped phases (one pattern applied across 3 tabs) kept diffs reviewable.
+- Phase 37 device QA on real hardware caught two real gaps (iOS splash coverage, Edge-WebAPK constraint) that automated checks missed.
+- The clean code-only PR pattern (filtering `.planning/`) kept the v4.3 merge to `master` reviewable (160 files vs 569).
+
+### What Was Inefficient
+- `ROADMAP.md` degraded to an unparseable 12-line fragment, blocking discuss/plan tooling until rebuilt from STATE.md.
+- The squash-merge to `master` was additive (`git checkout -- .`), missing 4 file deletions — required a follow-up cleanup PR. Lesson: filtered PR branches must also apply deletions.
+- `.planning/phases/` accumulated unarchived phases from v1.0–v4.2 (35 stale "open" items surfaced at close).
+
+### Patterns Established
+- **Filtered code-only PR + deletion-aware staging** for shipping GSD branches to a clean `master`.
+- **HUMAN-UAT.md device-matrix recording** with defer-with-signoff for unavailable targets.
+
+### Key Lessons
+- A milestone can end on a **scope change** (Wallecx migrated to its own repo), not just completion — cancel remaining phases explicitly and record why.
+- Keep `master` and the GSD working branch from diverging: prefer a fresh master-based branch with `.planning/` carried forward over a long-lived divergent branch.
+
+### Cost Observations
+- Model mix: Opus (orchestration/planning) + Sonnet (executor/verifier/checker/auditor subagents).
+- Notable: gap-closure + device-QA + ship + close-out all driven interactively in one session.
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution

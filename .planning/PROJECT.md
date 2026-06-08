@@ -18,7 +18,13 @@ All three record types share the same per-user PocketBase isolation pattern, the
 
 If everything else fails, these capabilities must work: the vaccination history list (with attachment preview), the membership card grid (with barcode scan overlay), and the expenses list with reporting + budget comparison.
 
-## Current Milestone: v4.3 Wallecx Mobile Optimization
+## Current State (after v4.3)
+
+**v4.3 Wallecx Mobile Optimization shipped 2026-06-08** (Phases 33–37, merged to `master`). Phase 38 (Mobile UAT Sweep) + conditional 38b were **cancelled** because **Wallecx migrated to a separate repository** on 2026-06-05.
+
+**Direction change:** Wallecx — historically the largest mini-app and the focus of v1.0–v4.3 — now lives in its own repo and is no longer developed here. The Wallecx code remains at `/projects/wallecx` (kept by decision) but receives no further enhancements. Future Lexarium work here concerns the other mini-apps (LexTrack, Larga, Gift Exchange, API Playground) or the hub itself; start it via `/gsd:new-milestone`. No active milestone.
+
+## Shipped: v4.3 Wallecx Mobile Optimization (2026-06-08)
 
 **Goal:** Make Wallecx feel native-grade on mobile — tighten layout & touch targets, drop perceived load time on small-screen devices, and polish the PWA install + standalone experience.
 
