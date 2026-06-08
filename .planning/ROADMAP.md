@@ -1,78 +1,46 @@
-# Milestone v4.3: Wallecx Mobile Optimization
+# Roadmap: Lexarium
 
-**Status:** ✅ Closed 2026-06-05 — Phases 33–37 shipped to `master`; Phase 38 + 38b **cancelled** (Wallecx migrated to a separate repo, enhancements dropped here)
-**Phases:** 33–38 (6 mandatory) + 38b (conditional)
-**Requirements:** 32 functional + 16 NFR/CON bound to verification-owner phases
-**Code shipped:** v4.3 squash-merged to `master` (`7d13538`); full GSD history on `feat/wallecx`
+## Milestones
 
-## Overview
+- ✅ **v1.0 MVP** — Phases 0–4 (shipped 2026-05-12)
+- ✅ **v1.1 Vaccine Grouping** — Phases 5–6 (2026-05-12)
+- ✅ **v1.2 Search, Sort & View Toggle** — Phases 7–9 (2026-05-13)
+- ✅ **v2.0 Membership Cards** — Phases 10–13 (2026-05-14)
+- ✅ **v2.1 Mobile PWA** — Phases 14–15 (2026-05-14)
+- ✅ **v2.2 Sort & Search for Membership Cards** — Phase 16 (2026-05-15)
+- ✅ **v2.3 UX Polish** — Phases 17–18 (2026-05-18)
+- ✅ **v3.0 Site-Wide Dark Mode** — Phases 19–22 (2026-05-19)
+- ✅ **v4.0 Daily Expense Tracker** — Phases 23–26 (2026-05-22)
+- ✅ **v4.1 Gap Resolution & Feature Completeness** — Phases 27–30 (2026-05-25)
+- ✅ **v4.2 Budget Recovery & Hardening** — Phases 31–32 (2026-05-26)
+- ✅ **v4.3 Wallecx Mobile Optimization** — Phases 33–37 (shipped 2026-06-08; Phase 38/38b cancelled — Wallecx migrated to separate repo)
 
-Makes the Wallecx mini-app (`/projects/wallecx`) a first-class mobile + installable PWA: mobile-foundation primitives, layout/touch-target audit, small-screen forms & dialogs, performance work, PWA install + iOS standalone polish, and a closing real-device UAT sweep.
-
-> **Note:** Phases 33–37 sections below are condensed records of shipped work — full detail lives in each `.planning/phases/<phase>/` directory (PLAN/SUMMARY/VERIFICATION). Phase 38 is the active phase.
+Archived per-milestone ROADMAP + REQUIREMENTS live in `.planning/milestones/`; shipped log in `.planning/MILESTONES.md`.
 
 ## Phases
 
-### Phase 33: Mobile Foundation
-**Goal:** Establish mobile primitives — `useMobileEnv`/breakpoint composables, safe-area inset substrate, and `beforeinstallprompt` capture — that later phases build on.
-**Requirements:** FND-01, FND-02, FND-03, FND-04
-**Status:** ✅ Complete (3 plans) — shipped
+<details>
+<summary>✅ v4.3 Wallecx Mobile Optimization (Phases 33–37) — SHIPPED 2026-06-08</summary>
 
-### Phase 34: Layout Audit & Touch Targets
-**Goal:** Audit and fix app-wide layout and touch-target sizing for mobile (44px targets, safe-area, dvh-not-vh), with a mid-sweep BR-2 barcode checkpoint.
-**Requirements:** LT-01, LT-02, LT-03, LT-04, LT-05, LT-07, LT-09
-**Status:** ✅ Complete (3 plans) — shipped *(LT-07 real-device double-scroll deferred to Phase 38)*
+- [x] Phase 33: Mobile Foundation (3 plans)
+- [x] Phase 34: Layout Audit & Touch Targets (3 plans)
+- [x] Phase 35: Forms & Dialogs on Small Screens (6 plans)
+- [x] Phase 36: Mobile Performance (7 plans)
+- [x] Phase 37: PWA Install + Standalone Polish (6 plans) — verified 12/12, UAT 9/9, threat-secured
+- [~] Phase 38: Mobile UAT Sweep + PWA-UAT-01 — ❌ CANCELLED (Wallecx migrated to separate repo)
+- [~] Phase 38b: List Virtualization (conditional) — ❌ CANCELLED (never triggered)
 
-### Phase 35: Forms & Dialogs on Small Screens
-**Goal:** Make Wallecx forms and dialogs usable on small screens — keyboard avoidance, 16px no-zoom inputs, inline pickers, camera affordances, and dirty-guards.
-**Requirements:** LT-08, FD-01, FD-03, FD-04, FD-05, FD-06, FD-07, FD-09
-**Status:** ✅ Complete (6 plans) — shipped *(device-dependent behaviors deferred to Phase 38)*
+Full detail: `.planning/milestones/v4.3-ROADMAP.md`
 
-### Phase 36: Mobile Performance
-**Goal:** Optimize bundle/runtime performance and enforce per-collection `requestKey` uniqueness; instrument metrics that gate the conditional Phase 38b.
-**Requirements:** PF-01, PF-02, PF-04, PF-05, PF-07, PF-09
-**Status:** ✅ Complete (7 plans) — shipped
+</details>
 
-### Phase 37: PWA Install + Standalone Polish
-**Goal:** Ship PWA install and standalone polish for Wallecx — iOS splash screens, Android install banner, site-wide offline banner, Android Quick Actions, SW update toast, and eviction-aware copy.
-**Requirements:** PWA-01, PWA-02, PWA-04, PWA-06, PWA-07, PWA-09
-**Status:** ✅ Complete (6 plans) — verified 12/12, device-QA 9/9, threat-secured (0 open), shipped
+<details>
+<summary>✅ v1.0–v4.2 (Phases 0–32) — SHIPPED</summary>
 
-**Plans:**
-- [x] 37-01-PLAN.md — pwa-assets.config.ts + generate splash + shortcut PNGs (PWA-02, PWA-09 assets)
-- [x] 37-02-PLAN.md — OfflineBanner.vue + App.vue mount (PWA-07)
-- [x] 37-03-PLAN.md — PwaInstallBanner.vue Android branch + JSON dismissal schema + lazy migration (PWA-04)
-- [x] 37-04-PLAN.md — index.html iOS meta tags + per-color-scheme theme-color + splash link tags (PWA-01, PWA-02)
-- [x] 37-05-PLAN.md — vite.config.ts manifest.shortcuts + WallecxApp.vue (SW toast safe-area + iOS eviction copy + pendingAction dispatch) + tab prop watchers + guard.spec.ts query-preservation test (PWA-06, PWA-09, NFR-IOS-EVICTION-UX, D-37-16)
-- [x] 37-06-PLAN.md — GAP CLOSURE: useMobileEnv.ts isStandalone reactive watcher (CR-01) + WallecxApp.vue pendingAction reset (CR-02) (PWA-04, PWA-09)
-- [x] Post-ship fix — full Apple splash device matrix for reliable iOS install splash (PWA-02 / NFR-IOS-SPLASH)
+Archived per-milestone in `.planning/milestones/`. See `.planning/MILESTONES.md` for the shipped log.
 
-### Phase 38: Mobile UAT Sweep + PWA-UAT-01
-**Goal:** Close PWA-UAT-01 (PWA-05) — execute the deferred real-device UAT matrix across **real iOS**, **real Android**, and the **iPad-820 viewport**, covering viewport-tagged install + force-quit + relaunch + dark-mode toggle + auth survival, plus the device-dependent checks carried forward from Phases 34/35/37; record all results. This is the milestone-closing verification that finalizes the real-device NFR/CON confirmations.
-**Depends on:** Phases 33–37 (the mobile + PWA work under test)
-**Requirements:** PWA-05
-**Also finalizes (binds to this phase):** NFR-BR-2-PRESERVED (final owner), NFR-IOS-NO-ZOOM (real-device), NFR-IOS-SPLASH, NFR-IOS-EVICTION-UX, NFR-PWA-BANNER-FREQUENCY, NFR-DRAWER-DIRTY-GUARD, CON-CONFIRMDIALOG-SINGLETON, CON-PWA-SCOPE
-**Status:** ❌ CANCELLED 2026-06-05 — Wallecx migrated to a separate repo; the remaining real-device UAT sweep is dropped in this repo. PWA-05 + bound NFR/CON real-device confirmations are NOT closed here (carry to the new Wallecx repo if still wanted). Phases 33–37 remain shipped.
+</details>
 
-**Success criteria (not executed — phase cancelled):**
-1. Install + force-quit + relaunch + auth survival verified on real iOS, real Android, and iPad-820 viewport.
-2. Dark-mode toggle in standalone verified across the device matrix.
-3. BR-2 barcode renders black-on-white in **both** light and dark themes on a real device (NFR-BR-2-PRESERVED final coverage).
-4. LT-07 real-device double-scroll confirmed absent.
-5. Phase 35 device-dependent behaviors confirmed on a real viewport: 16px no-zoom inputs, sticky bar above keyboard, camera affordances, inline DatePicker, dirty-guard.
-6. Carried-forward Phase 37 device checks consolidated (install splash, status-bar style, theme-color flip, Quick Actions, SW-toast safe-area, offline banner, 30-day/standalone gate, eviction copy) — note: already exercised during Phase 37 device QA; recorded here for milestone closure.
-7. All results recorded in a UAT/HUMAN-UAT artifact.
+## Next
 
-> **Note:** A substantial portion of PWA-05's checks (install, dark-mode, auth survival, splash, eviction copy, banner frequency) were already exercised during Phase 37's device QA — Phase 38 consolidates those records and covers the remaining gaps (iPad-820 viewport, force-quit/relaunch, BR-2 light+dark, LT-07, 16px no-zoom, camera, keyboard, inline DatePicker).
-
-### Phase 38b: List Virtualization (CONDITIONAL)
-**Goal:** Virtualize long Wallecx lists if Phase 36's performance instrumentation shows it's needed.
-**Depends on:** Phase 36 (NFR-PERF-MEASURE instrumentation), Phase 38 (real-device confirmation)
-**Requirements:** PF-06
-**Status:** ❌ CANCELLED 2026-06-05 — Wallecx migrated to a separate repo (never triggered; now moot here)
-
-## Milestone Summary
-
-- **Shipped (Phases 33–37):** mobile foundation, layout/touch audit, small-screen forms & dialogs, performance, PWA install + standalone polish. Code on `master` (`7d13538`).
-- **Cancelled (Phase 38 + 38b):** Wallecx migrated to a separate repo on 2026-06-05; the real-device UAT sweep (PWA-05 + bound NFR/CON real-device confirmations) and conditional list virtualization are dropped here. Carry forward to the new Wallecx repo if still desired.
-- **Milestone outcome:** Closed at Phases 33–37. Wallecx mini-app code remains in this repo (kept by decision); no further enhancements planned here.
+No active milestone. **Wallecx has migrated to a separate repository** — further Wallecx work happens there, not here. Start non-Wallecx Lexarium work via `/gsd:new-milestone`.

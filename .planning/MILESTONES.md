@@ -1,5 +1,37 @@
 # Milestones
 
+## v4.3 Wallecx Mobile Optimization (Shipped: 2026-06-08)
+
+**Phases completed:** 6 phases, 25 plans, 30 tasks
+
+**Key accomplishments:**
+
+- Bumped Vue 3.5.18→3.5.34 (patch) and PrimeVue 4.3.7→4.5.5 (minor) lockstep with @primevue/auto-import-resolver + @primevue/forms, establishing one clean v4.3 baseline; the 4.5 smoke-test surfaced a PrimeVue Forms DatePicker regression (#8191/#7806) that was fixed-forward by rebinding ManageVaccination's date field to a direct v-model ref.
+- `useMobileEnv` composable exposing tri-state mobile/tablet/standalone tiers, a module-singleton captured install-prompt event, and safe-area env() strings — with the Android `beforeinstallprompt` event captured at App.vue scope and `@vueuse/core` promoted to a direct dependency.
+- CSS spine for the Phase 34 mobile audit — DragHandle pill component, four wallecx-overrides.css rule blocks (44px icon-button floor, sticky TabList, sticky-toolbar class, bottom-Drawer safe-area), wallecx-main-tabs class on WallecxApp Tabs, and LOCKED viewport meta comment.
+- Wired the Plan-01 CSS spine into the three tab shells (sticky toolbar wrappers via `.wallecx-tab-toolbar`), swapped all 5 existing inline drag-handle pills for the shared `<DragHandle>` component, and added `env(safe-area-inset-*)` padding to the fullscreen barcode scan overlay in MembershipDetail.vue.
+- Bottom-Drawer branches with DragHandle added to ManageMembership.vue and ManageVaccination.vue, closing the last LT-02 gap; BR-2 barcode black-on-white reverified in both themes after full Phase 34 CSS sweep
+- BaseMobileDialog.vue Dialog/Drawer wrapper with dirty-guard via Drawer before-hide + useConfirm singleton, DragHandle header, focusin scrollIntoView auto-scroll, and FD-01 16px iOS no-zoom + LT-08 sticky action bar CSS appended to wallecx-overrides.css.
+- ManageExpense collapsed from dual Dialog/Drawer branches to single BaseMobileDialog with FD-03/04/05/09 treatment; 4 standalone expense DatePicker sites switched to :inline=isMobile.
+- ManageBudget collapsed from dual Dialog/Drawer branches to single BaseMobileDialog with JSON.stringify array dirty detection (FD-09) and FD-03 per-row input attributes; no upload added (D-35-11).
+- ManageMembership collapsed from dual Dialog/Drawer branches to single BaseMobileDialog — ColorPicker direct v-model (#8135), card_color no-hash (CON-CARD-COLOR-NO-HASH), and {immediate:true} record watcher all preserved; FD-03/04/05/09 applied; 59/59 tests pass.
+- ManageVaccination collapsed from dual Dialog/Drawer Form branches to single BaseMobileDialog — administeredDate direct v-model (#8191 / D-33-01-A) and [visible,record] tuple watch {immediate:true} preserved verbatim; two-Form collapse confirmed safe; FD-03/04/05/09 applied; 59/59 tests pass.
+- 16/16 automated gates and grep audits PASS; FD-04 popup revert committed after UAT; Phase 35 fully closed with human APPROVED on all 6 device behaviors at 390px emulation
+- Pre-phase baseline (64 KB gzip), WallecxSkeleton 5-variant component, perfInstrument getFullList wrapper, compressToWebP helper, and 3 rolldown vendor chunk groups (chart-js/jsbarcode/image-compression) reducing WallecxApp to 32.81 KB gzip
+- defineAsyncComponent + Suspense inside each TabPanel with WallecxSkeleton fallbacks; WallecxApp chunk drops from 32.81 KB → 2.45 KB gzip
+- VaccinationsTab ManageVaccination async-split via defineAsyncComponent + Suspense, mount-path getFullList instrumented with vaccinations-getFullList requestKey (NFR-REQUESTKEY-UNIQUE closed), inline skeleton consolidated into WallecxSkeleton
+- MembershipsTab async ManageMembership via defineAsyncComponent + Suspense + WallecxSkeleton membership-card fallback; mount-path getFullList instrumented with requestKey 'memberships-getFullList' preserved verbatim; inline Card+Skeleton grid consolidated into WallecxSkeleton
+- Migrated 3 inline `imageCompression({maxSizeMB:1.5, maxWidthOrHeight:2048, useWebWorker:true})` blocks to the shared `compressToWebP(strippedFile)` helper; fixed Pitfall 4 MIME mismatch in ManageExpense's `new File` wrapper.
+- Phase 36 closed with PocketBase-origin preconnect/dns-prefetch hints, a 20/20 grep+gate audit confirming all NFR/CON invariants, the explicit 5-key requestKey invariant in STATE.md, and human-verify approval at 390×844 emulation across all 3 tabs (CLS ≤ 0.1, PF-05 instrumentation present, WebP MIME confirmed, Suspense fallback first-switch-only).
+- iOS splash PNGs (3 viewports) and Android shortcut icons (4x96x96) generated from branding_logo.svg via @vite-pwa/assets-generator@1.0.2 with navy #002244 background.
+- Site-wide offline banner using `useOnline` from `@vueuse/core`, Teleport to body, fixed amber top, no retry button; mounted in App.vue; ROADMAP and REQUIREMENTS reworded to align with useOnline-reactive design (D-37-12).
+- `src/components/projects/wallecx/PwaInstallBanner.vue` (76 lines → 221 lines)
+- iOS standalone meta tags (apple-mobile-web-app-capable / status-bar-style black-translucent / title Wallecx), per-color-scheme theme-color (#002244 light / #0d1117 dark), and 3 apple-touch-startup-image splash links inserted into index.html with all LOCKED elements byte-intact.
+- Android Quick Actions wired end-to-end via manifest.shortcuts array, WallecxApp pendingAction dispatch, and immediate-watcher tab consumers, plus SW toast safe-area and iOS eviction-aware auth-expired copy.
+- Reactive `watch(standaloneMatch)` replaces one-shot if-block in useMobileEnv.ts (CR-01); `pendingAction.value = null` reset prevents deep-link replay on Suspense remount (CR-02).
+
+---
+
 ## v4.2 — Budget Recovery & Hardening
 
 **Shipped:** 2026-05-26
