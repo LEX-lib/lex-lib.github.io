@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v4.3
 milestone_name: milestone
-status: v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
+status: v4.3 CLOSED — Phases 33–37 shipped to master; Phase 38 + 38b cancelled (Wallecx migrated to separate repo, 2026-06-05)
 stopped_at: Phase 38 context gathered
-last_updated: "2026-06-05T10:37:21.649Z"
+last_updated: "2026-06-08T08:38:45.131Z"
 last_activity: 2026-06-05 — shipped v4.3 code PR to master
 progress:
   total_phases: 7
@@ -30,7 +30,7 @@ progress:
 Phase: 37 (pwa-install-standalone-polish) — EXECUTING
 Plan: 1 of 6
 **Milestone:** v4.3 Wallecx Mobile Optimization (started 2026-05-26)
-**Status:** v4.3 Phases 33–37 shipped — squash-merged to master (7d13538). Phase 38 (Mobile UAT Sweep) remains.
+**Status:** v4.3 CLOSED — Phases 33–37 shipped to master; Phase 38 + 38b cancelled (Wallecx migrated to separate repo, 2026-06-05)
 **Phase:** 37
 **Plan:** Not started
 **Last activity:** 2026-06-05 — shipped v4.3 code PR to master
@@ -55,13 +55,13 @@ Plan: 1 of 6
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 33 | Mobile Foundation | FND-01..04 | Complete (3/3 plans) |
-| 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | Not started |
-| 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | Not started |
-| 36 | Mobile Performance | PF-01,02,04,05,07,09 | Complete (7/7 plans) — 2026-05-28 |
-| 37 | PWA Install + Standalone Polish | PWA-01,02,04,06,07,09 | Not started |
-| 38 | Mobile UAT Sweep + PWA-UAT-01 | PWA-05 | Not started |
-| 38b | List Virtualization (CONDITIONAL) | PF-06 | Not triggered |
+| 33 | Mobile Foundation | FND-01..04 | ✅ Complete (3 plans) — shipped |
+| 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | ✅ Complete (3 plans) — shipped |
+| 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | ✅ Complete (6 plans) — shipped |
+| 36 | Mobile Performance | PF-01,02,04,05,07,09 | ✅ Complete (7 plans) — shipped |
+| 37 | PWA Install + Standalone Polish | PWA-01,02,04,06,07,09 | ✅ Complete (6 plans) — verified, UAT 9/9, secured, shipped |
+| 38 | Mobile UAT Sweep + PWA-UAT-01 | PWA-05 | ❌ Cancelled 2026-06-05 (Wallecx migrated to separate repo) |
+| 38b | List Virtualization (CONDITIONAL) | PF-06 | ❌ Cancelled 2026-06-05 (Wallecx migrated; never triggered) |
 
 ## Accumulated Context
 

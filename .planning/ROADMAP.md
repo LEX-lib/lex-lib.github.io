@@ -1,6 +1,6 @@
 # Milestone v4.3: Wallecx Mobile Optimization
 
-**Status:** 🚧 In progress — Phases 33–37 shipped to `master`; Phase 38 (UAT sweep) remaining
+**Status:** ✅ Closed 2026-06-05 — Phases 33–37 shipped to `master`; Phase 38 + 38b **cancelled** (Wallecx migrated to a separate repo, enhancements dropped here)
 **Phases:** 33–38 (6 mandatory) + 38b (conditional)
 **Requirements:** 32 functional + 16 NFR/CON bound to verification-owner phases
 **Code shipped:** v4.3 squash-merged to `master` (`7d13538`); full GSD history on `feat/wallecx`
@@ -52,9 +52,9 @@ Makes the Wallecx mini-app (`/projects/wallecx`) a first-class mobile + installa
 **Depends on:** Phases 33–37 (the mobile + PWA work under test)
 **Requirements:** PWA-05
 **Also finalizes (binds to this phase):** NFR-BR-2-PRESERVED (final owner), NFR-IOS-NO-ZOOM (real-device), NFR-IOS-SPLASH, NFR-IOS-EVICTION-UX, NFR-PWA-BANNER-FREQUENCY, NFR-DRAWER-DIRTY-GUARD, CON-CONFIRMDIALOG-SINGLETON, CON-PWA-SCOPE
-**Status:** Pending — active
+**Status:** ❌ CANCELLED 2026-06-05 — Wallecx migrated to a separate repo; the remaining real-device UAT sweep is dropped in this repo. PWA-05 + bound NFR/CON real-device confirmations are NOT closed here (carry to the new Wallecx repo if still wanted). Phases 33–37 remain shipped.
 
-**Success criteria:**
+**Success criteria (not executed — phase cancelled):**
 1. Install + force-quit + relaunch + auth survival verified on real iOS, real Android, and iPad-820 viewport.
 2. Dark-mode toggle in standalone verified across the device matrix.
 3. BR-2 barcode renders black-on-white in **both** light and dark themes on a real device (NFR-BR-2-PRESERVED final coverage).
@@ -69,10 +69,10 @@ Makes the Wallecx mini-app (`/projects/wallecx`) a first-class mobile + installa
 **Goal:** Virtualize long Wallecx lists if Phase 36's performance instrumentation shows it's needed.
 **Depends on:** Phase 36 (NFR-PERF-MEASURE instrumentation), Phase 38 (real-device confirmation)
 **Requirements:** PF-06
-**Status:** Not triggered — conditional on PF-05/NFR-PERF-MEASURE findings
+**Status:** ❌ CANCELLED 2026-06-05 — Wallecx migrated to a separate repo (never triggered; now moot here)
 
 ## Milestone Summary
 
 - **Shipped (Phases 33–37):** mobile foundation, layout/touch audit, small-screen forms & dialogs, performance, PWA install + standalone polish. Code on `master` (`7d13538`).
-- **Remaining (Phase 38):** real-device UAT sweep closing PWA-05 + the bound NFR/CON real-device confirmations.
-- **Conditional (Phase 38b):** list virtualization, only if perf metrics trigger it.
+- **Cancelled (Phase 38 + 38b):** Wallecx migrated to a separate repo on 2026-06-05; the real-device UAT sweep (PWA-05 + bound NFR/CON real-device confirmations) and conditional list virtualization are dropped here. Carry forward to the new Wallecx repo if still desired.
+- **Milestone outcome:** Closed at Phases 33–37. Wallecx mini-app code remains in this repo (kept by decision); no further enhancements planned here.
