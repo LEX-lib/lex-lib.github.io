@@ -52,7 +52,7 @@ const projects = ref<Project[]>([
   {
     title: "Kaheeta",
     description:
-      "A personal health records vault. Securely store and retrieve your vaccination records — including card scans — with per-user privacy enforced server-side.",
+      "A digital wallet — the Ilonggo word for it — that keeps your everyday essentials in one private vault: membership cards, IDs, vaccination records, and receipts, with per-user privacy enforced server-side.",
     link: "https://kaheeta.delveen.cc",
     status: "Active",
     icon: "mdi:shield-check",
