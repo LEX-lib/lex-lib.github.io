@@ -10,6 +10,8 @@ interface Project {
   tags: string[];
 }
 
+const isExternal = (link: string): boolean => /^https?:\/\//.test(link);
+
 const projects = ref<Project[]>([
   {
     title: "Larga",
@@ -48,11 +50,11 @@ const projects = ref<Project[]>([
     tags: ["Vue 3", "Fetch API"],
   },
   {
-    title: "Wallecx",
+    title: "Kaheeta",
     description:
       "A personal health records vault. Securely store and retrieve your vaccination records — including card scans — with per-user privacy enforced server-side.",
-    link: "/projects/wallecx",
-    status: "WIP",
+    link: "https://kaheeta.delveen.cc",
+    status: "Active",
     icon: "mdi:shield-check",
     tags: ["Vue 3", "PocketBase", "Auth", "Privacy"],
   },
@@ -165,6 +167,18 @@ const projects = ref<Project[]>([
 
             <!-- CTA button -->
             <Button
+              v-if="isExternal(project.link)"
+              as="a"
+              :href="project.link"
+              target="_blank"
+              rel="noopener noreferrer"
+              label="View Project"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              class="w-full !font-semibold projects-cta-btn"
+            />
+            <Button
+              v-else
               as="router-link"
               :to="project.link"
               label="View Project"
