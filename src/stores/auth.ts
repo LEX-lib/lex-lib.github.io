@@ -18,6 +18,10 @@ export const useAuthStore = defineStore("auth", () => {
       secure: true,
       sameSite: "Lax",
       path: "/",
+      // exportToCookie defaults httpOnly:true; document.cookie writes with
+      // HttpOnly are silently dropped by the browser (only a server
+      // Set-Cookie header can set that flag), so no cookie ever appeared.
+      httpOnly: false,
     });
   });
 
