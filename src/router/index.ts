@@ -67,6 +67,13 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/projects/paytime",
+      name: "paytime",
+      component: () =>
+        import("@/components/projects/paytime/PayTimeApp.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/blog",
       name: "blog",
       component: () => import("@/views/BlogView.vue"),

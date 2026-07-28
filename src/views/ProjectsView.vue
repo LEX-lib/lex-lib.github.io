@@ -50,6 +50,15 @@ const projects = ref<Project[]>([
     tags: ["Vue 3", "Fetch API"],
   },
   {
+    title: "PayTime",
+    description:
+      "A payment log book for boarding house living — track monthly electricity, internet, and boarding fee payments, and split shared electricity bills with sub-meter support.",
+    link: "/projects/paytime",
+    status: "WIP",
+    icon: "mdi:cash-clock",
+    tags: ["Vue 3", "PocketBase", "Auth"],
+  },
+  {
     title: "Kaheeta",
     description:
       "A digital wallet — the Ilonggo word for it — that keeps your everyday essentials in one private vault: membership cards, IDs, vaccination records, and receipts, with per-user privacy enforced server-side.",
