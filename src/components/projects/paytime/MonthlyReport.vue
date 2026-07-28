@@ -84,15 +84,17 @@ onMounted(loadReport);
     <p v-else-if="!rows.length" class="text-sm opacity-70">
       No payments logged for {{ dayjs(month).format("MMMM YYYY") }}.
     </p>
-    <div v-else class="overflow-x-auto">
-      <table class="w-full text-sm border-collapse">
+    <!-- Five columns won't fit a phone, so the table scrolls inside its own
+         container rather than making the page scroll sideways. -->
+    <div v-else class="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <table class="w-full min-w-[40rem] text-sm border-collapse">
         <thead>
           <tr class="border-b border-surface-divider text-left">
-            <th class="py-2 pr-4">Boarder</th>
-            <th class="py-2 pr-4">Electricity</th>
-            <th class="py-2 pr-4">Internet</th>
-            <th class="py-2 pr-4">Boarding Fee</th>
-            <th class="py-2">Others</th>
+            <th class="py-2 pr-4 whitespace-nowrap">Boarder</th>
+            <th class="py-2 pr-4 whitespace-nowrap">Electricity</th>
+            <th class="py-2 pr-4 whitespace-nowrap">Internet</th>
+            <th class="py-2 pr-4 whitespace-nowrap">Boarding Fee</th>
+            <th class="py-2 whitespace-nowrap">Others</th>
           </tr>
         </thead>
         <tbody>
@@ -105,7 +107,7 @@ onMounted(loadReport);
             <td
               v-for="key in (['electricity', 'internet', 'boarding_fee'] as const)"
               :key="key"
-              class="py-2 pr-4"
+              class="py-2 pr-4 whitespace-nowrap"
             >
               <template v-if="row[key]">
                 <i class="pi pi-check-circle text-green-600 mr-1" />

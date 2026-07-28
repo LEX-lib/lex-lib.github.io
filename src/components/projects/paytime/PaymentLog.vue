@@ -353,11 +353,12 @@ onMounted(loadPayments);
           </Message>
         </div>
       </div>
-      <div class="flex flex-wrap gap-2 sm:self-start">
+      <div class="flex gap-2 sm:self-start">
         <Button
           :label="isEditing ? 'Update Payment' : 'Save Payment'"
           icon="pi pi-check"
           :loading="isSaving"
+          class="flex-1 sm:flex-none"
           @click="savePayment"
         />
         <Button
@@ -367,6 +368,7 @@ onMounted(loadPayments);
           severity="secondary"
           outlined
           :disabled="isSaving"
+          class="flex-1 sm:flex-none"
           @click="exitEditMode"
         />
       </div>
@@ -382,52 +384,64 @@ onMounted(loadPayments);
       <div
         v-for="payment in payments"
         :key="payment.id"
-        class="rounded-lg border bg-surface-card p-4 flex flex-wrap items-center gap-3"
+        class="rounded-lg border bg-surface-card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
         :class="
           editingRecord?.id === payment.id
             ? 'border-primary ring-1 ring-primary'
             : 'border-surface-divider'
         "
       >
-        <Tag :value="categoryLabel(payment.category)" />
-        <span class="text-sm font-medium">{{
-          dayjs(payment.month + "-01").format("MMMM YYYY")
-        }}</span>
-        <span class="text-sm opacity-70">
-          paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
-        </span>
-        <span v-if="payment.amount" class="text-sm font-semibold">
-          ₱{{ payment.amount.toLocaleString("en-PH") }}
-        </span>
-        <span v-if="payment.notes" class="text-sm opacity-70 italic">
-          {{ payment.notes }}
-        </span>
-        <a
-          v-if="payment.screenshot"
-          :href="screenshotUrl(payment)"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-sm underline"
-        >
-          <i class="pi pi-image mr-1" />proof
-        </a>
-        <div class="ml-auto flex items-center gap-1">
-          <Button
-            icon="pi pi-pencil"
-            severity="secondary"
-            text
-            size="small"
-            :aria-label="`Edit ${categoryLabel(payment.category)} payment`"
-            @click="startEdit(payment)"
-          />
-          <Button
-            icon="pi pi-trash"
-            severity="danger"
-            text
-            size="small"
-            :aria-label="`Delete ${categoryLabel(payment.category)} payment`"
-            @click="deletePayment(payment)"
-          />
+        <!-- Details. min-w-0 lets long notes wrap instead of widening the row. -->
+        <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
+          <div class="flex items-center gap-2">
+            <Tag :value="categoryLabel(payment.category)" />
+            <span class="text-sm font-medium">
+              {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm opacity-70">
+            <span>
+              paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
+            </span>
+            <a
+              v-if="payment.screenshot"
+              :href="screenshotUrl(payment)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >
+              <i class="pi pi-image mr-1" />proof
+            </a>
+          </div>
+          <p v-if="payment.notes" class="text-sm opacity-70 italic break-words">
+            {{ payment.notes }}
+          </p>
+        </div>
+
+        <!-- Amount and actions share one line on mobile, sit at the end on
+             wider screens. -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span v-if="payment.amount" class="text-sm font-semibold whitespace-nowrap">
+            ₱{{ payment.amount.toLocaleString("en-PH") }}
+          </span>
+          <div class="ml-auto flex items-center gap-1">
+            <Button
+              icon="pi pi-pencil"
+              severity="secondary"
+              text
+              rounded
+              :aria-label="`Edit ${categoryLabel(payment.category)} payment`"
+              @click="startEdit(payment)"
+            />
+            <Button
+              icon="pi pi-trash"
+              severity="danger"
+              text
+              rounded
+              :aria-label="`Delete ${categoryLabel(payment.category)} payment`"
+              @click="deletePayment(payment)"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -14,19 +14,20 @@ const isAdmin = computed(() => auth.user?.is_admin === true);
   <div class="min-h-screen bg-surface-page">
     <!-- PaymentLog's delete confirmation renders here, at the shell level. -->
     <ConfirmDialog />
-    <div class="container mx-auto px-6 lg:px-12 py-10">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-10">
       <h1
-        class="text-3xl lg:text-4xl font-bold mb-2"
+        class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2"
         style="color: var(--color-typo-heading)"
       >
         PayTime
         <span style="color: var(--color-brand-accent)">.</span>
       </h1>
-      <p class="mb-8" style="color: var(--color-typo-body)">
+      <p class="mb-6 sm:mb-8" style="color: var(--color-typo-body)">
         Track your boarding house payments and split shared bills.
       </p>
 
-      <Tabs value="log">
+      <!-- scrollable so the tab strip doesn't overflow a narrow screen -->
+      <Tabs value="log" scrollable>
         <TabList>
           <Tab value="log">My Payments</Tab>
           <Tab value="calculator">Electricity Calculator</Tab>

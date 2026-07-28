@@ -95,9 +95,9 @@ const php = (value: number) =>
       <div
         v-for="(meter, index) in subMeters"
         :key="index"
-        class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end border border-surface-divider rounded-lg p-3"
+        class="grid grid-cols-2 sm:grid-cols-4 gap-3 items-end border border-surface-divider rounded-lg p-3"
       >
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1 col-span-2 sm:col-span-1">
           <label class="text-xs font-medium">Label</label>
           <InputText v-model="meter.label" fluid />
         </div>
@@ -113,7 +113,7 @@ const php = (value: number) =>
           <label class="text-xs font-medium">Reading to</label>
           <InputNumber v-model="meter.readingTo" :maxFractionDigits="2" fluid />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 col-span-2 sm:col-span-1">
           <span class="text-sm flex-1">
             = {{ (meter.readingTo - meter.readingFrom).toFixed(2) }} kWh
           </span>
@@ -147,23 +147,31 @@ const php = (value: number) =>
     <!-- Results -->
     <div
       v-if="shares"
-      class="rounded-xl border border-surface-divider bg-surface-card p-5 flex flex-col gap-3"
+      class="rounded-xl border border-surface-divider bg-surface-card p-4 sm:p-5 flex flex-col gap-3"
     >
-      <div class="flex justify-between text-sm">
-        <span>Price per kWh</span>
-        <span class="font-semibold">{{ php(shares.pricePerKwh) }}</span>
+      <div class="flex justify-between gap-3 text-sm">
+        <span class="min-w-0">Price per kWh</span>
+        <span class="font-semibold whitespace-nowrap">{{
+          php(shares.pricePerKwh)
+        }}</span>
       </div>
       <div
         v-for="meter in shares.subMeters"
         :key="meter.label"
-        class="flex justify-between text-sm"
+        class="flex justify-between gap-3 text-sm"
       >
-        <span>{{ meter.label }} ({{ meter.kwh.toFixed(2) }} kWh)</span>
-        <span class="font-semibold">{{ php(meter.amount) }}</span>
+        <span class="min-w-0 break-words"
+          >{{ meter.label }} ({{ meter.kwh.toFixed(2) }} kWh)</span
+        >
+        <span class="font-semibold whitespace-nowrap">{{
+          php(meter.amount)
+        }}</span>
       </div>
-      <div class="flex justify-between text-sm">
-        <span>Group 1 ({{ shares.group1Kwh.toFixed(2) }} kWh)</span>
-        <span class="font-semibold">{{ php(shares.group1Amount) }}</span>
+      <div class="flex justify-between gap-3 text-sm">
+        <span class="min-w-0">Group 1 ({{ shares.group1Kwh.toFixed(2) }} kWh)</span>
+        <span class="font-semibold whitespace-nowrap">{{
+          php(shares.group1Amount)
+        }}</span>
       </div>
       <Message
         v-if="shares.group1Kwh < 0"
@@ -173,13 +181,15 @@ const php = (value: number) =>
         Sub-meters consumed more than the total reading — check the inputs.
       </Message>
       <div
-        class="flex justify-between border-t border-surface-divider pt-3 text-base"
+        class="flex justify-between gap-3 border-t border-surface-divider pt-3 text-base"
       >
-        <span class="font-semibold"
+        <span class="font-semibold min-w-0"
           >Per person in Group 1 ({{ group1People }}
           {{ group1People === 1 ? "person" : "people" }})</span
         >
-        <span class="font-bold">{{ php(shares.perPersonAmount) }}</span>
+        <span class="font-bold whitespace-nowrap">{{
+          php(shares.perPersonAmount)
+        }}</span>
       </div>
     </div>
     <p v-else class="text-sm opacity-70">
