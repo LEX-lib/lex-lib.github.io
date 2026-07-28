@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import { toast } from "vue-sonner";
+import { useConfirm } from "primevue/useconfirm"; // explicit — NOT auto-resolved by PrimeVueResolver
 import { pb } from "@/lib/pocketbase";
 import { useAuthStore } from "@/stores/auth";
 import { useFileToken } from "@/composables/useFileToken";
-import { mapToCreatePayment } from "@/lib/pocketbase/paytimePaymentMapper";
+import {
+  mapToCreatePayment,
+  mapToUpdatePayment,
+} from "@/lib/pocketbase/paytimePaymentMapper";
 import {
   AcceptedScreenshotTypes,
   collectFieldErrors,
@@ -17,6 +21,7 @@ import type {
 } from "@/types/paytime/payments/types";
 
 const auth = useAuthStore();
+const confirm = useConfirm();
 // `screenshot` is a protected file field — URLs need a file token or they 403.
 const { token: fileToken } = useFileToken();
 
@@ -41,6 +46,10 @@ const isSaving = ref(false);
 
 const fieldErrors = ref<Record<string, string>>({});
 const screenshotAccept = AcceptedScreenshotTypes.join(",");
+
+/** Non-null while the form is editing an existing row instead of creating one. */
+const editingRecord = ref<PaytimePayment | null>(null);
+const isEditing = computed(() => editingRecord.value !== null);
 
 const payments = ref<PaytimePayment[]>([]);
 const isLoading = ref(false);
@@ -101,14 +110,45 @@ const describeSaveError = (error: unknown): string => {
   return (error as Error)?.message ?? "unknown error";
 };
 
-const resetForm = () => {
-  amount.value = null;
-  notes.value = "";
+const clearScreenshotPick = () => {
   screenshot.value = null;
-  fieldErrors.value = {};
   if (screenshotInput.value) {
     screenshotInput.value.value = "";
   }
+};
+
+/**
+ * After a successful create. Category, month, and date stay put on purpose —
+ * boarders usually log several payments for the same month in one sitting.
+ */
+const resetForm = () => {
+  amount.value = null;
+  notes.value = "";
+  fieldErrors.value = {};
+  clearScreenshotPick();
+};
+
+/** Leaves edit mode and returns the form to create-a-new-payment defaults. */
+const exitEditMode = () => {
+  editingRecord.value = null;
+  category.value = "electricity";
+  month.value = new Date();
+  paymentDate.value = new Date();
+  amount.value = null;
+  notes.value = "";
+  fieldErrors.value = {};
+  clearScreenshotPick();
+};
+
+const startEdit = (payment: PaytimePayment) => {
+  editingRecord.value = payment;
+  category.value = payment.category;
+  month.value = dayjs(`${payment.month}-01`).toDate();
+  paymentDate.value = dayjs(payment.payment_date).toDate();
+  amount.value = payment.amount ?? null;
+  notes.value = payment.notes ?? "";
+  fieldErrors.value = {};
+  clearScreenshotPick();
 };
 
 // Clear stale inline errors as soon as the user touches anything.
@@ -132,7 +172,9 @@ const savePayment = async () => {
       ? dayjs(paymentDate.value).format("YYYY-MM-DD")
       : undefined,
     amount: amount.value ?? undefined,
-    notes: notes.value || undefined,
+    // Notes only exist for "Others"; dropping them on any other category
+    // stops a note lingering invisibly after the category is switched.
+    notes: category.value === "others" ? notes.value || undefined : undefined,
     screenshot: screenshot.value ?? undefined,
   });
 
@@ -143,32 +185,58 @@ const savePayment = async () => {
   }
   fieldErrors.value = {};
 
+  const editing = editingRecord.value;
   isSaving.value = true;
   try {
-    const formData = mapToCreatePayment({
-      user: auth.user.id,
-      ...parsed.data,
-    });
-    await pb.collection("paytime_payments").create(formData);
-    toast.success("Payment logged");
-    resetForm();
+    if (editing) {
+      await pb
+        .collection("paytime_payments")
+        .update(editing.id, mapToUpdatePayment(parsed.data));
+      toast.success("Payment updated");
+      exitEditMode();
+    } else {
+      await pb
+        .collection("paytime_payments")
+        .create(mapToCreatePayment({ user: auth.user.id, ...parsed.data }));
+      toast.success("Payment logged");
+      resetForm();
+    }
     await loadPayments();
   } catch (error) {
-    toast.error(`Failed to save payment: ${describeSaveError(error)}`);
-    console.error("PaymentLog: create failed", error);
+    toast.error(
+      `Failed to ${editing ? "update" : "save"} payment: ${describeSaveError(error)}`,
+    );
+    console.error("PaymentLog: save failed", error);
   } finally {
     isSaving.value = false;
   }
 };
 
-const deletePayment = async (payment: PaytimePayment) => {
+const removePayment = async (payment: PaytimePayment) => {
   try {
     await pb.collection("paytime_payments").delete(payment.id);
     toast.success("Payment deleted");
     payments.value = payments.value.filter((item) => item.id !== payment.id);
+    // Don't leave the form editing a row that no longer exists.
+    if (editingRecord.value?.id === payment.id) {
+      exitEditMode();
+    }
   } catch {
     toast.error("Failed to delete payment");
   }
+};
+
+const deletePayment = (payment: PaytimePayment) => {
+  confirm.require({
+    header: "Delete payment",
+    message: `Delete the ${categoryLabel(payment.category)} payment for ${dayjs(
+      `${payment.month}-01`,
+    ).format("MMMM YYYY")}? This cannot be undone.`,
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: { label: "Cancel", severity: "secondary", outlined: true },
+    acceptProps: { label: "Delete", severity: "danger" },
+    accept: () => removePayment(payment),
+  });
 };
 
 onMounted(loadPayments);
@@ -180,7 +248,9 @@ onMounted(loadPayments);
     <div
       class="rounded-xl border border-surface-divider bg-surface-card p-5 flex flex-col gap-4 max-w-2xl"
     >
-      <h3 class="font-semibold">Log a Payment</h3>
+      <h3 class="font-semibold">
+        {{ isEditing ? "Edit Payment" : "Log a Payment" }}
+      </h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-medium" for="pt-category">Payment for</label>
@@ -265,18 +335,41 @@ onMounted(loadPayments);
             class="text-sm"
             @change="onScreenshotChange"
           />
+          <p
+            v-if="isEditing && editingRecord?.screenshot"
+            class="text-xs opacity-70"
+          >
+            A proof is already attached
+            <a
+              :href="screenshotUrl(editingRecord)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+              >(view)</a
+            >. Choosing a file replaces it.
+          </p>
           <Message v-if="fieldErrors.screenshot" severity="error" size="small" variant="simple">
             {{ fieldErrors.screenshot }}
           </Message>
         </div>
       </div>
-      <Button
-        label="Save Payment"
-        icon="pi pi-check"
-        :loading="isSaving"
-        class="sm:self-start"
-        @click="savePayment"
-      />
+      <div class="flex flex-wrap gap-2 sm:self-start">
+        <Button
+          :label="isEditing ? 'Update Payment' : 'Save Payment'"
+          icon="pi pi-check"
+          :loading="isSaving"
+          @click="savePayment"
+        />
+        <Button
+          v-if="isEditing"
+          label="Cancel"
+          icon="pi pi-times"
+          severity="secondary"
+          outlined
+          :disabled="isSaving"
+          @click="exitEditMode"
+        />
+      </div>
     </div>
 
     <!-- Payment history -->
@@ -289,7 +382,12 @@ onMounted(loadPayments);
       <div
         v-for="payment in payments"
         :key="payment.id"
-        class="rounded-lg border border-surface-divider bg-surface-card p-4 flex flex-wrap items-center gap-3"
+        class="rounded-lg border bg-surface-card p-4 flex flex-wrap items-center gap-3"
+        :class="
+          editingRecord?.id === payment.id
+            ? 'border-primary ring-1 ring-primary'
+            : 'border-surface-divider'
+        "
       >
         <Tag :value="categoryLabel(payment.category)" />
         <span class="text-sm font-medium">{{
@@ -313,14 +411,24 @@ onMounted(loadPayments);
         >
           <i class="pi pi-image mr-1" />proof
         </a>
-        <Button
-          icon="pi pi-trash"
-          severity="danger"
-          text
-          size="small"
-          class="ml-auto"
-          @click="deletePayment(payment)"
-        />
+        <div class="ml-auto flex items-center gap-1">
+          <Button
+            icon="pi pi-pencil"
+            severity="secondary"
+            text
+            size="small"
+            :aria-label="`Edit ${categoryLabel(payment.category)} payment`"
+            @click="startEdit(payment)"
+          />
+          <Button
+            icon="pi pi-trash"
+            severity="danger"
+            text
+            size="small"
+            :aria-label="`Delete ${categoryLabel(payment.category)} payment`"
+            @click="deletePayment(payment)"
+          />
+        </div>
       </div>
     </div>
   </div>

@@ -12,6 +12,8 @@ const isAdmin = computed(() => auth.user?.is_admin === true);
 
 <template>
   <div class="min-h-screen bg-surface-page">
+    <!-- PaymentLog's delete confirmation renders here, at the shell level. -->
+    <ConfirmDialog />
     <div class="container mx-auto px-6 lg:px-12 py-10">
       <h1
         class="text-3xl lg:text-4xl font-bold mb-2"

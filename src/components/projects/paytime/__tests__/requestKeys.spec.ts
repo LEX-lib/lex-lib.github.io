@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import ConfirmationService from "primevue/confirmationservice";
 
 const record = {
   amount: 123,
@@ -40,6 +41,8 @@ vi.mock("@/stores/auth", () => ({
 
 const mountOptions = {
   global: {
+    // PaymentLog's delete guard uses useConfirm, which needs the service.
+    plugins: [ConfirmationService],
     stubs: {
       Select: true,
       DatePicker: true,
