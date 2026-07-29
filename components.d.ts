@@ -66,6 +66,7 @@ declare module 'vue' {
     ManageExpense: typeof import('./src/components/projects/wallecx/ManageExpense.vue')['default']
     ManageMeeting: typeof import('./src/components/projects/lextrack/ManageMeeting.vue')['default']
     ManageMembership: typeof import('./src/components/projects/wallecx/ManageMembership.vue')['default']
+    ManagePayment: typeof import('./src/components/projects/paytime/ManagePayment.vue')['default']
     ManageSupport: typeof import('./src/components/projects/lextrack/ManageSupport.vue')['default']
     ManageTask: typeof import('./src/components/projects/lextrack/ManageTask.vue')['default']
     ManageVaccination: typeof import('./src/components/projects/wallecx/ManageVaccination.vue')['default']

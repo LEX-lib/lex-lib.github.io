@@ -54,6 +54,7 @@ const mountOptions = {
       FileUpload: true,
       Image: true,
       Menu: true,
+      ManagePayment: true,
     },
   },
 };

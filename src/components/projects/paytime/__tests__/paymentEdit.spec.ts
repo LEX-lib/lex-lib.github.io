@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import ConfirmationService from "primevue/confirmationservice";
 import PrimeVue from "primevue/config";
+import type { PaytimePayment } from "@/types/paytime/payments/types";
 
 const record = {
   amount: 123,
@@ -16,7 +16,7 @@ const record = {
   screenshot: "whiteboard_q19696dkv2.png",
   updated: "2026-07-28 07:52:35.587Z",
   user: "4ygxbt0zey088di",
-};
+} as unknown as PaytimePayment;
 
 const create = vi.fn();
 const update = vi.fn();
@@ -24,10 +24,8 @@ const update = vi.fn();
 vi.mock("@/lib/pocketbase", () => ({
   pb: {
     collection: () => ({
-      getFullList: async () => [record],
       create: (...args: unknown[]) => create(...args),
       update: (...args: unknown[]) => update(...args),
-      delete: async () => true,
     }),
     files: {
       getURL: () => "https://example.test/proof.png",
@@ -41,33 +39,38 @@ vi.mock("@/stores/auth", () => ({
   useAuthStore: () => ({ user: { id: "4ygxbt0zey088di" }, isLoggedIn: true }),
 }));
 
-// Button is left unstubbed so the real <button> elements (and their
-// aria-labels) exist to click.
-const mountOptions = {
+// Dialog is NOT stubbed — its default slot and footer must render for the
+// buttons to exist. Button is real so the aria-labels/text are clickable.
+const mountOptions = (current: PaytimePayment | null) => ({
+  props: { visible: true, record: current },
   global: {
-    plugins: [PrimeVue, ConfirmationService],
+    plugins: [PrimeVue],
+    // Inline validation text lives in Message's default slot.
+    renderStubDefaultSlot: true,
     stubs: {
+      // Dialog teleports to body by default, which puts its content outside
+      // the wrapper — stub the teleport so it renders in place.
+      teleport: true,
       Select: true,
       DatePicker: true,
       InputNumber: true,
       Textarea: true,
       Message: true,
-      Tag: true,
       FileUpload: true,
-      Image: true,
-      Menu: true,
     },
   },
-};
+});
 
-const clickByLabel = async (wrapper: ReturnType<typeof mount>, text: string) => {
-  const button = wrapper
-    .findAll("button")
-    .find(
-      (candidate) =>
-        candidate.attributes("aria-label")?.includes(text) ||
-        candidate.text().includes(text),
-    );
+/** Dialog content appears via an appear-transition, so wait for it. */
+const waitForText = (wrapper: ReturnType<typeof mount>, text: string) =>
+  vi.waitFor(() => expect(wrapper.text()).toContain(text));
+
+const clickByText = async (
+  wrapper: ReturnType<typeof mount>,
+  text: string,
+) => {
+  await waitForText(wrapper, text);
+  const button = wrapper.findAll("button").find((c) => c.text().includes(text));
   expect(button, `no button matching "${text}"`).toBeTruthy();
   await button!.trigger("click");
 };
@@ -77,41 +80,44 @@ beforeEach(() => {
   update.mockReset().mockResolvedValue(record);
 });
 
-describe("PaymentLog edit flow", () => {
-  it("updates the existing row instead of creating a new one", async () => {
-    const PaymentLog = (await import("../PaymentLog.vue")).default;
-    const wrapper = mount(PaymentLog, mountOptions);
-    await vi.waitFor(() => expect(wrapper.html()).toContain("July 2026"));
+describe("ManagePayment", () => {
+  it("updates the existing record when opened with one", async () => {
+    const ManagePayment = (await import("../ManagePayment.vue")).default;
+    const wrapper = mount(ManagePayment, mountOptions(record));
 
-    expect(wrapper.text()).toContain("Log a Payment");
-
-    await clickByLabel(wrapper, "Edit");
-    expect(wrapper.text()).toContain("Edit Payment");
-    expect(wrapper.text()).toContain("Update Payment");
-
-    await clickByLabel(wrapper, "Update Payment");
+    await waitForText(wrapper, "Edit Payment");
+    await clickByText(wrapper, "Update Payment");
     await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1));
 
     expect(update.mock.calls[0][0]).toBe(record.id);
     expect(create).not.toHaveBeenCalled();
-
-    // Back to create mode once the update lands.
-    await vi.waitFor(() => expect(wrapper.text()).toContain("Log a Payment"));
+    // Closes itself on success.
+    expect(wrapper.emitted("update:visible")?.at(-1)).toEqual([false]);
     wrapper.unmount();
   });
 
-  it("cancelling edit returns to create mode without saving", async () => {
-    const PaymentLog = (await import("../PaymentLog.vue")).default;
-    const wrapper = mount(PaymentLog, mountOptions);
-    await vi.waitFor(() => expect(wrapper.html()).toContain("July 2026"));
+  it("creates a new record when opened without one", async () => {
+    const ManagePayment = (await import("../ManagePayment.vue")).default;
+    const wrapper = mount(ManagePayment, mountOptions(null));
 
-    await clickByLabel(wrapper, "Edit");
-    expect(wrapper.text()).toContain("Edit Payment");
+    await waitForText(wrapper, "Log a Payment");
+    // Amount is required and defaults to empty, so seed it before saving.
+    (wrapper.vm as unknown as { amount: number | null }).amount = 500;
+    await wrapper.vm.$nextTick();
 
-    await clickByLabel(wrapper, "Cancel");
-    expect(wrapper.text()).toContain("Log a Payment");
+    await clickByText(wrapper, "Save Payment");
+    await vi.waitFor(() => expect(create).toHaveBeenCalledTimes(1));
     expect(update).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it("blocks saving when amount is missing", async () => {
+    const ManagePayment = (await import("../ManagePayment.vue")).default;
+    const wrapper = mount(ManagePayment, mountOptions(null));
+
+    await clickByText(wrapper, "Save Payment");
     expect(create).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Amount is required.");
     wrapper.unmount();
   });
 });
