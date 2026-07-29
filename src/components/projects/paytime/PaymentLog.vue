@@ -13,9 +13,12 @@ import {
 import {
   AcceptedScreenshotTypes,
   collectFieldErrors,
-  MaxScreenshotBytes,
   paymentSchema,
 } from "@/lib/paytime/paymentSchema";
+import {
+  MaxSourceScreenshotBytes,
+  prepareScreenshot,
+} from "@/lib/paytime/prepareScreenshot";
 import type {
   PaymentCategory,
   PaytimePayment,
@@ -48,7 +51,13 @@ const screenshot = ref<File | null>(null);
  * the same filename afterwards fires no change event and the file is lost.
  */
 const screenshotResetKey = ref(0);
+const isProcessingScreenshot = ref(false);
 const isSaving = ref(false);
+
+const formatBytes = (bytes: number) =>
+  bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
 
 const fieldErrors = ref<Record<string, string>>({});
 const screenshotAccept = AcceptedScreenshotTypes.join(",");
@@ -60,9 +69,26 @@ const isEditing = computed(() => editingRecord.value !== null);
 const payments = ref<PaytimePayment[]>([]);
 const isLoading = ref(false);
 
-const onScreenshotSelect = (event: { files: File[] }) => {
+const onScreenshotSelect = async (event: { files: File[] }) => {
   // Single-file mode, but take the last entry so a re-pick wins.
-  screenshot.value = event.files?.[event.files.length - 1] ?? null;
+  const picked = event.files?.[event.files.length - 1] ?? null;
+  if (!picked) {
+    screenshot.value = null;
+    return;
+  }
+
+  isProcessingScreenshot.value = true;
+  try {
+    const { file, isCompressed } = await prepareScreenshot(picked);
+    screenshot.value = file;
+    if (isCompressed) {
+      toast.info(
+        `Image compressed: ${formatBytes(picked.size)} → ${formatBytes(file.size)}`,
+      );
+    }
+  } finally {
+    isProcessingScreenshot.value = false;
+  }
 };
 
 const screenshotUrl = (payment: PaytimePayment) =>
@@ -338,13 +364,22 @@ onMounted(loadPayments);
             :auto="false"
             customUpload
             :accept="screenshotAccept"
-            :maxFileSize="MaxScreenshotBytes"
+            :maxFileSize="MaxSourceScreenshotBytes"
             chooseLabel="Choose image"
             chooseIcon="pi pi-image"
+            :disabled="isProcessingScreenshot"
             class="w-full sm:w-auto"
             @select="onScreenshotSelect"
             @clear="screenshot = null"
           />
+          <p v-if="isProcessingScreenshot" class="text-xs opacity-70">
+            <i class="pi pi-spin pi-spinner mr-1" />Compressing image…
+          </p>
+          <p v-else-if="screenshot" class="text-xs opacity-70">
+            Will upload as {{ screenshot.name }} ({{
+              formatBytes(screenshot.size)
+            }})
+          </p>
           <p
             v-if="isEditing && editingRecord?.screenshot"
             class="text-xs opacity-70"
@@ -368,6 +403,7 @@ onMounted(loadPayments);
           :label="isEditing ? 'Update Payment' : 'Save Payment'"
           icon="pi pi-check"
           :loading="isSaving"
+          :disabled="isProcessingScreenshot"
           class="flex-1 sm:flex-none"
           @click="savePayment"
         />
