@@ -497,6 +497,18 @@ onMounted(loadPayments);
             <span class="text-sm font-medium">
               {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
             </span>
+            <!-- Mobile only, and it lives on this line so it sits level with
+                 the category rather than dropping to the amount row. -->
+            <div class="ml-auto sm:hidden">
+              <Button
+                icon="pi pi-ellipsis-v"
+                severity="secondary"
+                text
+                rounded
+                :aria-label="`More options for ${categoryLabel(payment.category)} payment`"
+                @click="openRowMenu($event, payment)"
+              />
+            </div>
           </div>
           <span class="text-sm opacity-70">
             paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
@@ -513,42 +525,35 @@ onMounted(loadPayments);
             ₱{{ payment.amount.toLocaleString("en-PH") }}
           </span>
 
-          <Image
-            v-if="payment.screenshot"
-            :src="screenshotThumbUrl(payment)"
-            :alt="`Proof of ${categoryLabel(payment.category)} payment`"
-            preview
-            class="shrink-0"
-            imageClass="h-12 w-12 rounded object-cover border border-surface-divider"
-          >
-            <!-- Preview the full file, not the thumbnail. Reuse the slot's own
-                 class and style so zoom and rotate keep working. -->
-            <template #original="slotProps">
-              <img
-                :src="screenshotUrl(payment)"
-                :alt="`Proof of ${categoryLabel(payment.category)} payment`"
-                :class="slotProps.class"
-                :style="slotProps.style"
-                @click="slotProps.previewCallback?.()"
-              />
-            </template>
-          </Image>
+          <!-- ml-auto pins the proof to the right edge on mobile; from sm up
+               it just sits between the amount and the actions. Layout classes
+               go on this wrapper rather than the PrimeVue component. -->
+          <div v-if="payment.screenshot" class="ml-auto shrink-0 sm:ml-0">
+            <Image
+              :src="screenshotThumbUrl(payment)"
+              :alt="`Proof of ${categoryLabel(payment.category)} payment`"
+              preview
+              imageClass="h-12 w-12 rounded object-cover border border-surface-divider"
+            >
+              <!-- Preview the full file, not the thumbnail. Reuse the slot's own
+                   class and style so zoom and rotate keep working. -->
+              <template #original="slotProps">
+                <img
+                  :src="screenshotUrl(payment)"
+                  :alt="`Proof of ${categoryLabel(payment.category)} payment`"
+                  :class="slotProps.class"
+                  :style="slotProps.style"
+                  @click="slotProps.previewCallback?.()"
+                />
+              </template>
+            </Image>
+          </div>
 
           <!-- Breakpoint classes go on plain wrappers, never on a PrimeVue
                Button: Tailwind utilities live in a cascade layer, PrimeVue's
                .p-button{display:inline-flex} does not, and unlayered styles
                win — so sm:hidden on the Button itself is silently ignored. -->
-          <div class="ml-auto sm:hidden">
-            <Button
-              icon="pi pi-ellipsis-v"
-              severity="secondary"
-              text
-              rounded
-              :aria-label="`More options for ${categoryLabel(payment.category)} payment`"
-              @click="openRowMenu($event, payment)"
-            />
-          </div>
-          <div class="ml-auto hidden items-center gap-1 sm:flex">
+          <div class="hidden items-center gap-1 sm:flex">
             <Button
               icon="pi pi-pencil"
               severity="secondary"
