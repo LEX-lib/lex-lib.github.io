@@ -3,13 +3,24 @@ import imageCompression from 'browser-image-compression'
 /**
  * Compresses an image File to WebP using browser-image-compression.
  *
- * Preconditions enforced by CALLERS, not by this helper:
- *   - File must already be EXIF-stripped (canvas re-encode in each Manage* dialog's onFileSelect).
- *   - PDFs MUST NOT be passed here — callers short-circuit application/pdf earlier in the flow.
+ * Shared across features — do not add caller-specific behaviour here.
  *
- * Options ({ maxSizeMB: 1.5, maxWidthOrHeight: 2048, useWebWorker: true }) are byte-identical
- * to the previous inline calls in ManageExpense.vue / ManageMembership.vue / ManageVaccination.vue
- * (Phase 36 D-36-09: PRESERVE THESE). The new option is fileType: 'image/webp' (D-36-10).
+ * Caller contract:
+ *   - Images only. Passing a PDF (or anything the browser cannot decode as an
+ *     image) rejects, so callers must short-circuit those first.
+ *   - Rejects rather than degrading when decoding fails. HEIC is the common
+ *     case: only Safari decodes it, so callers that accept HEIC need a
+ *     fallback (see lib/paytime/prepareScreenshot.ts).
+ *   - Output can be LARGER than the input for small or already-optimised
+ *     images; compare sizes if that matters.
+ *
+ * EXIF, including GPS, is dropped as a side effect: browser-image-compression
+ * only copies EXIF across when `preserveExif` is set (default false) AND the
+ * output stays JPEG, and this forces image/webp. So no separate strip pass is
+ * needed — wallecx's Manage* dialogs do one anyway, which is redundant.
+ *
+ * The option values are load-bearing and were tuned deliberately; don't
+ * change them without checking every caller's storage limits.
  */
 export async function compressToWebP(file: File): Promise<File> {
   const compressed = await imageCompression(file, {

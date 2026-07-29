@@ -1,4 +1,4 @@
-import { compressToWebP } from "@/lib/wallecx/compressToWebP";
+import { compressToWebP } from "@/lib/images/compressToWebP";
 
 /**
  * Cap on the file the user may pick. Deliberately much larger than

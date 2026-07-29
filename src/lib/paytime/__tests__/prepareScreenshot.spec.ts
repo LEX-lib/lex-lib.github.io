@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const compressToWebP = vi.fn();
-vi.mock("@/lib/wallecx/compressToWebP", () => ({
+vi.mock("@/lib/images/compressToWebP", () => ({
   compressToWebP: (file: File) => compressToWebP(file),
 }));
 

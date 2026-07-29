@@ -3,7 +3,7 @@ import { ref, computed, watch } from "vue";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { Form, type FormSubmitEvent } from "@primevue/forms";
 import { z } from "zod";
-import { compressToWebP } from '@/lib/wallecx/compressToWebP'
+import { compressToWebP } from '@/lib/images/compressToWebP'
 import { toast } from "vue-sonner";
 import dayjs from "dayjs";
 import { pb } from "@/lib/pocketbase";

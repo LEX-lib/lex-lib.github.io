@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { compressToWebP } from '@/lib/wallecx/compressToWebP'
+import { compressToWebP } from '@/lib/images/compressToWebP'
 import { toast } from 'vue-sonner'
 import dayjs from 'dayjs'
 import { pb } from '@/lib/pocketbase'
