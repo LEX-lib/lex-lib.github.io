@@ -26,8 +26,6 @@ interface ReportRow {
   internet?: PaytimePayment;
   boarding_fee?: PaytimePayment;
   others: PaytimePayment[];
-  total: number;
-  paidCount: number;
 }
 
 const month = ref<Date>(new Date());
@@ -63,13 +61,7 @@ const loadReport = async () => {
         expandedUser?.name || expandedUser?.email || payment.user;
       let row = byUser.get(payment.user);
       if (!row) {
-        row = {
-          userId: payment.user,
-          userName,
-          others: [],
-          total: 0,
-          paidCount: 0,
-        };
+        row = { userId: payment.user, userName, others: [] };
         byUser.set(payment.user, row);
       }
       if (payment.category === "others") {
@@ -77,13 +69,6 @@ const loadReport = async () => {
       } else {
         row[payment.category] = payment;
       }
-      row.total += payment.amount ?? 0;
-    }
-
-    for (const row of byUser.values()) {
-      row.paidCount = FixedCategories.filter(
-        (category) => row[category.value],
-      ).length;
     }
 
     rows.value = [...byUser.values()].sort((a, b) =>
@@ -121,25 +106,12 @@ onMounted(loadReport);
     </p>
 
     <div v-else class="flex flex-col gap-3">
-      <Panel v-for="row in rows" :key="row.userId" toggleable>
-        <template #header>
-          <!-- flex-1 so the summary reaches the toggle button on the right. -->
-          <div class="flex flex-1 flex-wrap items-center justify-between gap-3">
-            <span class="font-medium">{{ row.userName }}</span>
-            <div class="flex items-center gap-2">
-              <Tag
-                :value="`${row.paidCount}/${FixedCategories.length} paid`"
-                :severity="
-                  row.paidCount === FixedCategories.length ? 'success' : 'warn'
-                "
-              />
-              <span class="text-sm font-semibold whitespace-nowrap">
-                {{ peso(row.total) }}
-              </span>
-            </div>
-          </div>
-        </template>
-
+      <Panel
+        v-for="row in rows"
+        :key="row.userId"
+        :header="row.userName"
+        toggleable
+      >
         <div class="flex flex-col divide-y divide-surface-divider">
           <div
             v-for="category in FixedCategories"
