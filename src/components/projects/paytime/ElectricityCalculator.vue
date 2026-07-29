@@ -103,15 +103,22 @@ const php = (value: number) =>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium">Reading from</label>
+          <!-- Meter readings are odometer values, not quantities — no grouping. -->
           <InputNumber
             v-model="meter.readingFrom"
             :maxFractionDigits="2"
+            :useGrouping="false"
             fluid
           />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium">Reading to</label>
-          <InputNumber v-model="meter.readingTo" :maxFractionDigits="2" fluid />
+          <InputNumber
+            v-model="meter.readingTo"
+            :maxFractionDigits="2"
+            :useGrouping="false"
+            fluid
+          />
         </div>
         <div class="flex items-center gap-2 col-span-2 sm:col-span-1">
           <span class="text-sm flex-1">
