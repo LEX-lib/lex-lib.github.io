@@ -490,9 +490,29 @@ onMounted(loadPayments);
             : 'border-surface-divider'
         "
       >
-        <!-- Thumbnail plus details. min-w-0 lets long notes wrap instead of
-             widening the row. -->
-        <div class="flex items-start gap-3 min-w-0 sm:flex-1">
+        <!-- Details. min-w-0 lets long notes wrap instead of widening the row. -->
+        <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
+          <div class="flex items-center gap-2">
+            <Tag :value="categoryLabel(payment.category)" />
+            <span class="text-sm font-medium">
+              {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
+            </span>
+          </div>
+          <span class="text-sm opacity-70">
+            paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
+          </span>
+          <p v-if="payment.notes" class="text-sm opacity-70 italic break-words">
+            {{ payment.notes }}
+          </p>
+        </div>
+
+        <!-- Amount, proof, then actions. Own line on mobile; at the end of the
+             row from sm up. -->
+        <div class="flex items-center gap-4 sm:gap-6">
+          <span v-if="payment.amount" class="text-sm font-semibold whitespace-nowrap">
+            ₱{{ payment.amount.toLocaleString("en-PH") }}
+          </span>
+
           <Image
             v-if="payment.screenshot"
             :src="screenshotThumbUrl(payment)"
@@ -514,38 +534,20 @@ onMounted(loadPayments);
             </template>
           </Image>
 
-          <div class="flex flex-col gap-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <Tag :value="categoryLabel(payment.category)" />
-              <span class="text-sm font-medium">
-                {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
-              </span>
-            </div>
-            <span class="text-sm opacity-70">
-              paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
-            </span>
-            <p v-if="payment.notes" class="text-sm opacity-70 italic break-words">
-              {{ payment.notes }}
-            </p>
+          <!-- Breakpoint classes go on plain wrappers, never on a PrimeVue
+               Button: Tailwind utilities live in a cascade layer, PrimeVue's
+               .p-button{display:inline-flex} does not, and unlayered styles
+               win — so sm:hidden on the Button itself is silently ignored. -->
+          <div class="ml-auto sm:hidden">
+            <Button
+              icon="pi pi-ellipsis-v"
+              severity="secondary"
+              text
+              rounded
+              :aria-label="`More options for ${categoryLabel(payment.category)} payment`"
+              @click="openRowMenu($event, payment)"
+            />
           </div>
-        </div>
-
-        <!-- Amount and actions share one line on mobile, sit at the end on
-             wider screens. -->
-        <div class="flex items-center gap-2 sm:gap-3">
-          <span v-if="payment.amount" class="text-sm font-semibold whitespace-nowrap">
-            ₱{{ payment.amount.toLocaleString("en-PH") }}
-          </span>
-          <!-- Mobile: one kebab. Wider: both actions inline. -->
-          <Button
-            icon="pi pi-ellipsis-v"
-            severity="secondary"
-            text
-            rounded
-            class="ml-auto sm:hidden"
-            :aria-label="`More options for ${categoryLabel(payment.category)} payment`"
-            @click="openRowMenu($event, payment)"
-          />
           <div class="ml-auto hidden items-center gap-1 sm:flex">
             <Button
               icon="pi pi-pencil"
