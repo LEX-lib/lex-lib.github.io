@@ -96,6 +96,26 @@ const screenshotUrl = (payment: PaytimePayment) =>
     ? pb.files.getURL(payment, payment.screenshot, { token: fileToken.value })
     : "";
 
+/**
+ * PocketBase's thumb generator 404s on WebP sources, and every compressed
+ * screenshot is WebP, so those fall back to the full file. Same rule as
+ * wallecx's AttachmentPreview — see Phase 36 PF-07.
+ */
+const screenshotThumbUrl = (payment: PaytimePayment) => {
+  const filename = payment.screenshot;
+  if (!filename) {
+    return "";
+  }
+  const isWebP = filename.toLowerCase().endsWith(".webp");
+  return pb.files.getURL(
+    payment,
+    filename,
+    isWebP
+      ? { token: fileToken.value }
+      : { thumb: "100x100", token: fileToken.value },
+  );
+};
+
 const loadPayments = async () => {
   if (!auth.user) {
     return;
@@ -254,6 +274,39 @@ const removePayment = async (payment: PaytimePayment) => {
   } catch {
     toast.error("Failed to delete payment");
   }
+};
+
+/**
+ * One popup Menu shared by every row rather than a Menu per row — the row it
+ * acts on is whichever opened it.
+ */
+const rowMenu = ref<{ toggle: (event: Event) => void } | null>(null);
+const rowMenuPayment = ref<PaytimePayment | null>(null);
+
+const rowMenuItems = computed(() => [
+  {
+    label: "Edit",
+    icon: "pi pi-pencil",
+    command: () => {
+      if (rowMenuPayment.value) {
+        startEdit(rowMenuPayment.value);
+      }
+    },
+  },
+  {
+    label: "Delete",
+    icon: "pi pi-trash",
+    command: () => {
+      if (rowMenuPayment.value) {
+        deletePayment(rowMenuPayment.value);
+      }
+    },
+  },
+]);
+
+const openRowMenu = (event: Event, payment: PaytimePayment) => {
+  rowMenuPayment.value = payment;
+  rowMenu.value?.toggle(event);
 };
 
 const deletePayment = (payment: PaytimePayment) => {
@@ -437,31 +490,44 @@ onMounted(loadPayments);
             : 'border-surface-divider'
         "
       >
-        <!-- Details. min-w-0 lets long notes wrap instead of widening the row. -->
-        <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
-          <div class="flex items-center gap-2">
-            <Tag :value="categoryLabel(payment.category)" />
-            <span class="text-sm font-medium">
-              {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
-            </span>
-          </div>
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm opacity-70">
-            <span>
+        <!-- Thumbnail plus details. min-w-0 lets long notes wrap instead of
+             widening the row. -->
+        <div class="flex items-start gap-3 min-w-0 sm:flex-1">
+          <Image
+            v-if="payment.screenshot"
+            :src="screenshotThumbUrl(payment)"
+            :alt="`Proof of ${categoryLabel(payment.category)} payment`"
+            preview
+            class="shrink-0"
+            imageClass="h-12 w-12 rounded object-cover border border-surface-divider"
+          >
+            <!-- Preview the full file, not the thumbnail. Reuse the slot's own
+                 class and style so zoom and rotate keep working. -->
+            <template #original="slotProps">
+              <img
+                :src="screenshotUrl(payment)"
+                :alt="`Proof of ${categoryLabel(payment.category)} payment`"
+                :class="slotProps.class"
+                :style="slotProps.style"
+                @click="slotProps.previewCallback?.()"
+              />
+            </template>
+          </Image>
+
+          <div class="flex flex-col gap-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <Tag :value="categoryLabel(payment.category)" />
+              <span class="text-sm font-medium">
+                {{ dayjs(`${payment.month}-01`).format("MMMM YYYY") }}
+              </span>
+            </div>
+            <span class="text-sm opacity-70">
               paid {{ dayjs(payment.payment_date).format("MMM D, YYYY") }}
             </span>
-            <a
-              v-if="payment.screenshot"
-              :href="screenshotUrl(payment)"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline"
-            >
-              <i class="pi pi-image mr-1" />proof
-            </a>
+            <p v-if="payment.notes" class="text-sm opacity-70 italic break-words">
+              {{ payment.notes }}
+            </p>
           </div>
-          <p v-if="payment.notes" class="text-sm opacity-70 italic break-words">
-            {{ payment.notes }}
-          </p>
         </div>
 
         <!-- Amount and actions share one line on mobile, sit at the end on
@@ -470,7 +536,17 @@ onMounted(loadPayments);
           <span v-if="payment.amount" class="text-sm font-semibold whitespace-nowrap">
             ₱{{ payment.amount.toLocaleString("en-PH") }}
           </span>
-          <div class="ml-auto flex items-center gap-1">
+          <!-- Mobile: one kebab. Wider: both actions inline. -->
+          <Button
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            text
+            rounded
+            class="ml-auto sm:hidden"
+            :aria-label="`More options for ${categoryLabel(payment.category)} payment`"
+            @click="openRowMenu($event, payment)"
+          />
+          <div class="ml-auto hidden items-center gap-1 sm:flex">
             <Button
               icon="pi pi-pencil"
               severity="secondary"
@@ -491,5 +567,7 @@ onMounted(loadPayments);
         </div>
       </div>
     </div>
+
+    <Menu ref="rowMenu" :model="rowMenuItems" popup />
   </div>
 </template>

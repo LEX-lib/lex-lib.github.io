@@ -52,6 +52,8 @@ const mountOptions = {
       Button: true,
       Tag: true,
       FileUpload: true,
+      Image: true,
+      Menu: true,
     },
   },
 };
