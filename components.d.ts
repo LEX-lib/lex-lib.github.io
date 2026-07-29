@@ -79,6 +79,7 @@ declare module 'vue' {
     MonthlyReport: typeof import('./src/components/projects/paytime/MonthlyReport.vue')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     OfflineBanner: typeof import('./src/components/OfflineBanner.vue')['default']
+    Panel: typeof import('primevue/panel')['default']
     Password: typeof import('primevue/password')['default']
     PaymentLog: typeof import('./src/components/projects/paytime/PaymentLog.vue')['default']
     PayTimeApp: typeof import('./src/components/projects/paytime/PayTimeApp.vue')['default']

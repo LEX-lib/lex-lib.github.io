@@ -4,14 +4,30 @@ import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { pb } from "@/lib/pocketbase";
 import { useFileToken } from "@/composables/useFileToken";
+import { CategoryOptions } from "@/lib/paytime/categories";
+import {
+  screenshotThumbUrl,
+  screenshotUrl,
+} from "@/lib/paytime/screenshotUrls";
 import type { PaytimePayment } from "@/types/paytime/payments/types";
 
+/** The categories every boarder is expected to pay; "others" is ad hoc. */
+type FixedCategory = "electricity" | "internet" | "boarding_fee";
+
+const FixedCategories = CategoryOptions.filter(
+  (option): option is { label: string; value: FixedCategory } =>
+    option.value !== "others",
+);
+
 interface ReportRow {
+  userId: string;
   userName: string;
   electricity?: PaytimePayment;
   internet?: PaytimePayment;
   boarding_fee?: PaytimePayment;
   others: PaytimePayment[];
+  total: number;
+  paidCount: number;
 }
 
 const month = ref<Date>(new Date());
@@ -21,10 +37,7 @@ const isLoading = ref(false);
 // `screenshot` is a protected file field — URLs need a file token or they 403.
 const { token: fileToken } = useFileToken();
 
-const screenshotUrl = (payment: PaytimePayment) =>
-  payment.screenshot
-    ? pb.files.getURL(payment, payment.screenshot, { token: fileToken.value })
-    : "";
+const peso = (value: number) => `₱${value.toLocaleString("en-PH")}`;
 
 const loadReport = async () => {
   isLoading.value = true;
@@ -50,7 +63,13 @@ const loadReport = async () => {
         expandedUser?.name || expandedUser?.email || payment.user;
       let row = byUser.get(payment.user);
       if (!row) {
-        row = { userName, others: [] };
+        row = {
+          userId: payment.user,
+          userName,
+          others: [],
+          total: 0,
+          paidCount: 0,
+        };
         byUser.set(payment.user, row);
       }
       if (payment.category === "others") {
@@ -58,7 +77,15 @@ const loadReport = async () => {
       } else {
         row[payment.category] = payment;
       }
+      row.total += payment.amount ?? 0;
     }
+
+    for (const row of byUser.values()) {
+      row.paidCount = FixedCategories.filter(
+        (category) => row[category.value],
+      ).length;
+    }
+
     rows.value = [...byUser.values()].sort((a, b) =>
       a.userName.localeCompare(b.userName),
     );
@@ -76,71 +103,126 @@ onMounted(loadReport);
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-1 sm:w-1/3">
-      <label class="text-sm font-medium">Report for the month of</label>
-      <DatePicker v-model="month" view="month" dateFormat="MM yy" fluid />
+      <label class="text-sm font-medium" for="pt-report-month"
+        >Report for the month of</label
+      >
+      <DatePicker
+        inputId="pt-report-month"
+        v-model="month"
+        view="month"
+        dateFormat="MM yy"
+        fluid
+      />
     </div>
 
     <p v-if="isLoading" class="text-sm opacity-70">Loading…</p>
     <p v-else-if="!rows.length" class="text-sm opacity-70">
       No payments logged for {{ dayjs(month).format("MMMM YYYY") }}.
     </p>
-    <!-- Five columns won't fit a phone, so the table scrolls inside its own
-         container rather than making the page scroll sideways. -->
-    <div v-else class="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <table class="w-full min-w-[40rem] text-sm border-collapse">
-        <thead>
-          <tr class="border-b border-surface-divider text-left">
-            <th class="py-2 pr-4 whitespace-nowrap">Boarder</th>
-            <th class="py-2 pr-4 whitespace-nowrap">Electricity</th>
-            <th class="py-2 pr-4 whitespace-nowrap">Internet</th>
-            <th class="py-2 pr-4 whitespace-nowrap">Boarding Fee</th>
-            <th class="py-2 whitespace-nowrap">Others</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in rows"
-            :key="row.userName"
-            class="border-b border-surface-divider align-top"
+
+    <div v-else class="flex flex-col gap-3">
+      <Panel v-for="row in rows" :key="row.userId" toggleable>
+        <template #header>
+          <!-- flex-1 so the summary reaches the toggle button on the right. -->
+          <div class="flex flex-1 flex-wrap items-center justify-between gap-3">
+            <span class="font-medium">{{ row.userName }}</span>
+            <div class="flex items-center gap-2">
+              <Tag
+                :value="`${row.paidCount}/${FixedCategories.length} paid`"
+                :severity="
+                  row.paidCount === FixedCategories.length ? 'success' : 'warn'
+                "
+              />
+              <span class="text-sm font-semibold whitespace-nowrap">
+                {{ peso(row.total) }}
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <div class="flex flex-col divide-y divide-surface-divider">
+          <div
+            v-for="category in FixedCategories"
+            :key="category.value"
+            class="flex items-center gap-3 py-2"
           >
-            <td class="py-2 pr-4 font-medium">{{ row.userName }}</td>
-            <td
-              v-for="key in (['electricity', 'internet', 'boarding_fee'] as const)"
-              :key="key"
-              class="py-2 pr-4 whitespace-nowrap"
-            >
-              <template v-if="row[key]">
-                <i class="pi pi-check-circle text-green-600 mr-1" />
-                {{ dayjs(row[key]!.payment_date).format("MMM D") }}
-                <span v-if="row[key]!.amount" class="opacity-70">
-                  · ₱{{ row[key]!.amount!.toLocaleString("en-PH") }}
-                </span>
-                <a
-                  v-if="row[key]!.screenshot"
-                  :href="screenshotUrl(row[key]!)"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="underline ml-1"
-                  >proof</a
+            <span class="w-28 shrink-0 text-sm font-medium">
+              {{ category.label }}
+            </span>
+
+            <template v-if="row[category.value]">
+              <i class="pi pi-check-circle text-green-600" />
+              <span class="text-sm">
+                {{ dayjs(row[category.value]!.payment_date).format("MMM D") }}
+              </span>
+              <span
+                v-if="row[category.value]!.amount"
+                class="text-sm font-semibold whitespace-nowrap"
+              >
+                {{ peso(row[category.value]!.amount!) }}
+              </span>
+              <div
+                v-if="row[category.value]!.screenshot"
+                class="ml-auto shrink-0"
+              >
+                <Image
+                  :src="screenshotThumbUrl(row[category.value]!, fileToken)"
+                  :alt="`Proof of ${category.label} payment by ${row.userName}`"
+                  preview
+                  imageClass="h-10 w-10 rounded object-cover border border-surface-divider"
                 >
-              </template>
-              <span v-else class="opacity-50">—</span>
-            </td>
-            <td class="py-2">
-              <template v-if="row.others.length">
-                <div v-for="other in row.others" :key="other.id">
-                  <i class="pi pi-check-circle text-green-600 mr-1" />
-                  {{ other.notes || "Others" }}
-                  <span v-if="other.amount" class="opacity-70">
-                    · ₱{{ other.amount.toLocaleString("en-PH") }}
-                  </span>
-                </div>
-              </template>
-              <span v-else class="opacity-50">—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                  <template #original="slotProps">
+                    <img
+                      :src="screenshotUrl(row[category.value]!, fileToken)"
+                      :alt="`Proof of ${category.label} payment by ${row.userName}`"
+                      :class="slotProps.class"
+                      :style="slotProps.style"
+                      @click="slotProps.previewCallback?.()"
+                    />
+                  </template>
+                </Image>
+              </div>
+            </template>
+            <span v-else class="text-sm opacity-50">Not paid</span>
+          </div>
+
+          <div
+            v-for="other in row.others"
+            :key="other.id"
+            class="flex items-center gap-3 py-2"
+          >
+            <span class="w-28 shrink-0 text-sm font-medium">Others</span>
+            <i class="pi pi-check-circle text-green-600" />
+            <span class="min-w-0 break-words text-sm">
+              {{ other.notes || "Others" }}
+            </span>
+            <span
+              v-if="other.amount"
+              class="text-sm font-semibold whitespace-nowrap"
+            >
+              {{ peso(other.amount) }}
+            </span>
+            <div v-if="other.screenshot" class="ml-auto shrink-0">
+              <Image
+                :src="screenshotThumbUrl(other, fileToken)"
+                :alt="`Proof of other payment by ${row.userName}`"
+                preview
+                imageClass="h-10 w-10 rounded object-cover border border-surface-divider"
+              >
+                <template #original="slotProps">
+                  <img
+                    :src="screenshotUrl(other, fileToken)"
+                    :alt="`Proof of other payment by ${row.userName}`"
+                    :class="slotProps.class"
+                    :style="slotProps.style"
+                    @click="slotProps.previewCallback?.()"
+                  />
+                </template>
+              </Image>
+            </div>
+          </div>
+        </div>
+      </Panel>
     </div>
   </div>
 </template>

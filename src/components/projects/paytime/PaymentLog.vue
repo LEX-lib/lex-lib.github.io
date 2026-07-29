@@ -7,6 +7,10 @@ import { pb } from "@/lib/pocketbase";
 import { useAuthStore } from "@/stores/auth";
 import { useFileToken } from "@/composables/useFileToken";
 import { categoryLabel } from "@/lib/paytime/categories";
+import {
+  screenshotThumbUrl,
+  screenshotUrl,
+} from "@/lib/paytime/screenshotUrls";
 import ManagePayment from "./ManagePayment.vue";
 import type { PaytimePayment } from "@/types/paytime/payments/types";
 
@@ -21,31 +25,6 @@ const isLoading = ref(false);
 const isDialogVisible = ref(false);
 /** null puts the dialog in create mode. */
 const dialogRecord = ref<PaytimePayment | null>(null);
-
-const screenshotUrl = (payment: PaytimePayment) =>
-  payment.screenshot
-    ? pb.files.getURL(payment, payment.screenshot, { token: fileToken.value })
-    : "";
-
-/**
- * PocketBase's thumb generator 404s on WebP sources, and every compressed
- * screenshot is WebP, so those fall back to the full file. Same rule as
- * wallecx's AttachmentPreview — see Phase 36 PF-07.
- */
-const screenshotThumbUrl = (payment: PaytimePayment) => {
-  const filename = payment.screenshot;
-  if (!filename) {
-    return "";
-  }
-  const isWebP = filename.toLowerCase().endsWith(".webp");
-  return pb.files.getURL(
-    payment,
-    filename,
-    isWebP
-      ? { token: fileToken.value }
-      : { thumb: "100x100", token: fileToken.value },
-  );
-};
 
 const loadPayments = async () => {
   if (!auth.user) {
@@ -193,7 +172,10 @@ onMounted(loadPayments);
       <!-- Amount, proof, then actions. Own line on mobile; at the end of the
            row from sm up. -->
       <div class="flex items-center gap-4 sm:gap-6">
-        <span v-if="payment.amount" class="text-sm font-semibold whitespace-nowrap">
+        <span
+          v-if="payment.amount"
+          class="text-sm font-semibold whitespace-nowrap"
+        >
           ₱{{ payment.amount.toLocaleString("en-PH") }}
         </span>
 
@@ -202,7 +184,7 @@ onMounted(loadPayments);
              go on this wrapper rather than the PrimeVue component. -->
         <div v-if="payment.screenshot" class="ml-auto shrink-0 sm:ml-0">
           <Image
-            :src="screenshotThumbUrl(payment)"
+            :src="screenshotThumbUrl(payment, fileToken)"
             :alt="`Proof of ${categoryLabel(payment.category)} payment`"
             preview
             imageClass="h-12 w-12 rounded object-cover border border-surface-divider"
@@ -211,7 +193,7 @@ onMounted(loadPayments);
                  class and style so zoom and rotate keep working. -->
             <template #original="slotProps">
               <img
-                :src="screenshotUrl(payment)"
+                :src="screenshotUrl(payment, fileToken)"
                 :alt="`Proof of ${categoryLabel(payment.category)} payment`"
                 :class="slotProps.class"
                 :style="slotProps.style"
