@@ -53,6 +53,7 @@ const mountOptions = {
       Textarea: true,
       Message: true,
       Tag: true,
+      FileUpload: true,
     },
   },
 };

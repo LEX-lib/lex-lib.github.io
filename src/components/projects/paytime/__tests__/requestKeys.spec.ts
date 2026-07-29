@@ -51,6 +51,7 @@ const mountOptions = {
       Message: true,
       Button: true,
       Tag: true,
+      FileUpload: true,
     },
   },
 };

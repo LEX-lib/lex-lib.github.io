@@ -13,6 +13,7 @@ import {
 import {
   AcceptedScreenshotTypes,
   collectFieldErrors,
+  MaxScreenshotBytes,
   paymentSchema,
 } from "@/lib/paytime/paymentSchema";
 import type {
@@ -41,7 +42,12 @@ const paymentDate = ref<Date | null>(new Date());
 const amount = ref<number | null>(null);
 const notes = ref("");
 const screenshot = ref<File | null>(null);
-const screenshotInput = ref<HTMLInputElement | null>(null);
+/**
+ * Bumped to remount FileUpload and wipe its selection. Its own clear() only
+ * resets the underlying input in advanced mode, so in basic mode re-picking
+ * the same filename afterwards fires no change event and the file is lost.
+ */
+const screenshotResetKey = ref(0);
 const isSaving = ref(false);
 
 const fieldErrors = ref<Record<string, string>>({});
@@ -54,9 +60,9 @@ const isEditing = computed(() => editingRecord.value !== null);
 const payments = ref<PaytimePayment[]>([]);
 const isLoading = ref(false);
 
-const onScreenshotChange = (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  screenshot.value = input.files?.[0] ?? null;
+const onScreenshotSelect = (event: { files: File[] }) => {
+  // Single-file mode, but take the last entry so a re-pick wins.
+  screenshot.value = event.files?.[event.files.length - 1] ?? null;
 };
 
 const screenshotUrl = (payment: PaytimePayment) =>
@@ -112,9 +118,7 @@ const describeSaveError = (error: unknown): string => {
 
 const clearScreenshotPick = () => {
   screenshot.value = null;
-  if (screenshotInput.value) {
-    screenshotInput.value.value = "";
-  }
+  screenshotResetKey.value += 1;
 };
 
 /**
@@ -324,16 +328,22 @@ onMounted(loadPayments);
           </Message>
         </div>
         <div class="flex flex-col gap-1 sm:col-span-2">
-          <label class="text-sm font-medium" for="pt-screenshot"
-            >Screenshot / proof of transaction (optional)</label
+          <span class="text-sm font-medium"
+            >Screenshot / proof of transaction (optional)</span
           >
-          <input
-            id="pt-screenshot"
-            ref="screenshotInput"
-            type="file"
+          <FileUpload
+            :key="screenshotResetKey"
+            mode="basic"
+            name="screenshot"
+            :auto="false"
+            customUpload
             :accept="screenshotAccept"
-            class="text-sm"
-            @change="onScreenshotChange"
+            :maxFileSize="MaxScreenshotBytes"
+            chooseLabel="Choose image"
+            chooseIcon="pi pi-image"
+            class="w-full sm:w-auto"
+            @select="onScreenshotSelect"
+            @clear="screenshot = null"
           />
           <p
             v-if="isEditing && editingRecord?.screenshot"
