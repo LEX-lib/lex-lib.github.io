@@ -1,42 +1,51 @@
 ---
 phase: 38-boarder-roster-foundation
 verified: 2026-08-04T19:00:00Z
-status: human_needed
+status: passed
 score: 7/13 truths verified
 behavior_unverified: 6
 overrides_applied: 0
 behavior_unverified_items:
+
   - truth: "ROSTER-03: admin links a boarder to an existing user account (or leaves unlinked), and the account-exclusion filter keeps an already-linked account out of the picker"
     test: "Open Add/Edit Boarder, select an account from the Linked account dropdown, save, and confirm the boarder persists with that account. Then open a second boarder's dialog and confirm the just-linked account no longer appears in its dropdown. Then reopen the first (linked) boarder and confirm its own account still shows selected."
     expected: "The account persists on save; the taken account is excluded everywhere except the boarder that holds it; the unique index rejects a second boarder claiming the same account."
     why_human: "Zero of the 7 live-seeded boarders has a user link (38-COLLECTION.md). The picker's happy path, the exclusion filter, and the unique index's uniqueness half (as opposed to its proven many-unlinked-rows permissive half) have never executed against the live instance or a unit test."
+
   - truth: "ROSTER-05: admin edits an existing boarder's display name, tags and account link, and the change persists"
     test: "Open an existing boarder from the roster (kebab/inline Edit), change the name and/or tags and/or account, save, and confirm the row reflects the change without a page reload."
     expected: "The edit round-trips through the same ManageBoarder dialog in edit mode and persists via pb.collection('paytime_boarders').update."
     why_human: "No unit test exercises ManageBoarder.vue's edit path (only boarderSchema/paytimeBoarderMapper payload-shape tests exist), and the live seeding session (38-COLLECTION.md Task 2) only added boarders — it never edited one."
+
   - truth: "ROSTER-04: admin marks a boarder inactive from the row action menu, and marks them active again from the same menu"
     test: "Open the row action menu (kebab at 390px, inline buttons at desktop) for an active boarder, click Deactivate, confirm the row gets a muted Inactive badge and moves below the active boarders. Click Reactivate on the same row and confirm both reverse."
     expected: "toggleActive's single-field update persists and the shared roster ref patches in place with no refetch; the sort keeps actives first."
     why_human: "No unit test exists for BoarderRosterView.vue's toggleActive/sortedBoarders behavior, and this state transition was not exercised live (WINDOWS.md #6, 38-COLLECTION.md UNVERIFIED list)."
+
   - truth: "Admin deletes a boarder behind a useConfirm confirmation naming the boarder, and the row disappears from the list only after the delete resolves"
     test: "Click Delete on a throwaway boarder, confirm the dialog names that boarder, click Delete to accept, and confirm the row is removed only after the request resolves (not optimistically)."
     expected: "confirm.require fires with the boarder's name interpolated; removeBoarder deletes then filters the shared ref post-success."
     why_human: "No unit test exists for this flow and it was not exercised live in any recorded session."
+
   - truth: "The seven 390px UI backstops (tag-chip wrap, long name wrap in row/dialog, tag-picker overflow, long tag/account truncation, delete-confirmation wrap) render as specified rather than clipping or widening"
     test: "At 390px viewport width, walk each of the seven states named in 38-UI-SPEC.md's 'Planner note — the 7 backstops' paragraph."
     expected: "Each backstop behaves as UI-SPEC describes (wrap, not clip; truncate, not widen)."
     why_human: "Explicitly recorded as not walked in 38-COLLECTION.md and WINDOWS.md #6 — new surfaces with no shipped precedent to inherit correctness from; CSS-class presence (flex-wrap, break-words, truncate) is confirmed by grep but the rendered behavior at the actual breakpoint is not."
+
   - truth: "Saving the Add/Edit Boarder dialog with an empty or whitespace-only display name is rejected with the inline field error, and no record is created/changed"
     test: "Open Add Boarder, leave the name blank (or type only spaces), click Save."
     expected: "boarderSchema's trim().min(1) rejects it, fieldErrors.name renders 'Display name is required.', and no PocketBase write is attempted."
     why_human: "No unit test asserts this on boarderSchema.safeParse (boarderSchema.spec.ts covers only the tags transform), and 38-COLLECTION.md explicitly lists this as 'no record' — not exercised live either."
 human_verification:
+
   - test: "All six behavior_unverified_items above, plus:"
     expected: "See each item's own expected outcome."
     why_human: "State-transition / round-trip behaviors present in code and wired, but not exercised by any test or live session."
+
   - test: "Confirm a non-admin account renders no Admin tab at all (not present-and-disabled)"
     expected: "PayTimeApp.vue's <Tab v-if=\"isAdmin\"> and <TabPanel v-if=\"isAdmin\"> both fail to render for a non-admin session."
     why_human: "Code-structurally confirmed via grep/read (v-if=\"isAdmin\" appears exactly twice, isAdmin = auth.user?.is_admin === true, not the isLoggedIn one-token-swap bug pattern) but never clicked with a live non-admin session (38-COLLECTION.md item C was not walked)."
+
   - test: "Review the three judgment-tier prohibitions recorded in the phase's PLAN frontmatter (non-authoritative LLM pass included below; human sign-off still required)"
     expected: "No roster/tag/deactivation copy or field editorializes about a boarder's conduct or reliability."
     why_human: "verification: judgment items are never auto-resolved. Non-authoritative check performed during this verification: BoarderRosterView.vue/ManageBoarder.vue expose only name, tags (free-text tenancy labels observed live as 'main'/'room-2'), account link, and a neutrally-worded, secondary-severity Inactive badge — no field, copy, or color found that frames a boarder as a judgment or deactivation as punitive. This is an LLM read, not a substitute for the required human sign-off."

@@ -174,9 +174,21 @@ Wallecx's frozen core value, for reference: each authenticated user can save, re
 
 ### Active
 
-v5.0 Admin Payment Ledger — requirements being defined. See `REQUIREMENTS.md` for the canonical traceability table once the roadmap lands.
+v5.0 Admin Payment Ledger — **Phase 38 complete** (2026-08-04), Phases 39–41 remain. See `REQUIREMENTS.md` for the canonical traceability table.
 
-**Carried, not scheduled:** PayTime end-to-end browser smoke test (never performed — the prod MCP env is RecordRead-only and test-user passwords are unknown). PayTime source files are not Prettier-clean. `feat/paytime` is pushed but unmerged.
+Validated in Phase 38: Boarder Roster Foundation — ROSTER-01 … ROSTER-06, TAG-01, VERIFY-03.
+
+- ✓ `paytime_boarders` live in prod (`pbc_3712673815`): `name` text required, `tags` json, `user` relation → `users` (maxSelect 1, `cascadeDelete: false`), `is_active` bool. Read by any authenticated user (`@request.auth.id != ""`), written only by `@request.auth.is_admin = true` — Phase 38
+- ✓ Admin › Boarders roster with full CRUD, tag chips, account-link picker, Inactive badge, and a row-action cluster verified at 390px — Phase 38
+- ✓ Live rule proof recorded in `38-COLLECTION.md`: tokenless read returns zero rows against a seeded 7-row roster (VERIFY-03); tokenless write refused **and** the roster re-read unchanged afterwards (ROSTER-06 server half) — Phase 38
+- ✓ 8/8 UAT passed, `38-SECURITY.md` `threats_open: 0` (13 threats, 7 mitigated + 6 accepted) — Phase 38
+
+**Two platform constraints discovered in Phase 38 that bind Phases 39–41:**
+
+- **PocketBase v0.23+ has no per-field default values.** `is_active` is enforced across three deliberate code paths (Zod `.default(true)` on create → mapper sends it explicitly; excluded from `mapToUpdateBoarder`; a dedicated single-key toggle). There is no server-side backstop — any new write path must set it itself. Same shape for whitespace-name rejection, which is Zod-only: the live schema would accept `"   "`.
+- **An unset `maxSelect: 1` relation stores `''`, not `NULL`.** So "unlinked boarder" filters as `user = ''`, and the unique index on `user` had to be **partial** (`WHERE user != ''`) — a plain `UNIQUE(user)` rejects the second accountless row. Confirmed: seven coexisted.
+
+**Carried, not scheduled:** PayTime *payments* end-to-end browser smoke test (still never performed). `38-REVIEW.md` WR-01 — a boarder whose linked account is later deleted keeps a dead relation id (`cascadeDelete: false` by design), and the next unrelated edit then fails with nothing in the UI explaining why; latent until Phase 38 UAT but one boarder is now linked, and Phase 39 makes linking central. ROSTER-06's authenticated-non-admin write half is proven by rule text only — the token-based exercise is Phase 39's VERIFY-02. PayTime source files are not Prettier-clean. `feat/paytime` is pushed but unmerged.
 
 ### Future candidates
 
@@ -347,4 +359,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-04 — Milestone v5.0 Admin Payment Ledger started. Wallecx history reframed as frozen (separate repo since 2026-06-05); PayTime backfilled into Validated from the shipped code, since PayTime v1.0 was built outside GSD and has no phase history. Next: define v5.0 requirements, then roadmap.*
+*Last updated: 2026-08-04 after Phase 38 — Boarder Roster Foundation complete: `paytime_boarders` live in prod with admin-gated writes, full in-app CRUD, a usage-derived tag vocabulary, and both live rule probes recorded. 8/8 UAT, `threats_open: 0`. Two platform constraints surfaced that bind the rest of the milestone (no PocketBase field defaults; unset relations store `''` not `NULL`, forcing a partial unique index). TAG-01's requirement text and the "free-form tag management UI" out-of-scope row were corrected — both assumed a `select` field, which is unbuildable because the Collections API is superuser-only at runtime. Next: Phase 39 Payment Subject Rework, whose relation-traversal rule risk is still unproven on this instance.*

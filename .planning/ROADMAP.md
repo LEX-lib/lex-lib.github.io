@@ -24,7 +24,7 @@ Archived per-milestone ROADMAP + REQUIREMENTS live in `.planning/milestones/`; s
 
 ### v5.0 Admin Payment Ledger (Phases 38–41)
 
-- [ ] **Phase 38: Boarder Roster Foundation** - Admin manages a tagged boarder roster in-app, readable by every authenticated user and writable only by the admin
+- [x] **Phase 38: Boarder Roster Foundation** - Admin manages a tagged boarder roster in-app, readable by every authenticated user and writable only by the admin (completed 2026-08-04)
 - [ ] **Phase 39: Payment Subject Rework** - `paytime_payments` keys off `boarder` instead of `user`, with the createRule risk spiked and resolved before all five rules are finalized together
 - [ ] **Phase 40: Admin-on-Behalf Logging** - Admin can log a payment for any active boarder, including one with no account; a non-admin's own flow is unchanged
 - [ ] **Phase 41: Admin Ledger & Tag Visibility** - Admin can see and filter the whole house's ledger by month/tag/boarder/category, reached as sub-views of the existing Monthly Report tab; tags are visible everywhere a boarder appears
@@ -131,7 +131,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|-----------------|--------|-----------|
-| 38. Boarder Roster Foundation | 3/3 | In Progress|  |
+| 38. Boarder Roster Foundation | 3/3 | Complete    | 2026-08-04 |
 | 39. Payment Subject Rework | 0/TBD | Not started | - |
 | 40. Admin-on-Behalf Logging | 0/TBD | Not started | - |
 | 41. Admin Ledger & Tag Visibility | 0/TBD | Not started | - |

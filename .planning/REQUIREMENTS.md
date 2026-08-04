@@ -44,7 +44,7 @@
 
 ### Tags
 
-- [x] **TAG-01**: Admin can extend the tag vocabulary without a code change or deploy (documented Admin UI step, since tags are a `select` field)
+- [x] **TAG-01**: Admin can extend the tag vocabulary without a code change or deploy — **entirely in-app**, no Admin UI step. Delivered in Phase 38 with `tags` as a `json` string array, *not* a `select` field: PocketBase's Collections API is superuser-only at runtime, so the app cannot read a `select` field's option list, and a schema-resident vocabulary would have made "add a tag" a code change plus a deploy — the exact thing this requirement forbids. The vocabulary is derived from usage across existing roster rows.
 - [ ] **TAG-02**: A boarder's tags are visible wherever that boarder appears in the admin surfaces, not only on the roster screen
 
 ### Verification
@@ -86,7 +86,7 @@ Deferred. Tracked, not in this roadmap.
 | Formal dispute / flagging workflow | One admin, six people, one house — a conversation resolves this faster than a workflow. `recorded_by` (SUBJ-03) supplies the attribution a dispute would need |
 | Separate audit-log or diff collection | `recorded_by` plus PocketBase's `updated` timestamp is proportionate; a full audit trail is compliance tooling for a different product shape |
 | Automated reminders / late fees | Requires notification infrastructure the project doesn't have, and social pressure in a six-person house already does this job |
-| Free-form tag management UI | Tags are a small admin-curated vocabulary (TAG-01); a management screen for a handful of fixed values is UI for its own sake |
+| ~~Free-form tag management UI~~ | ~~Tags are a small admin-curated vocabulary (TAG-01); a management screen for a handful of fixed values is UI for its own sake~~ **Superseded in Phase 38.** A dedicated management *screen* is still out of scope, but free-form tag *entry* had to ship: PocketBase's Collections API is superuser-only at runtime, so the "fixed values" premise was unbuildable — the app cannot read a `select` field's options. Tags became a `json` array with create-behind-a-click entry and a usage-derived vocabulary (TAG-01). |
 | Automatic account-linking on signup | Silently binding a new signup to a roster entry guesses at identity. ROSTER-03 keeps linking an explicit admin action |
 | Multi-house / multi-tenant support | One boarding house. Every pattern borrowed from multi-tenant SaaS costs complexity with no beneficiary here |
 | Placeholder `users` records for account-less boarders | Rejected during questioning: pollutes the auth collection and those accounts are technically loginable |
