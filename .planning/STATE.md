@@ -4,15 +4,15 @@ milestone: v5.0
 milestone_name: Admin Payment Ledger
 current_phase: 38
 current_phase_name: Boarder Roster Foundation
-status: planning
-stopped_at: Phase 38 context gathered
-last_updated: "2026-08-04T06:55:35.522Z"
+status: executing
+stopped_at: Phase 38 UI-SPEC approved
+last_updated: "2026-08-04T08:13:14.051Z"
 last_activity: 2026-08-04
 last_activity_desc: ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -32,7 +32,7 @@ progress:
 
 Phase: 38 of 41 (Boarder Roster Foundation)
 Plan: TBD — not yet planned
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-08-04 — ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
 
 Progress: [░░░░░░░░░░] 0%
@@ -360,11 +360,11 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ## Session Continuity
 
-**Resume file:** .planning/phases/38-boarder-roster-foundation/38-CONTEXT.md
+**Resume file:** .planning/phases/38-boarder-roster-foundation/38-UI-SPEC.md
 
-**Last session:** 2026-08-04T06:55:35.485Z
+**Last session:** 2026-08-04T07:30:17.011Z
 
-**Stopped at:** Phase 38 context gathered
+**Stopped at:** Phase 38 UI-SPEC approved
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 

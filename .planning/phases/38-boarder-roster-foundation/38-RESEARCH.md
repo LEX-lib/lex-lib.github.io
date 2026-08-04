@@ -392,17 +392,21 @@ const saveBoarder = async () => {
 
 **If this table is empty:** N/A — two narrow assumptions above, both low-risk and both closed by this phase's own required D-13 smoke probe rather than left open for the planner.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Display-name uniqueness on `paytime_boarders.name`**
+Both questions below were resolved at plan time; the Phase 38 plans follow the stated recommendation in each case. Neither is left open for the executor.
+
+1. **Display-name uniqueness on `paytime_boarders.name`** — **RESOLVED: no uniqueness constraint.**
    - What we know: CONTEXT.md explicitly lists this as "not discussed; no constraint decided."
    - What's unclear: Whether two boarders can share a display name (e.g. two "Alex"es in the house).
    - Recommendation: Ship Phase 38 with no uniqueness constraint (matches CONTEXT.md's explicit non-decision); if it becomes a real problem, add a unique index later — it's a purely additive schema change with no migration risk on a small, low-volume collection.
+   - Where it landed: `38-01-PLAN.md` Task 1 configures `name` with no unique index.
 
-2. **Whether the one existing production payment needs a matching boarder row in this phase**
+2. **Whether the one existing production payment needs a matching boarder row in this phase** — **RESOLVED: no special-casing; seed all real boarders normally.**
    - What we know: CONTEXT.md marks this as Claude's Discretion, more naturally Phase 39's backfill (SUBJ-02) per the Deferred Ideas list.
    - What's unclear: Whether seeding a boarder for Cedrick (the owner of the sole existing `paytime_payments` row) in Phase 38 saves Phase 39 a step, or is premature since nothing in Phase 38 reads `paytime_payments` at all.
    - Recommendation: Defer to Phase 39 — Phase 38's roster seeding is "however the admin adds ~6 boarders in-app," and there is no dependency forcing Cedrick's row to exist before Phase 38 closes. Seeding all real boarders (Cedrick included, with his account linked) as part of the normal seeding flow is fine either way and doesn't need special-casing.
+   - Where it landed: `38-03-PLAN.md` Task 2 seeds every real boarder through the normal in-app flow, including linking the admin's own account, with no branch for the existing payment's owner.
 
 ## Environment Availability
 
