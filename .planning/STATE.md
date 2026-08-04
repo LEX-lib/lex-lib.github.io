@@ -19,14 +19,14 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-08-04 — v5.0 Admin Payment Ledger roadmap created. ROADMAP.md appended with 4 phases (38–41), continuing numbering after v4.3's cancelled Phase 38/38b. 32/32 v5.0 requirements mapped to phases; REQUIREMENTS.md traceability updated. Next: `/gsd-plan-phase 38` for Boarder Roster Foundation.
+**Last updated:** 2026-08-04 — Phase 38 Boarder Roster Foundation complete and verified. `paytime_boarders` live in prod with admin-gated writes; full in-app CRUD, usage-derived tag vocabulary, both live rule probes recorded in `38-COLLECTION.md`. 8/8 UAT passed, `38-SECURITY.md` `threats_open: 0`, code review 0 critical / 1 warning. Next: `/gsd-discuss-phase 39` for Payment Subject Rework — its relation-traversal rule risk (`boarder.user = @request.auth.id`) is still unproven on this instance and should be spiked first.
 
 ## Project Reference
 
 **Project:** Lexarium — PayTime
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-08-04)
 **Core value:** Each authenticated user can record and retrieve their own data in whichever mini-app they use — without ever losing access to it — and PayTime's admin can maintain the boarding house's payment ledger on behalf of every boarder, whether or not that boarder has an account.
-**Current focus:** Phase 38 — boarder-roster-foundation
+**Current focus:** Phase 39 — payment-subject-rework
 
 ## Current Position
 
@@ -35,7 +35,7 @@ Plan: Not started
 Status: Ready to plan
 Last activity: 2026-08-04 — Phase 38 complete, transitioned to Phase 39
 
-Progress: [██████████] 100%
+Progress: Phase 38 plans [████████████████████] 3/3 (100%) · Milestone v5.0 [█████···············] 1/4 phases (25%)
 
 ## Shipped Milestones Summary
 
@@ -364,7 +364,7 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 **Last session:** 2026-08-04T10:38:25.063Z
 
-**Stopped at:** Completed 38-03-PLAN.md (Task 3 continuation)
+**Stopped at:** Phase 38 complete and verified, ready to plan Phase 39
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
@@ -417,4 +417,9 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ### Blockers
 
-- 38-01 open verification: run the two-unlinked-boarders probe and the Admin > Boarders > Add Boarder click-through against a live dev server logged in as admin before treating Plan 01 as fully closed
+- ~~38-01 open verification: two-unlinked-boarders probe + Admin > Boarders > Add Boarder click-through~~ **RESOLVED 2026-08-04.** A1 closed by observation — seven accountless boarders coexist under the partial unique index (`WHERE user != ''`); a plain `UNIQUE(user)` would have rejected rows 2–7. Click-through and the other six deferrals closed by 8/8 UAT.
+- ⚠️ [Phase 39] The relation-traversal access rule (`boarder.user = @request.auth.id`) that every rewritten `paytime_payments` rule depends on is **still unproven on this instance**. Believed supported in v0.29.x. If it does not hold, the fallback is denormalising the account id onto each payment — which changes the phase shape, so spike it before the plan locks.
+- ⚠️ [Phase 39] `38-REVIEW.md` WR-01 — a boarder whose linked account is later deleted keeps a dead relation id (`cascadeDelete: false`, by design per T-38-04), and the next unrelated edit round-trips it, so PocketBase rejects the update with nothing in the UI explaining why. One boarder is now linked, so this is reachable; Phase 39 makes linking central.
+- ⚠️ [Phase 39] ROSTER-06's authenticated-non-admin write refusal is proven by rule text only — a tokenless probe cannot distinguish an admin-gated rule from a merely-authenticated one. The token-based exercise is Phase 39's VERIFY-02.
+- ⚠️ `is_active` and whitespace-name rejection have **no server-side backstop** (PocketBase v0.23+ removed per-field defaults; the live `name` field has no min length). Both live in `boarderSchema`/`paytimeBoarderMapper`. Any new write path that bypasses the mapper loses both guards.
+- Housekeeping, not blocking: vitest collects byte-duplicate specs from an orphaned `.claude/worktrees/agent-ac578daf1cb97362c/` (inflates 127 → 195). Run with `--exclude '**/.claude/**'`, or add one line to `vitest.config.ts`. That worktree holds 8 unmerged commits from a superseded v5.0 plan — check `git log --oneline HEAD..worktree-agent-ac578daf1cb97362c` before deleting it.
