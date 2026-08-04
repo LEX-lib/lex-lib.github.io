@@ -51,7 +51,12 @@ export const boarderSchema = z.object({
     }),
   /** Empty string means no linked account — see PaytimeBoarder.user. */
   user: z.string(),
-  is_active: z.boolean(),
+  /**
+   * Defaults true so callers that never set it (ManageBoarder.vue's edit
+   * dialog — D-38-18, its only write path is the row-action menu) don't
+   * need to reference this field at all.
+   */
+  is_active: z.boolean().default(true),
 });
 
 export type BoarderInput = z.infer<typeof boarderSchema>;

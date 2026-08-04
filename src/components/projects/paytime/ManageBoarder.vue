@@ -212,13 +212,13 @@ const describeSaveError = (error: unknown): string => {
 const saveBoarder = async () => {
   const editing = record.value;
 
-  // is_active has no UI on this path yet (Plan 03) — seed it from the record
-  // being edited, or the schema default on create.
+  // Active status is not editable here — its only write path is the row
+  // action menu on BoarderRosterView (D-38-18). Omitted entirely; the
+  // schema default carries create, and mapToUpdateBoarder excludes it.
   const parsed = boarderSchema.safeParse({
     name: name.value,
     tags: tags.value,
     user: linkedUser.value,
-    is_active: editing?.is_active ?? true,
   });
 
   if (!parsed.success) {
