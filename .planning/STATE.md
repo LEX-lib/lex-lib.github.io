@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.3
-milestone_name: milestone
-status: Awaiting next milestone
-stopped_at: Phase 38 context gathered
-last_updated: "2026-06-08T08:49:30.943Z"
-last_activity: 2026-06-08 — Milestone v4.3 completed and archived
+milestone: v5.0
+milestone_name: Admin Payment Ledger
+status: planning
+last_updated: "2026-08-04T04:32:13.800Z"
+last_activity: 2026-08-04
 progress:
-  total_phases: 7
-  completed_phases: 5
-  total_plans: 25
-  completed_plans: 25
-  percent: 71
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -27,10 +26,10 @@ progress:
 
 ## Current Position
 
-Phase: Milestone v4.3 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-06-08 — Milestone v4.3 completed and archived
+Status: Defining requirements
+Last activity: 2026-08-04 — Milestone v5.0 started
 
 ## Shipped Milestones Summary
 
