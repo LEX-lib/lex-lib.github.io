@@ -2,9 +2,13 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Admin Payment Ledger
+current_phase: 38
+current_phase_name: Boarder Roster Foundation
 status: planning
-last_updated: "2026-08-04T06:00:00.000Z"
+stopped_at: Phase 38 context gathered
+last_updated: "2026-08-04T06:55:35.522Z"
 last_activity: 2026-08-04
+last_activity_desc: ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
 progress:
   total_phases: 4
   completed_phases: 0
@@ -65,6 +69,7 @@ Progress: [░░░░░░░░░░] 0%
 Full detail: `.planning/ROADMAP.md` Phase Details section. Traceability: `.planning/REQUIREMENTS.md`.
 
 **Sequencing rationale (locked at roadmap creation):**
+
 - Phase 39 depends on Phase 38 — the roster must exist to be the payment subject, to backfill against, and to exercise the rule traversal against real boarder rows.
 - Phase 39's `createRule` relation-traversal spike (VERIFY-01) and the closing five-rule smoke sweep (VERIFY-02) are embedded inside that phase, not split into a standalone verification phase — a spike/sweep has no user-observable success criteria of its own, and PITFALLS.md's own pitfall-to-phase mapping already concentrates every rule-rewrite risk (Pitfalls 1/2/3/6/7) into this one phase. A createRule spike failure changes only that phase's rule text via the documented fallback; it does not require redefining Phase 40 or 41.
 - Phase 40 depends on Phase 39 — the write path must exercise already-correct rules.
@@ -355,9 +360,11 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ## Session Continuity
 
-**Last session:** 2026-08-04 (roadmap creation)
+**Resume file:** .planning/phases/38-boarder-roster-foundation/38-CONTEXT.md
 
-**Stopped at:** v5.0 ROADMAP.md created (Phases 38–41: Boarder Roster Foundation, Payment Subject Rework, Admin-on-Behalf Logging, Admin Ledger & Tag Visibility); REQUIREMENTS.md traceability populated (32/32 mapped, 0 unmapped). Next: `/gsd-plan-phase 38`.
+**Last session:** 2026-08-04T06:55:35.485Z
+
+**Stopped at:** Phase 38 context gathered
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
