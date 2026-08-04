@@ -1,553 +1,286 @@
-# Domain Pitfalls — v4.3 Wallecx Mobile Optimization
+# Domain Pitfalls — v5.0 Admin Payment Ledger
 
-**Domain:** Adding mobile-grade polish to an existing Vue 3 + PrimeVue 4 + Tailwind v4 + PocketBase + vite-plugin-pwa app
-**Researched:** 2026-05-26
-**Scope:** v4.3 — layout & touch targets, mobile performance, forms & dialogs on small screens, PWA install + standalone polish
-**Confidence overall:** HIGH (most pitfalls verified against either codebase grep, PrimeVue 4 docs, vite-plugin-pwa docs, MDN CanIUse, or recent iOS Safari / Chromium release notes)
+**Domain:** Adding an admin-managed roster + admin-on-behalf write path + tags to an existing per-user-isolated PocketBase app (PayTime)
+**Researched:** 2026-08-04
+**Confidence:** HIGH — grounded in this repo's own PROJECT.md-documented PocketBase v0.29.x behavior (D-13, the `@request.body.*` fix, the `getList()` count-path 400 bug, the stored-value update-rule gap already flagged as backlog item PT-RULE-01) plus the CONCERNS.md-documented `isSuperUser = isLoggedIn` mistake already made once in this exact codebase (gift-exchange). This is project-specific analysis of PocketBase rule semantics and this app's existing code, not general web-app security advice.
 
-> Mental model for this milestone: this is a **modification** milestone, not a greenfield build. Most pitfalls below are about regressing something that already works (BR-2 barcode, NetworkOnly PocketBase, requestKey isolation, registerType: 'prompt', card_color contract) while reshuffling layout for small screens. Treat invariants from STATE.md as load-bearing — the most expensive bug in v4.3 will be silently undoing one of them, not failing to ship a new feature.
+> Mental model for this milestone: v5.0 is not additive, it is a **subject-model migration**. Every one of `paytime_payments`'s five API rules currently keys off `user = @request.auth.id`; all five get rewritten to traverse `boarder.user = @request.auth.id`, and one of the five (`create`, and arguably `update`) must ALSO gain an admin bypass that the old model never needed. A wrong rule doesn't crash the app — it either silently over-shares (privilege escalation) or silently returns nothing (looks like a UI bug, per this project's own documented 404-not-403 trap). Treat the rule rewrite as the highest-risk single task in the milestone.
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause production-visible defects, lost user data, regress a locked invariant, or require a follow-up bug-fix milestone (v4.4).
+### Pitfall 1: Admin check that a non-admin can satisfy
 
-### Pitfall C-1: registerType drift from `'prompt'` to `'autoUpdate'`
+**What goes wrong:**
+A rule intended to gate admin-only power — writing another boarder's row, listing every boarder's payments in the new Admin Ledger — is written as "is logged in" instead of "is admin," e.g. `@request.auth.id != ""` where `@request.auth.is_admin = true` was needed. Every boarder, admin or not, gets admin powers.
 
-**Category:** PWA install + standalone polish
-**What goes wrong:** A well-meaning refactor of `vite.config.ts` (e.g. "let's auto-update the SW so the install prompt UX is cleaner") flips `registerType: 'prompt'` to `'autoUpdate'`. Next deploy, any user with an open ManageExpense / ManageVaccination / ManageMembership / ManageBudget dialog containing unsaved input gets a silent SW reload that destroys their input mid-typing.
-**Why it happens:** `'autoUpdate'` looks simpler in docs and removes the "Update available — Refresh / Later" toast. Reviewers without milestone context don't see the connection to unsaved CRUD state.
-**Consequences:** Silent data loss in the middle of a save. Indistinguishable from a browser crash to the user. No telemetry — they just lose what they typed.
-**Prevention:**
-- Lock `registerType: 'prompt'` in `vite.config.ts` with an inline comment (already present: `// LOCKED: never 'autoUpdate' — CRUD forms have unsaved state`). Do NOT remove that comment during v4.3.
-- Add a guard test: any PR that touches `vite.config.ts` PWA block must keep the LOCKED comment AND `registerType: "prompt"`.
-- REQUIREMENTS.md non-functional: **NFR-PWA-AUTOUPDATE — `registerType` must remain `'prompt'`. Any phase touching `vite.config.ts` MUST preserve the LOCKED comment.**
-**Detection:** Open ManageExpense, start typing, deploy a no-op change, watch input wiped without a "Refresh / Later" toast = regression.
-**Owner phase:** PWA polish phase (the one touching `vite.config.ts`, manifest, install banner).
+**Why it happens:**
+This exact bug already exists elsewhere in this codebase: `GiftExchangeManage.vue: isSuperUser = computed(() => authStore.isLoggedIn)` (CONCERNS.md, "Manage page exposed to anyone authenticated"). It's a one-token-swap mistake (`auth.id != ""` vs `auth.is_admin = true`), and PocketBase gives no compile-time signal — a wrong rule just quietly widens who can write, with no error anywhere.
 
----
+**How to avoid:**
+Every admin-only rule must reference `@request.auth.is_admin = true` explicitly, never bare `@request.auth.id != ""`. Author broken and fixed forms side by side for review:
 
-### Pitfall C-2: BR-2 barcode invariant regression via mobile CSS sweep
+- Broken: `createRule: @request.auth.id != ""`
+- Fixed: `createRule: @request.auth.is_admin = true || (@request.body.boarder != "" && @request.body.boarder.user ?= @request.auth.id)`
 
-**Category:** Mobile layout pitfalls (PrimeVue + Tailwind v4)
-**What goes wrong:** A mobile dark-mode override sweep adds `.my-app-dark .barcode-display { background: var(--color-surface-card); color: var(--color-typo-body); }` (looks "correct" for dark mode). Now the barcode SVG renders cream-on-navy instead of black-on-white → most barcode scanners (1D, especially Code128/EAN-13) cannot read it. Same regression possible via aggressive `*:not(.barcode-display)` selectors or Tailwind theme tokens applied too globally.
-**Why it happens:** Mobile sweep + dark-mode polish frequently happen in the same pass. The BR-2 invariant (barcode stays black-on-white in BOTH themes) is the kind of contract you only remember when you read the v2.0/v3.0 archives.
-**Consequences:** Memberships unusable at checkout counter for any user on dark mode — directly hits Core Value ("membership card grid with barcode scan overlay"). Already verified twice in v4.1 Phase 30 sweep; regressing it in v4.3 is a milestone-level failure.
-**Prevention:**
-- Add a Vitest/Playwright snapshot guarding `BarcodeDisplay.vue` SVG `fill` / `background` after every CSS change in v4.3.
-- Wallecx UAT script for every v4.3 layout phase: open scan overlay on iPhone in dark mode and visually confirm white background + black bars.
-- REQUIREMENTS.md non-functional: **NFR-BR-2-PRESERVED — BarcodeDisplay must render black bars on white background in BOTH themes AND in PWA standalone AND at all v4.3 test viewports (390/360/768).** Verify in the same UAT pass as v4.1 Phase 30.
-**Detection:** Visual diff on `BarcodeDisplay` SVG; failed scan in counter test.
-**Owner phase:** Layout & touch-target audit phase (touches Memberships) AND PWA standalone phase (re-verify in installed mode).
+**Warning signs:**
+A non-admin test account can create/update a payment row for a boarder that isn't their own, or can pull data from the Admin Ledger's underlying `list` endpoint via a raw API call even though the UI hides the tab.
+
+**How to avoid regressions:** grep every new/changed rule expression for the literal substring `is_admin` and confirm it's never substituted with a bare truthiness check on `@request.auth.id`.
+
+**Phase to address:**
+The `paytime_payments` rule-rewrite phase — verify with two tokens (an admin account and a non-admin account) before merging, not just the admin path.
 
 ---
 
-### Pitfall C-3: PocketBase auto-cancel via duplicated `requestKey` from new mobile path
+### Pitfall 2: Create rule lets any authenticated user pick an arbitrary boarder
 
-**Category:** Mobile performance + project-specific
-**What goes wrong:** A new mobile-only code path (e.g. a "swipe to refresh" gesture on ExpensesListView, or an `IntersectionObserver`-based lazy fetch when the Reports tab scrolls into view) calls `pb.collection('wallecx_expenses').getFullList({ requestKey: 'expenses-getFullList' })` while a previous in-flight call is still pending. PocketBase SDK **auto-cancels** the earlier request because the keys match → list renders empty or stale, toast fires, user sees "Failed to load expenses" on a healthy network.
-**Why it happens:** STATE.md locks requestKeys per collection (`expenses-getFullList`, `expense-budgets-getFullList`, etc.) under the assumption of one-call-per-mount. Mobile patterns (pull-to-refresh, tab re-entry, focus-back-from-background) introduce N-calls-per-mount and break that assumption.
-**Consequences:** Intermittent empty states on mobile that are impossible to reproduce on desktop. Mirrors v4.2 BUG-02 in symptom (misleading toast + empty list) but root cause is different.
-**Prevention:**
-- Any new mobile interaction that triggers a refetch must EITHER reuse the existing call site (debounced) OR use a distinct `requestKey` (`'expenses-pull-to-refresh'`, etc.).
-- Document new requestKeys in STATE.md `Architectural Invariants` the moment they ship.
-- Code-review rule: `grep -r "requestKey:" src/components/projects/wallecx/` must show 1 caller per key (or N callers all using the same fetch helper).
-- REQUIREMENTS.md non-functional: **NFR-REQUESTKEY-UNIQUE — each PocketBase requestKey is owned by exactly one call site (or one helper). New mobile fetch paths require a new requestKey.**
-**Detection:** Network panel shows `?cancel=true` 200s; UI shows empty/stale list with no error in console.
-**Owner phase:** Mobile performance phase (lazy-loading work) AND any layout phase that adds a refresh affordance.
+**What goes wrong:**
+The rewritten `createRule` allows any authenticated caller (`@request.auth.id != ""`) without also constraining which `boarder` id they attach to the new row. A non-admin boarder submits `boarder: <someone-else's-id>` and fabricates a payment against a housemate — inflating or deflating what the ledger says that person paid.
 
----
+**Why it happens:**
+The v1.0 create rule only had to check `@request.body.user = @request.auth.id` because the subject *was* the account — there was no dropdown, no id to spoof. Now the subject is a relation the client picks from a `<Select>`. Nothing server-side stops the request body from naming a different relation id than the one the UI offered; the UI is not the enforcement boundary.
 
-### Pitfall C-4: 100vh / `h-screen` measuring wrong on iOS Safari and Chrome on Android
+**How to avoid:**
+Bind ownership of the relation to the caller, with an explicit admin bypass:
 
-**Category:** Mobile layout (Tailwind v4)
-**What goes wrong:** A bottom sheet, scan overlay, sticky action bar, or the Wallecx shell uses `h-screen` (Tailwind v4 → `height: 100vh`) or raw `100vh`. On iOS Safari and Android Chrome, `100vh` is the **largest** viewport (URL bar collapsed), so the layout overflows by ~70–100px when the URL bar is showing — the bottom of the view (notably the sticky action bar on dialogs and the scan overlay's "Close" button) sits below the URL bar and is unreachable.
-**Why it happens:** Browser legacy behavior; well known but easy to ship in scoped styles a reviewer doesn't scrutinize. Reduced-motion overlays and full-screen scan overlay use 100vh historically.
-**Consequences:** Scan overlay Close button unreachable → user has to force-quit to exit a frozen full-screen state. Sticky action bar (Save / Delete) on Drawer offscreen → cannot save.
-**Prevention:**
-- Replace **all** `h-screen` / `100vh` in `src/components/projects/wallecx/` with `100dvh` (dynamic viewport) where available, with `100svh` fallback ladder, e.g. `height: 100dvh; height: 100svh;` or Tailwind v4's `h-dvh` / `h-svh` arbitrary classes.
-- `100dvh` is supported in iOS Safari 15.4+ and Chrome 108+ (both well below current iOS Safari ~17–18 and Chromium ~120+).
-- Audit pass before milestone close: `grep -rn "100vh\|h-screen" src/components/projects/wallecx/` must return 0 (or every hit annotated as intentional).
-**Detection:** Open scan overlay on iPhone with URL bar visible; the close icon is below the URL bar.
-**Owner phase:** Layout & touch-target audit phase.
+- Broken: `createRule: @request.auth.id != ""`
+- Broken (looks safer, still wrong — checks existence, not ownership): `createRule: @request.body.boarder != ""`
+- Fixed: `createRule: @request.auth.is_admin = true || @request.body.boarder.user ?= @request.auth.id`
 
-**Confidence:** HIGH — `dvh`/`svh`/`lvh` shipped in Safari 15.4 (March 2022) and Chrome 108 (Nov 2022); current iOS Safari ≥17 and Chrome ≥120 in v4.3 test viewports support both.
+Note `?=` (PocketBase's "any/all" relation match operator) rather than bare `=`. `boarder.user` is a single-valued relation here, so `=` would technically also work, but `?=` is the idiomatic, safety-preferred form for relation-field comparisons in PocketBase rules and avoids surprises if the relation is ever widened to multi-value.
+
+**Warning signs:**
+A non-admin successfully creates a row naming a foreign boarder id via devtools/curl, even though `ManagePayment.vue` pins non-admins to their own boarder in the UI.
+
+**Phase to address:**
+Same `paytime_payments` rule-rewrite phase as Pitfall 1 — these two checks live in one `createRule` expression and must be authored and tested together, not split across tasks.
 
 ---
 
-### Pitfall C-5: iOS auto-zoom on form focus because input font-size < 16px
+### Pitfall 3: Update rule permits reassigning a row to a different boarder (stored-value evaluation)
 
-**Category:** Forms & dialogs on small screens
-**What goes wrong:** iOS Safari auto-zooms the viewport when an input/select/textarea with `font-size < 16px` receives focus. The page then never zooms back, leaving labels and the Save button misaligned or offscreen. Grep against the current ManageExpense.vue shows `class="text-sm"` on labels and surrounding spans (Tailwind v4 `text-sm = 0.875rem = 14px`). **The actual `<InputText>` / `<InputNumber>` / `<DatePicker>` / `<Select>` / `<MultiSelect>` / `<Textarea>` font-size is inherited from PrimeVue's Aura preset** — verify per-component before assuming. But any mobile pass that adds `text-sm` to the actual input element (not just the label) is a trap.
-**Why it happens:** `text-sm` looks right on desktop, the iOS zoom only triggers on focus on real device, and DevTools mobile emulator does NOT reproduce auto-zoom.
-**Consequences:** Forms feel broken on every iPhone; users cannot easily see the field they're typing into. Affects all four CRUD dialogs (ManageVaccination, ManageMembership, ManageExpense, ManageBudget).
-**Prevention:**
-- Add a scoped CSS guard at `WallecxApp.vue` shell level: `@media (max-width: 640px) { .p-inputtext, .p-inputnumber-input, .p-textarea, .p-select-label, .p-multiselect-label, .p-datepicker-input { font-size: 16px !important; } }`. The `!important` is justified — it must beat any inherited `text-sm`.
-- Lint/grep rule before milestone close: `grep -rn "text-xs\|text-sm" src/components/projects/wallecx/Manage*.vue` — every match on an input element must be replaced or overridden.
-- Alternative belt-and-suspenders: `<meta name="viewport" content="... user-scalable=no">` is **NOT acceptable** (a11y regression — users cannot zoom). Use font-size, not viewport lockdown.
-- REQUIREMENTS.md non-functional: **NFR-IOS-NO-ZOOM — All form inputs in v4.3 must render at ≥16px on mobile viewports to prevent iOS auto-zoom-on-focus.**
-**Detection:** Open ManageExpense on iPhone, tap Amount field, page zooms in and never zooms back. Verify on real device — DevTools emulator does not reproduce this.
-**Owner phase:** Forms & dialogs on small screens phase.
+**What goes wrong:**
+PocketBase evaluates the `updateRule` filter against the record's **currently stored** state, not the state the request would produce. So `updateRule: boarder.user = @request.auth.id` passes because the *stored* boarder still belongs to the caller — and then the request's own body is applied on top, including a `boarder` field that reassigns the row to someone else. The check that looked like "you must own this row" never re-validates who the row belongs to *after* the write.
 
-**Confidence:** HIGH — documented WebKit behavior since iOS 4; survives in iOS 18.
+**Why it happens:**
+This is the exact bug class PayTime v1.0 already hit and documented under `paytimePaymentMapper.ts`: *"`user` is deliberately omitted [from the update mapper]. PocketBase evaluates the update rule against the record's stored values, so `user = @request.auth.id` passes on a request that also sets `user` to somebody else — which would hand the record away."* The v1.0 fix was **client-side only** (the mapper never sends the owner field) — and the project's own backlog already flags the gap it leaves: *PT-RULE-01 — "The frontend never sends the owner field on update (asserted by test) but a hand-crafted API call still could."* v5.0 reproduces the identical shape on a new field name (`boarder` instead of `user`). If the rewritten rule copies the same pattern without closing it server-side, the milestone ships the same hole again, just relocated.
 
----
+**How to avoid:**
+Close it server-side this time. Use PocketBase's `:isset` modifier to detect whether the request body even touches the relation, and compare any submitted value against the record's **own stored value** (not the auth id) so any attempt to change it fails the rule:
 
-### Pitfall C-6: Workbox `maximumFileSizeToCacheInBytes: 3 MiB` silently skips bigger files
+- Broken: `updateRule: boarder.user = @request.auth.id` — passes on the stored value, then the body reassigns `boarder`
+- Fixed (non-admin can never move a row; admin can always): `updateRule: @request.auth.is_admin = true || (boarder.user = @request.auth.id && (@request.body.boarder:isset = false || @request.body.boarder = boarder))`
 
-**Category:** PWA install + standalone + mobile performance
-**What goes wrong:** v2.1 locked `maximumFileSizeToCacheInBytes: 3 * 1024 * 1024` in `vite.config.ts` to accommodate the 2.57 MiB vendor bundle. If v4.3 adds a chart enhancement, a list virtualization library, or a new PrimeVue auto-imported component that pushes any single chunk over 3 MiB, **Workbox silently skips precaching it** — the chunk is missing offline, the app shell breaks in standalone mode after first launch with intermittent ChunkLoadError on subsequent visits.
-**Why it happens:** Workbox logs a warning during build (`Skipping precaching of "<path>" because it exceeds maximumFileSizeToCacheInBytes`), but the warning is buried in `npm run build` output and the build SUCCEEDS. PWA still installs. The failure mode is days later when a user is offline.
-**Consequences:** Standalone PWA broken offline for any user who installed before the deploy and has no network during a session that needs the over-3-MiB chunk. v2.1 D-09 invariant violated.
-**Prevention:**
-- Add a build-time assertion in CI / `npm run build` that the largest chunk in `dist/assets` does not exceed `3 * 1024 * 1024 - safety_margin (e.g. 200 KiB)`.
-- Build log scan: `npm run build 2>&1 | grep -i "exceeds\|skipping"` must produce 0 matches in v4.3.
-- Mobile performance phase: budget the bundle BEFORE adding anything new. If a new lib pushes a chunk close to 3 MiB, split it or lazy-load it via dynamic import; do NOT raise the cap (the higher the cap, the slower the first PWA install on cellular).
-- REQUIREMENTS.md non-functional: **NFR-PWA-PRECACHE-FITS — all chunks listed in `dist/manifest.json` must fit under the configured precache cap; build must verify.**
-**Detection:** `dist/assets/*.js` file size > 3 MiB; build warning about precache skip; offline standalone test shows ChunkLoadError.
-**Owner phase:** Mobile performance phase.
+Keep the client-side field omission too (defense in depth, matches the existing project convention in `mapToUpdatePayment`) — but the rule above is what actually stops a hand-crafted request, which is the whole point of PT-RULE-01.
 
-**Confidence:** HIGH — verified in Workbox 7.x docs; same root cause as v2.1 D-09's reason for the 3 MiB cap.
+**Warning signs:**
+A non-admin's authenticated PATCH to `paytime_payments` with a `boarder` field pointing at a different boarder's id succeeds instead of returning 404.
+
+**Phase to address:**
+`paytime_payments` rule-rewrite phase. Treat this as explicitly closing PT-RULE-01 — write it into the phase's acceptance criteria rather than assuming the rewrite "naturally" absorbs it (the milestone context note itself only says "likely absorbed... re-check rather than doing it twice").
 
 ---
 
-### Pitfall C-7: PocketBase `getList()` (with totalItems) regression introduced by mobile pagination
+### Pitfall 4: Boarder-roster list rule so open it leaks the whole roster to unauthenticated callers
 
-**Category:** Project-specific + mobile performance
-**What goes wrong:** Mobile performance phase decides "the expenses list has 300 rows, let's paginate" and switches a call from `getFullList()` to `getList(page, perPage)`. On the v0.29.x PocketBase instance with `@request.auth.id != "" && user = @request.auth.id`-shaped listRules (all five `wallecx_*` collections), the totalItems COUNT path returns **400 Something went wrong** (D-31-B in STATE.md).
-**Why it happens:** Pagination is the textbook answer to "list is big on mobile"; reviewers who didn't ship v4.2 won't know D-31-B exists.
-**Consequences:** Expenses tab broken on mobile. Same toast as BUG-02. Visible in production.
-**Prevention:**
-- Pin D-31-B in REQUIREMENTS.md as a constraint: **CON-PB-COUNT-BUG — `getList()` without `skipTotal: true` is broken on `wallecx_*` collections in PB v0.29.x. Use `getFullList()` (default) or `getList(p, pp, { skipTotal: true })`. Never read `totalItems` from these collections.**
-- Code-review rule: any new `getList(` call against `wallecx_*` must include `{ skipTotal: true }` OR be rejected.
-- Prefer client-side virtualization (vue-virtual-scroller, @tanstack/virtual) over server-side pagination for v4.3 — keeps the single-`getFullList`-per-mount invariant intact.
-**Detection:** 400 response in Network panel against `/api/collections/wallecx_*/records` with `page=1&perPage=N`.
-**Owner phase:** Mobile performance phase (list virtualization).
+**What goes wrong:**
+`paytime_boarders` needs to be "readable by every authenticated user" per the milestone's target features. The rule that looks like it means that is an empty string. In PocketBase, `listRule: ""` (empty string) does **not** mean "deny" or "no rule yet" — it means **public, unauthenticated access allowed**. `listRule: null` (left unset) is the one that restricts to superusers only. In the Admin UI these two states are one accidental click apart (an empty text box vs the rule toggle left off), and "readable by every authenticated user" is exactly the phrase that tempts someone to leave the box blank thinking blank means permissive-but-gated.
 
----
+**Why it happens:**
+This project has already been bitten by adjacent PocketBase rule-syntax surprises this exact shape — `@request.body.*` vs the deprecated `@request.data.*` reads as identical intent but behaves completely differently. `null` vs `""` is the same family of trap: the value that looks like "nothing configured yet" is actually the least restrictive one, not a safe default.
 
-### Pitfall C-8: PWA manifest `start_url` mismatch breaks installed PWA
+**How to avoid:**
+The roster's list and view rules must be an explicit non-empty predicate:
 
-**Category:** PWA install + standalone polish
-**What goes wrong:** Current `start_url: "/projects/wallecx"` with `scope: "/"` is correct. If v4.3 changes `scope` to `/projects/wallecx` (looks "more scoped"), navigation to `/projects/wallecx/expenses-sub-route` (if one were ever added) or to `/login` after auth expiry breaks — the PWA window cannot navigate out of scope and either opens an external browser or shows a blank screen.
-**Why it happens:** "Scope to the mini-app" looks correct in PWA tutorials.
-**Consequences:** Installed PWA loses login redirect, loses cross-route nav.
-**Prevention:** STATE.md already locks `scope: '/'`. Re-affirm in v4.3 REQUIREMENTS.md.
-- REQUIREMENTS.md: **CON-PWA-SCOPE — `scope: '/'` is mandatory and must not be narrowed.**
-**Detection:** Auth expires in standalone PWA → redirect to `/login` opens external browser tab.
-**Owner phase:** PWA polish phase.
+- Broken: `listRule: ""` — public; an unauthenticated request enumerates every boarder's name and tags
+- Fixed: `listRule: @request.auth.id != ""`
+
+Apply the same fix to `viewRule`.
+
+**Warning signs:**
+A `curl` request (or an incognito tab) with no auth token against `/api/collections/paytime_boarders/records` returns the full roster.
+
+**Phase to address:**
+The `paytime_boarders` collection-creation phase — the D-13 smoke probe for this phase must include an **unauthenticated** request, not only an authenticated one, since the authenticated case will pass regardless of which rule form was used.
 
 ---
 
-## Moderate Pitfalls
+### Pitfall 5: cascadeDelete silently destroys payment history
 
-Defects that ship intermittently or are easy to QA-catch but require rework.
+**What goes wrong:**
+Payment history is the asset this app exists to protect (per PROJECT.md's Core Value: "the admin being able to see who has and hasn't paid for a given month" must always work). Two new/changed relation fields sit upstream of it: `paytime_boarders.user` (optional link to an account) and `paytime_payments.boarder` (required link to a boarder). If either is configured with `cascadeDelete: true`:
 
-### Pitfall M-1: `env(safe-area-inset-*)` ignored on `position: fixed` without `viewport-fit=cover`
+- Deleting a `users` account (e.g. closing a former boarder's login after they move out) cascades into deleting their `paytime_boarders` row — and if *that* relation also cascades, every `paytime_payments` row that boarder ever logged disappears with it. A routine account cleanup silently erases months of payment history.
+- Deleting a boarder row directly — an admin roster-management action v5.0 explicitly introduces — has the same effect on their payment history if `paytime_payments.boarder` cascades.
 
-**Category:** Mobile layout / PWA standalone
-**What goes wrong:** Sticky action bars, the install banner, and bottom-anchored Drawers use `padding-bottom: env(safe-area-inset-bottom)`. On iOS in standalone mode, the inset is only non-zero when the meta tag includes `viewport-fit=cover`. Current `index.html` has it (`viewport-fit=cover, interactive-widget=resizes-content`) — good. But if a phase strips/rewrites that meta during a mobile polish pass, all safe-area math becomes zero and content sits under the home-indicator bar.
-**Why it happens:** Easy to miss in meta-tag refactors.
-**Prevention:**
-- Lock the viewport meta in `index.html` with an inline comment: `<!-- viewport-fit=cover REQUIRED for env(safe-area-inset-*) to be non-zero -->`.
-- v4.3 UAT: home-indicator visible distance below buttons in standalone mode on iPhone with notch / dynamic island.
-- REQUIREMENTS.md: **CON-VIEWPORT-FIT — index.html viewport meta must include `viewport-fit=cover`.**
+**Why it happens:**
+PocketBase's Admin UI relation-field editor defaults the cascade toggle off, but it's a single checkbox that's easy to flip "for tidiness" while setting up the new relations, and its effect is invisible until someone actually deletes a parent record — by which point the child rows are already gone, with no undo and no soft-delete to fall back to.
 
-**Confidence:** HIGH — Apple Human Interface Guidelines + WebKit blog 2017.
+**How to avoid:**
+Both new/changed relations should be `cascadeDelete: false`. Deleting a `users` account must never touch `paytime_boarders`; deleting a `paytime_boarders` row must never touch `paytime_payments`. If a boarder needs to leave the active roster, prefer an `is_active`/archived flag over deletion entirely — an orphaned payment (a row whose `boarder` relation resolves to nothing) is a UI edge case to handle gracefully (show "unknown boarder," let it be filtered out or flagged), not a data-loss event. If boarder deletion must remain possible, block it in the UI when that boarder has any payment history, rather than relying on the relation config alone to prevent loss.
 
----
+**Warning signs:**
+Deleting a test boarder (or a test user account) in the Admin UI, or through any future roster-management screen, makes rows disappear from the payment log / monthly report / admin ledger that reference no other boarder.
 
-### Pitfall M-2: `interactive-widget=resizes-content` Android keyboard behavior surprises
-
-**Category:** Forms & dialogs on small screens
-**What goes wrong:** Current meta tag includes `interactive-widget=resizes-content` (Chromium 108+). Android Chrome on form focus now **resizes the layout viewport** rather than overlaying the virtual keyboard. A `position: fixed` sticky action bar implemented assuming overlay behavior will now jump up into the visual region above the keyboard (correct, intended) — but a Drawer bottom-sheet with a fixed-height inner scroll container can collapse to 0 height because the parent viewport shrank.
-**Why it happens:** Drawer height set via `100dvh` minus a fixed handle, no `min-height` floor.
-**Prevention:**
-- Bottom-sheet Drawer pattern: use `max-height: 90dvh; min-height: 320px; height: auto;` not a fixed `height`.
-- Test: open ManageExpense on Drawer (mobile), tap Description field, keyboard opens → Save button must remain visible above keyboard, Drawer body must remain scrollable.
-
-**Confidence:** MEDIUM — `interactive-widget` is Chromium-only; iOS Safari uses the legacy overlay model. Behavior diverges across platforms; test both.
+**Phase to address:**
+The `paytime_boarders` collection-creation phase (where both relation fields are configured). The D-13 paste-back for this phase must include the actual `cascadeDelete` boolean for both relations — "I created the relation" is not evidence either way.
 
 ---
 
-### Pitfall M-3: PrimeVue Drawer `position="bottom"` swipe-to-close conflict with internal scroll
+### Pitfall 6: Partially-applied five-rule rewrite
 
-**Category:** Forms & dialogs / Mobile layout
-**What goes wrong:** PrimeVue 4 Drawer with `position="bottom"` accepts swipe-down-on-handle to dismiss. If ManageExpense's Drawer body contains a scrollable form, a downward swipe inside the form sometimes dismisses the Drawer when the form is already scrolled to top — destroying unsaved input.
-**Why it happens:** Drawer swipe handler doesn't always check scroll-at-top before dismissing.
-**Prevention:**
-- Pattern: when `position="bottom"` on a Drawer with a form inside, set `:modal="true"` and `:dismissable-mask="false"` AND ensure the Drawer handle is the only swipe-dismiss target (verify in PrimeVue 4 source). If swipe-down dismissal cannot be restricted to the handle, override `@hide` with a confirmation dialog (`useConfirm`) when the form is dirty.
-- v4.3 UAT scenario: open ManageExpense (mobile), type into a field, swipe down on Drawer body → must NOT lose input.
-- REQUIREMENTS.md: **NFR-DRAWER-DIRTY-GUARD — Mobile Drawer dismissal must not silently destroy unsaved CRUD form state.**
+**What goes wrong:**
+Rewiring `paytime_payments` from a `user` subject to a `boarder` subject touches, all at once: the new relation field, all five API rules (list/view/create/update/delete), the 1 existing prod record's backfill, and two hardcoded client `filter:` strings (`PaymentLog.vue:38` — `` filter: `user = "${auth.user.id}"` ``, and `MonthlyReport.vue`'s grouping/`expand: "user"` logic). Because the prod MCP env is SchemaRead-only, there is no scripted or transactional migration path — every change is a separate, manual Admin-UI edit. It's easy to save 3 of 5 rules and move on, believing the migration is "basically done." Any rule left referencing the now-dropped `user` field errors at rule-evaluation time (the expression references a field that no longer exists on the collection), which breaks that *entire* operation, not just the intended change.
 
-**Confidence:** MEDIUM — verify against PrimeVue 4 Drawer docs and source before phase planning.
+**Why it happens:**
+This is the same failure category as v4.2's BUG-01 (a trust-based "done" signal on an Admin-UI step silently no-op'd, closed by the D-13 invariant) — except the risk here isn't "forgot to create a collection," it's "edited some but not all of five interdependent rule fields." There is no atomicity across the five rule fields in the Admin UI; each is saved independently, and none of them cross-validate against the others.
 
----
+**How to avoid:**
+Treat "rewrite the five rules" as one indivisible unit of work, not five separately-completable checklist items. Sequence so nothing breaks mid-migration: (1) all five rules reference `boarder`/`boarder.user`, never bare `user`; (2) the 1 existing record is backfilled with a valid `boarder` value; (3) both client `filter:` strings are updated to filter on `boarder`, not `user`; only after all three does the `user` field itself get dropped from the collection. Per this project's D-13 invariant, the phase task must require the user to paste back the actual, verbatim text of all five rule expressions as configured — not "I updated the rules" — plus a code-side smoke probe that exercises list, view, create, update, and delete against the live instance with both an admin token and a non-admin token, asserting the expected pass/fail on each.
 
-### Pitfall M-4: PrimeVue MultiSelect chips overflow horizontally on narrow viewports
+**Warning signs:**
+One of the five operations 404s (denied) or 400s (references an unknown field) while the other four appear to work fine — this is exactly the signature of a partially-applied migration, and per Pitfall 8 it will present as an unexplained empty list or a generic error, not an obvious "schema mismatch" message.
 
-**Category:** Forms & dialogs / Mobile layout
-**What goes wrong:** ExpensesListView's category MultiSelect uses chip display. With 5+ categories selected on a 360px viewport, chips overflow the trigger button horizontally → horizontal scroll appears at page level. Hits Wallecx "no horizontal scroll" rule.
-**Why it happens:** PrimeVue MultiSelect chip default behavior.
-**Prevention:**
-- Use `:max-selected-labels="2"` + `selectedItemsLabel="{0} categories"` to cap chip render.
-- OR set `display="comma"` on mobile via responsive prop.
-- Scoped CSS guard: `.p-multiselect-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }` inside `@media (max-width: 640px)`.
-
-**Confidence:** HIGH — PrimeVue 4 docs.
+**Phase to address:**
+The rule-rewrite / backfill phase — the highest-risk single phase in this milestone, because it changes both schema and every access rule simultaneously through a manual, non-transactional tool.
 
 ---
 
-### Pitfall M-5: PrimeVue DatePicker mobile UX — calendar overflow + touch targets
+### Pitfall 7: Required-relation flip before backfill orphans the one existing record
 
-**Category:** Forms & dialogs
-**What goes wrong:** PrimeVue 4 DatePicker (used in ExpensesToolbar From/To range, ManageExpense date field, ExpensesReportsView Custom range) renders a calendar overlay. On 360px viewport, the calendar can clip outside the visible area. Day cells default to ~28–32px height — below the 44px touch-target line.
-**Why it happens:** PrimeVue calendar sizing is desktop-optimized; mobile overlays touch a tiny day grid.
-**Prevention:**
-- Use `:touchUI="true"` prop on DatePicker for mobile (`isMobile` computed via `useWindowSize`), which renders a centered modal dialog with larger day cells (similar to native date picker).
-- OR scope a CSS override: `@media (max-width: 640px) { .p-datepicker-day-cell { min-width: 44px; min-height: 44px; } }`.
-- v4.3 UAT: tap a date cell on 360px viewport — adjacent cells must not register accidental taps.
+**What goes wrong:**
+If the new `boarder` relation on `paytime_payments` is marked `required: true` before the single existing prod record (Cedrick's `2026-07` electricity row, ₱123) is backfilled with a boarder id, that record is left with an empty relation. PocketBase does not retroactively enforce a newly-added `required` constraint on rows that already existed when the constraint was added, so the record survives in the database untouched — but any rule that traverses `boarder.user = ...` evaluates a null/empty relation as non-matching. The record silently vanishes from every list or view any caller makes, admin included, with no error anywhere.
 
-**Confidence:** HIGH — `touchUI` is a documented PrimeVue 4 Calendar/DatePicker prop.
+**Why it happens:**
+"Make the field required" and "backfill the existing data" are two separate, manually-ordered Admin-UI actions with nothing in the tooling to enforce the correct sequence. The more "obviously correct-looking" order — lock down the schema first, then fill in data — is actually the wrong order here.
 
----
+**How to avoid:**
+Sequence explicitly: (1) add `boarder` as an *optional* relation field first; (2) backfill the existing record via an authenticated update call; (3) verify the backfilled record round-trips through the same rules the app will use (list it as its owner, list it as admin); (4) only then flip `boarder` to required. Do not treat step 3 as implied by step 2 succeeding without error — verify the read path too, since the write can succeed while the read silently fails later for an unrelated reason (a still-broken rule, per Pitfall 6).
 
-### Pitfall M-6: `useWindowSize` race on initial render → flash of wrong layout
+**Warning signs:**
+The one pre-existing payment record disappears from every view (My Payments, Monthly Report, and the new Admin Ledger) after the migration — easy to write off as "test data cleanup" rather than recognize as an orphaned record, since it's a single low-value sample row.
 
-**Category:** Mobile layout
-**What goes wrong:** `const { width } = useWindowSize(); const isMobile = computed(() => width.value < 640);` — on first render, `width.value` may briefly be `0` (or the previous reactive value from a different route) before the `resize` listener fires. A Drawer that conditionally chooses `position="bottom"` vs `position="right"` based on `isMobile` can render in the wrong position for one frame, causing visible flicker.
-**Why it happens:** `useWindowSize` is reactive but the initial sync is `nextTick`-bound.
-**Prevention:**
-- Initialize: `const { width } = useWindowSize({ initialWidth: window.innerWidth });` — pass `initialWidth` so the first computed read is correct.
-- For SSR safety (not applicable to this SPA but good hygiene): guard with `typeof window !== 'undefined'`.
-
-**Confidence:** HIGH — `@vueuse/core` `useWindowSize` docs.
+**Phase to address:**
+Same rule-rewrite / backfill phase as Pitfall 6 — sequence it as one explicit ordered checklist rather than parallelizable subtasks.
 
 ---
 
-### Pitfall M-7: PrimeVue Tabs `scrollable` on narrow viewport — tab labels truncate vs scroll
-
-**Category:** Mobile layout
-**What goes wrong:** WallecxApp.vue uses PrimeVue Tabs for Vaccinations / Memberships / Expenses. ExpensesReportsView uses PrimeVue Tabs (scrollable) for Month / Quarter / Year / Custom (locked v4.0 decision). On 320px viewports, three top-level tabs fit but the inner period tabs scroll. The scroll indicator (left/right chevron) is often invisible on touch devices — users don't know they can scroll.
-**Why it happens:** PrimeVue 4 Tabs scrollable mode shows chevrons on hover (desktop) but they're easy to miss on touch.
-**Prevention:**
-- Add an explicit fade-mask on the right edge of the period selector so users see "more content offscreen".
-- OR force the period selector to wrap to a 2x2 grid on narrow viewports.
-- v4.3 UAT: 320px viewport — Custom period tab must be discoverable (not silently offscreen).
-
-**Confidence:** MEDIUM — PrimeVue 4 Tabs docs.
-
----
-
-### Pitfall M-8: iOS install banner ineligibility AFTER first dismissal
-
-**Category:** PWA install
-**What goes wrong:** iOS does NOT support `BeforeInstallPromptEvent`. Wallecx's `PwaInstallBanner.vue` (already exists) likely shows a manual "Tap Share → Add to Home Screen" hint on iOS. If v4.3 polish makes the banner more aggressive (showing again on every visit), users get banner fatigue → train themselves to dismiss it without reading.
-**Why it happens:** iOS has no install API; the banner is purely instructional.
-**Prevention:**
-- Track dismissal in `localStorage` (`wallecx:pwa-install-dismissed: 'YYYY-MM-DD'`).
-- Show again only after N days (suggest 30) OR if the user explicitly visits a "How to install" link.
-- Detect already-installed via `window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true` → suppress banner entirely.
-- REQUIREMENTS.md: **NFR-PWA-BANNER-FREQUENCY — Install banner must not show in standalone mode, and must respect a localStorage-based dismissal record.**
-
-**Confidence:** HIGH — `window.navigator.standalone` is iOS-specific; `display-mode: standalone` is cross-platform.
-
----
-
-### Pitfall M-9: `BeforeInstallPromptEvent.prompt()` may only be called once per event
-
-**Category:** PWA install (Chromium / Android)
-**What goes wrong:** A common bug: store the event globally and call `prompt()` from multiple components. Chromium fires the event once per page load — a stored reference can be called only once. A second call rejects.
-**Why it happens:** Spec contract not obvious; banner refactors may add a second entry point ("install" link in user menu + banner button).
-**Prevention:**
-- Single owner of the event: `PwaInstallBanner.vue` or a Pinia store. After `prompt()` resolves, null out the stored event.
-- Don't show the install affordance after the event was consumed once in this session.
-
-**Confidence:** HIGH — `BeforeInstallPromptEvent` Chromium contract.
-
----
-
-### Pitfall M-10: navigator.storage.persist() not granted → 7-day localStorage eviction
-
-**Category:** PWA install + standalone + project-specific
-**What goes wrong:** v2.1 calls `navigator.storage.persist()` on WallecxApp mount. The browser MAY return `false` (especially on iOS, where heuristics are stricter). If false, iOS evicts localStorage (including PocketBase auth token) after 7 days of inactivity → user thinks they were logged out for no reason.
-**Why it happens:** persist() is a request, not a guarantee.
-**Prevention:**
-- Log the persist() result during v4.3 mobile testing (`console.info('persistGranted=', granted)`). If consistently `false` on iOS test devices, add a daily "ping" to PocketBase from a service worker `periodicSync` (where supported) to keep the origin "active".
-- Alternatively, mitigate UX: when auth expires, show a clear "You were logged out due to inactivity (iOS storage policy)" toast instead of generic "Session expired".
-- Add a clear copy line in the install banner: "Pin Wallecx to your home screen to avoid being logged out after 7 days of inactivity."
-- REQUIREMENTS.md: **NFR-IOS-EVICTION-UX — Login-required redirect after iOS storage eviction must surface a copy explaining why (not just "session expired").**
-
-**Confidence:** MEDIUM — iOS storage eviction is well-documented (ITP / 7-day rule); persist() success rate on iOS is anecdotally low.
-
----
-
-### Pitfall M-11: Apple splash screens / touch icons missing per-device variants
-
-**Category:** PWA install + standalone polish
-**What goes wrong:** iOS requires per-device-resolution splash screens (`<link rel="apple-touch-startup-image" media="..." href="...">`) for a custom standalone splash. Without them, iOS shows a white screen + the apple-touch-icon centered → "blank flash" between tap-icon and app-loaded.
-**Why it happens:** Multi-device variants are tedious; easy to ship one icon and call it done.
-**Prevention:**
-- Use `@vite-pwa/assets-generator` (already a devDep) to generate per-device splash and touch icons. Refer to its docs for the full media-query list.
-- Verify in v4.3 UAT: install on iPhone, force-quit, re-open → splash should be branded, not white.
-- REQUIREMENTS.md: **NFR-IOS-SPLASH — Apple touch startup images must be defined for all v4.3 test viewports (390x844, 360x780, 768x1024).**
-
-**Confidence:** HIGH — Apple developer docs + @vite-pwa/assets-generator docs.
-
----
-
-### Pitfall M-12: Theme color mismatch between manifest and `<meta name="theme-color">`
-
-**Category:** PWA install + standalone polish
-**What goes wrong:** Manifest `theme_color: "#002244"` (navy). `index.html` does NOT currently have a `<meta name="theme-color">` — Chromium falls back to manifest, but iOS Safari (and the iOS PWA chrome bar) reads ONLY the meta tag. Without it, the iOS PWA status bar tints to white/default — looks unbranded against the navy app.
-**Why it happens:** Easy to assume manifest is enough.
-**Prevention:**
-- Add to `index.html`: `<meta name="theme-color" content="#002244" media="(prefers-color-scheme: light)">` AND `<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">` (or whatever the dark surface token resolves to).
-- Verify on iPhone standalone install: status bar matches app chrome in both themes.
-
-**Confidence:** HIGH — Apple developer docs + Chromium documentation.
-
----
-
-### Pitfall M-13: card_color contract regression via mobile color-picker polish
-
-**Category:** Project-specific
-**What goes wrong:** A mobile-polish phase touches `ManageMembership.vue`'s ColorPicker affordance (e.g. swapping to a native `<input type="color">` for better mobile UX). Native color picker emits `#RRGGBB` **with** the leading `#`. Storing it directly violates the locked invariant `card_color stored without # prefix`. MembershipCard renders broken backgrounds.
-**Why it happens:** Native color picker UX is genuinely better on mobile; the temptation is real.
-**Prevention:**
-- If swapping to native: strip `#` on save (`card_color = newValue.replace(/^#/, '')`); prepend `#` on read for the native input's value binding.
-- Vitest spec: `membershipMapper.spec.ts` already locks the contract — re-run + extend if ColorPicker swaps.
-- REQUIREMENTS.md: **CON-CARD-COLOR-NO-HASH — `card_color` is stored without `#` prefix. Any UI swap must preserve this contract.**
-
-**Confidence:** HIGH — STATE.md locked invariant.
-
----
-
-### Pitfall M-14: useConfirm broadcast scope — ConfirmDialog duplicated on mobile
-
-**Category:** Project-specific
-**What goes wrong:** A mobile-polish phase notices the ConfirmDialog renders centered in viewport and "fixes" it by adding a second `<ConfirmDialog />` inside ExpensesListView with mobile-specific positioning. `useConfirm` broadcasts to **all** mounted ConfirmDialog instances → confirmation fires twice; click "Confirm" once, two delete requests fire; second one returns 404 with confusing toast.
-**Why it happens:** STATE.md locked the single-shell-level instance invariant for exactly this reason in v2.0.
-**Prevention:**
-- REQUIREMENTS.md: **CON-CONFIRMDIALOG-SINGLETON — Exactly one `<ConfirmDialog />` mounts at WallecxApp.vue shell level. Any mobile-positioning need must be solved via CSS targeting `.p-confirmdialog`, not by mounting a second instance.**
-- Grep guard: `grep -rn "<ConfirmDialog" src/components/projects/wallecx/` must return exactly 1 line.
-
-**Confidence:** HIGH — STATE.md locked invariant + PrimeVue 4 `useConfirm` source.
-
----
-
-### Pitfall M-15: PrimeVue Dialog/Drawer z-index collision with PWA install banner
-
-**Category:** Mobile layout
-**What goes wrong:** PwaInstallBanner.vue is `position: fixed; bottom: 0; z-index: ?`. If banner z-index is higher than the PrimeVue overlay layer, a dialog opens with the banner still showing — banner partially covers Save/Cancel buttons. If lower, the install banner is hidden behind dialog backdrop forever.
-**Why it happens:** PrimeVue 4 manages its own z-index layer (typically 1100+); custom fixed elements need careful coordination.
-**Prevention:**
-- Read PrimeVue 4's default overlay z-index from the Aura preset (or `useZIndex` if exposed).
-- Hide the install banner while ANY PrimeVue overlay is open: use a Pinia flag `useOverlayStore` toggled by Dialog/Drawer/Confirm `@show` / `@hide`.
-- OR: install banner z-index = 900 (below PrimeVue overlay), AND auto-dismiss on first Dialog open.
-
-**Confidence:** MEDIUM — depends on PrimeVue 4 Aura preset z-index values; verify before phase planning.
-
----
-
-### Pitfall M-16: List virtualization breaks sessionStorage scroll-restore + sort persistence
-
-**Category:** Mobile performance / project-specific
-**What goes wrong:** Phase 25 D-09 locked: "sessionStorage sort restoration runs BEFORE getFullList in onMounted". If mobile-perf phase wraps ExpensesListView in `vue-virtual-scroller` or similar, the virtual scroller's lazy item mount can fire `intersection` events that re-trigger derived computeds — including sort persistence — out of order. Result: sort mode "blinks" on mount.
-**Why it happens:** Virtual scrollers mount items asynchronously as they scroll into view.
-**Prevention:**
-- Sort/filter logic must operate on the FULL `expenses` array, BEFORE virtualization. Pass the sorted array to the virtual scroller as the data source — the scroller only handles render windowing.
-- Reproduce the v4.0 Phase 25 v-if chain (isLoading → raw empty → filtered empty → list) inside the virtualized component.
-
-**Confidence:** MEDIUM — depends on virtualization lib chosen.
-
----
-
-### Pitfall M-17: Chart.js bundle inflation via accidental full-import
-
-**Category:** Mobile performance
-**What goes wrong:** PrimeVue 4 Chart dynamically imports `chart.js/auto`. v4.0 confirmed chart.js is a runtime dep. If v4.3 adds a chart plugin (e.g. `chartjs-plugin-annotation` for budget threshold lines) by importing it at module top, the entire chart.js controllers/elements/scales registry inflates the chart bundle. On mobile cellular, the Reports tab visibly stalls.
-**Why it happens:** Chart.js tree-shaking requires explicit registration (`Chart.register(...)`), but `chart.js/auto` already auto-registers everything — adding a plugin compounds it.
-**Prevention:**
-- Lazy-import chart plugins inside the same dynamic import as chart.js: `const { default: annotation } = await import('chartjs-plugin-annotation');`.
-- Measure: `npm run build` and check the size of the chart-containing chunk before and after; budget < 200 KiB gzipped delta.
-- If a plugin is heavy, defer it to a hover-only / drilldown affordance.
-
-**Confidence:** HIGH — chart.js v4 + PrimeVue 4 Chart docs.
-
----
-
-### Pitfall M-18: browser-image-compression heavy on mobile main thread
-
-**Category:** Mobile performance
-**What goes wrong:** `browser-image-compression@^2.0.2` runs in a Web Worker by default, but if the worker file path is wrong (e.g. Vite asset hashing changes the worker URL), it falls back to running on the main thread. On a low-end Android (Snapdragon 6xx) compressing a 12 MP receipt photo can lock the UI for 5–10s.
-**Why it happens:** Vite's worker handling can drop the worker URL on certain build configs.
-**Prevention:**
-- Verify in dev: `browser-image-compression` debug log shows "useWebWorker: true" actually using a worker.
-- Add a loading state in ManageExpense / ManageMembership / ManageVaccination receipt upload that shows "Compressing image…" with a spinner. User waits with feedback instead of perceiving freeze.
-- Set `maxIteration: 5` (default 10) for mobile to bound worst-case time.
-
-**Confidence:** MEDIUM — depends on Vite worker config nuances.
-
----
-
-### Pitfall M-19: `getFullList()` on growing collections — when does it hurt?
-
-**Category:** Mobile performance
-**What goes wrong:** All five `wallecx_*` collections use `getFullList()` (per requestKey invariant). At 100 records, fine. At 1000 expenses, the response is ~1–3 MB JSON over cellular → 5–15s load.
-**Why it happens:** Per-user data grows over months; no rotation strategy.
-**Prevention:**
-- Establish a v4.3 measurement: log payload size + duration of each `getFullList` on real-device cellular. If any collection exceeds ~500 records or ~500 KiB, mark in a "future candidates" issue (e.g. "EXP-ADV-09 expense archival / windowed fetch").
-- v4.3 itself should NOT add pagination (see C-7); instead, document the threshold for when pagination becomes worth the v0.29.x bug workaround.
-- REQUIREMENTS.md: **NFR-PERF-MEASURE — v4.3 must log a one-time payload-size + duration measurement per Wallecx collection on a mid-tier mobile device under cellular conditions, recorded in MILESTONES.md.**
-
-**Confidence:** HIGH — basic network math.
-
----
-
-### Pitfall M-20: PrimeVue auto-import resolver pulls in unused components
-
-**Category:** Mobile performance
-**What goes wrong:** `unplugin-vue-components` + `PrimeVueResolver` inlines components by name match. If a mobile-polish phase types `<Knob />` somewhere as a placeholder and never removes it, the entire Knob component + dependencies ship in the bundle.
-**Why it happens:** Auto-import is invisible — no `import` statement to grep.
-**Prevention:**
-- `npm run build` and check `dist/assets/primevue-*.js` size before and after each v4.3 phase. Budget zero regression.
-- Periodic audit: search for `<\\b[A-Z][a-zA-Z]+` in Wallecx templates and cross-check against an allowlist of intentionally used PrimeVue components.
-
-**Confidence:** HIGH — `unplugin-vue-components` docs.
-
----
-
-### Pitfall M-21: dayjs locale / plugin double-load
-
-**Category:** Mobile performance
-**What goes wrong:** v4.0 Phase 26-01 confirmed: `period.ts` extends `quarterOfYear` at module top. If a v4.3 phase adds another plugin (e.g. `duration`, `relativeTime` for "2 hours ago") at a different module, both modules call `dayjs.extend(plugin)`. Extension is idempotent so no functional bug — but `import 'dayjs/plugin/relativeTime'` from N modules can fragment the dayjs chunk in unhelpful ways.
-**Why it happens:** Tree-shaking dayjs plugins is fiddly.
-**Prevention:**
-- Centralize all dayjs plugin extensions in ONE module (`src/lib/wallecx/dayjs-setup.ts`) imported once from `main.ts` (or from `WallecxApp.vue`).
-- v4.3 should not add new dayjs plugins unless strictly needed.
-
-**Confidence:** MEDIUM — dayjs plugin tree-shaking behavior is documented.
-
----
-
-## Minor Pitfalls
-
-Polish issues; catch in a final UAT pass.
-
-### Pitfall N-1: PrimeVue FileUpload mobile capture attribute
-
-**Category:** Forms & dialogs
-**What goes wrong:** PrimeVue FileUpload accepts `accept="image/*"`. On mobile, this opens both camera AND gallery in the OS picker. To force camera (for receipt capture), pass `capture="environment"` (or `"user"` for selfies). Without it, users have to navigate two more taps.
-**Prevention:** Add `:pt="{ input: { capture: 'environment' } }"` (or equivalent passthrough) on receipt/scan upload affordances. Verify the PrimeVue 4 passthrough syntax.
-**Confidence:** HIGH — HTML5 capture attribute, MDN.
-
-### Pitfall N-2: 300ms tap delay — non-issue in 2026
-
-**Category:** Forms & dialogs
-**What's true:** 300ms tap delay is solved on all current iOS Safari and Android Chrome when viewport meta has `width=device-width` (which Wallecx does). No need to add `touch-action: manipulation` for this purpose.
-**Prevention:** Don't waste a phase on tap delay; it's a non-issue. Confirm by checking that the viewport meta has `width=device-width` (it does).
-**Confidence:** HIGH — well-established since 2016 across iOS Safari and Chromium.
-
-### Pitfall N-3: PrimeVue Dialog already traps focus and scroll
-
-**Category:** Forms & dialogs
-**What's true:** PrimeVue 4 Dialog / Drawer trap focus by default (`:modal="true"`) and prevent body scroll. No manual scroll-trapping needed. Re-implementing it is a waste of a phase.
-**Prevention:** Trust PrimeVue's overlay focus management; verify with a screen-reader UAT pass.
-**Confidence:** HIGH — PrimeVue 4 docs + ARIA dialog pattern.
-
-### Pitfall N-4: PrimeVue Tabs reactive `activeTab` string vs index
-
-**Category:** Mobile layout
-**What goes wrong:** A mobile polish phase swaps PrimeVue Tabs from string-typed `activeTab` to index-typed and breaks the deep-link / hash-based tab switching (not currently used but might be added).
-**Prevention:** STATE.md already locks "PrimeVue Tabs with string-typed `activeTab`". Re-affirm if the phase touches Tabs internals.
-**Confidence:** HIGH — STATE.md locked invariant.
-
-### Pitfall N-5: Wake Lock API still requires HTTPS and user gesture
-
-**Category:** Project-specific (scan overlay)
-**What's true:** Wake Lock (used in v2.0 scan overlay) requires HTTPS (Vercel ✓) and a user gesture (the tap that opens the overlay). v4.3 mobile polish must not move the wake-lock acquisition outside the user-gesture handler (e.g. into onMounted of a re-architected overlay).
-**Prevention:** Acquire wake lock inside the click handler that opens the overlay, not in lifecycle hooks.
-**Confidence:** HIGH — Wake Lock API spec.
-
-### Pitfall N-6: `prefers-reduced-motion` already respected in chart — preserve
-
-**Category:** Mobile layout
-**What's true:** v4.0 Phase 26-01 D-04: chart honors prefers-reduced-motion (duration: 0). Mobile polish that adds new animations (e.g. drawer slide-in, list-item fade-in) must respect the same media query.
-**Prevention:** Wrap any new motion in `@media (prefers-reduced-motion: reduce) { animation: none; transition: none; }`.
-**Confidence:** HIGH — MDN.
-
-### Pitfall N-7: iOS file-input camera capture inconsistent in standalone PWA
-
-**Category:** PWA install + standalone
-**What goes wrong:** In iOS standalone PWAs, `<input type="file" accept="image/*" capture="environment">` historically opens camera less reliably than in Safari tab (iOS 16: camera works; iOS 17.x: regression in some builds; iOS 18: largely restored). The result is the photo picker opens instead of camera, on a phase that needed the camera (receipt upload).
-**Prevention:** Don't depend on `capture` working in standalone; offer a "Take photo" affordance AND a "Choose from gallery" affordance separately. v4.3 UAT scenario: receipt upload in installed PWA on iOS 17+.
-**Confidence:** MEDIUM — WebKit bug history.
-
----
-
-## Phase-Specific Warning Matrix
-
-| v4.3 Phase Topic | Likely Pitfalls (IDs) | Mitigation Owner |
-|---|---|---|
-| Mobile layout & touch-target audit (3 tabs) | C-2 (BR-2), C-4 (100vh), M-1 (safe-area), M-4 (MultiSelect chips), M-5 (DatePicker touch), M-6 (useWindowSize race), M-7 (Tabs scroll), N-4 (Tabs string activeTab) | Layout phase verifies BR-2 + locked invariants intact |
-| Mobile performance (bundle, lazy-load, virtualization) | C-3 (requestKey dup), C-6 (3 MiB precache), C-7 (PB count bug), M-16 (virt + sort), M-17 (chart plugins), M-18 (image-compression worker), M-19 (getFullList scale), M-20 (auto-import), M-21 (dayjs) | Perf phase publishes bundle-size diff + payload-size measurement |
-| Forms & dialogs on small screens | C-5 (16px), M-2 (Android keyboard), M-3 (Drawer swipe), M-4 (MultiSelect), M-5 (DatePicker), M-15 (z-index), N-1 (capture), N-3 (focus trap) | Forms phase verifies dirty-state guard on all 4 Manage* dialogs |
-| PWA install + standalone polish | C-1 (registerType), C-6 (precache cap), C-8 (scope), M-1 (viewport-fit), M-8 (banner fatigue), M-9 (prompt once), M-10 (eviction), M-11 (splash), M-12 (theme-color), N-7 (capture standalone) | PWA phase verifies all locked PWA invariants intact + 4 viewports installed |
-| Project-specific (cross-phase) | C-1 (registerType), C-2 (BR-2), C-3 (requestKey), C-7 (PB count), M-13 (card_color), M-14 (ConfirmDialog), N-4 (Tabs), N-5 (Wake Lock) | Every phase must re-affirm intersecting invariants |
-
----
-
-## REQUIREMENTS.md Candidate Non-Functional / Invariant Requirements
-
-These are the pitfalls worth surfacing as explicit REQ-IDs so they bind every phase, not just the phase that introduces them. (Roadmapper: convert each into a `NFR-*` or `CON-*` entry; phrasing is already in REQ-ready form above.)
-
-| Candidate REQ-ID | Pitfall | Type | Where verified |
-|---|---|---|---|
-| `NFR-PWA-AUTOUPDATE` | C-1 | non-functional | PWA phase + every PR touching vite.config.ts |
-| `NFR-BR-2-PRESERVED` | C-2 | invariant | Layout phase + PWA phase + milestone UAT |
-| `NFR-REQUESTKEY-UNIQUE` | C-3 | invariant | Perf phase + any new mobile interaction phase |
-| `NFR-DVH-NOT-VH` | C-4 | non-functional | Layout phase |
-| `NFR-IOS-NO-ZOOM` | C-5 | non-functional | Forms phase |
-| `NFR-PWA-PRECACHE-FITS` | C-6 | non-functional | Perf phase + build CI |
-| `CON-PB-COUNT-BUG` | C-7 | constraint | Perf phase |
-| `CON-PWA-SCOPE` | C-8 | constraint | PWA phase |
-| `CON-VIEWPORT-FIT` | M-1 | constraint | Layout phase |
-| `NFR-DRAWER-DIRTY-GUARD` | M-3 | non-functional | Forms phase |
-| `NFR-PWA-BANNER-FREQUENCY` | M-8 | non-functional | PWA phase |
-| `NFR-IOS-EVICTION-UX` | M-10 | non-functional | PWA phase |
-| `NFR-IOS-SPLASH` | M-11 | non-functional | PWA phase |
-| `CON-CARD-COLOR-NO-HASH` | M-13 | invariant | Forms phase (if ColorPicker touched) |
-| `CON-CONFIRMDIALOG-SINGLETON` | M-14 | invariant | Every phase |
-| `NFR-PERF-MEASURE` | M-19 | non-functional | Perf phase + milestone close |
-
----
+## Client-Side Admin Gate: Why Tampering Can't Leak Data (And What Would Make It Load-Bearing)
+
+`isAdmin = computed(() => auth.user?.is_admin === true)` in `PayTimeApp.vue` currently drives `v-if="isAdmin"` on the Monthly Report tab, and will drive the new Admin Ledger tab and the admin-only boarder selector in `ManagePayment.vue`. `is_admin` reaches the client because it's a field on the authenticated user's own record, included in the auth response and persisted by the PocketBase SDK's default `authStore` (backed by `localStorage`, per `src/stores/auth.ts`) so the session survives a page reload.
+
+**Why a tampered client is safe, given correct server rules:** flipping the local `isAdmin` computed — via devtools, or by editing the persisted auth-store payload in `localStorage` — only changes what Vue renders: which tabs show, which selector appears. It cannot change the `is_admin` field PocketBase itself holds for that user server-side. Every list/view/create/update/delete request PocketBase receives is re-evaluated against `@request.auth.is_admin`, which PocketBase resolves from **its own stored copy** of the record belonging to the auth token on the request — never from anything the client claims in the request body, headers, or local state. A non-admin who tricks the UI into rendering the Admin Ledger tab still gets an empty or denied result from every underlying PocketBase call, because that check happens independently, server-side, per request, regardless of what the client believes about itself.
+
+**Specific mistakes that would make the client gate load-bearing instead of cosmetic:**
+
+1. **A rule reads a client-suppliable field instead of the auth record.** For example, `createRule` or `updateRule` checking `@request.body.is_admin = true` — this lets a hand-crafted request simply *claim* admin in its payload, since `@request.body.*` reflects whatever the caller sent, not anything verified.
+2. **An admin-only surface is gated only in the component, with no matching collection rule.** The new Admin Ledger view and the boarder-roster CRUD screen must each have their own server-side list/view/create/update rules restricting them to `@request.auth.is_admin = true`. If a developer assumes "the tab is hidden, that's enough" and never writes or updates the underlying rule, the surface is wide open to anyone who calls the API directly — this is not hypothetical, it is the exact mistake already present once in this codebase on `GiftExchangeManage.vue`, whose *only* gate is a client-side `isSuperUser` computed and an unprotected route (CONCERNS.md: "Manage page exposed to anyone authenticated").
+3. **A rule's relation traversal resolves permissively on an empty/missing relation.** E.g. gating something on `boarder.tags ?= "admin"` when a boarder has no tags at all — verify what an empty relation/array actually evaluates to (should be false, not vacuously true) before relying on it, and always test the negative case (a genuine non-admin token) during the D-13 smoke probe, not only the positive case.
+
+## Technical Debt Patterns
+
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|--------------------|-----------------|------------------|
+| Omit the owner/subject field client-side on update (existing `mapToUpdatePayment` pattern) without also closing the update rule server-side | Fast, no rule authoring needed, matches the shipped v1.0 pattern | Leaves exactly the PT-RULE-01 gap open on a new field name — a hand-crafted API call can still reassign a row | Never on its own; acceptable only as a second layer alongside the server-side `:isset` guard in Pitfall 3 |
+| Leave `paytime_boarders.tags` as free text instead of a fixed vocabulary | No schema decision needed up front | Typos fragment the roster ("VIP" vs "vip" vs "Vip") the same way free-text boarder names were explicitly rejected for in the Key Decisions table | Never for this milestone — the whole point of `paytime_boarders` existing is to avoid this exact fragmentation; don't reintroduce it one level down at the tag layer |
+| Ship the Admin Ledger with `getList()` instead of `getFullList()`/`skipTotal` "because we'll add pagination later" | Looks like the "proper" API surface from day one | 400s immediately against this project's documented rule shape (relation traversal + boolean check) — not a future problem, a day-one bug | Never; use `getFullList()` or explicit `skipTotal: true` from the first commit |
+
+## Integration Gotchas
+
+Recurring PocketBase-specific traps this project has already documented — and exactly how each recurs on v5.0's new surfaces (a new tab, a new collection, new filtered queries):
+
+| Trap | New surface it hits in v5.0 | Concrete failure |
+|------|------------------------------|-------------------|
+| Rule violations return **404, not 403** | New `paytime_boarders` roster list (boarder selector, roster admin screen); new Admin Ledger `paytime_payments` list; the rewritten `paytime_payments` rules generally | A wrong roster rule, or a still partially-broken rewritten rule, makes the boarder selector or ledger render an empty list — this reads as "no boarders yet" / "no payments this month," not "access denied." Any newly-empty list introduced by this milestone must be checked with a raw authenticated API call before being treated as a UI bug. |
+| `createRule` needs `@request.body.*`, never the deprecated `@request.data.*` | The **entirely new** `paytime_boarders` create rule, and the **rewritten** `paytime_payments` create/update rules | Two brand-new-from-scratch rules are being authored in this milestone (roster, plus the rewritten payments rules) — each is a fresh chance to reach for the deprecated syntax and get a silent, hard-to-diagnose 403/404 that looks like a permissions bug rather than a typo. |
+| SDK's default `requestKey` is `method + path`, **excludes the query string** | New `getFullList` calls: the boarder roster (for the selector inside `ManagePayment` and for any roster-management screen), and the Admin Ledger's filtered `paytime_payments` fetch (by month/tag/boarder/category) | The milestone adds at least two, likely three, new mount-path `getFullList` calls sharing collections that already have locked keys (`paytime-payments-list`, `paytime-report-list`). The Admin Ledger's `paytime_payments` fetch needs its own explicit key (e.g. `paytime-ledger-list`) or it collides with one of the existing two. The boarder-selector's `paytime_boarders` fetch inside `ManagePayment` needs a key distinct from any roster-admin screen's own `paytime_boarders` list (e.g. `paytime-boarders-select` vs `paytime-boarders-manage`) — two differently-filtered calls on the same collection is exactly the shape that silently auto-cancels one of them. |
+| PrimeVue `TabPanel` mounts **every** panel unless `lazy` is set | A likely 4th tab (Admin Ledger) added to `PayTimeApp.vue`'s existing `Tabs` shell, and/or a separate boarder-roster admin screen | Today, two `onMounted` fetches already race (My Payments + Monthly Report) and each needed its own `requestKey` — that pattern is established. Adding a 4th tab adds a 3rd/4th concurrent `onMounted` fetch at page load for every admin session, further stressing the requestKey-uniqueness invariant. Keep the existing `v-if="isAdmin"` gating pattern (which genuinely unmounts, unlike `lazy`'s `v-show`) for the new tab too — do not "simplify" by relying on `lazy` for the new tab, since `lazy` was explicitly rejected once already in this codebase (it uses `v-show`, and PayTime's calculator tab needs its unsaved input preserved, not destroyed on switch) and would reintroduce the exact race that `v-if` gating avoids. |
+| `getList()` totalItems COUNT path 400s on non-trivial `listRule` expressions | The rewritten `paytime_payments` rules and the new Admin Ledger's effective listRule are exactly this shape: relation traversal (`boarder.user = ...`) plus a boolean check (`@request.auth.is_admin = ...`) | Any paginated UI for the Admin Ledger — likely needed once payments accumulate across multiple boarders and months — must use `getFullList()` or `getList(page, perPage, { skipTotal: true })` from the very first implementation, never plain `getList()` "because it has built-in pagination." This project has already documented this exact rule shape breaking the count path (D-31-B). |
+| Tailwind v4 utilities are layered; PrimeVue's runtime CSS is not | The new Admin Ledger's filter bar (month/tag/boarder/category selectors) and any boarder-roster admin table, both likely needing mobile-hide/show breakpoints | Follow the exact convention already established in `PaymentLog.vue` (`sm:hidden` on a wrapping `<div>` around the kebab-menu `Button`, never on the `Button` itself): breakpoint classes go on plain wrapper elements, never directly on a PrimeVue `Select`/`Button`/`DataTable`/`Tag`. A `sm:hidden` placed directly on a new filter control will be silently ignored, reproducing a bug this app already fixed once. |
+
+## Performance Traps
+
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|-----------------|
+| Admin Ledger view built with `getList()` for pagination | 400 "Something went wrong" as soon as the collection's listRule includes the relation traversal + `is_admin` check that v5.0 introduces | `getFullList()` or `getList(page, perPage, { skipTotal: true })` from the first commit (documented project workaround, D-31-B) | Immediately — this is a rule-shape bug tied to how the new rules must be written, not a scale threshold |
+| Admin Ledger re-fetches on every filter toggle without a stable, distinct `requestKey` | Rapid filter changes (month, tag, boarder, category) auto-cancel each other, or a stale fetch from the sibling My Payments/Monthly Report tab collides with the ledger's | A single, stable `requestKey` per fetch purpose (e.g. `paytime-ledger-list`), matching the existing `paytime-payments-list`/`paytime-report-list` convention | As soon as more than one boarder has data and someone actually exercises the filters — not a scale problem, a day-one correctness problem |
+
+## Security Mistakes
+
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Admin rule written as `@request.auth.id != ""` instead of `@request.auth.is_admin = true` | Any authenticated boarder gets admin read/write powers — the exact `isSuperUser = isLoggedIn` bug already present elsewhere in this codebase | Grep every new/changed rule for the literal substring `is_admin`; never accept a bare `@request.auth.id != ""` as an admin check |
+| Create rule doesn't bind `boarder` to the caller (or admin) | Any boarder can fabricate a payment against another boarder's name | `createRule` must combine `@request.auth.is_admin = true` with `@request.body.boarder.user ?= @request.auth.id` for the self-service path — never accept `@request.body.boarder != ""` (existence) as a substitute for ownership |
+| Update rule checks only the stored `boarder` value, not the submitted one | A non-admin PATCH can move their own row onto a different boarder (repeat of PT-RULE-01, on a new field) | Add `@request.body.boarder:isset = false \|\| @request.body.boarder = boarder` to the ownership check; keep the client-side field-omission as a second layer, never the only layer |
+| Roster `listRule`/`viewRule` left as `""` instead of `@request.auth.id != ""` | Full boarder roster (names + tags) becomes public to unauthenticated requests | Test the roster list with **no** auth token as part of every smoke probe, not just with a logged-in token |
+| `cascadeDelete: true` on `paytime_boarders.user` or `paytime_payments.boarder` | Deleting an account or a boarder silently wipes payment history — the one thing this app must never lose | Set both to `false`; prefer archiving boarders (`is_active` flag) over deletion; block boarder deletion in the UI when payment history exists |
+| Admin-only UI (Admin Ledger, roster CRUD) gated only by a client-side `v-if`/route with no matching server rule | Reproduces the exact `GiftExchangeManage.vue` mistake already present in this codebase — the client gate becomes the only gate, and it's not one | Every admin-only view's underlying collection calls must carry their own server-side rule; treat the client `v-if` as cosmetic, never as the enforcement boundary |
+| New tag/boarder/category ledger `filter:` strings built with template-literal concatenation | Same class of injection risk this project has already flagged for gift-exchange (`"` in an input value breaks PocketBase's filter parser); tag/boarder values here are admin-entered so the practical risk is lower, but month/category values come from UI controls that could still be tampered with via devtools | Use PocketBase's parameterized filter form for any value that isn't a hardcoded enum, rather than `` `month = "${value}"` `` string interpolation |
+
+## UX Pitfalls
+
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-------------------|
+| A rule bug presents as an empty list, not an error | An admin or boarder assumes "no data yet" and either re-enters payments that already exist but are hidden by a rule mistake, or a developer chases a phantom UI bug instead of the real rule | Any list that goes newly-empty during this milestone's development must be checked against a direct authenticated API call before touching UI code — this exact 404-as-empty-list trap is already documented in this project |
+| Deleting a boarder with payment history quietly orphans or destroys their rows | The admin loses the ability to answer "did this boarder ever pay?" — directly undermines the milestone's stated core value | Block deletion (or require a confirmation naming the affected row count) whenever a boarder has any `paytime_payments` history; never make deletion a single, silently-destructive click |
+| Tag rename silently orphans historical filters | A boarder tagged "vip" gets relabeled "priority"; filtering the ledger by "vip" (a bookmarked view, muscle memory) returns nothing with no explanation that the tag moved | Before treating rename as a supported roster-admin action, empirically verify (and paste back per D-13) whether renaming a `select` value in the Admin UI propagates to already-stored records or leaves them holding the old string |
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **Rule rewrite:** All five `paytime_payments` rules were updated in the same sitting — verify by pasting back the literal text of all five, not just the ones that obviously needed to change. `list`/`view` are the easy ones to skip since a subject-field rename doesn't visually "look like" it should touch them, but they still reference the old `user` field.
+- [ ] **Admin bypass:** Every rewritten rule that reads "boarder owns this row" also carries `@request.auth.is_admin = true ||`. Verify by attempting the admin-on-behalf create/update path with a **non-admin** token and confirming it's rejected — testing only that the admin token succeeds proves nothing about the boundary.
+- [ ] **Update-rule reassignment guard:** Confirm a hand-crafted PATCH (not the `ManagePayment` UI) cannot move a row to a different boarder. The UI omitting the field is not evidence the server rejects it — this is the specific gap PT-RULE-01 already calls out.
+- [ ] **Roster list rule:** Confirm with a genuinely unauthenticated (no-token) request that the roster is NOT publicly listable. "Readable by every authenticated user" and "readable by everyone" look identical if every manual test is performed while logged in.
+- [ ] **cascadeDelete:** Paste back the actual boolean for both `paytime_boarders.user` and `paytime_payments.boarder`. "I created the relation" proves nothing about the cascade setting either way.
+- [ ] **Backfill:** The 1 existing prod record has a non-empty `boarder` value and is visible post-migration in all relevant views (My Payments, Monthly Report, Admin Ledger), for both its own owner's token and an admin token.
+- [ ] **requestKey uniqueness:** Every new `getFullList` call (boarder selector, roster admin screen, Admin Ledger) has its own explicit, distinct `requestKey`, and that key is added to PROJECT.md's locked-invariant list alongside the existing `paytime-payments-list`/`paytime-report-list`.
+- [ ] **Tag filter correctness:** "Filter by tag X" returns exact matches only against whichever storage was chosen (select / JSON / join collection) — test a tag name that is a substring of another (e.g. "vip" vs "vip_room") to catch LIKE-based false positives.
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|----------------|------------------|
+| Wrong admin rule shipped to prod (any boarder gained admin write) | MEDIUM | Fix the rule immediately via Admin UI; audit `paytime_payments` rows created/updated since the bad rule went live for anomalies (mismatched `recorded_by`, unexpected boarder ids). With only 6 users and 1 boarder in prod today, a full manual audit is feasible while the dataset stays this small. |
+| `cascadeDelete` wiped payment history | HIGH — data is gone, no soft-delete exists | No in-app recovery; restore from a PocketBase backup/snapshot if one exists. This is the strongest argument for setting `cascadeDelete: false` before ever exercising boarder deletion, including in testing against prod-adjacent data. |
+| Required relation flipped before backfill, orphaning the existing record | LOW | Only 1 record is affected currently; manually set its `boarder` field via an authenticated call once the relation is corrected. |
+| Partially-applied rule rewrite (some of the 5 rules still reference `user`) | LOW–MEDIUM | Not destructive, just broken — walk the all-five-rules checklist again. The failure mode (404/400 on some operations, success on others) is loud enough to catch before shipping if the D-13 smoke probe is actually run against all five operations, not just one. |
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|--------------------|----------------|
+| Admin check satisfiable by any authenticated user | `paytime_payments` rule-rewrite phase | Non-admin token attempts an admin-only action (write another boarder's row, list the Admin Ledger) and gets 404 |
+| Create rule doesn't bind boarder to caller | `paytime_payments` rule-rewrite phase | Non-admin token creates a payment naming a foreign `boarder` id and gets 404; admin token succeeds against the same request shape |
+| Update rule allows reassignment via stored-value evaluation | `paytime_payments` rule-rewrite phase | Non-admin token PATCHes their own row's `boarder` field to a different id and gets 404; a PATCH that omits `boarder` still succeeds for a legitimate edit |
+| Roster list/view rule public (`""` vs `@request.auth.id != ""`) | `paytime_boarders` collection-creation phase | Unauthenticated (no-token) request to list/view `paytime_boarders` gets 404 |
+| `cascadeDelete` destroys payment history | `paytime_boarders` collection-creation phase | Paste-back of both relation fields' `cascadeDelete` values; delete a disposable test boarder with a test payment attached and confirm the payment is NOT silently removed (or that deletion is blocked outright) |
+| Partially-applied five-rule rewrite | Rule-rewrite / backfill phase | All 5 rules pasted back verbatim in one review pass; a smoke probe exercises list/view/create/update/delete with both an admin and a non-admin token |
+| Required-relation flip before backfill orphans existing record | Rule-rewrite / backfill phase | The 1 existing prod record is visible in all three views post-migration, for both its owner and an admin |
+| requestKey collisions on new roster/ledger fetches | Admin Ledger view phase + admin-on-behalf write path phase | PROJECT.md's requestKey invariant list is updated with the new keys before the phase closes; both sibling tabs' data is confirmed to load simultaneously on page mount |
+| `getList()` 400 on ledger pagination | Admin Ledger view phase | Ledger list implemented with `getFullList()`/`skipTotal: true` from the first commit, not retrofitted after a 400 is observed in testing |
+| Tag storage filter-syntax mismatch / orphaned tag rename | Tags phase | A tag whose name is a substring of another tag is used as a filter-correctness test case; if tags are `select`-based, a rename is tested against an existing tagged boarder to confirm propagate-vs-orphan behavior before rename is relied on as a supported roster-admin action |
+| Client-side admin gate treated as sufficient | Every phase introducing an admin-only surface | For each new admin-only view/action, confirm a matching PocketBase rule exists independent of the Vue `v-if` — a standing code-review checklist item across the milestone, not a one-time phase task |
 
 ## Sources
 
 | Topic | Source | Confidence |
 |---|---|---|
-| `dvh` / `svh` / `lvh` units | MDN + CanIUse (Safari 15.4+, Chrome 108+) | HIGH |
-| iOS auto-zoom on inputs <16px | WebKit / Apple developer docs | HIGH |
-| `viewport-fit=cover` + `env(safe-area-inset-*)` | Apple Human Interface Guidelines, WebKit blog | HIGH |
-| `interactive-widget=resizes-content` | Chromium docs (108+) | MEDIUM |
-| Workbox `maximumFileSizeToCacheInBytes` | Workbox 7.x docs | HIGH |
-| `BeforeInstallPromptEvent` single-use | Chrome platform docs | HIGH |
-| iOS 7-day storage eviction | WebKit ITP / Storage Standard | MEDIUM |
-| Apple touch startup images | Apple developer docs + @vite-pwa/assets-generator | HIGH |
-| `<meta name="theme-color">` per color-scheme | Apple developer docs + MDN | HIGH |
-| PrimeVue 4 Drawer / Dialog / DatePicker / MultiSelect / Tabs / FileUpload | PrimeVue 4 official docs | HIGH (verify versions before each phase) |
-| PocketBase v0.29.x count-path bug | STATE.md D-31-B (verified during v4.2) | HIGH |
-| `card_color` no-hash invariant | STATE.md (locked v2.0) | HIGH |
-| BR-2 barcode invariant | STATE.md (locked v2.0, re-verified v4.1 Phase 30) | HIGH |
-| Wake Lock API HTTPS + gesture | W3C Wake Lock spec | HIGH |
-| `prefers-reduced-motion` | MDN, used in v4.0 Phase 26-01 | HIGH |
-| `unplugin-vue-components` auto-import inflating bundles | unplugin-vue-components docs | HIGH |
-| chart.js v4 + PrimeVue 4 Chart dynamic import | PrimeVue 4 Chart docs + chart.js v4 docs | HIGH |
-| `browser-image-compression` worker behavior | npm pkg docs | MEDIUM |
-| `useWindowSize` (`@vueuse/core`) initial-value race | @vueuse/core docs | HIGH |
+| `@request.body.*` vs deprecated `@request.data.*` in createRule | PROJECT.md Key Decisions (confirmed against live PB instance, v4.1 Phase 28) | HIGH |
+| PocketBase evaluates `updateRule` against stored record values, not post-write values | PROJECT.md Key Decisions + `paytimePaymentMapper.ts` inline documentation (PayTime v1.0) | HIGH |
+| PT-RULE-01 backlog item — update rule reassignment gap not closed server-side | PROJECT.md Active/Future Candidates section | HIGH |
+| `getList()` totalItems COUNT path 400s on non-trivial listRule expressions (D-31-B) | PROJECT.md Key Decisions (verified v4.2) | HIGH |
+| Admin-UI checkpoints require paste-back + code-side smoke probe (D-13 invariant), precedent BUG-01 | PROJECT.md Key Decisions | HIGH |
+| requestKey uniqueness — SDK default key is `method+path`, excludes query string | PROJECT.md Constraints (locked invariant) + `PaymentLog.vue`/`MonthlyReport.vue` inline comments | HIGH |
+| PrimeVue `TabPanel` mounts every panel without `lazy`; `lazy` uses `v-show` and was rejected for PayTime's calculator tab | PROJECT.md Key Decisions (PayTime v1.0) | HIGH |
+| Tailwind v4 layered utilities lose to PrimeVue's unlayered runtime CSS | PROJECT.md Key Decisions + `PaymentLog.vue` inline comments (PayTime v1.0) | HIGH |
+| `isSuperUser = isLoggedIn` — client-only admin gate with no matching server rule | `.planning/codebase/CONCERNS.md` ("Manage page exposed to anyone authenticated", "Same isSuperUser collision") | HIGH |
+| `filter:` string-concatenation injection risk in PocketBase queries | `.planning/codebase/CONCERNS.md` ("PocketBase filter-string interpolation") | HIGH |
+| PocketBase `null` vs `""` rule semantics (unset = superuser-only, empty string = public) | PocketBase's documented rule-engine model, applied here to the new `paytime_boarders` roster rule | HIGH |
+| `:isset` request-body modifier and `?=` relation "any/all" match operator | PocketBase's documented rule-syntax model, applied here to the rewritten create/update rules | HIGH |
+| `paytime_payments` schema, existing rules, and the 1 existing prod record | PROJECT.md Context/Current State section | HIGH |
 
 ---
-
-*Researched 2026-05-26 for v4.3 Wallecx Mobile Optimization milestone. Codebase grep evidence: `text-sm` confirmed on ManageExpense.vue labels (C-5 trap directly in code); `useWindowSize` already imported in 5 Wallecx files (M-6 applies); 100vh/h-screen grep returned 0 in wallecx folder but exists elsewhere in src (audit pass needed). Next: Requirements step converts the candidate NFR/CON list into REQUIREMENTS.md REQ-IDs; Roadmapper assigns each NFR/CON to its owning phase.*
+*Pitfalls research for: PayTime v5.0 Admin Payment Ledger — admin-on-behalf write path on a per-user-isolated PocketBase app*
+*Researched: 2026-08-04*

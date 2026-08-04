@@ -1,480 +1,340 @@
-# Architecture — v4.3 Wallecx Mobile Optimization
+# Architecture Research
 
-**Domain:** Mobile polish layer on an existing Vue 3 + PrimeVue + PocketBase SPA mini-app
-**Researched:** 2026-05-26
-**Scope:** Refinement only. No new collections, no new tabs, no Pinia store, no design-token churn.
-**Confidence:** HIGH (entire architecture verified by reading source — no training-data assumptions about Wallecx layout).
+**Domain:** Vue 3 SPA mini-app — admin-managed roster + ownership-model rewrite on a PocketBase-backed payment tracker (Lexarium PayTime v5.0)
+**Researched:** 2026-08-04
+**Confidence:** MEDIUM overall — HIGH for everything grounded in the actual code (cited file:line below); MEDIUM/LOW for PocketBase rule syntax not yet exercised against the live instance (flagged UNCONFIRMED throughout, per the project's own stated risk)
 
----
+> **Caveat on "current behaviour" claims below:** the PB schema and API rules are managed entirely through the PocketBase Admin UI — there is no migration file, `pb_schema.json`, or rules file checked into this repo (confirmed: no `*migration*`/`*pb_schema*` files exist under the repo root). Every claim about *current* rule text is therefore sourced from `.planning/PROJECT.md`'s prose/Key Decisions (which is itself derived from live-instance testing during earlier phases, e.g. the Phase 28 `@request.body.user` confirmation), not from a file I can cite a line number in. Claims about current *component* behaviour are cited against the actual `.vue`/`.ts` files.
 
-## TL;DR for the Requirements step / Roadmapper
+## Standard Architecture
 
-v4.3 is a thin lateral layer on top of the existing architecture, NOT a refactor. The five integration surfaces are:
+### System Overview — current vs. v5.0
 
-1. **One new composable, `useMobileEnv.ts`** — replaces ad-hoc `useIsMobile` calls; centralizes `isMobile`, `isTablet`, `isStandalone`, `installPromptEvent` (BeforeInstallPromptEvent), `safeAreaInsets`. Backward-compatible: existing `useIsMobile.ts` stays and becomes a thin re-export so no migration churn is forced.
-2. **One new component, `BaseMobileDialog.vue`** — optional adapter that wraps the existing PrimeVue `<Dialog>`-vs-`<Drawer>` switch + sticky action bar + iOS 16px input fix. Used by Manage* dialogs that opt-in. Per-dialog adoption, not big-bang.
-3. **`PwaInstallBanner.vue` extended** — same component, two code paths: iOS Safari (existing) + Android/Chromium via `beforeinstallprompt`. Listener registration lifts to **App.vue** so the event is captured BEFORE user navigates to `/projects/wallecx` (event fires once per page load).
-4. **`vite.config.ts` build target tweaks** — per-tab dynamic imports of `VaccinationsTab`, `MembershipsTab`, `ExpensesTab` from `WallecxApp.vue` (currently static imports, all in one chunk). PWA icon assets compressed via `vite-plugin-pwa-assets-generator` (already a devDep) + optional `vite-imagetools` for static images. No runtime perf trade-offs because tabs are already mutually exclusive in the UI.
-5. **List virtualization deferred until measured** — Wallecx datasets are tiny (personal vault: dozens of records, not thousands). Recommendation: instrument first, virtualize only if a real user hits a slow frame; if needed, `@tanstack/vue-virtual` plugs into the child list views (VaccinationGroupPanel, MembershipsTab grid, ExpensesListView), NOT into a shared component.
-
-Build order (8 questions answered below; sequence rationale in §8): **Foundation composable → PWA install capture → Layout audit (tab-by-tab) → Forms/dialog polish → Performance (bundle split + asset compression) → Optional virtualization → UAT**.
-
----
-
-## 1. Where does a mobile-audit / responsive-token system live?
-
-### Recommendation: New composable `src/composables/useMobileEnv.ts`
-
-`useIsMobile.ts` already exists and returns a single `Ref<boolean>`. Eight Wallecx components currently call it. v4.3 needs MORE than just `isMobile`: it needs `isTablet`, `isStandalone` (PWA detection), `safeAreaInsets` (for sticky action bars), and `installPromptEvent`. Centralizing these in one composable prevents drift.
-
-**Decision: extend, do not replace.**
-
-```ts
-// src/composables/useMobileEnv.ts (NEW)
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
-import { useIsMobile } from './useIsMobile'
-
-export interface SafeAreaInsets { top: number; right: number; bottom: number; left: number }
-
-export function useMobileEnv() {
-  const isMobile  = useIsMobile(639)                   // existing — Tailwind sm: threshold
-  const isTablet  = useIsMobile(820)                   // NEW — iPad portrait (820px) and below; combined with !isMobile gives 640–820
-  const isStandalone = ref(matchStandalone())
-  const installPromptEvent = ref<BeforeInstallPromptEvent | null>(null)
-  const insets = ref<SafeAreaInsets>(readSafeAreaInsets())
-  // ...listeners on resize / orientationchange / matchMedia('(display-mode: standalone)')
-  return { isMobile, isTablet, isStandalone, installPromptEvent, insets }
-}
+```
+CURRENT (v1.0)                                   v5.0 TARGET
+┌─────────────────────────┐                      ┌─────────────────────────────────────┐
+│ PayTimeApp.vue           │                      │ PayTimeApp.vue  (UNCHANGED)          │
+│  Tabs: log/calc/report   │                      │  Tabs: log/calc/report               │
+└──────┬───────────┬───────┘                      └──────┬────────────┬─────────────────┘
+       │           │ (isAdmin)                           │            │ (isAdmin)
+┌──────▼──────┐ ┌──▼────────────┐             ┌──────────▼──────┐ ┌──▼─────────────────────────┐
+│ PaymentLog  │ │ MonthlyReport │             │ PaymentLog        │ │ MonthlyReport.vue (SHELL)  │
+│ own rows,   │ │ own fetch,    │             │ (own boarder      │ │ fetches boarders (shared   │
+│ user filter │ │ expand:"user" │             │ resolved via      │ │ composable) + month-scoped │
+└──────┬──────┘ └───────────────┘             │ useBoarderRoster) │ │ payments; nested Tabs:     │
+       │                                       └──────┬────────────┘ │  By Boarder | Ledger |     │
+┌──────▼──────┐                                        │              │  Boarders                  │
+│ ManagePayment│  create: {user: auth.id, ...}          │              └──┬──────────┬──────────┬───┘
+│ (own row    │  update: omits user (rule evaluated     │                 │          │          │
+│  only)      │  against STORED value)                 ▼          ┌──────▼───┐ ┌────▼──────┐ ┌─▼────────────┐
+└─────────────┘                                 ┌──────────────┐  │Monthly   │ │AdminLedger│ │BoarderRoster │
+paytime_payments.user → users (required,        │ManagePayment │  │ReportView│ │View (new) │ │View (new)    │
+cascadeDelete:true)                             │(admin gets a │  │(props-   │ │props-only,│ │props-only,   │
+                                                 │boarder Select│  │only,     │ │client-side│ │+ManageBoarder│
+                                                 │ from the     │  │extracted │ │filter over│ │dialog        │
+                                                 │ roster;      │  │Panels    │ │the same   │ └──────────────┘
+                                                 │ non-admin    │  │markup)   │ │payments   │
+                                                 │ pinned to    │  └──────────┘ │list)      │
+                                                 │ own boarder) │                └───────────┘
+                                                 └──────────────┘
+paytime_payments.boarder → paytime_boarders (required, cascadeDelete:FALSE — blocks
+  accidental deletion of a boarder with history instead of silently destroying it)
+paytime_payments.recorded_by → users (optional, cascadeDelete:false — audit-only)
+paytime_boarders.user → users (optional, cascadeDelete:false — nulls on account deletion)
 ```
 
-| Pattern | Lives | Used by |
-|---------|-------|---------|
-| `isMobile`, `isTablet` | `useMobileEnv` | Every Wallecx component (current call sites preserved via re-export) |
-| `isStandalone` | `useMobileEnv` | `PwaInstallBanner` (hide when running standalone), reports view spacing |
-| `safeAreaInsets` | `useMobileEnv` | Sticky action bars in dialogs/drawers, fixed bottom banner padding |
-| `installPromptEvent` | `useMobileEnv` (singleton ref module-scope, NOT per-call ref) | `PwaInstallBanner` Android path |
+### Component Responsibilities
 
-**Backward compatibility invariant:** `useIsMobile.ts` is kept verbatim. New `useMobileEnv.ts` internally calls `useIsMobile()`. Existing callers (VaccinationsTab, MembershipsTab, ExpensesTab, ManageExpense, ExpensesReportsView, etc.) need NO mandatory migration — they keep working. Only NEW code in v4.3 uses `useMobileEnv`.
+| Component | Responsibility | New / Modified |
+|-----------|-----------------|-----------------|
+| `paytime_boarders` (PocketBase collection) | Canonical payment subject; admin-managed roster, tags, optional `users` link | New (Admin UI) |
+| `paytime_payments.boarder` | Replaces `user` as the subject relation | New field |
+| `paytime_payments.recorded_by` | Audit trail — who actually wrote the row (repurposed from `user`) | Repurposed field (rename, not new) |
+| `useBoarderRoster.ts` | Module-level cached fetch of the roster, shared by every consumer | New composable |
+| `ManageBoarder.vue` | Admin CRUD dialog for one boarder | New |
+| `ManagePayment.vue` | Gains admin boarder selector; non-admin path unchanged in spirit (pinned to own subject) but payload field renames | Modified |
+| `PaymentLog.vue` | List filter moves from `user = id` to a boarder-resolved filter | Modified |
+| `MonthlyReport.vue` | Becomes the admin-tab **shell**: owns the roster + payments fetch, hosts three nested views | Modified (restructured) |
+| `MonthlyReportView.vue` | The current per-boarder Panels markup, extracted, now pure props-in | New (extraction) |
+| `AdminLedgerView.vue` | Flat, filterable (month/tag/boarder/category) ledger table | New |
+| `BoarderRosterView.vue` | Roster list + `ManageBoarder` wiring, admin-only | New |
+| `paytimeBoarderMapper.ts` | Create/update payload shaping for boarders | New |
+| `paytimePaymentMapper.ts` | Field renames (`user`→`boarder`/`recorded_by`); update-omission rationale extended | Modified |
+| `boarderSchema.ts` | Zod schema for boarder create/edit | New |
+| `types/paytime/boarders/types.d.ts` | `PaytimeBoarder` + `AddPaytimeBoarder` | New |
+| `types/paytime/payments/types.d.ts` | `PaytimePayment.user` → `boarder`/`recorded_by` | Modified |
 
-**Anti-pattern explicitly rejected:** A `src/lib/wallecx/mobile.ts` module. The existing `src/lib/wallecx/` namespace is for non-reactive helpers (period, currency, schemas). Reactive viewport state belongs in `src/composables/`.
+## Recommended Project Structure
 
----
-
-## 2. Where does list virtualization plug in if needed?
-
-### Recommendation: DO NOT introduce shared `VirtualList.vue`. Defer virtualization to measurement.
-
-**Reality check** — Wallecx is a personal vault. Typical user has:
-- ~10–40 vaccination records (one row in VaccinationGroupPanel; the visible list is the group panel sheet, not the outer grid)
-- ~5–30 membership cards (grid)
-- ~50–500 expenses over a year of use (the only list that could grow long)
-
-Virtualizing a 30-item list adds complexity (variable row heights for ExpenseItem, scroll-restoration handling on Drawer open/close, screen-reader trade-offs) for no measurable benefit. Premature virtualization is the bigger architectural risk than slow scrolling.
-
-**Decision: defer + instrument.**
-
-| Phase | Action |
-|-------|--------|
-| Performance phase | Add `performance.mark` + `performance.measure` instrumentation around the initial render of `ExpensesListView` and `MembershipsTab` grid; report via console in dev only. |
-| Acceptance gate | If a real device (iPhone SE-class, ~2 generations old) renders 200 expenses in under 100 ms paint-to-interactive, DO NOT virtualize. |
-| Trigger condition | If measurement shows >16 ms scroll jank on long-running expense logs, then introduce `@tanstack/vue-virtual` (small, framework-agnostic, well-maintained as of 2026). |
-
-**If virtualization is needed** — placement rule:
-- **Goes inside the child sibling view** (`ExpensesListView.vue`, `MembershipsTab.vue`'s card grid, `VaccinationGroupPanel.vue`'s list). Not a shared `VirtualList.vue`.
-- Reason: each list has a different row template (membership card vs expense row vs vaccination entry), different keying, and different selection semantics. A shared virtualizer would have to accept a render-prop or scoped slot, which is more code than direct integration.
-- Parent shell ownership of the data array (`expenses.value`, `records.value`) is preserved. Virtualizer consumes the same prop the current `<template v-for>` consumes.
-
-**Trade-off table:**
-
-| Approach | Pros | Cons | Verdict |
-|----------|------|------|---------|
-| `VirtualList.vue` shared component | DRY across 3 lists | Each list has different row shape → slot-based, harder than open-coding | Reject |
-| Per-view inline virtualization (when needed) | Minimal abstraction; preserves shell-owns-data invariant | Three implementations if all three lists grow | Accept (only when measured) |
-| No virtualization (status quo + measure) | Zero new code | Risk if users log 1000s of expenses over years | **Default** until proven inadequate |
-
----
-
-## 3. Shared mobile patterns: where do sticky action bars, bottom-sheet snap points, keyboard avoidance live?
-
-### Recommendation: New shared component `BaseMobileDialog.vue` + per-component scoped CSS for layout specifics.
-
-The codebase already has the **right primitive** — `<Dialog>`-vs-`<Drawer>` conditional rendering in `ExpensesTab.vue` and `WallecxApp.vue`'s VaccinationsTab. But the pattern is **duplicated across 4 dialogs** (ManageVaccination, ManageMembership, ManageExpense, ManageBudget) plus 3 detail views. v4.3 adds sticky action bars + iOS 16px input fix + keyboard-aware padding, which would 4-7× the duplication if added per-component.
-
-**Decision: introduce one optional wrapper component.**
-
-```vue
-<!-- src/components/projects/wallecx/BaseMobileDialog.vue (NEW) -->
-<script setup lang="ts">
-import { computed } from 'vue'
-import { useMobileEnv } from '@/composables/useMobileEnv'
-
-const visible = defineModel<boolean>('visible', { required: true })
-const props = defineProps<{
-  header: string
-  desktopWidth?: string   // '40rem' default
-  stickyFooter?: boolean  // sticky action bar on mobile
-}>()
-defineSlots<{ default: () => unknown; footer?: () => unknown }>()
-
-const { isMobile, insets } = useMobileEnv()
-</script>
-
-<template>
-  <Drawer v-if="isMobile" v-model:visible="visible" position="bottom" ...>
-    <template #header>
-      <!-- drag-handle pill + header text — current pattern from ExpensesTab.vue lines 256-261 -->
-    </template>
-    <div class="mobile-dialog-body" :style="{ paddingBottom: stickyFooter ? '5rem' : `env(safe-area-inset-bottom)` }">
-      <slot />
-    </div>
-    <div v-if="stickyFooter && $slots.footer" class="mobile-dialog-sticky-footer"
-         :style="{ paddingBottom: `calc(env(safe-area-inset-bottom) + 0.75rem)` }">
-      <slot name="footer" />
-    </div>
-  </Drawer>
-  <Dialog v-else v-model:visible="visible" modal :header="header"
-          :style="{ width: desktopWidth ?? '40rem' }"
-          :breakpoints="{ '960px': '75vw', '641px': '92vw' }">
-    <slot />
-    <template v-if="$slots.footer" #footer><slot name="footer" /></template>
-  </Dialog>
-</template>
+```
+src/
+├── composables/
+│   └── useBoarderRoster.ts          # NEW — module-level cache, mirrors useFileToken.ts
+├── lib/
+│   ├── pocketbase/
+│   │   ├── paytimePaymentMapper.ts  # MODIFIED — boarder/recorded_by instead of user
+│   │   └── paytimeBoarderMapper.ts  # NEW
+│   └── paytime/
+│       ├── categories.ts            # unchanged
+│       ├── paymentSchema.ts         # unchanged
+│       └── boarderSchema.ts         # NEW
+├── types/paytime/
+│   ├── payments/types.d.ts          # MODIFIED
+│   └── boarders/types.d.ts          # NEW
+└── components/projects/paytime/
+    ├── PayTimeApp.vue               # UNCHANGED (no new top-level tab — see Pattern 4)
+    ├── PaymentLog.vue               # MODIFIED — filter + own-boarder resolution
+    ├── ManagePayment.vue            # MODIFIED — admin Select, payload rename
+    ├── ManageBoarder.vue            # NEW
+    ├── MonthlyReport.vue            # MODIFIED — becomes the admin-tab shell
+    ├── MonthlyReportView.vue        # NEW — extracted Panels markup
+    ├── AdminLedgerView.vue          # NEW
+    ├── BoarderRosterView.vue        # NEW
+    └── __tests__/
+        ├── requestKeys.spec.ts      # MODIFIED — mock shape, +1 new key assertion
+        └── paymentEdit.spec.ts      # MODIFIED — mock shape (boarder/recorded_by)
 ```
 
-**Adoption strategy: per-dialog opt-in.** Migrate one dialog per phase, observe, then proceed. Order: ManageExpense (lowest risk — already has the cleanest Dialog/Drawer split) → ManageBudget → ManageMembership (highest risk — has direct-v-model ColorPicker pattern, see D-2.0 invariant; must verify the wrapper doesn't break ColorPicker reactivity) → ManageVaccination.
+### Structure Rationale
 
-**What stays per-component (scoped CSS, NOT centralized):**
-- Field layouts (form grid structure)
-- Component-specific copy
-- Specialized states (e.g., MembershipDetail's barcode overlay; VaccinationDetail's MIME-branched preview)
+Every new file slots into a folder that already exists and already has a same-shaped sibling (`paytimeBoarderMapper.ts` next to `paytimePaymentMapper.ts`, `boarderSchema.ts` next to `paymentSchema.ts`, `ManageBoarder.vue` next to `ManagePayment.vue`). Nothing here introduces a new top-level folder, a new state-management layer, or a new library — every new file is a same-shaped twin of an existing one, or a direct extraction from one.
 
-**iOS 16px input font** — implemented as a global CSS rule in `wallecx-overrides.css` (Wallecx-scoped via import path), NOT as a per-component override. Targets `input, textarea, select, .p-inputtext, .p-textarea, .p-datepicker-input` with `font-size: 16px` when viewport ≤ 640px.
+## Architectural Patterns
 
-```css
-/* wallecx-overrides.css addition */
-@media (max-width: 640px) {
-  .p-inputtext, .p-textarea, .p-datepicker-input, .p-inputnumber-input, .p-select-label {
-    font-size: 16px;  /* iOS Safari auto-zoom prevention: any input under 16px triggers viewport zoom on focus */
-  }
-}
+### Pattern 1: Ownership model rewrite — five rules, concretely
+
+**paytime_boarders (new collection) — low risk, no relation traversal needed:**
+
+```
+listRule:   @request.auth.id != ""
+viewRule:   @request.auth.id != ""
+createRule: @request.auth.is_admin = true
+updateRule: @request.auth.is_admin = true
+deleteRule: @request.auth.is_admin = true
+```
+Every authenticated user can read the whole roster (the selector and a boarder's own-record lookup both need this); only the admin can write it. No dot-notation, no relation JOIN — this is the safe half of the rewrite.
+
+**paytime_payments — the risky half:**
+
+```
+listRule:   @request.auth.is_admin = true || boarder.user = @request.auth.id
+viewRule:   @request.auth.is_admin = true || boarder.user = @request.auth.id
+deleteRule: @request.auth.is_admin = true || boarder.user = @request.auth.id
+updateRule: @request.auth.is_admin = true || boarder.user = @request.auth.id
+createRule: @request.auth.is_admin = true ||
+            (@request.body.boarder:isset = true && @request.body.boarder.user = @request.auth.id)
 ```
 
-**Keyboard avoidance** — handled by the OS-native `interactive-widget=resizes-content` (the default for modern browsers when viewport meta is set). No JS scroll-into-view needed. The sticky footer pattern above naturally avoids being hidden by the keyboard because Drawer body is the scroll container and footer is fixed-positioned within that container, NOT `position: fixed` on the viewport. **Locked invariant: no `position: fixed; bottom: 0` on viewport for in-dialog action bars.**
+**What's confirmed vs. not, and why the risk is uneven across these five:**
 
-**Scroll trapping** — PrimeVue Dialog/Drawer already trap scroll by default (`modal` prop). No additional work needed unless an audit finds a specific page-scroll bleed-through.
+- `boarder.user = @request.auth.id` for **list/view/update/delete** is evaluated against the record's **stored** relation — this shape of dot-notation JOIN (up to 6 levels deep) is documented, general PocketBase behaviour: [Working with relations](https://pocketbase.io/docs/working-with-relations/), [API rules and filters](https://pocketbase.io/docs/api-rules-and-filters/) (MEDIUM confidence — official docs, not yet exercised on *this* instance). This is the exact expression PROJECT.md already flags as "the key risk to settle before the plan locks" — general PocketBase support is doc-confirmed, but untested here. **UNCONFIRMED on this instance; smoke-test before writing app code against it** (see Build Order, step 5).
+- The **createRule** is the riskiest of the five, and this is a finding beyond what PROJECT.md already flagged: it needs to chase a relation **off `@request.body`** (`@request.body.boarder.user`), not off a stored record — because at create time there is no stored record yet. I could not find PocketBase documentation that explicitly confirms dot-chaining works off `@request.body.<relField>` the way it does off a stored field; the docs only clearly demonstrate direct equality (`@request.body.user = @request.auth.id`) and modifiers like `:isset`/`:changed` on body values, not relation traversal through them. **Mark `@request.body.boarder.user = @request.auth.id` UNCONFIRMED — it needs its own smoke test, independent of and in addition to the list/view/update/delete check.**
+  - **Fallback if createRule chaining doesn't work:** since `ManagePayment.vue` already pins non-admins to their own boarder client-side (Pattern 4/6 below), the create path's real-world traffic never sends a foreign `boarder` id from a non-admin — the client-side pin plus the **list/view rule** (which *is* the well-documented shape) is enough defense in depth for a personal boarding-house app with 6 users. If the createRule expression above doesn't validate, drop to `@request.auth.is_admin = true || @request.auth.id != ""` (any authenticated user may create) and rely on list/view/delete to bound what they can subsequently see or touch. This is a legitimate, honestly-weaker fallback, not a silent gap — write it down as a known trade-off if taken.
+- `@request.auth.is_admin = true` (a direct field on the auth record, no relation) is standard, low-risk PocketBase syntax and is very likely already live in the current `paytime_payments` rules (PROJECT.md: MonthlyReport is "gated... server-side in the list/view rules", PROJECT.md line 169) — but note PayTime has **never had an end-to-end browser smoke test** (PROJECT.md line 27), so even this existing expression is technically unverified in production. Low risk, still worth confirming in the same smoke-test pass rather than assuming.
 
----
+**The stored-value update-rule concern carries over exactly, and gets worse if left unmitigated:**
 
-## 4. Where does PWA install-flow capture live?
+`paytimePaymentMapper.ts:21-30` documents that `mapToUpdatePayment` deliberately omits `user` because PocketBase evaluates the update rule against the record's **stored** value, not the submitted one — so a request that also *sets* `user` to someone else would still pass `user = @request.auth.id` (checked against the old, still-current value) and reassign the record. The same mechanism applies identically to `boarder`: if a hand-crafted request included `boarder: <someone-else's-id>`, `boarder.user = @request.auth.id` still passes (I still own the row *right now*), and the update would silently hand the payment to someone else. **Carry the mitigation forward unchanged: the update mapper must keep omitting the owner-equivalent field (now `boarder`) exactly as it omits `user` today.** Optionally close the gap server-side too — this is backlog item **PT-RULE-01** (PROJECT.md line 188, already flagged as "likely absorbed by v5.0's rule rewrite — re-check rather than doing it twice"):
 
-### Recommendation: `beforeinstallprompt` listener registers at **App.vue** (Lexarium shell), capture-only. UI lives at WallecxApp.vue level inside `PwaInstallBanner.vue`.
-
-**Why App.vue, not WallecxApp.vue:** The `beforeinstallprompt` event fires once per page load, early — typically before the user has navigated to `/projects/wallecx`. If the listener is only registered after WallecxApp mounts, the event will have already fired by the time the user opens Wallecx via in-app navigation, and the install prompt will be silently lost. Lexarium-level capture into a singleton ref module-scoped inside `useMobileEnv` solves this.
-
-**Capture is global; UI is Wallecx-only.** This is fine — other Lexarium mini-apps are not installable PWAs (the manifest scope is `/` so technically the whole site is, but Wallecx is the only one that markets installation).
-
-```ts
-// src/composables/useMobileEnv.ts — module-scope singleton
-const installPromptEventRef = ref<BeforeInstallPromptEvent | null>(null)
-
-// Module-scope listener — registers once when the module is first imported.
-// Imported by App.vue early so capture beats user navigation to Wallecx.
-if (typeof window !== 'undefined') {
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault()  // suppress the Chrome auto-banner; we render our own
-    installPromptEventRef.value = e as BeforeInstallPromptEvent
-  })
-  window.addEventListener('appinstalled', () => {
-    installPromptEventRef.value = null
-  })
-}
+```
+updateRule: @request.auth.is_admin = true ||
+  (boarder.user = @request.auth.id &&
+   (@request.body.boarder:isset = false || @request.body.boarder.user = @request.auth.id))
 ```
 
-**Concrete change to App.vue:** import `useMobileEnv` once at top of script to force module evaluation. No template changes, no listener boilerplate.
+This reuses the same unconfirmed `@request.body.<rel>.<field>` shape as the createRule fallback above, so treat it as optional hardening layered on top of the mapper-level fix, not a replacement for it.
 
-**`PwaInstallBanner.vue` extended (NOT split into 2 components):** the iOS path and Android path share the same dismissal storage key (`wallecx_pwa_banner_dismissed`), the same visual frame, the same standalone-detection guard. The only difference is one branch:
-- **iOS Safari:** show "Tap Share then Add to Home Screen" copy (current behavior)
-- **Android/Chromium with captured event:** show "Install" button → calls `installPromptEvent.prompt()` → handles `userChoice` outcome → clears event ref
+### Pattern 2: What happens to the existing `user` field
 
-Splitting into two components would duplicate the standalone detection, the storage key, the dismiss button, and the safe-area-bottom calc. Reject.
+**Repurpose it — don't keep both, don't drop it.** With exactly one production record (`paytime_payments` id `4fsz8cnwo7s05fu`, owned by Cedrick — PROJECT.md line 239, and the literal fixture in `requestKeys.spec.ts:5-19`), a straight PocketBase Admin UI **rename** of `user` → `recorded_by` is the cheapest possible path: it's a relation-to-`users` field being renamed, not retyped, so the one stored value survives untouched with zero conversion. Then:
 
-**Dismissal storage key shared.** Once dismissed in either path, banner stays dismissed for both. This is correct behavior — a user dismissing on iPad Safari doesn't want to see it again on Android Chrome.
+- **`boarder`** — new required relation to `paytime_boarders`, `cascadeDelete: false` (Pattern 3).
+- **`recorded_by`** (renamed from `user`) — flip it from required to **optional**, `cascadeDelete: false`. It stops being the access-control subject and becomes pure audit metadata: "who actually typed this in," which matters once an admin can write rows on someone else's behalf. Nothing in Pattern 1's rules references `recorded_by` at all — it has no access-control role, so it never needs to be defended against reassignment, and the payment mapper can simply never include it on `mapToUpdatePayment` (set once at create, immutable thereafter — matches audit-log semantics and sidesteps another owner-field-on-update class of bug for free).
+- Non-admin creates: `recorded_by = auth.user.id` (same as `boarder`'s resolved-own-id) — self-recorded.
+- Admin-on-behalf creates: `recorded_by = auth.user.id` (the admin), `boarder = <selected boarder>` — the two fields diverge, which is the whole point of adding it.
 
----
+### Pattern 3: `cascadeDelete` semantics — the one to get right
 
-## 5. Bundle-splitting strategy
+PocketBase's cascade behaviour (MEDIUM confidence, official docs + cross-referenced GitHub discussions on [`RelationField`](https://pocketbase.io/jsvm/classes/RelationField.html) and issue reports like [#6498](https://github.com/pocketbase/pocketbase/issues/6498)):
 
-### Current state (verified from `WallecxApp.vue` lines 7-9 + `vite.config.ts` lines 109-128)
+- **Required relation field, `cascadeDelete: false`** — deleting the record being pointed *to* is **blocked**: "Failed to delete record. Make sure that the record is not part of a required relation reference."
+- **Required or optional relation field, `cascadeDelete: true`** — deleting the record being pointed *to* **deletes every record that references it** through that field.
+- **Optional relation field, `cascadeDelete: false`** — deleting the record being pointed *to* **clears the field to null/empty** on every record that references it; the referencing records survive.
 
-```ts
-// WallecxApp.vue — STATIC imports of all three tabs
-import VaccinationsTab from "./VaccinationsTab.vue";
-import MembershipsTab from "./MembershipsTab.vue";
-import ExpensesTab from "./ExpensesTab.vue";
+Applied here:
+
+| Field | Required? | cascadeDelete | Effect of deleting the *target* record |
+|-------|-----------|----------------|------------------------------------------|
+| `paytime_payments.boarder` | **Required** | **false** | Deleting a `paytime_boarders` row that still has payments is **blocked** by PocketBase — an admin cannot fat-finger a boarder deletion and wipe their payment history. This is the correct, safe default. |
+| `paytime_payments.recorded_by` | Optional | false | Deleting a `users` account nulls `recorded_by` on any rows they logged (their own or on someone else's behalf). Payment history is untouched; only "who typed this" attribution is lost for that admin's past entries. Acceptable — it's advisory metadata, not the subject. |
+| `paytime_boarders.user` | Optional | false | Deleting a `users` account nulls the `user` link on the linked boarder row. The boarder record and every payment attached to it survive untouched — the boarder simply reverts to "no linked account," the same state as a boarder who never had one. This is exactly the desired v5.0 behaviour (admin logs on behalf of boarders without accounts). |
+
+**Flag explicitly — the trap to avoid:** setting `cascadeDelete: true` on `paytime_payments.boarder` is the single most dangerous checkbox in this whole migration. With it enabled, deleting a boarder silently deletes every payment they ever had, with no separate confirmation beyond whatever the boarder-delete UI shows. Given the project's own D-13 invariant ("Admin-UI checkpoints require text paste-back + downstream smoke verify" — PROJECT.md line 300, locked after BUG-01's silent no-op), this field's cascade setting specifically should be part of the paste-back verification, not just acknowledged.
+
+### Pattern 4: Where the admin ledger view lives
+
+**Recommendation: nest it inside the existing admin tab, don't add a new top-level tab, don't bolt a filter mode onto the existing report.** PROJECT.md itself rules out the filter-mode option ("Distinct from the existing per-boarder monthly report" — target features list). Between a new top-level tab and a nested sub-view, the codebase already has a direct precedent for exactly this situation — a tab whose content grows a second, structurally different view: Wallecx's `ExpensesTab.vue` → `ExpensesListView.vue` + `ExpensesReportsView.vue` (`ExpensesTab.vue:233-260`). The shell (`ExpensesTab.vue`) owns the fetch(es) and dialogs; the two views are pure `props`-in, `emit`-up siblings switched by a nested `<Tabs>`.
+
+Apply the identical shape here, reusing the file that's already wired into `PayTimeApp.vue` and already admin-gated (`PayTimeApp.vue:34,43-45`) as the shell — **`MonthlyReport.vue` becomes the shell**, not a new file:
+
+- `MonthlyReport.vue` (shell) — keeps the existing month-scoped payments fetch (`requestKey: "paytime-report-list"`, `MonthlyReport.vue:52`) and gains the roster fetch (via `useBoarderRoster`, Pattern 5). Hosts a nested `Tabs`: **By Boarder | Ledger | Boarders**.
+- `MonthlyReportView.vue` (new) — the current per-boarder `Panel` markup (`MonthlyReport.vue:108-198`) extracted verbatim, now receiving `payments`/`boarders`/`month` as props instead of fetching.
+- `AdminLedgerView.vue` (new) — flat table, own local filter state (tag/boarder/category — client-side `computed()` over an already-fetched list, exactly like `ExpensesReportsView`'s period selector filters an already-fetched `expenses` prop rather than re-querying).
+- `BoarderRosterView.vue` (new) — roster CRUD, reuses the same already-fetched `boarders` ref; no extra fetch.
+
+**Why not a new top-level tab:** it would need its own `v-if="isAdmin"` `Tab`/`TabPanel` pair in `PayTimeApp.vue` *and* its own independent `onMounted` fetch with a third distinct `requestKey` — not wrong, but it duplicates the roster fetch and the payments-for-a-month fetch across two unrelated admin surfaces instead of one, and fragments a single "admin view" mental model into two tabs for what is, from the boarder's or the outside observer's perspective, one feature.
+
+**The `requestKey` trap still applies and needs a deliberate answer, not an accident.** `TabPanel` renders `v-if="lazy ? active : true"` — without `lazy`, **every** panel mounts immediately (documented behaviour this project already hit and fixed once: `useFileToken.ts:14-17`, and asserted by `requestKeys.spec.ts`). If `MonthlyReportView` and `AdminLedgerView` both fetched independently in their own `onMounted`, both would fire the moment the admin tab first renders (its nested `Tabs` also has no `lazy`), racing on default keys exactly like `PaymentLog`/`MonthlyReport` used to. Two ways out, both already established in this codebase:
+
+1. **Preferred, matches the `ExpensesTab` budgets/expenses precedent exactly:** the shell fetches once and passes props down; the two/three child views never call `pb.collection()` themselves. No new `requestKey` needed for them at all.
+2. If the ledger's filter needs (arbitrary month range, tag, boarder, category) genuinely can't reuse the report's single-month-equality query, keep the report's fetch in the shell as today and add **one more**, explicit, shell-owned fetch for the ledger under a **new, distinct key** — e.g. `paytime-ledger-list` — extending the project's locked `requestKey`-uniqueness invariant (currently `paytime-payments-list`, `paytime-report-list` — PROJECT.md line 265) to three keys, still all declared in one file where `requestKeys.spec.ts` can assert their distinctness in one place.
+
+Recommend **option 2's data-fetching split, option 1's ownership discipline**: both fetches live in the shell's `onMounted`/`watch`, neither child view fetches for itself.
+
+### Pattern 5: Boarder-data fetching — composable over Pinia
+
+Three consumers need the roster: `ManagePayment.vue` (admin selector + a non-admin's own-boarder resolution), `AdminLedgerView.vue` (filter dropdown + row labels), `MonthlyReportView.vue`/`BoarderRosterView.vue` (row labels / CRUD list). `PaymentLog.vue` does **not** need the full roster — its own list filter only needs *its own* boarder id, which it can get from the same shared cache without holding the whole list in a template.
+
+Evaluated against the options in the question:
+
+- **Fetch per component** — rejected. Three independent `getFullList('paytime_boarders')` calls, mounted simultaneously in different corners of the app (PrimeVue's no-`lazy` mounting applies here too, since `ManagePayment` lives inside the "My Payments" tab and the ledger/report live in the "Monthly Report" tab, and both top-level tabs' content exists in the DOM once `PayTimeApp.vue` renders) reintroduces the exact `requestKey`-collision class of bug this project has already paid down twice (`useFileToken`, `requestKeys.spec.ts`).
+- **Hoist into `PayTimeApp.vue` and pass down** — rejected. `PayTimeApp.vue` today has zero data-fetching responsibility (`PayTimeApp.vue:1-11`, it only computes `isAdmin`); giving it a roster fetch means threading `boarders` as a prop through `PaymentLog` → `ManagePayment` on one branch and through `MonthlyReport` → its children on the other, for no benefit over the composable below.
+- **A Pinia store** — rejected, but seriously weighed against the standing decision "each tab owns its own state; no new Pinia store" (PROJECT.md line 280, validated v2.0). The roster genuinely *is* cross-tab shared state, which is the shape of thing that decision was written for — however, this codebase already has a working, precedented answer to "cross-tab shared state without Pinia": `useFileToken.ts`, a module-level-cache composable. It solves the identical problem (a small, read-mostly, auth-scoped resource needed by simultaneously-mounted sibling components, with in-flight-dedup so concurrent mounts collapse to one request) for file tokens today. Reaching for the pattern already in the codebase beats introducing a new one for the same shape of problem — Pinia would only earn its keep if the roster needed write-broadcast to many more independent consumers than the three here, which it doesn't.
+- **A composable with a module-level cache** — **recommended.** New `src/composables/useBoarderRoster.ts`, mirroring `useFileToken.ts:19-73` structurally: a module-level `boarders` ref, an `inFlight` promise for dedup, `consumers`/`timer` bookkeeping optional (the roster doesn't need periodic refresh the way a 180s-expiring token does — a one-shot fetch on first mount, refreshed only after a boarder is created/edited/deleted via an explicit `refresh()` call from `ManageBoarder`'s `saved` handler, is enough), and a `pb.authStore.onChange` hook clearing the cache on login/logout so a stale roster never survives a user switch.
+
+### Pattern 6: Data flow for admin-on-behalf logging
+
+```
+Non-admin flow (unchanged in spirit):
+  ManagePayment mounts → useBoarderRoster() → find(b => b.user === auth.user.id)
+    → savePayment(): boarder = myBoarder.id, recorded_by = auth.user.id
+    → mapToCreatePayment({ boarder, recorded_by, ...parsed.data }) → FormData → create
+
+Admin-on-behalf flow (new):
+  ManagePayment mounts, isAdmin → useBoarderRoster() → renders Select of all boarders
+    → admin picks a boarder (possibly one with no linked `users` account)
+    → savePayment(): boarder = selected.id, recorded_by = auth.user.id  ← diverge from boarder
+    → same mapToCreatePayment / same create call — no branching needed in the mapper itself,
+      only in how ManagePayment resolves which boarder id to send
 ```
 
-All three tabs ship in the same chunk as `WallecxApp.vue`. The `vite.config.ts` rolldown groups split out leaflet, primevue, and vue/pinia vendors, but the Wallecx app code itself is one chunk including all 3 tabs + every Manage* dialog + every detail view + Chart.js (which is its own dynamic import via PrimeVue at component-mount time, so already lazy).
+The mapper does not need to know or care whether the caller is an admin — it always receives a resolved `{ boarder, recorded_by }` pair. All the admin/non-admin branching stays in `ManagePayment.vue`'s template (show/hide the `Select`) and in one small helper (`isAdmin ? selectedBoarderId : myBoarder.value?.id`), not duplicated into the mapper or the schema.
 
-### Recommendation: per-tab dynamic imports + per-dialog `defineAsyncComponent` for heavy dialogs
+## Data Flow
 
-```ts
-// WallecxApp.vue — AFTER
-import { defineAsyncComponent } from 'vue'
-const VaccinationsTab = defineAsyncComponent(() => import('./VaccinationsTab.vue'))
-const MembershipsTab  = defineAsyncComponent(() => import('./MembershipsTab.vue'))
-const ExpensesTab     = defineAsyncComponent(() => import('./ExpensesTab.vue'))
+### Payment list flow (per-user, post-rewrite)
+
 ```
-
-**Cost analysis:**
-
-| Concern | Reality |
-|---------|---------|
-| "Sub-tab navigation feels slower" | The PrimeVue Tabs `TabPanel` lazy-mounts content on first activation. Currently the JS for inactive tabs is loaded but the components don't mount until clicked. With async-component, JS is fetched on first click too. First-click latency on a tab will increase by one chunk-download round trip (~50-200ms on 4G). Sub-second; acceptable. |
-| "Sub-tab nav after first load" | Vue caches resolved async components. Second click on a tab = instant (component is already resolved in the module cache). |
-| Loading state during async fetch | Add a `<template #fallback><Skeleton /></template>` slot to the AsyncComponent via the second arg to `defineAsyncComponent({ loader, loadingComponent })`. Already-imported `Skeleton` from PrimeVue. |
-
-**Where the splits go (concrete file changes):**
-
-| File | Change |
-|------|--------|
-| `src/components/projects/wallecx/WallecxApp.vue` | Convert 3 static tab imports to `defineAsyncComponent`. Add loading skeleton via `loadingComponent` option. |
-| `src/components/projects/wallecx/VaccinationsTab.vue` | Convert `ManageVaccination` import to async (heavy: zod schema, EXIF strip via browser-image-compression, file upload form). |
-| `src/components/projects/wallecx/MembershipsTab.vue` | Convert `ManageMembership` to async. Detail view stays sync (lightweight, hit on every card click). |
-| `src/components/projects/wallecx/ExpensesTab.vue` | Convert `ManageExpense` + `ManageBudget` (transitively in ExpensesReportsView) to async. Reports view should also be async — Chart.js is heavy and only loads when user activates the Reports sub-tab. |
-| `src/components/projects/wallecx/ExpensesReportsView.vue` | Already lazy via parent — but the chart options computed pulls in dayjs/quarterOfYear which is small. No further work. |
-| `vite.config.ts` | Optional: add explicit named chunk groups for `wallecx-vaccinations`, `wallecx-memberships`, `wallecx-expenses` to make the output filenames human-readable in DevTools. |
-
-**Estimated win:** Initial Wallecx route chunk drops from N (whole app) to ~N/3 + shell. First Contentful Paint on the active default tab (vaccinations) is unchanged; switching to memberships or expenses costs one network fetch, which is masked by the in-progress paint of the new tab.
-
----
-
-## 6. Image-compression pipeline
-
-### Static assets (PWA icons, hero photos)
-
-**Current state:**
-- `@vite-pwa/assets-generator@^1.0.2` already a devDep (used to generate `pwa-192x192.png`, `pwa-512x512.png`, `maskable-icon-512x512.png` from a source). Run manually; output checked into `public/`.
-- `about-me-photo.png` is 9.85 MB (per Plan 14-04 build decision) — explicitly excluded from PWA precache via `globIgnores`.
-- No build-time image plugin currently active.
-
-**Recommendation: minimal-touch pipeline.**
-
-1. **PWA icons** — regenerate at known-good sizes via existing `@vite-pwa/assets-generator` from a single SVG source (`public/wallecx-icon.svg` already exists). Add an npm script `npm run pwa:assets` to formalize the generation step. Output is checked in.
-2. **Hero photo (`about-me-photo.png` 9.85 MB)** — one-time manual squoosh CLI run targeting WebP at 1920px max width. Drop to <500 KB. This is outside Wallecx scope BUT it improves the wider Lexarium PWA shell loading on mobile, which is in scope per "PWA standalone polish."
-3. **Wallecx receipts/scans uploaded by users** — already compressed at upload time via `browser-image-compression` in `ManageExpense.vue`, `ManageMembership.vue`, `ManageVaccination.vue`. No change.
-4. **No new vite plugin.** `vite-imagetools` was considered. Rejected: only 1-2 static images need compression and the existing `@vite-pwa/assets-generator` covers PWA icons. Adding `vite-imagetools` is overkill for the v4.3 surface.
-
-| Asset | Tool | Build-time integration |
-|-------|------|------------------------|
-| PWA icons | `@vite-pwa/assets-generator` (existing) | Manual script, output checked into `public/` |
-| Hero photo | One-time `npx @squoosh/cli` | Replace source file in `public/`; no plugin |
-| User uploads | `browser-image-compression` (existing runtime) | No change |
-| Logos / SVG | None (already SVG) | No change |
-
----
-
-## 7. Mobile-specific testing surfaces
-
-### Vitest specs
-
-**Convention check:** Existing specs live in `src/<area>/__tests__/*.spec.ts` (verified: `src/lib/pocketbase/__tests__/`, `src/router/__tests__/`, `src/lib/wallecx/period.test.ts`). Composable specs follow the same pattern.
-
-**Recommended new spec files:**
-
-| File | Tests |
-|------|-------|
-| `src/composables/__tests__/useMobileEnv.spec.ts` | matchMedia mock for `isMobile` toggle at 639/640 boundary; `isTablet` at 820/821; standalone detection via `matchMedia('(display-mode: standalone)')` mock; safe-area inset reading via injected CSS env; beforeinstallprompt event capture via dispatched MouseEvent simulation. |
-| `src/components/projects/wallecx/__tests__/PwaInstallBanner.spec.ts` (NEW) | iOS UA detection; Android path renders Install button only when installPromptEvent is non-null; dismissal storage write/read; standalone-mode hides banner; both paths share the dismissal key. |
-
-**Anti-pattern flagged:** Do NOT write Vitest specs for `BaseMobileDialog.vue` per se. Component-level behavior (slot rendering, Dialog-vs-Drawer switching) is better verified in HUMAN-UAT than in jsdom (PrimeVue's portal/teleport interactions are unreliable in jsdom).
-
-### Manual UAT structure
-
-**Recommended pattern: viewport-tagged scenarios in per-phase `*-HUMAN-UAT.md`.** Do NOT create a separate "mobile UAT" file.
-
-Each phase's HUMAN-UAT.md gets a new section structure:
-
-```markdown
-## Scenario N: [Description]
-**Viewports under test:** [iOS-390, Android-360, Tablet-820, Desktop-1280]
-
-**Pre-conditions:** ...
-
-**Steps:**
-1. ... [marked as viewport-specific where applicable]
-
-**Pass criteria:**
-- [iOS-390] no horizontal scroll, tap targets ≥44px
-- [Android-360] safe-area bottom inset respected
-- [Tablet-820] toolbar layout maintains row format
-- [Desktop-1280] no regression in existing behavior
+PaymentLog.vue onMounted
+  → useBoarderRoster() resolves "my boarder" (boarders.value.find(b => b.user === auth.user.id))
+  → pb.collection('paytime_payments').getFullList({
+        filter: `boarder = "${myBoarder.id}"`,
+        requestKey: "paytime-payments-list"   // unchanged key, unchanged collision-avoidance rationale
+     })
 ```
+If `myBoarder` is undefined (an authenticated user with no linked boarder row — shouldn't happen post-backfill, but not impossible if a new `users` account is created before the admin links a boarder to it), fall back to an empty list + the existing "No payments logged yet" empty state rather than sending a filter with an undefined id.
 
-**One file per phase remains the convention.** A separate `MOBILE-HUMAN-UAT.md` would diverge from `gsd-transition` workflow expectations. The viewport-tag convention is the addition.
+### Admin shell flow
 
-**iOS standalone PWA path needs a dedicated phase scenario** (deferred from v2.1 Phase 22 V6 per STATE.md). Cannot be automated; requires a real iOS device + iCloud-paired test account.
+```
+MonthlyReport.vue (shell) onMounted / watch(month)
+  → useBoarderRoster()                                    (shared, one fetch across the whole app)
+  → pb.collection('paytime_payments').getFullList({
+        filter: `month = "..."`, expand: 'boarder',
+        requestKey: 'paytime-report-list'                  (unchanged)
+     })                                                    → passed to MonthlyReportView
+  → (if ledger needs a broader query) second getFullList with requestKey 'paytime-ledger-list'
+     → passed to AdminLedgerView, which applies tag/boarder/category filters client-side
+```
+`expand: 'user'` (`MonthlyReport.vue:47`) becomes `expand: 'boarder'` (nested `boarder.user` expand only if the ledger/report ever need the *linked account's* name rather than the boarder's own `name` field — likely unnecessary, since the boarder's own display name is the more correct label to show regardless of whether they have an account).
 
----
+## Anti-Patterns
 
-## 8. Suggested build order
+### Anti-Pattern 1: `cascadeDelete: true` on `paytime_payments.boarder`
+**What people do:** enable cascade delete "to keep things tidy" when removing a boarder who's moved out.
+**Why it's wrong:** it silently deletes every payment that boarder ever logged — the one thing this whole milestone exists to preserve.
+**Do this instead:** required + `cascadeDelete: false` (Pattern 3) — PocketBase then refuses the boarder deletion outright while payments exist, forcing a deliberate decision (reassign, or just leave the boarder in the roster tagged "inactive").
 
-### Grouping decision: **by category, NOT by surface.**
+### Anti-Pattern 2: Sending `boarder` on `mapToUpdatePayment`
+**What people do:** treat `boarder` like any other editable field and include it in the update payload "for completeness."
+**Why it's wrong:** the update rule is evaluated against the *stored* value (`paytimePaymentMapper.ts:21-30`), so a payload that also changes `boarder` passes the ownership check on the old value and silently reassigns the row on write.
+**Do this instead:** omit it from update payloads entirely, exactly as `user` is omitted today — this is a rename of an existing, tested discipline, not a new one.
 
-Reasoning:
-- Each category establishes one architectural pattern (composable, banner integration, sticky-footer template, build config). Establishing the pattern once then applying it across all 3 tabs amortizes cost.
-- Tab-by-tab ordering would mean re-deriving the BaseMobileDialog pattern in Phase A (Vaccinations), refining it in Phase B (Memberships), and discovering edge cases in Phase C (Expenses). Category-grouping discovers edge cases earlier across all surfaces in a single phase.
-- The category groups also map cleanly onto the milestone's stated four areas: Layout & Touch Targets / Performance / Forms & Dialogs / PWA.
+### Anti-Pattern 3: A new Pinia store for the roster
+**What people do:** reach for global state management the moment data needs to cross a tab boundary.
+**Why it's wrong:** violates the project's own validated decision (PROJECT.md line 280) for no gain the composable pattern doesn't already provide, and adds a second cross-component-sharing idiom next to the one (`useFileToken`) already proven in this codebase.
+**Do this instead:** `useBoarderRoster.ts`, module-level cache, same shape as `useFileToken.ts`.
 
-### Phase sequence (recommended)
+### Anti-Pattern 4: Letting the ledger and report views fetch independently
+**What people do:** give each new sub-view its own `onMounted` + `getFullList`, because that's the "normal" Vue instinct.
+**Why it's wrong:** PrimeVue mounts every `TabPanel` without `lazy` (already documented and tested in this codebase — `useFileToken.ts:14-17`, `requestKeys.spec.ts`), so two sibling sub-views both fetching on mount race on `requestKey`s exactly like `PaymentLog`/`MonthlyReport` did before the fix.
+**Do this instead:** shell-owns-the-fetch, views are props-in/emit-up (Pattern 4), or — if two genuinely different queries are unavoidable — two shell-owned fetches under two explicit, distinct keys, never a fetch inside a sub-view component.
 
-| Phase | Focus | Key Outputs | Why this order |
-|-------|-------|-------------|----------------|
-| **33** | Foundation composable + PWA install capture | `useMobileEnv.ts`; App.vue listener wiring; `PwaInstallBanner.vue` Android path | App.vue listener must register on first page load. Foundation composable unblocks every later phase. |
-| **34** | Wallecx-wide layout audit + 44px touch targets | Audit doc; per-tab scoped CSS fixes; safe-area inset application to all sticky surfaces; toolbar horizontal-overflow handling | Comes before forms work because dialog content sits inside the layout shell — fixing the shell first means dialogs inherit a known-good frame. |
-| **35** | Forms & dialogs on small screens (BaseMobileDialog rollout) | `BaseMobileDialog.vue`; iOS 16px input fix in `wallecx-overrides.css`; per-dialog migration (ManageExpense → ManageBudget → ManageMembership → ManageVaccination) | Sticky action bar depends on safe-area-inset wiring from Phase 34. iOS input fix is one CSS rule but verification requires real iOS device. |
-| **36** | Mobile performance — bundle splits + asset compression | `WallecxApp.vue` async tab imports; per-Manage* `defineAsyncComponent`; PWA assets regeneration; hero photo compression; instrumentation marks for list-render timing | Perf changes are non-functional and easier to verify once the visual layer (Phases 34-35) is stable. |
-| **37** | PWA standalone polish + install flow UAT | Install-banner Android path UAT; standalone mode safe-area verification; status-bar color in standalone; iOS A2HS UAT (deferred from v2.1); install-prompt deferred-event semantics | Requires Phase 33 listener + Phase 34 safe-area + Phase 36 reduced bundle to feel "native-grade." |
-| **38** (conditional) | List virtualization | `@tanstack/vue-virtual` integration in one of the long list views | Only if Phase 36 instrumentation reveals slow scrolling on real data. May not happen. |
-| **39** | Mobile UAT sweep | Viewport-tagged HUMAN-UAT scenarios across phases 33-37; tablet (820px) coverage explicit | Mirrors v4.1 Phase 30 sweep structure — proven workflow. |
+### Anti-Pattern 5: Writing a backfill migration script for one row
+**What people do:** reach for a code-path migration on reflex, because "backfill" sounds like it needs one.
+**Why it's wrong:** there is exactly one production `paytime_payments` record (PROJECT.md line 239); a script here is pure ceremony — write it, test it, run it once, delete it, for work a 10-second Admin UI edit does identically.
+**Do this instead:** manual Admin UI edit of the one record's `boarder` field, verified via the project's own D-13 paste-back + smoke-query pattern (Build Order, step 4).
 
-### Why NOT tab-by-tab
+## Integration Points
 
-A tab-by-tab order would look like Phase 33 = Vaccinations all-mobile-work, Phase 34 = Memberships all-mobile-work, etc. Trade-offs that pushed me away from this:
-- BaseMobileDialog would have to land in Phase 33 anyway, then sit unused until later phases adopt it — same lead time.
-- Each phase would touch many categories at once → less reviewable diff.
-- Mid-milestone discovery (e.g., "iOS 16px input fix needs to apply to ALL inputs across all tabs") would require revisiting earlier tabs — costlier.
+### External Services
 
----
+| Service | Integration Pattern | Notes |
+|---------|---------------------|-------|
+| PocketBase (`paytime_boarders`, `paytime_payments` rules) | Admin UI-managed rules using dot-notation relation traversal | The single-hop `boarder.user = @request.auth.id` shape used in list/view/update/delete is doc-confirmed in general (MEDIUM confidence, not yet tested on this instance — the project's own flagged risk). The `@request.body.boarder.user` shape needed for a fully server-enforced createRule is **not** clearly documented and should be treated as a separate, additional unknown, not the same risk restated — smoke-test both, independently, before committing to the rule text above. |
+| PocketBase nested `expand` | `expand: 'boarder'` (and optionally `boarder.user`) on `getFullList` | Multi-level expand is a documented PocketBase capability; the specific two-hop expand this app would use has not been exercised against the live instance either — low risk, but part of the same smoke-test pass. |
 
-## 9. Compatibility constraints to respect
+### Internal Boundaries
 
-Repeating from the milestone context for the Roadmapper's convenience, with the v4.3 implication for each:
+| Boundary | Communication | Notes |
+|----------|----------------|-------|
+| `ManagePayment.vue` ↔ `useBoarderRoster` | Composable call, shared module-level ref | Same shape as `ManagePayment.vue` ↔ `useFileToken` already in the file (`ManagePayment.vue:35`) |
+| `MonthlyReport.vue` (shell) ↔ `MonthlyReportView` / `AdminLedgerView` / `BoarderRosterView` | Props down (`payments`, `boarders`, `month`), events up (`@edit`, `@delete`, `@saved`) | Mirrors `ExpensesTab.vue` ↔ `ExpensesListView`/`ExpensesReportsView` exactly (`ExpensesTab.vue:241-258`) |
+| `PaymentLog.vue` ↔ `useBoarderRoster` | Composable call, resolves "my boarder" only, never renders the full list | Lighter-weight consumer than the admin-side ones |
 
-| Invariant | v4.3 implication |
-|-----------|------------------|
-| **BR-2 barcode invariant** (black-on-white in both themes) | `BarcodeDisplay.vue` style block is OFF-LIMITS. Mobile audit may resize the barcode card or change padding, NOT colors. |
-| **PWA `registerType: 'prompt'`** (never autoUpdate; CRUD forms have unsaved state) | Confirmed in `vite.config.ts:27`. The Phase 33 install-flow work does NOT change the SW update strategy — install is separate from update. |
-| **All PocketBase calls `NetworkOnly`** | Confirmed in `vite.config.ts:90-94`. v4.3 has no PocketBase work, so trivially upheld. |
-| **`useConfirm` broadcasts to single app-shell instance** | `ConfirmDialog` lives at `WallecxApp.vue:105`. BaseMobileDialog does NOT mount its own ConfirmDialog. Each Manage* component using BaseMobileDialog still goes through the shell-level confirm service. |
-| **ColorPicker direct v-model pattern (PrimeVue #8135)** | When BaseMobileDialog is adopted for `ManageMembership.vue`, the ColorPicker binding inside the default slot must preserve direct-ref binding. Test path: slot rendering must NOT introduce a wrapping reactive proxy that breaks initial-value flow. Validate in real PR — this is the highest-risk migration. |
-| **iOS fullscreen via viewport overlay (not Fullscreen API)** | Membership scan overlay is unaffected by v4.3 — already uses the documented pattern. v4.3 should NOT introduce Fullscreen API calls for any new full-screen surface. |
-| **requestKey per collection** | No new PocketBase calls in v4.3. The five locked keys stay distinct. |
-| **`pb.authStore.record!.id` null-guard** | Existing guards in `ManageExpense:76-77`, `ExpensesTab:124-128`, etc. v4.3 does not introduce new auth-dependent paths. |
-| **D-13: Admin-UI checkpoints require text paste-back + smoke verify** | Does not apply to v4.3 — no live external artifact configuration. |
-| **Period selector / dayjs `Q` template-literal quirk** | Unchanged. v4.3 may resize/restyle the period selector but must not change `formatPeriodLabel`. |
+## Build Order
 
----
+Respects "schema before mappers before UI, roster before selector, selector before ledger," plus the migration and rule-risk sequencing called for in the question.
 
-## 10. Integration points — concrete file map
+1. **Schema (Admin UI):** create `paytime_boarders` (fields: `name`, `tags`, optional `user` relation) + its five rules (Pattern 1). Paste-back + smoke verify per D-13.
+2. **Manual roster seed (Admin UI, not code):** one `paytime_boarders` row per real person (~6), linking `user` where an account exists. Not a code path — one-time reference-data entry.
+3. **Schema (Admin UI):** add `boarder` (required relation to `paytime_boarders`, `cascadeDelete: false`) to `paytime_payments`. Rename `user` → `recorded_by`, flip to optional, uncheck `cascadeDelete` (Pattern 2/3). **Leave the old `user`-based rules live** — don't touch rules yet, so the app keeps working during migration.
+4. **Manual backfill (Admin UI, not code):** set the one existing payment's `boarder` to Cedrick's boarder id. Paste-back the record + a code-side smoke query (`getFullList({ filter: 'boarder != ""' })` returns 1) per D-13.
+5. **Rule risk spike (no app code):** manually verify, against the live instance, that (a) `boarder.user = @request.auth.id` resolves correctly as a stored-value filter, and (b) `@request.body.boarder.user = @request.auth.id` resolves correctly as a create-time filter. Gates whether Pattern 1's rules proceed as written or fall back to the createRule fallback (or, worst case, PROJECT.md's own stated fallback of denormalizing the account id onto each payment).
+6. **Schema (Admin UI):** rewrite the five `paytime_payments` rules to the boarder-based versions (Pattern 1). Paste-back + smoke-verify against both an admin session and a non-admin session.
+7. **Code:** `src/types/paytime/boarders/types.d.ts` (new type; depends only on the schema existing).
+8. **Code:** `src/types/paytime/payments/types.d.ts` update (`user` → `boarder` + `recorded_by`).
+9. **Code:** `src/lib/paytime/boarderSchema.ts` (depends on 7).
+10. **Code:** `src/lib/pocketbase/paytimeBoarderMapper.ts` (depends on 7, 9).
+11. **Code:** `src/lib/pocketbase/paytimePaymentMapper.ts` update (depends on 8).
+12. **Code:** `src/composables/useBoarderRoster.ts` (depends on 7 only).
+13. **Code:** `ManageBoarder.vue` (depends on 9, 10).
+14. **Code:** `ManagePayment.vue` update — admin `Select` + payload rename (depends on 11, 12). *("Selector before ledger": this is the selector.)*
+15. **Code:** `PaymentLog.vue` update — own-boarder resolution + filter change (depends on 12).
+16. **Code:** restructure `MonthlyReport.vue` into the shell; extract `MonthlyReportView.vue` (depends on 8, 12).
+17. **Code:** `AdminLedgerView.vue` (depends on 16, 12). *(Ledger, after the selector and after the shell exist.)*
+18. **Code:** `BoarderRosterView.vue` (depends on 13, 16).
+19. **Tests:** update `requestKeys.spec.ts` and `paymentEdit.spec.ts` mock shapes; add specs for `useBoarderRoster` and `paytimeBoarderMapper`, mirroring existing coverage depth (185 tests today).
+20. **Verification:** full manual smoke pass exercising both the new rules and the restructured admin tab — a natural place to finally close the long-open **PT-SMOKE-01** backlog item (PROJECT.md line 187), since this is the first time the schema gets end-to-end exercised against live PocketBase.
 
-### NEW FILES
+## Scaling Considerations
 
-| File | Purpose | Touched by phase |
-|------|---------|------------------|
-| `src/composables/useMobileEnv.ts` | Reactive viewport + PWA env state | 33 |
-| `src/components/projects/wallecx/BaseMobileDialog.vue` | Shared mobile dialog wrapper | 35 |
-| `src/composables/__tests__/useMobileEnv.spec.ts` | Composable unit tests | 33 |
-| `src/components/projects/wallecx/__tests__/PwaInstallBanner.spec.ts` | Banner branch tests | 33 |
-
-### MODIFIED FILES
-
-| File | Change | Phase |
-|------|--------|-------|
-| `src/App.vue` | Import `useMobileEnv` at top of script to force module evaluation (registers beforeinstallprompt listener early) | 33 |
-| `src/components/projects/wallecx/PwaInstallBanner.vue` | Add Android/Chromium install branch consuming `installPromptEvent` from `useMobileEnv` | 33 |
-| `src/components/projects/wallecx/WallecxApp.vue` | Tabs to `defineAsyncComponent`; safe-area inset audit on outer Card | 33 (safe-area), 36 (async tabs) |
-| `src/components/projects/wallecx/VaccinationsTab.vue` | Toolbar layout audit; ManageVaccination async import; touch-target audit on group cards | 34, 35, 36 |
-| `src/components/projects/wallecx/MembershipsTab.vue` | Grid audit (1-col vs 2-col on tablet); ManageMembership async import; sort+search bar touch targets | 34, 36 |
-| `src/components/projects/wallecx/ExpensesTab.vue` | Sub-tab triggers ≥44px (already 44px per scoped CSS at line 280-283 — verify on real device); ManageExpense/ManageBudget async; receipt-preview Drawer audit | 34, 36 |
-| `src/components/projects/wallecx/ExpensesListView.vue` | Filter/sort toolbar wrap audit; row touch targets; long-list render instrumentation | 34, 36 |
-| `src/components/projects/wallecx/ExpensesReportsView.vue` | Period-selector tabs scrollable behavior on narrow viewports (already scrollable per Phase 26 decision — verify); chart container responsive height; "Manage Budgets" button placement (already inside STATE 4 — verify it doesn't get clipped by mobile bottom nav) | 34 |
-| `src/components/projects/wallecx/ManageExpense.vue` | Migrate to `BaseMobileDialog`; verify form refs stay reactive through the wrapping slot | 35 |
-| `src/components/projects/wallecx/ManageBudget.vue` | Migrate to `BaseMobileDialog`; sticky-footer for "Save All" action | 35 |
-| `src/components/projects/wallecx/ManageMembership.vue` | **HIGHEST RISK** migration — ColorPicker direct v-model invariant must be preserved through slot | 35 |
-| `src/components/projects/wallecx/ManageVaccination.vue` | Migrate to `BaseMobileDialog`; file-upload UX on mobile | 35 |
-| `src/components/projects/wallecx/AttachmentPreview.vue` | PDF viewer touch / pinch-zoom audit on mobile | 34 |
-| `src/components/projects/wallecx/BarcodeDisplay.vue` | **NO CHANGES** beyond layout-frame audit; BR-2 invariant locked | 34 (audit only) |
-| `src/components/projects/wallecx/WallecxToolbar.vue` | Search input ≥44px; sort dropdown touch target; iOS input font-size | 34, 35 |
-| `src/components/projects/wallecx/ExpensesToolbar.vue` | Filter chips wrap on narrow; DatePicker mobile layout | 34 |
-| `src/composables/useIsMobile.ts` | **NO CHANGES** — kept as-is for backward compat | — |
-| `src/assets/wallecx-overrides.css` | Add `@media (max-width: 640px) { input/textarea/select { font-size: 16px } }`; sticky-footer scoped styles | 35 |
-| `vite.config.ts` | Optional: explicit named chunk groups for `wallecx-vaccinations`, `wallecx-memberships`, `wallecx-expenses` | 36 |
-| `public/about-me-photo.png` | Replaced with compressed WebP (1920px / <500KB) | 36 |
-
-### UNCHANGED INVARIANTS (locked — DO NOT touch)
-
-- `src/lib/pocketbase/index.ts` (pb singleton)
-- `src/lib/pocketbase/*Mapper.ts` (5 mappers)
-- `src/lib/wallecx/period.ts`, `currency.ts`, `expenseSchema.ts`
-- `src/types/wallecx/*/types.d.ts`
-- `src/composables/useTheme.ts`, `src/composables/useChartTheme.ts`
-- `src/router/index.ts` (route shape; no new routes)
-- `src/main.ts` (PrimeVue + Pinia + Aura preset)
-- All PocketBase collection schemas + requestKeys
-
----
-
-## 11. Data flow changes
-
-**None.** v4.3 is presentation-layer only.
-
-The "shell-owns-data" pattern from v4.0 (ExpensesTab → ExpensesListView + ExpensesReportsView) is preserved verbatim. BaseMobileDialog is a presentation wrapper; it does not own data and does not fetch.
-
-The only state-shaped addition is `useMobileEnv`'s singleton refs (`installPromptEvent`, `isStandalone`), but these are environmental signals about the device/browser, NOT app data. They live in the composable's module scope deliberately — they're singletons by nature, not per-component reactive state.
-
----
-
-## 12. Architecture decisions summary
-
-| # | Decision | Rationale |
-|---|----------|-----------|
-| A-43-1 | New composable `useMobileEnv.ts`; keep `useIsMobile.ts` as a re-export shim | Backward compatibility for 8 existing call sites; centralizes new env state without forcing migration |
-| A-43-2 | `BaseMobileDialog.vue` is per-dialog opt-in, not big-bang refactor | Risk control: ManageMembership ColorPicker invariant is fragile; one migration per phase allows verification |
-| A-43-3 | Defer list virtualization until measured | Wallecx datasets are small; premature virtualization adds complexity for no measurable user benefit |
-| A-43-4 | `beforeinstallprompt` listener registers at App.vue scope, not WallecxApp | Event fires once on first page load; if user navigates to Wallecx after the event already fired, capture is lost |
-| A-43-5 | `PwaInstallBanner.vue` extended (iOS + Android paths in one component), NOT split | iOS and Android share dismissal storage, standalone detection, visual frame — splitting duplicates 80% of the component |
-| A-43-6 | Per-tab `defineAsyncComponent` from `WallecxApp.vue` | First-click chunk fetch is sub-second; second click is cached; initial Wallecx route chunk drops by ~2/3 |
-| A-43-7 | iOS 16px input font fix as a global rule in `wallecx-overrides.css`, not per-component | Applies to every input across all dialogs; one rule replaces N per-component overrides |
-| A-43-8 | Keyboard avoidance via in-Drawer sticky footer pattern, NOT viewport `position: fixed` | Browser's native `interactive-widget=resizes-content` already handles viewport resize; viewport-fixed footers fight the keyboard and lose |
-| A-43-9 | Build order grouped by category, not by tab | Patterns established once and applied across surfaces is cheaper than rediscovering them tab-by-tab |
-| A-43-10 | Viewport-tagged scenarios in per-phase HUMAN-UAT.md, NOT separate mobile-UAT file | Preserves `gsd-transition` workflow; tags add coverage without splitting deliverables |
-| A-43-11 | No new vite image plugin; rely on existing `@vite-pwa/assets-generator` + one-time squoosh CLI for hero photo | Two static images need compression — plugin overhead exceeds benefit |
-
----
-
-## 13. Pattern-to-follow cheat sheet for the Roadmapper
-
-For each kind of v4.3 work item, here's the pattern the implementation should follow:
-
-| Work type | Pattern |
-|-----------|---------|
-| Reactive env state (isMobile/isTablet/isStandalone/inset/install event) | New entry in `useMobileEnv.ts` composable |
-| One-off mobile CSS rule (touch targets, font-size, layout) | Scoped `<style>` in the target component if visual-only; `wallecx-overrides.css` if it must reach teleported PrimeVue DOM (`.p-dialog-*`, `.p-drawer-*`) |
-| Shared dialog adapter | `BaseMobileDialog.vue` slot composition; opt-in adoption |
-| Dialog-vs-Drawer per-tab logic | Migrate to BaseMobileDialog (Phase 35) or preserve current `isMobile` ternary if migration is too risky for that dialog |
-| Per-tab code-splitting | `defineAsyncComponent` at the import site + `loadingComponent` slot |
-| PWA install affordance | Branch in `PwaInstallBanner.vue` consuming `useMobileEnv`'s install state |
-| List performance instrumentation | `performance.mark()` in `onMounted` and `performance.measure()` after the next tick; log in dev only |
-| Image compression (static) | `@vite-pwa/assets-generator` for PWA icons; manual squoosh for one-off; user-uploaded images unchanged |
-| Composable unit tests | `src/composables/__tests__/<name>.spec.ts` matching existing convention |
-| Manual UAT | Viewport-tagged scenarios in per-phase `*-HUMAN-UAT.md`; explicit "[iOS-390] / [Android-360] / [Tablet-820] / [Desktop-1280]" lines under pass criteria |
-
----
+Not relevant at this scale — this is a ~6-user boarding house app. The only "scale" concern worth naming is the roster staying small and read-mostly forever, which is precisely what makes the module-level-cache composable (Pattern 5) sufficient and a Pinia store unnecessary.
 
 ## Sources
 
-- Source files read in this codebase (HIGH confidence — direct verification):
-  - `src/composables/useIsMobile.ts`, `useTheme.ts`, `useChartTheme.ts`
-  - `src/components/projects/wallecx/WallecxApp.vue`, `VaccinationsTab.vue`, `MembershipsTab.vue` (head), `ExpensesTab.vue`, `ManageExpense.vue` (head), `PwaInstallBanner.vue`
-  - `src/App.vue`, `src/main.ts`, `src/router/index.ts`
-  - `src/lib/wallecx/period.ts`
-  - `src/assets/wallecx-overrides.css`
-  - `vite.config.ts`
-  - `.planning/PROJECT.md`, `.planning/STATE.md`, `.planning/codebase/ARCHITECTURE.md`
-- Industry knowledge (MEDIUM confidence — training data; not verified against 2026 docs in this session):
-  - iOS Safari 16px-input auto-zoom prevention rule
-  - `beforeinstallprompt` capture semantics (Chrome/Edge fire once on first page-load eligibility check)
-  - `interactive-widget=resizes-content` viewport behavior
-  - Vue's `defineAsyncComponent` module-cache deduplication
+- `C:/GitRepos/lex-lib.github.io/.planning/PROJECT.md` (Current Milestone, Key Decisions, Requirements sections — cited by line throughout)
+- `C:/GitRepos/lex-lib.github.io/src/components/projects/paytime/PayTimeApp.vue`, `PaymentLog.vue`, `ManagePayment.vue`, `MonthlyReport.vue` (read in full)
+- `C:/GitRepos/lex-lib.github.io/src/lib/pocketbase/paytimePaymentMapper.ts`
+- `C:/GitRepos/lex-lib.github.io/src/composables/useFileToken.ts`
+- `C:/GitRepos/lex-lib.github.io/src/components/projects/wallecx/ExpensesTab.vue` (parent-shell + child-view precedent)
+- `C:/GitRepos/lex-lib.github.io/src/components/projects/paytime/__tests__/requestKeys.spec.ts`, `paymentEdit.spec.ts`
+- [PocketBase docs — Working with relations](https://pocketbase.io/docs/working-with-relations/) (MEDIUM confidence — dot-notation JOIN depth/behaviour)
+- [PocketBase docs — API rules and filters](https://pocketbase.io/docs/api-rules-and-filters/) (MEDIUM confidence — `@request.body`/`@request.auth` semantics)
+- [PocketBase JSVM reference — RelationField](https://pocketbase.io/jsvm/classes/RelationField.html) (MEDIUM confidence — `cascadeDelete` semantics)
+- [GitHub Issue #6498 — required relation delete failure message](https://github.com/pocketbase/pocketbase/issues/6498) (MEDIUM confidence, corroborating community report)
+- [GitHub Discussion #5667 — protecting create with relation ownership](https://github.com/pocketbase/pocketbase/discussions/5667) (LOW/MEDIUM — community discussion, not official docs; basis for flagging the createRule shape as unconfirmed rather than asserting it works)
 
-**Confidence on the document overall: HIGH.** The architecture recommendations are grounded in source files I read directly. The PWA install-event semantics + iOS input font-size rule are from training data and could be verified against MDN in the Pitfalls research phase if the Roadmapper wants belt-and-suspenders.
+---
+*Architecture research for: PayTime v5.0 Admin Payment Ledger*
+*Researched: 2026-08-04*

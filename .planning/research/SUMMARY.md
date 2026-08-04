@@ -1,208 +1,161 @@
-# Project Research Summary — v4.3 Wallecx Mobile Optimization
+# Project Research Summary
 
-**Project:** Lexarium — Wallecx
-**Domain:** Mobile-grade polish layer on an existing Vue 3 + PrimeVue 4 + Tailwind v4 + PocketBase + vite-plugin-pwa SPA mini-app
-**Researched:** 2026-05-26
-**Confidence:** HIGH
+**Project:** Lexarium — PayTime
+**Milestone:** v5.0 Admin Payment Ledger
+**Domain:** Admin-managed roster + admin-on-behalf payment write path on an existing per-user-isolated PocketBase mini-app (~6-person boarding house)
+**Researched:** 2026-08-04
+**Confidence:** MEDIUM overall (HIGH on stack/architecture/pitfalls where grounded in this project's own code and PocketBase's official docs; MEDIUM on features since no source addresses a deployment this small directly; the single most load-bearing technical question is explicitly unresolved — see below)
 
 ## Executive Summary
 
-v4.3 is a **presentation-layer polish milestone, not a refactor.** The four research dimensions (STACK, FEATURES, ARCHITECTURE, PITFALLS) converge on a single thesis: every locked invariant from v2.0–v4.2 stays put (BR-2 barcode, registerType prompt, NetworkOnly /api/*, requestKey isolation, card_color no-hash, shell-owns-data, single ConfirmDialog), and the milestone ships a thin lateral layer of mobile-grade UX on top: real isMobile/isTablet/isStandalone reactive env, Dialog vs Drawer unification, iOS 16px input fix, sticky action bars, beforeinstallprompt capture, iOS standalone meta tags + splash images, and per-tab bundle splitting.
+This is a subject-model migration on an already-shipped payment tracker, not a greenfield build. `paytime_payments` currently keys every access rule off `user = @request.auth.id`; v5.0 introduces a `paytime_boarders` roster (some boarders have no `users` account) and rewrites all five rules to traverse `boarder.user = @request.auth.id` instead, while adding an admin-on-behalf write path, a `recorded_by` audit field, tags, and a new admin ledger view. No new npm packages or server upgrades are needed — every capability (tags via a `select` field, ledger filtering via `DataTable`/`MultiSelect`) is covered by the already-installed stack. The architecturally sound placement is to nest the new ledger and roster views inside the existing `MonthlyReport.vue` tab (rebuilt as a shell) as sibling sub-views, mirroring the `ExpensesTab.vue` shell pattern already proven in this codebase, rather than adding a new top-level tab.
 
-The recommended approach is **category-grouped phases** (foundation composable -> layout audit -> forms and dialogs -> performance -> PWA polish -> conditional virtualization -> UAT sweep), continuing numbering from Phase 33. Net new dependencies are minimal: promote @vueuse/core from transitive to direct (0 KB net), add rollup-plugin-visualizer as a devDep, patch-bump Vue 3.5.18->3.5.34, and minor-bump PrimeVue 4.3.7->4.5.5 (smoke-test in a branch before merge). Everything else is local code/CSS/meta-tag changes.
+The single biggest risk is not features or UI — it's whether PocketBase's relation-traversal syntax actually works the way the design assumes on this project's live v0.29.x instance, specifically for the `createRule`, which must chase a relation off the submitted request body (`@request.body.boarder.user = @request.auth.id`) rather than a stored record. The four research passes did not agree on how confident to be about this, and that disagreement is preserved below rather than averaged away, because it gates the entire access-control design for the milestone's highest-risk phase.
 
-The three highest-cost regression risks are (a) flipping registerType to autoUpdate and destroying unsaved CRUD input on a deploy; (b) regressing BR-2 barcode colors in a dark-mode/mobile CSS sweep so memberships fail at checkout counters; and (c) switching getFullList() to getList() for "mobile pagination" and tripping the locked PocketBase v0.29.x count-path 400 bug (D-31-B). All three are surfaced as REQUIREMENTS.md candidate REQ-IDs below.
+Beyond that gate, the research converges cleanly: the roster is the dependency root for every other feature (tags, admin-on-behalf logging, the ledger, paid/unpaid computation), the update-rule stored-value trap that produced this project's own PT-RULE-01 backlog item will reproduce identically on the new `boarder` field unless closed server-side this time, and `cascadeDelete` must be `false` on both new/changed relations or a routine account/boarder cleanup silently destroys the payment history this app exists to protect. None of these risks require new technology — they require sequencing (schema -> backfill -> rule rewrite -> UI) and disciplined manual Admin-UI verification (this project's existing D-13 paste-back invariant), because the PocketBase schema has no scripted migration path here.
 
 ## Key Findings
 
 ### Recommended Stack
 
-Stack is **locked**; v4.3 adds only what the mobile-optimization capabilities require. Bundle wins come from splitting existing chunks (visualizer-driven), not from new libraries.
+No new core technology for v5.0 — this is schema + UI work on the existing Vue 3 + PrimeVue 4 + PocketBase (server v0.29.x, JS SDK `^0.26.2`) + Zod + dayjs stack. Tags are a PocketBase `select` field (`maxSelect > 1`, fixed admin-curated vocabulary), not a `json` array (no native array-filter operators) and not a separate tags collection (overkill at ~6 people / a handful of tags). The admin ledger uses already-installed `DataTable` + `Column` with `MultiSelect` as the per-column filter element; `Chips`/`InputChips`/`AutoComplete` are explicitly wrong for tag input because they're built for freeform vocabularies, not a closed admin-curated set. Retargeting the payment record's subject relation must be additive (new `boarder` field alongside the old `user` field, backfill, then drop `user`) — never an in-place relation retarget, which performs no ID remapping and would silently orphan the record.
 
-**Stack additions:**
-- **@vueuse/core ^13.9.0 (promote to direct dep)** — already transitive via @vueuse/motion; unlocks useWindowSize, useScrollLock, useSwipe, useOnline, usePreferredReducedMotion, useMediaQuery. **0 KB net.**
-- **rollup-plugin-visualizer ^7.0.1 (devDep)** — bundle treemap report gated on ANALYZE=true; informs lazy-import decisions. **0 KB runtime.**
-- **cross-env (devDep)** — Windows-friendly ANALYZE=true flag for the new npm run analyze script.
-
-**Version upgrades:**
-- **vue ^3.5.18 -> ^3.5.34** — patch only; pure reactivity/memory fixes. LOW risk.
-- **primevue ^4.3.7 -> ^4.5.5** (+ @primevue/auto-import-resolver, @primevue/forms lockstep) — minor; Drawer/Dialog/Timeline a11y fixes. **MEDIUM-LOW risk; branch smoke-test required** before merge.
-- **vite-plugin-pwa ^1.3.0** — already current; no change.
-
-**Rejected:** vue-virtual-scroller / @tanstack/vue-virtual (defer until measured — datasets too small), vite-imagetools / vite-plugin-image-optimizer (only 1-2 static images to compress), body-scroll-lock (unmaintained — use VueUse useScrollLock), vue-pwa-install (Vue 2-era wrapper around 30 lines).
+**Core technologies (deltas only):**
+- PocketBase server v0.29.x (unchanged) — relation-rule traversal for `boarder.user` ownership chain
+- PocketBase JS SDK `^0.26.2` (unchanged) — `expand: "boarder.user"` extends the already-shipped `expand: "user"` pattern one hop deeper
+- PrimeVue `MultiSelect` + `DataTable`/`Column` (already installed) — tag assignment/filter UI and the filterable ledger, zero new imports
 
 ### Expected Features
 
-Drawn from 40+ catalogued features across 4 categories (Layout, Performance, Forms, PWA). Tier 1 = ship in v4.3; details in FEATURES.md.
+**Must have (table stakes, P1):**
+- `paytime_boarders` roster: display name, fixed-vocabulary tags, optional `user` link, active/inactive status — the dependency root for everything else
+- `paytime_payments` subject rework: `boarder` FK replaces `user` FK, 5 rules rewritten, 1 existing record backfilled
+- Admin boarder selector in `ManagePayment.vue`, admin-only; non-admins pinned to their own linked boarder
+- `recorded_by` field set at write time — minimum viable attribution once more than one person can write a row
+- Admin ledger view: all boarders' payments for a selected month, filterable by month/tag/boarder/category
+- Tags on the roster, filterable in the ledger and (if trivial) the existing monthly report — this is the milestone's explicit ask, so an unfilterable tag would be decoration, not a feature
 
-**Must have (table stakes):**
-- **LT-01 44x44 touch-target audit** [Layout | S] — every interactive element across all 3 tabs.
-- **LT-03 Safe-area inset coverage** [Layout | S] — every fixed/overlay surface, both orientations; prerequisite for sticky surfaces and iOS status-bar black-translucent.
-- **LT-05 Sticky TabList + toolbar** [Layout | M] — pinned so long lists do not lose context.
-- **LT-08 Sticky action bars in all 4 manage dialogs** [Layout | M] — Save/Cancel always above the keyboard.
-- **FD-01 iOS 16px input font** [Forms | S] — single global @media (max-width: 640px) rule; the single most-cited iOS PWA bug.
-- **FD-03 inputmode / autocomplete / enterkeyhint sweep** [Forms | S] — keyboard correctness on every input.
-- **FD-04 DatePicker touchUI mode** [Forms | M] — full-screen modal calendar on mobile.
-- **FD-05 Camera capture on FileUpload** [Forms | S] — capture=environment for receipt/scan; PrimeVue passthrough verification needed.
-- **PF-02 Per-tab defineAsyncComponent** [Perf | M] — split VaccinationsTab / MembershipsTab / ExpensesTab from the WallecxApp.vue shell.
-- **PF-04 Skeleton states everywhere** [Perf | S] — match final layout dims to keep CLS <= 0.1.
-- **PWA-01 iOS standalone status-bar meta tags** [PWA | S] — apple-mobile-web-app-* + theme-color per color-scheme; index.html currently missing these.
-- **PWA-02 iOS splash screens** [PWA | M] — via existing @vite-pwa/assets-generator.
-- **PWA-04 Android beforeinstallprompt capture** [PWA | M] — listener at App.vue scope; UI in extended PwaInstallBanner.vue.
-- **PWA-05 PWA-UAT-01** [PWA | M] — deferred from Phase 22 V6; gated on PWA-01..04 + LT-03.
+**Should have (P2, add only once real usage shows the pain):**
+- Bulk entry — log one category across several boarders in a single pass (loops the existing single-entry dialog, not a new import pipeline)
+- Running totals / sum footer on the ledger view
 
-**Should have (differentiators):**
-- **PF-07 WebP receipt/scan upload** [Perf | S] — pass fileType image/webp to existing browser-image-compression.
-- **PF-09 Preconnect hints** [Perf | S] — DNS+TLS warm-up for PocketBase origin.
-- **PWA-07 Offline banner + retry** [PWA | S] — via useOnline.
-- **PWA-09 Manifest shortcuts** [PWA | S] — long-press Quick Actions (Add Expense etc.).
-- **FD-09 Unsaved-changes guard** [Forms | M] — confirm before discarding dirty form on backdrop tap.
-
-**Defer (locked anti-features or out-of-budget):**
-- **LT-11 Bottom-sheet snap points** — no PrimeVue primitive; complex; low payoff.
-- **PF-06 List virtualization** — instrument first; threshold >= 500 rendered rows.
-- **PWA-08 Standalone history-back integration** — complex; risky popstate handling.
-- **All PWA-AF / FD-AF / LT-AF entries** — explicitly locked out (autoUpdate SW, IndexedDB replica, push notifications, FAB, long-press menus, native select swap).
+**Defer indefinitely (P3, do not build without new evidence):**
+- Multi-month arrears view (no evidence yet — 1 record in prod today)
+- Formal dispute/flagging workflow, automated reminders/late fees, free-form tag management UI, multi-house support — all patterns borrowed from a different product shape (multi-tenant SaaS, landlord-tenant mediation) that doesn't fit one house, one admin, six people
 
 ### Architecture Approach
 
-v4.3 is a **thin lateral layer over the existing architecture.** No new collections, no new routes, no Pinia store, no design-token churn. The five integration surfaces are: one new composable (useMobileEnv), one new optional wrapper (BaseMobileDialog), one extended component (PwaInstallBanner), vite.config.ts build-target tweaks (async tab imports), and deferred virtualization. The shell-owns-data pattern (ExpensesTab -> ExpensesListView + ExpensesReportsView) is preserved verbatim.
+`MonthlyReport.vue` becomes the admin-tab shell: it owns the roster fetch (via a new `useBoarderRoster` composable, module-level-cached, mirroring the existing `useFileToken.ts` pattern rather than a new Pinia store) and the month-scoped payments fetch, and hosts a nested `Tabs` with three props-in/emit-up children — `MonthlyReportView` (today's per-boarder Panels markup, extracted verbatim), `AdminLedgerView` (new, flat filterable table), and `BoarderRosterView` (new, roster CRUD). This exactly mirrors the `ExpensesTab.vue` -> `ExpensesListView`/`ExpensesReportsView` shell precedent already in this codebase. No sub-view fetches for itself — PrimeVue mounts every `TabPanel` without `lazy`, so independent fetches would reproduce the exact `requestKey` collision this project has already paid down twice.
 
-**Key architecture decisions (the load-bearing 6 of 11):**
+**Major components:**
+1. `paytime_boarders` (new PocketBase collection) — canonical payment subject, admin-managed roster + tags
+2. `useBoarderRoster.ts` (new composable) — shared, cached roster fetch consumed by `ManagePayment`, `PaymentLog`, and the three admin sub-views
+3. `MonthlyReport.vue` (restructured shell) + `MonthlyReportView.vue` / `AdminLedgerView.vue` / `BoarderRosterView.vue` (new/extracted) — the admin-tab surface
+4. `paytimeBoarderMapper.ts` / `boarderSchema.ts` (new) and `paytimePaymentMapper.ts` update (field rename `user` -> `boarder`/`recorded_by`)
 
-1. **A-43-1 useMobileEnv.ts extends, does NOT replace useIsMobile.ts.** Backward-compatible for 8 existing call sites; centralizes isMobile / isTablet / isStandalone / installPromptEvent / safeAreaInsets. New v4.3 code uses the new composable; existing code is not forced to migrate.
-2. **A-43-2 BaseMobileDialog.vue is per-dialog opt-in, NOT big-bang refactor.** Migrate ManageExpense -> ManageBudget -> ManageMembership -> ManageVaccination, one per phase-plan. ManageMembership is the highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135) and goes late.
-3. **A-43-4 beforeinstallprompt listener registers at App.vue scope, NOT WallecxApp.vue.** The event fires once on first page load; if the user navigates to /projects/wallecx AFTER the event fires, capture is lost. Module-scope singleton ref in useMobileEnv.ts solves this.
-4. **A-43-5 PwaInstallBanner.vue extended for iOS + Android in ONE component.** Splitting would duplicate dismissal storage, standalone detection, visual frame, safe-area calcs.
-5. **A-43-6 Per-tab defineAsyncComponent from WallecxApp.vue.** Initial chunk drops by ~2/3; first-click tab switch is sub-second; subsequent switches are cached.
-6. **A-43-9 Build order grouped by CATEGORY (not by tab).** One pattern established once and applied across surfaces is cheaper than rediscovering it tab-by-tab.
+### Critical Pitfalls
 
-### Critical Pitfalls (5 of 8 critical + 21 moderate + 7 minor)
+1. **Admin check satisfiable by any authenticated user** — this exact bug (`isSuperUser = isLoggedIn`) already exists once in this codebase (`GiftExchangeManage.vue`). Every admin-only rule must reference `@request.auth.is_admin = true` explicitly, never bare `@request.auth.id != ""`; grep every new/changed rule for the literal substring `is_admin`.
+2. **Update rule reassignment via stored-value evaluation** — PocketBase evaluates `updateRule` against the record's stored state, so `boarder.user = @request.auth.id` passes even on a request that also reassigns `boarder`. This reproduces PT-RULE-01 (already flagged, currently only client-mitigated) on the new field unless closed server-side this time with an `:isset`/self-reference guard.
+3. **`cascadeDelete: true` on `paytime_boarders.user` or `paytime_payments.boarder`** — the single most dangerous checkbox in the migration; either setting silently destroys payment history on a routine account/boarder cleanup. Both must be `false`; prefer an `is_active` flag over deletion.
+4. **Roster list/view rule left as `""` instead of `@request.auth.id != ""`** — PocketBase treats an empty-string rule as public, not "not yet configured." The full roster (names + tags) would be readable with no auth token at all.
+5. **Partially-applied five-rule rewrite** — the five `paytime_payments` rules, the backfill, and two hardcoded client `filter:` strings are all manual, non-transactional Admin-UI edits with no cross-validation; treat "rewrite the rules" as one indivisible unit, verified by pasting back all five rules verbatim plus a smoke probe with both an admin and a non-admin token.
 
-1. **C-1 registerType drift to autoUpdate** -> silent SW reload destroys unsaved CRUD input. Lock prompt with inline LOCKED comment; REQ: NFR-PWA-AUTOUPDATE. **Owner: PWA polish phase.**
-2. **C-2 BR-2 barcode regression via dark-mode mobile CSS sweep** -> cream-on-navy bars unreadable at checkout. Add Vitest/Playwright snapshot guard on BarcodeDisplay.vue SVG fill; REQ: NFR-BR-2-PRESERVED. **Owner: Layout audit phase + PWA standalone phase.**
-3. **C-5 iOS auto-zoom on inputs <16px** -> page zooms in on focus and never zooms back. Confirmed in code (text-sm on ManageExpense.vue labels). Single global @media (max-width: 640px) rule on .p-inputtext, .p-textarea, .p-datepicker-input, .p-inputnumber-input, .p-select-label with font-size: 16px !important. REQ: NFR-IOS-NO-ZOOM. **Owner: Forms phase.**
-4. **C-4 100vh / h-screen measuring wrong on iOS/Android** -> sticky bottom controls offscreen under URL bar. Replace with 100dvh (svh fallback). REQ: NFR-DVH-NOT-VH. **Owner: Layout audit phase.**
-5. **C-7 getList() regression on wallecx_* collections** -> D-31-B count-path 400. Do NOT paginate; prefer client-side virtualization; if getList is unavoidable, skipTotal=true. REQ: CON-PB-COUNT-BUG. **Owner: Performance phase.**
-6. **C-6 Workbox maximumFileSizeToCacheInBytes 3 MiB silently skips bigger chunks** -> standalone PWA breaks offline days later. Add build-time chunk-size assertion. REQ: NFR-PWA-PRECACHE-FITS. **Owner: Performance phase.**
-7. **M-3 Drawer swipe-down-to-close destroys unsaved form input** -> guard via PrimeVue Drawer config + dirty-state confirmation. REQ: NFR-DRAWER-DIRTY-GUARD. **Owner: Forms phase.**
-8. **C-3 Duplicate requestKey from new mobile refetch (pull-to-refresh, focus-back)** -> PocketBase SDK auto-cancels, list renders empty. New mobile fetch paths require distinct requestKeys. REQ: NFR-REQUESTKEY-UNIQUE. **Owner: Performance phase + any layout phase adding a refresh affordance.**
+## Reconciled Disagreement: `createRule` relation traversal off `@request.body`
 
-Full pitfall matrix (8 critical + 21 moderate + 7 minor) and 16 candidate REQ-IDs in PITFALLS.md.
+STACK.md and ARCHITECTURE.md reached different confidence levels on the same expression — `@request.body.boarder.user = @request.auth.id` in the `paytime_payments` create rule — and that disagreement is preserved here rather than resolved into false confidence:
+
+- **STACK.md: MEDIUM-HIGH.** Cites a direct quote from PocketBase maintainer Gani Georgiev in GitHub Discussion #6073 stating that bare relation dot-notation in a create rule (e.g. `customer.user.id`) "is essentially an alias for `@request.body.customer.*`," plus a second, independent worked example in Discussion #5667 chaining ownership through one relation in a create rule.
+- **ARCHITECTURE.md: LOW.** States it could not find documentation that explicitly confirms dot-chaining works off `@request.body.<relField>` specifically — only that direct equality and `:isset`/`:changed` modifiers on body values are clearly documented — and flags this as a second, independent risk beyond the one PROJECT.md already names.
+
+**Assessment:** STACK.md's citation is the stronger of the two — it quotes the PocketBase maintainer directly confirming the exact alias relationship (`customer.user.id` matches `@request.body.customer.*`) on the project's own GitHub repo, which is about as strong as external, non-empirical verification gets. ARCHITECTURE.md's caution is not wrong, but its search did not surface that maintainer quote as the deciding citation. On balance, STACK.md's MEDIUM-HIGH rating is better supported by the evidence gathered.
+
+**However — this is unproven on this instance, full stop.** Neither rating substitutes for empirical verification, and it could not be settled during this research pass: the PocketBase MCP environment available here is SchemaRead-only and cannot create the `paytime_boarders`/`paytime_payments` test collections needed to exercise a real create call against the live rule. This requires a live spike with PocketBase Admin UI access — create one boarder row, one linked payment row, and exercise create/list/update against the real rules — before the roadmap locks phase shape on this assumption. Both STACK.md and ARCHITECTURE.md independently arrive at the same operational conclusion despite the confidence-rating disagreement: smoke-test the createRule shape first, and have a documented fallback ready (drop to `@request.auth.is_admin = true || @request.auth.id != ""` on create, relying on the well-documented list/view/delete rule shape plus the client-side boarder-pinning already in `ManagePayment.vue` for defense in depth) if it doesn't validate.
+
+## Secondary Reconciliation: Ledger Placement vs. Feature Ranking
+
+ARCHITECTURE.md recommends nesting the admin ledger inside the existing `MonthlyReport.vue` tab as a sibling sub-view (`By Boarder | Ledger | Boarders`), not a new top-level tab. FEATURES.md ranks the ledger's core capabilities (roster, subject rework, boarder selector, `recorded_by`, ledger view with filters, tags, paid/unpaid-at-a-glance) uniformly as P1 for this milestone, with bulk entry, running totals, and arrears explicitly deferred to P2/P3. These are consistent, not in tension: nesting the ledger as a sub-view is a placement decision, not a scope decision, and every P1 capability FEATURES.md calls for fits inside the nested-view shell architecture proposes. The one thing worth watching during planning is that FEATURES.md's deferred P2 items (bulk entry, running totals) and P3 item (multi-month arrears) would each naturally land as further sub-views or additions within the same shell rather than new top-level surfaces — the nested-shell architecture scales into those additions without requiring a re-placement decision later.
 
 ## Implications for Roadmap
 
-Suggested phase structure (continuing numbering from v4.2 Phase 32), category-grouped per A-43-9:
+Based on combined research, the natural phase structure follows the dependency chain roster -> subject rework -> rule rewrite (highest risk) -> UI:
 
-### Phase 33 — Mobile foundation: useMobileEnv + PWA install capture
-**Rationale:** App.vue listener for beforeinstallprompt MUST register before user navigates to Wallecx (event fires once on first page load). Foundation composable unblocks every later phase.
-**Delivers:** src/composables/useMobileEnv.ts; App.vue listener wiring; extended PwaInstallBanner.vue (Android path); spec files for both. useIsMobile.ts kept as-is for backward compat.
-**Addresses:** PWA-04, partial PWA-01 prep; unblocks LT-03/05/08 by exposing safeAreaInsets.
-**Avoids:** Late event-listener registration silently dropping the Android install prompt.
+### Phase 1: Boarder Roster Foundation
+**Rationale:** Every other feature (tags, admin-on-behalf logging, the ledger, paid/unpaid computation) reads from the roster; it has no dependencies of its own and its rules are the "safe half" of the rewrite (no relation traversal).
+**Delivers:** `paytime_boarders` collection (name, tags, optional `user` link, active status) with its five rules; manual roster seed (~6 rows); `useBoarderRoster.ts` composable.
+**Addresses:** Roster table-stakes features from FEATURES.md.
+**Avoids:** Pitfall 4 (public roster via empty-string list rule) — smoke-test with an unauthenticated request specifically.
 
-### Phase 34 — Layout audit + 44px touch targets + safe-area + horizontal-scroll sweep
-**Rationale:** Fix the shell before the dialogs — dialog content inherits the layout frame. Establishes safe-area inset wiring required by Phase 35 sticky bars and Phase 37 PWA status-bar black-translucent.
-**Delivers:** Per-tab scoped CSS fixes; 100dvh migration; touch-target audit; sticky TabList + toolbar; horizontal-scroll prevention sweep; MultiSelect chip cap; DatePicker touchUI; AttachmentPreview pinch-zoom check.
-**Addresses:** LT-01, LT-02, LT-03, LT-04, LT-05, LT-06, LT-07.
-**Avoids:** C-2 BR-2 regression (barcode visual check), C-4 100vh trap, M-1 viewport-fit lock, M-4 MultiSelect chip overflow, M-5 DatePicker touch, M-7 Tabs scroll discoverability.
+### Phase 2: Subject Rework — Schema, Backfill, and the Rule-Risk Spike
+**Rationale:** This is the highest-risk phase in the milestone and must be isolated so its risk doesn't bleed into UI work. Sequenced additively per STACK.md/ARCHITECTURE.md's Build Order: add `boarder` as optional first, backfill the 1 existing record, run the live createRule/list-rule spike, only then flip `boarder` to required and rewrite all five rules together.
+**Delivers:** `paytime_payments.boarder` field, `user`->`recorded_by` rename, backfilled record, all five rewritten rules, resolved createRule confidence (spike result recorded either way).
+**Uses:** PocketBase relation-rule traversal (STACK.md section 1), `cascadeDelete: false` on both new relations (PITFALLS.md #5, ARCHITECTURE.md Pattern 3).
+**Avoids:** Pitfalls 1-3, 5-7 (admin-satisfiable checks, unbound createRule, update-rule reassignment, cascade data loss, partial rewrite, required-before-backfill ordering) — all concentrated in this one phase's acceptance criteria.
 
-### Phase 35 — Forms and dialogs on small screens (BaseMobileDialog rollout + iOS 16px fix)
-**Rationale:** Sticky action bar depends on Phase 34 safe-area wiring; iOS 16px fix is one CSS rule but the per-dialog BaseMobileDialog migration is the risky part. Order: ManageExpense -> ManageBudget -> ManageMembership (ColorPicker risk, late) -> ManageVaccination.
-**Delivers:** BaseMobileDialog.vue; global @media (max-width: 640px) input-font-size rule in wallecx-overrides.css; sticky bottom action bars in all 4 Manage* dialogs; per-field inputmode/autocomplete/enterkeyhint; camera capture on FileUpload; focus auto-scroll; Drawer dirty-state guard.
-**Addresses:** LT-08, LT-09, FD-01, FD-02, FD-03, FD-04 (touchUI applied), FD-05, FD-06, FD-07. Tier-2 if budget: FD-08, FD-09, FD-10.
-**Avoids:** C-5 iOS zoom-on-focus, M-3 Drawer swipe-to-close eats form, M-13 card_color hash regression (ManageMembership ColorPicker), M-14 ConfirmDialog singleton, M-15 z-index collision.
+### Phase 3: Admin-on-Behalf Logging
+**Rationale:** Depends on Phase 2's rules being live and correct; this is the literal milestone ask and the first UI surface that exercises the new subject model end-to-end.
+**Delivers:** Admin boarder selector in `ManagePayment.vue`, `recorded_by` set at write time, `PaymentLog.vue` filter updated to resolve "my boarder" via the roster.
+**Implements:** ARCHITECTURE.md Pattern 6 (mapper stays subject-agnostic; branching lives in `ManagePayment.vue` only).
 
-### Phase 36 — Mobile performance: bundle splits + asset compression + measurement
-**Rationale:** Perf work is non-functional and easier to verify once visual layer (33-35) is stable. Visualizer-driven, not speculative.
-**Delivers:** rollup-plugin-visualizer wired (gated on ANALYZE=true); WallecxApp.vue tabs converted to defineAsyncComponent; per-Manage* defineAsyncComponent; PWA icon regeneration; about-me-photo.png one-time squoosh compression; WebP upload format; preconnect hints; performance.mark/measure instrumentation; payload-size + duration measurement per Wallecx collection on mobile cellular (REQ NFR-PERF-MEASURE).
-**Addresses:** PF-01, PF-02, PF-03, PF-05; Tier-2: PF-07, PF-08, PF-09.
-**Avoids:** C-6 3 MiB precache cap, C-7 getList D-31-B trap, M-17 chart plugin inflation, M-18 image-compression on main thread, M-19 getFullList scale, M-20 auto-import bundle inflation.
-
-### Phase 37 — PWA standalone polish + install flow UAT
-**Rationale:** Requires Phase 33 listener + Phase 34 safe-area + Phase 36 reduced bundle to feel native-grade. iOS meta tags + splash + theme-color land here.
-**Delivers:** apple-mobile-web-app-* meta tags in index.html; apple-touch-startup-image set via @vite-pwa/assets-generator; per-color-scheme theme-color meta; display-mode standalone CSS tweaks; SW-update toast safe-area verification; manifest shortcuts (Tier-2); offline banner via useOnline (Tier-2); banner-dismissal frequency rule.
-**Addresses:** PWA-01, PWA-02, PWA-03, PWA-06, PWA-10; Tier-2: PWA-07, PWA-09.
-**Avoids:** C-1 registerType drift (re-affirm LOCKED), C-8 manifest scope narrowing, M-8 banner fatigue, M-10 iOS 7-day eviction UX, M-11 splash variants, M-12 theme-color mismatch, N-7 iOS standalone capture inconsistency.
-
-### Phase 38 — PWA-UAT-01 (deferred from Phase 22 V6) + mobile UAT sweep
-**Rationale:** Natural milestone-close UAT. Mirrors v4.1 Phase 30 sweep structure. Real-device iOS + Android Chrome required.
-**Delivers:** PWA-UAT-01-HUMAN-UAT.md with viewport-tagged scenarios across phases 33-37; iOS A2HS install + force-quit + relaunch + dark-mode toggle + auth survival; Android beforeinstallprompt install; standalone in-app navigation; barcode visual check in dark-mode standalone.
-**Addresses:** PWA-05.
-**Avoids:** Final guardrail against C-2, C-1, M-8, M-10 in real installed standalone mode.
-
-### Phase 38b (conditional) — List virtualization
-**Rationale:** Only triggered if Phase 36 instrumentation reveals >16ms scroll jank on long-running expense logs or any collection exceeds ~500 rendered rows. Likely skipped.
-**Delivers:** @tanstack/vue-virtual integration in ONE long list view (probably ExpensesListView); virtual scroller consumes the already-sorted array.
-**Addresses:** PF-06.
-**Avoids:** M-16 virtualization breaks sessionStorage sort-restore order.
+### Phase 4: Admin Ledger + Roster Management Views
+**Rationale:** Last, because it's pure UI composition over data models finalized in Phases 1-3; also the natural place to fold in tags-as-filter since tags are already stored by this point.
+**Delivers:** `MonthlyReport.vue` restructured into a shell; `MonthlyReportView.vue` (extracted), `AdminLedgerView.vue`, `BoarderRosterView.vue` (new); month/tag/boarder/category filtering; paid/unpaid-at-a-glance.
+**Uses:** `DataTable` + `Column` + `MultiSelect` (STACK.md section 3), shell-owns-fetch pattern (ARCHITECTURE.md Pattern 4/Anti-Pattern 4).
+**Avoids:** requestKey collisions on the new roster/ledger fetches; `getList()` 400s on the ledger's relation-traversal-plus-boolean listRule shape — use `getFullList()`/`skipTotal` from the first commit.
 
 ### Phase Ordering Rationale
 
-- **Foundation before audit:** useMobileEnv must land first so Phase 34/35/37 can consume safeAreaInsets, isStandalone, installPromptEvent. App.vue listener registration ordering matters for first-page-load capture (A-43-4).
-- **Shell before dialogs:** Layout audit (34) fixes the frame; forms (35) fix the content. Reversing the order would mean re-doing dialog work after the shell moves.
-- **Performance after visual:** Bundle splits and async components are easier to verify (and easier to detect regressions in) once the visual surface is stable.
-- **PWA polish last (before UAT):** Status-bar / splash / install affordance want the safe-area wiring (34), the sticky bars (35), and the reduced bundle (36) all in place before UAT.
-- **Category grouping (A-43-9):** Each phase establishes ONE pattern across all 3 tabs; tab-by-tab ordering would rediscover the same patterns 3x and produce less reviewable diffs.
+- Roster before subject rework before UI is a hard dependency chain, not a preference — nothing else can be built or even meaningfully planned until the roster exists and the rule-risk spike has an answer.
+- Isolating the rule rewrite into its own phase (rather than folding it into "admin-on-behalf logging") matches every research file's independent conclusion that this is the highest-risk, least-partially-completable unit of work in the milestone — it needs its own acceptance criteria and its own D-13 paste-back verification pass, not to be a subtask of a feature phase.
+- The ledger/roster-management UI comes last because it is the lowest-risk, most standard-pattern work (existing `ExpensesTab.vue` precedent, already-installed PrimeVue components) — nothing here needs deep research during planning.
 
 ### Research Flags
 
-**Phases likely needing deeper research during planning (/gsd-research-phase):**
-- **Phase 35** — PrimeVue 4.5.5 minor-upgrade smoke test (Drawer body-scroll lock parity with Dialog; FileUpload capture passthrough syntax; touchUI on DatePicker inside Drawer); ColorPicker direct-v-model survival through BaseMobileDialog slot rendering.
-- **Phase 36** — rollup-plugin-visualizer output review against locked v2.1 D-09 3 MiB cap; concrete chunk-split decisions per-tab.
-- **Phase 37** — apple-touch-startup-image media-query list for v4.3 viewports (390x844, 360x780, 768x1024); @vite-pwa/assets-generator regeneration commands.
+Needs research/spike during planning:
+- **Phase 2 (Subject Rework):** The createRule relation-traversal question is explicitly unresolved (see Reconciled Disagreement above) and requires a live PocketBase Admin UI spike, not desk research, before rule text is finalized. Flag this phase for `/gsd-plan-phase --research-phase` or an equivalent live-spike gate.
 
-**Phases with standard patterns (skip deep research):**
-- **Phase 33** — useMobileEnv is a straightforward composable; beforeinstallprompt capture is a documented 30-line pattern.
-- **Phase 34** — Tailwind min-h-[44px] + 100dvh + overflow-x-hidden audit; no new tech.
-- **Phase 38** — UAT only; mirrors v4.1 Phase 30 workflow.
+Standard patterns (skip deep research):
+- **Phase 1 (Roster):** Straightforward CRUD collection + non-relational rules — well-documented PocketBase pattern.
+- **Phase 3 (Admin-on-behalf logging):** Direct extension of an existing, working dialog (`ManagePayment.vue`) with a well-understood client/server split.
+- **Phase 4 (Ledger/roster UI):** Direct precedent already exists in this codebase (`ExpensesTab.vue` shell pattern); PrimeVue components are already installed and documented for this exact use.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Direct npm ls verification; current package versions confirmed against vuejs.org, PrimeVue releases, vite-pwa, rollup-plugin-visualizer. One MEDIUM flag: PrimeVue 4.3->4.5 minor reads as pure fixes but warrants branch smoke-test. |
-| Features | HIGH | Apple HIG, Material 3, web.dev Core Web Vitals, MDN PWA all converge; classifications cross-checked against existing Wallecx code state. Two MEDIUM flags: FD-05 PrimeVue FileUpload capture passthrough exposure on basic mode; FD-07 PrimeVue 4 Drawer body-scroll lock parity with Dialog. |
-| Architecture | HIGH | All 11 decisions grounded in source files read directly (WallecxApp.vue, PwaInstallBanner.vue, useIsMobile.ts, vite.config.ts, wallecx-overrides.css, App.vue, main.ts). |
-| Pitfalls | HIGH | 8 critical + 21 moderate + 7 minor verified against MDN/CanIUse, Workbox docs, PrimeVue 4 docs, WebKit notes, and STATE.md locked invariants. Codebase grep evidence confirmed C-5 trap directly in ManageExpense.vue (text-sm on inputs). |
+| Stack | HIGH (with one flagged exception) | No new technology; every claim traces to official PocketBase docs or this project's own `package.json`/existing components. The one exception — createRule relation traversal off `@request.body` — is MEDIUM-HIGH per STACK.md's own rating, and is called out separately above rather than folded into the general HIGH. |
+| Features | MEDIUM | Converging patterns across roommate-splitter and landlord rent-collection app categories, but no source addresses a 6-person single-house deployment directly; conclusions are extrapolated down in scale from vendor blogs/app-store listings (MEDIUM-confidence sources), not case studies of this exact shape. |
+| Architecture | MEDIUM (HIGH where grounded in code) | Everything citable against actual repo files (component structure, existing patterns like `useFileToken.ts`, `ExpensesTab.vue`) is HIGH confidence. PocketBase rule-syntax claims not yet exercised against the live instance are explicitly flagged MEDIUM/LOW throughout that document. |
+| Pitfalls | HIGH | Grounded almost entirely in this repo's own documented history (PROJECT.md Key Decisions, CONCERNS.md's `isSuperUser` bug, PT-RULE-01, D-13, D-31-B) rather than general web-app advice — this is project-specific analysis, not generic security guidance. |
 
-**Overall confidence:** HIGH.
+**Overall confidence:** MEDIUM — HIGH on everything grounded in this project's own code and shipped history; the milestone's single gating technical question (createRule relation traversal off `@request.body`) remains genuinely unresolved and requires empirical verification, not further desk research, before Phase 2 can be planned in detail.
 
-### Gaps to Address (open questions for Requirements / Roadmap step)
+### Gaps to Address
 
-- **Production record counts unknown.** Wallecx is a personal vault; per-collection record counts (vaccinations / memberships / expenses) are not measured. Phase 36 instrumentation (REQ NFR-PERF-MEASURE) closes this gap and determines whether Phase 38b virtualization is triggered. Roadmap must surface this measurement as the gating signal.
-- **PrimeVue 4.3->4.5 minor-upgrade smoke test scope.** Drawer + Dialog + DatePicker (touchUI) + FileUpload (capture) + MultiSelect chip behavior must be re-verified in a branch before merge. Recommendation: run the upgrade as the FIRST plan in Phase 35 (forms phase touches dialogs the most).
-- **Virtualization defer-vs-include decision.** Currently deferred (Phase 38b conditional). The roadmap should explicitly require Phase 36 instrumentation report before Phase 38 milestone-close to either close the loop (no virtualization needed) or trigger Phase 38b.
-- **Bundle composition of current Wallecx critical path.** Visualizer report from Phase 36 will reveal whether leaflet, quill, vue-pdf-embed, dompurify, or axios are inadvertently in the Wallecx first-paint chunk. Roadmap should treat the visualizer output as the input to phase-36 plan sequencing, not as a milestone-close-only artifact.
-- **PWA-UAT-01 device coverage.** Requires real iOS + Android devices; iPad-820 viewport explicit. Roadmap should call out the device matrix in Phase 38 acceptance criteria.
-- **16 candidate REQ-IDs from PITFALLS.md** need conversion to REQUIREMENTS.md entries; some bind every phase (e.g. NFR-BR-2-PRESERVED, CON-CONFIRMDIALOG-SINGLETON), others bind a specific phase (e.g. NFR-IOS-NO-ZOOM -> Phase 35).
+- **createRule relation traversal off `@request.body.boarder.user`** — cannot be resolved without a live PocketBase Admin UI spike (the available MCP environment is SchemaRead-only and cannot create test collections). Must be the first concrete action in Phase 2, with a documented fallback (see Reconciled Disagreement section) ready if it fails.
+- **Tag rename propagation** — PITFALLS.md flags that whether renaming a `select` field's option value in the PB Admin UI propagates to already-stored records or leaves them holding the old string is unverified; empirically verify (and paste back per D-13) before treating rename as a supported roster-admin action.
+- **PocketBase relation-traversal join performance** — no official documentation addresses join cost for multi-hop relation filters in rules; not a practical concern at this project's scale (6 users), but noted as a genuine documentation gap rather than a verified non-issue.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- .planning/research/STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md (researched 2026-05-26)
-- .planning/PROJECT.md, .planning/STATE.md (locked architectural invariants v2.0-v4.2)
-- Direct source-file reads: WallecxApp.vue, PwaInstallBanner.vue, useIsMobile.ts, vite.config.ts, wallecx-overrides.css, App.vue, main.ts, router/index.ts, ManageExpense.vue
-- Apple Human Interface Guidelines (44pt touch target, safe-area insets, apple-mobile-web-app-* meta tags, viewport-fit=cover)
-- web.dev — Core Web Vitals + INP (LCP <=2.5s / INP <=200ms / CLS <=0.1) and Installation prompt guide
-- MDN — meta viewport interactive-widget, apple-mobile-web-app-status-bar-style, Web App Manifest, beforeinstallprompt
-- vite-plugin-pwa 1.3.0 docs + @vite-pwa/assets-generator 1.0.2
-- PrimeVue 4 docs — Drawer / Dialog / DatePicker (touchUI) / FileUpload / MultiSelect / Tabs
-- @vueuse/core docs — useWindowSize, useScrollLock, useSwipe, useOnline, usePreferredReducedMotion
-- CSS-Tricks + WebKit notes — iOS 16px input-zoom prevention
-- Workbox 7.x docs — maximumFileSizeToCacheInBytes precache skip semantics
-- CanIUse / MDN — dvh/svh/lvh viewport units (Safari 15.4+, Chrome 108+)
+- [PocketBase Docs — Working with relations](https://pocketbase.io/docs/working-with-relations/) — dot-notation traversal, 6-level depth limit
+- [PocketBase Docs — API rules and filters](https://pocketbase.io/docs/api-rules-and-filters/) — `@request.body.*`, operators, `:isset`/`:each`/`:length` modifiers
+- [PocketBase JSVM — RelationField](https://pocketbase.io/jsvm/classes/RelationField.html) — `cascadeDelete` semantics
+- `C:/GitRepos/lex-lib.github.io/.planning/PROJECT.md` — Current Milestone, Key Decisions, Requirements (ground truth for what's already built/decided)
+- `C:/GitRepos/lex-lib.github.io/.planning/codebase/CONCERNS.md` — documented `isSuperUser = isLoggedIn` bug precedent
+- Existing repo source: `PayTimeApp.vue`, `PaymentLog.vue`, `ManagePayment.vue`, `MonthlyReport.vue`, `paytimePaymentMapper.ts`, `useFileToken.ts`, `ExpensesTab.vue`, `requestKeys.spec.ts`
 
 ### Secondary (MEDIUM confidence)
-- interactive-widget=resizes-content Android Chrome keyboard semantics (Chromium-only; iOS uses legacy overlay)
-- iOS 7-day localStorage eviction (ITP / WebKit Storage Standard) — anecdotal navigator.storage.persist() success rate on iOS
-- browser-image-compression Web Worker fallback behavior under Vite worker config edge cases
-- Material Design 3 — 48dp touch target (corroborates HIG 44pt floor)
-- Wallecx per-user data scale estimates (10-40 vaccinations, 5-30 memberships, 50-500 expenses) — inferred from personal vault scope
+- [GitHub Discussion #6073 — Removing the dry submit of the Create API rule](https://github.com/pocketbase/pocketbase/discussions/6073) — maintainer quote on `@request.body.<relation>.*` aliasing (STACK.md's basis for MEDIUM-HIGH; not treated as fully dispositive per the reconciliation above)
+- [GitHub Discussion #5667 — Protect creating record with relations](https://github.com/pocketbase/pocketbase/discussions/5667) — worked create-rule example chaining ownership through one relation
+- [GitHub Discussion #7013 — Filter based on relations field](https://github.com/pocketbase/pocketbase/discussions/7013) — `?=` operator semantics
+- Roommate-splitter and landlord rent-collection app sources (Split Patron, Cashinator, TurboTenant, TenantCloud, RentRedi, Avail, Landlord Studio) — vendor blogs/app-store listings, cross-referenced across multiple sources for convergent patterns
 
 ### Tertiary (LOW confidence)
-- Vendor chunk composition (2.57 MiB raw / ~700 KiB gzipped) — quoted from v2.1 Plan 14-04 notes; needs visualizer verification in Phase 36
-- iOS standalone PWA capture=environment reliability across iOS 17.x builds — WebKit bug history; mitigate by offering both Take photo and Choose from gallery
+- Quora community answer on merging duplicate user accounts — used only to corroborate a pattern already seen in stronger sources
+- PrimeVue issue-tracker cross-references on `InputChips` deprecation — WebSearch provenance, not first-party docs, though the underlying claim (deprecated in favor of `AutoComplete`) is stated directly in the tracker
 
 ---
-*Research completed: 2026-05-26*
-*Ready for roadmap: yes*
+*Research completed: 2026-08-04*
+*Ready for roadmap: yes — with Phase 2's createRule question flagged as requiring a live spike before detailed planning, not further desk research*
