@@ -25,6 +25,12 @@ created: 2026-08-04
 
 ---
 
+## Visual Hierarchy
+
+**`BoarderRosterView` primary screen focal point: the row list, not the CTA.** The "Add Boarder" button sits top-right of the header row (same position as `PaymentLog.vue`'s "Log a Payment") but is deliberately unaccented in visual weight beyond PrimeVue's default primary Button styling — it is a small, `size="small"` action, not a hero element. The eye lands first on the row list because that is the roster's actual content and the reason an admin opens this tab (checking who's on the roster, tags, active/inactive state); the CTA is a secondary, always-available action for the comparatively rare "add a new boarder" moment. This mirrors the existing `PaymentLog.vue`/`MonthlyReport.vue` precedent, where the list is the dominant visual mass and the action row above it is compact and low-emphasis by comparison.
+
+---
+
 ## Spacing Scale
 
 Declared values (Tailwind v4 default 4px-based scale — already the project's pervasive convention, not newly introduced):
@@ -33,6 +39,7 @@ Declared values (Tailwind v4 default 4px-based scale — already the project's p
 |-------|-------|-------|
 | xs | 4px (`gap-1`) | Icon-to-text gaps within a badge/label |
 | sm | 8px (`gap-2`) | Compact inline element spacing (category tag + date on a row) |
+| compact | 12px (`gap-3`) | Compact list-row internal gaps — the reused `PaymentLog.vue` row layout (D-38-17 reuses this wholesale for `BoarderRosterView`), and the header/CTA row's internal gap |
 | md | 16px (`gap-4`, `p-4`) | Default row/card padding, dialog field grid gap, section stack gap |
 | lg | 24px (`gap-6`) | Row's amount/proof/actions cluster gap on `sm+` |
 | xl | 32px | Not used by this phase's new files (reserved for shell-level spacing, out of scope) |
@@ -40,7 +47,6 @@ Declared values (Tailwind v4 default 4px-based scale — already the project's p
 | 3xl | 64px | Not used by this phase's new files |
 
 **Exceptions:**
-- `gap-3` (12px) — used for compact list-row internal gaps in the reused `PaymentLog.vue` row layout (D-38-17 reuses this wholesale for `BoarderRosterView`). Pre-existing project convention, not introduced by this phase.
 - Icon-only row-action buttons (kebab, Edit, Delete) render at whatever `p-button-sm` computes (established project-wide override in `main.ts`) — inherited, not re-litigated here. If a touch-target audit ever flags this, it is a cross-phase fix, not a Phase 38 exception.
 
 ---
@@ -51,10 +57,10 @@ Declared values (Tailwind v4 default 4px-based scale — already the project's p
 |------|------|--------|-------------|
 | Body | 14px (`text-sm`) | 400 | 1.5 (Tailwind `text-sm` default ~1.43, rounds to the project's existing muted/detail text) |
 | Label | 14px (`text-sm`) | 500 (`font-medium`) | 1.5 |
-| Heading | 16px (effective — `font-semibold` with no explicit size class, inherits container size per Tailwind's heading reset) | 600 (`font-semibold`) | 1.3 |
+| Heading | 16px (effective — inherited container size; see verification below) | 500 (`font-medium`) | 1.3 |
 | Display | not applicable this phase — the only display-scale text (`PayTimeApp.vue`'s `h1`) is untouched by Phase 38 |
 
-**Note on weights (3, not 2):** this phase's new components (`BoarderRosterView.vue`, `ManageBoarder.vue`) are built by copying two existing components verbatim per D-38-17/research: `PaymentLog.vue` (uses `font-semibold` 600 for row headers and emphasis, `font-medium` 500 for row detail labels) and `ManagePayment.vue` (uses `font-medium` 500 for every form label). Forcing this to 2 weights would mean diverging from the components this phase is explicitly instructed to reuse. The three weights already active project-wide are: **400** (body/muted, `opacity-70`), **500** (form field labels, row secondary labels), **600** (section headers, emphasized values like amounts — analogously, a boarder's display name in the row header). No new (e.g. 700/bold) weight is introduced.
+**2 weights, verified no regression:** `node_modules/tailwindcss/preflight.css:74-81` sets `h1..h6 { font-size: inherit; font-weight: inherit; }` — Tailwind's own preflight makes a heading's size and weight two *independent* resets, each only overridden by an explicit utility class. `PaymentLog.vue`'s `<h3 class="font-semibold">My Payments</h3>` has no size class, so it inherits its ambient 16px (no ancestor sets a smaller `text-*`), while `font-semibold` only overrides *weight* to 600. That means the section header is already visually distinguished from the 14px `text-sm` label/body tier **by size (16px vs 14px) independent of weight** — dropping the header's weight from 600 to 500 does not collapse the hierarchy, because the size delta alone still carries it. Phase 38's new header row (`BoarderRosterView`'s "Add Boarder" title + CTA, mirroring `PaymentLog.vue`'s header+button row) therefore uses `font-medium` (500), matching every label. **Declared set: 400 (body/muted) and 500 (labels + the one section heading).** No 600/700 weight is used by any file this phase creates or modifies.
 
 ---
 
