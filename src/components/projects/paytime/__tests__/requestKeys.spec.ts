@@ -55,6 +55,17 @@ const mountOptions = {
       Image: true,
       Menu: true,
       ManagePayment: true,
+      // MonthlyReport's nested Tabs shell (Task 2) — real Tabs/TabList need
+      // the PrimeVue plugin installed to read $primevue config, which this
+      // mount doesn't provide. Stub the shell; BoarderRosterView is stubbed
+      // too so mounting MonthlyReport doesn't fire a third getFullList call
+      // (Task 3 extends this test to a real third consumer).
+      Tabs: true,
+      TabList: true,
+      Tab: true,
+      TabPanels: true,
+      TabPanel: true,
+      BoarderRosterView: true,
     },
   },
 };

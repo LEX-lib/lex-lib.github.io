@@ -31,7 +31,7 @@ const isAdmin = computed(() => auth.user?.is_admin === true);
         <TabList>
           <Tab value="log">My Payments</Tab>
           <Tab value="calculator">Electricity Calculator</Tab>
-          <Tab v-if="isAdmin" value="report">Monthly Report</Tab>
+          <Tab v-if="isAdmin" value="report">Admin</Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="log">
