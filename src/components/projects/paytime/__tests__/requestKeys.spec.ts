@@ -80,26 +80,34 @@ beforeEach(() => {
 
 /**
  * Regression: the SDK's default auto-cancel key is method+path and ignores
- * the query string, so both panels resolved to the same key. PrimeVue mounts
- * every Tabs panel unless `lazy` is set, so the two list calls raced and one
- * was always aborted with "The request was aborted (most likely
+ * the query string, so sibling panels resolved to the same key. PrimeVue
+ * mounts every Tabs panel unless `lazy` is set, so the list calls raced and
+ * one was always aborted with "The request was aborted (most likely
  * autocancelled)".
  */
 describe("PayTime list request keys", () => {
-  it("PaymentLog and MonthlyReport use distinct requestKeys", async () => {
+  it("PaymentLog, MonthlyReport and BoarderRosterView use distinct requestKeys", async () => {
     const PaymentLog = (await import("../PaymentLog.vue")).default;
     const MonthlyReport = (await import("../MonthlyReport.vue")).default;
+    const BoarderRosterView = (await import("../BoarderRosterView.vue"))
+      .default;
 
     const log = mount(PaymentLog, mountOptions);
+    // MonthlyReport's own BoarderRosterView child stays stubbed (mountOptions
+    // above) so this mount fires exactly one list call, not two; the third
+    // call comes from the standalone BoarderRosterView mount below, which is
+    // the real component since a stub only replaces it as a *descendant*.
     const report = mount(MonthlyReport, mountOptions);
-    await vi.waitFor(() => expect(getFullList).toHaveBeenCalledTimes(2));
+    const roster = mount(BoarderRosterView, mountOptions);
+    await vi.waitFor(() => expect(getFullList).toHaveBeenCalledTimes(3));
 
     const keys = getFullList.mock.calls.map(keyOf);
     expect(keys.every(Boolean)).toBe(true);
-    expect(new Set(keys).size).toBe(2);
+    expect(new Set(keys).size).toBe(3);
 
     log.unmount();
     report.unmount();
+    roster.unmount();
   });
 
   it("PaymentLog renders a fetched payment", async () => {
