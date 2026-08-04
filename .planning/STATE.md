@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Admin Payment Ledger
 status: planning
-last_updated: "2026-08-04T04:32:13.800Z"
+last_updated: "2026-08-04T06:00:00.000Z"
 last_activity: 2026-08-04
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -15,21 +15,23 @@ progress:
 
 # Project State
 
-**Last updated:** 2026-05-26 — v4.3 Wallecx Mobile Optimization planned. ROADMAP.md created with 6 mandatory phases (33–38) + 1 conditional (38b). 32/32 functional requirements mapped; 16 NFR/CON bound to verification-owner phases. Next: `/gsd-plan-phase 33` for Mobile Foundation.
+**Last updated:** 2026-08-04 — v5.0 Admin Payment Ledger roadmap created. ROADMAP.md appended with 4 phases (38–41), continuing numbering after v4.3's cancelled Phase 38/38b. 32/32 v5.0 requirements mapped to phases; REQUIREMENTS.md traceability updated. Next: `/gsd-plan-phase 38` for Boarder Roster Foundation.
 
 ## Project Reference
 
-**Project:** Lexarium — Wallecx
-**Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-05-26)
-**Core value:** Each authenticated user can save, retrieve, and display their own vaccination records, membership/loyalty cards, and daily expenses — without ever losing access to them, and can track spending against per-category budget targets.
-**Current focus:** Phase 37 — pwa-install-standalone-polish
+**Project:** Lexarium — PayTime
+**Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-08-04)
+**Core value:** Each authenticated user can record and retrieve their own data in whichever mini-app they use — without ever losing access to it — and PayTime's admin can maintain the boarding house's payment ledger on behalf of every boarder, whether or not that boarder has an account.
+**Current focus:** Phase 38 — Boarder Roster Foundation
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-08-04 — Milestone v5.0 started
+Phase: 38 of 41 (Boarder Roster Foundation)
+Plan: TBD — not yet planned
+Status: Ready to plan
+Last activity: 2026-08-04 — ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Shipped Milestones Summary
 
@@ -46,18 +48,28 @@ Last activity: 2026-08-04 — Milestone v5.0 started
 | v4.0 Daily Expense Tracker | 23–26 | 9 | 2026-05-22 |
 | v4.1 Gap Resolution & Feature Completeness | 27–30 | 15 | 2026-05-25 |
 | v4.2 Budget Recovery & Hardening | 31–32 | 2 | 2026-05-26 |
+| v4.3 Wallecx Mobile Optimization | 33–37 | 25 | 2026-06-08 |
+| PayTime v1.0 (Payment Log + Electricity Calculator) | — (shipped outside GSD) | — | 2026-08-04 |
 
-## v4.3 Phase Structure
+## v5.0 Phase Structure
+
+**Phase numbering reuses 38, deliberately.** v4.3's Phase 38 (Mobile UAT Sweep + PWA-UAT-01) and Phase 38b (List Virtualization, conditional) were both cancelled outright on 2026-06-05 when Wallecx migrated to its own repository — neither produced a phase directory or any artifact, and `.planning/phases/` is empty. v5.0 restarts at Phase 38 on purpose, not by mistake; it is a different, unrelated phase.
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 33 | Mobile Foundation | FND-01..04 | ✅ Complete (3 plans) — shipped |
-| 34 | Layout Audit & Touch Targets | LT-01,02,03,04,05,07,09 | ✅ Complete (3 plans) — shipped |
-| 35 | Forms & Dialogs on Small Screens | LT-08, FD-01,03,04,05,06,07,09 | ✅ Complete (6 plans) — shipped |
-| 36 | Mobile Performance | PF-01,02,04,05,07,09 | ✅ Complete (7 plans) — shipped |
-| 37 | PWA Install + Standalone Polish | PWA-01,02,04,06,07,09 | ✅ Complete (6 plans) — verified, UAT 9/9, secured, shipped |
-| 38 | Mobile UAT Sweep + PWA-UAT-01 | PWA-05 | ❌ Cancelled 2026-06-05 (Wallecx migrated to separate repo) |
-| 38b | List Virtualization (CONDITIONAL) | PF-06 | ❌ Cancelled 2026-06-05 (Wallecx migrated; never triggered) |
+| 38 | Boarder Roster Foundation | ROSTER-01..07, TAG-01, VERIFY-03 | Not started |
+| 39 | Payment Subject Rework | SUBJ-01..07, VERIFY-01, VERIFY-02, VERIFY-04, VERIFY-05 | Not started |
+| 40 | Admin-on-Behalf Logging | BEHALF-01..04 | Not started |
+| 41 | Admin Ledger & Tag Visibility | LEDGER-01..07, TAG-02 | Not started |
+
+Full detail: `.planning/ROADMAP.md` Phase Details section. Traceability: `.planning/REQUIREMENTS.md`.
+
+**Sequencing rationale (locked at roadmap creation):**
+- Phase 39 depends on Phase 38 — the roster must exist to be the payment subject, to backfill against, and to exercise the rule traversal against real boarder rows.
+- Phase 39's `createRule` relation-traversal spike (VERIFY-01) and the closing five-rule smoke sweep (VERIFY-02) are embedded inside that phase, not split into a standalone verification phase — a spike/sweep has no user-observable success criteria of its own, and PITFALLS.md's own pitfall-to-phase mapping already concentrates every rule-rewrite risk (Pitfalls 1/2/3/6/7) into this one phase. A createRule spike failure changes only that phase's rule text via the documented fallback; it does not require redefining Phase 40 or 41.
+- Phase 40 depends on Phase 39 — the write path must exercise already-correct rules.
+- Phase 41 depends on all three prior phases — it reads boarder-subject payments (39), tags (38), and is most meaningfully populated once admin-on-behalf logging (40) exists, though it is not hard-blocked on 40 to begin planning.
+- `BoarderRosterView`/`ManageBoarder` roster CRUD UI ships inside Phase 38 (not deferred to the final ledger phase as SUMMARY.md's draft first suggested) — `MonthlyReport.vue` is restructured into a two-tab shell (By Boarder / Boarders) in Phase 38, since the Boarders tab has no dependency on the payment-subject rework. Phase 41 then adds a third Ledger tab to the same already-restructured shell, satisfying LEDGER-06 without a second restructuring pass.
 
 ## Accumulated Context
 
@@ -69,22 +81,20 @@ Last activity: 2026-08-04 — Milestone v5.0 started
 - **Tab shell, not sub-routes.** PrimeVue Tabs with string-typed `activeTab`; each tab owns its own state; no new Pinia store.
 - **Direct v-model refs for ManageMembership.vue.** PrimeVue ColorPicker issue #8135 — controlled system ignores initial value. This is the established pattern for membership write path.
 - **ConfirmDialog at WallecxApp.vue shell level only.** `useConfirm` broadcasts to single app-shell-level instance; not duplicated in tab components.
-- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a sixth distinct key.
+- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a distinct key. **PayTime keys (separate namespace):** `'paytime-payments-list'`, `'paytime-report-list'`. v5.0 will add at least `'paytime-ledger-list'` and a distinct roster-select key (Phase 38/41) — register and paste back each new key as it's added.
 - **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
 - **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
-- **Admin-UI checkpoints require text paste-back + downstream smoke verify.** When a phase configures a live external artifact (PocketBase collection schema, rules, env vars, dashboard settings), the checkpoint MUST require the user to paste back the actual configured values as text AND a code-side smoke verification must run against the live system. Acknowledgment-only signals ("approved", "done") are insufficient. See BUG-01 post-mortem: Phase 28-01 Task 1 → Phase 31.
+- **Admin-UI checkpoints require text paste-back + downstream smoke verify.** When a phase configures a live external artifact (PocketBase collection schema, rules, env vars, dashboard settings), the checkpoint MUST require the user to paste back the actual configured values as text AND a code-side smoke verification must run against the live system. Acknowledgment-only signals ("approved", "done") are insufficient. See BUG-01 post-mortem: Phase 28-01 Task 1 → Phase 31. **v5.0 Phase 38/39 are entirely built on this invariant** — every collection/rule/cascade change is a manual PB Admin UI step requiring paste-back + smoke probe.
 
-### v4.3 Phase Structure Decisions (pre-planning, 2026-05-26)
+### v5.0 Phase Structure Decisions (pre-planning, 2026-08-04)
 
-- **Category-grouped phases per A-43-9.** One pattern established once and applied across all 3 tabs. Tab-by-tab ordering rejected — would rediscover the same patterns 3× and produce less reviewable diffs.
-- **Foundation phase first (33).** `useMobileEnv` composable + App.vue-scope `beforeinstallprompt` listener must land before any consumer phase. Late listener registration silently drops Android install affordance (A-43-4).
-- **Shell before dialogs (34 → 35).** Layout audit fixes the frame; forms phase fixes the content. LT-08 (sticky bottom action bars in 4 dialogs) groups with Phase 35 forms work — the dialogs are where the sticky bars live — not with Phase 34 layout audit, to keep the Manage dialog migration coherent.
-- **Performance after visual layer stable (35 → 36).** Bundle splits and async components are easier to verify (and easier to detect regressions in) once the visual surface is stable. Skeleton states (PF-04) are sized against the final layout from Phase 34/35.
-- **PWA polish last before UAT (36 → 37 → 38).** Status-bar + splash + install affordance need safe-area wiring (34), sticky bars (35), and reduced bundle (36) all in place to feel native-grade.
-- **ManageMembership BaseMobileDialog migration goes LAST in Phase 35.** Highest-risk migration (ColorPicker direct v-model invariant, PrimeVue #8135). Order: ManageExpense → ManageBudget → ManageMembership → ManageVaccination (A-43-2).
-- **NFR-PERF-MEASURE gates Phase 38b conditional virtualization.** Production record counts unknown (personal vault scope). Phase 36 PF-05 instrumentation closes that knowledge gap; only then do we know whether virtualization is needed. Premature virtualization risks M-16 sessionStorage sort-restore regression.
-- **NFR/CON bind multiple phases.** Each NFR/CON requirement has a verification-owner phase AND binds every other phase that touches the affected surface. Documented in each phase's "Binds NFR/CON" section in ROADMAP.md.
+- **Additive-only schema migration for the payment subject.** `paytime_payments.boarder` is added as an *optional* relation first; the one existing production record is backfilled; the rule traversal is proven live; only then does `boarder` flip to required and all five rules get rewritten together. The relation is never retargeted in place.
+- **Five-rule rewrite is one indivisible unit.** All five `paytime_payments` rules (list/view/create/update/delete) are authored and pasted back together in Phase 39 — a partially-applied rewrite is PITFALLS.md's documented Pitfall 6 failure mode.
+- **VERIFY-01 (createRule spike) is a gate embedded in Phase 39, not a standalone phase.** It must resolve before rule text is finalized, but a fallback failure only changes that phase's rule text — Phase 40 and 41 exist regardless of the spike's outcome.
+- **VERIFY-02/04/05 are Phase 39's closing acceptance checks**, not a separate cross-cutting verification phase — all three concern artifacts (the five payment rules, the update-reassignment guard, cascadeDelete on both new relations) that are entirely Phase 38/39 creations, verifiable via direct API/token probes without needing Phase 40's UI to exist.
+- **Roster CRUD UI ships in Phase 38, not deferred to the final ledger phase.** `MonthlyReport.vue` is restructured into a shell once, in Phase 38 (two tabs: By Boarder / Boarders); Phase 41 adds a third Ledger tab to the same shell. Chosen over SUMMARY.md's original 4-phase draft (which deferred all roster UI to Phase 4) because ROSTER-01..07 read as ordinary in-app admin actions — same voice as BEHALF-01 — and PROJECT.md's target-features list names "Admin CRUD" as the v5.0 roster feature, not a raw PocketBase-dashboard workflow.
+- **Granularity: 4 phases (coarse setting).** Matches config.json's `"granularity": "coarse"` (target 2–4). No phase has fewer than 3 success criteria or reads as pure task-list; none folded further.
 
 ### Phase 33 Decisions (Plan 01 — Vue + PrimeVue version baseline, FND-04)
 
@@ -108,7 +118,7 @@ Last activity: 2026-08-04 — Milestone v5.0 started
 
 - **D-35-13 RE-CORRECTED: DatePicker popup-everywhere (not inline).** Plans 35-01..05 wired `:inline="isMobile"` on all DatePicker sites to provide an always-visible calendar on mobile. During Plan 35-06 human-verify UAT (item 4), the ExpensesToolbar From/To pickers and ExpensesReportsView custom-range pickers rendered as two huge always-visible inline calendar grids stacked above the expense list, crowding it to near-unusable. Root cause: these pickers are NOT inside a dialog — they render inline in always-visible toolbar/view components. Fix: revert `:inline` and `showButtonBar` on ALL 5 DatePicker sites to default tap-to-open popup overlay (f8eb9c7). Mobile usability is preserved by the FD-01 16px no-zoom rule (users can tap and interact with popup without zoom). Dialog-internal pickers (ManageExpense, ManageMembership, ManageVaccination) also revert to popup — consistent and simpler. ROADMAP.md + REQUIREMENTS.md FD-04 language updated. **Phase 35 canonical behavior: DatePicker = popup-everywhere; no `:inline` prop.**
 - **Phase 35 automated gate protocol established.** 35-06-AUDIT.md records 4 automated gates + 12 grep audits at phase close as a permanent evidence artifact. Pattern carried to Phase 36+.
-- **Real-device deferral to Phase 38.** Human APPROVED at 390px devtools emulation. iOS no-zoom zoom=1.0 (FD-01), actual camera launch (FD-05), and sticky-above-keyboard on a real device (LT-08/FD-06) carried to Phase 38 Mobile UAT Sweep per documented deferral path (35-CONTEXT.md Deferred Ideas). Accepted — devtools emulation is the established approval path for v4.3 mid-phase checkpoints.
+- **Real-device deferral to Phase 38.** Human APPROVED at 390px devtools emulation. iOS no-zoom zoom=1.0 (FD-01), actual camera launch (FD-05), and sticky-above-keyboard on a real device (LT-08/FD-06) carried to Phase 38 Mobile UAT Sweep per documented deferral path (35-CONTEXT.md Deferred Ideas). Accepted — devtools emulation is the established approval path for v4.3 mid-phase checkpoints. **(That Phase 38 was v4.3's, since cancelled — this deferral was never picked up. Not the same Phase 38 as v5.0's.)**
 
 ### Phase 35 Decisions (Plan 05 — ManageVaccination migration, final two-Form collapse)
 
@@ -217,7 +227,7 @@ Last activity: 2026-08-04 — Milestone v5.0 started
 
 ### Phase 26 Decisions (Plan 02 — Wave 2 refactor)
 
-- **Parent-shell + child-view SFC split established for Wallecx tabs.** ExpensesTab is now a thin parent shell that owns data (expenses ref, isLoading), CRUD operations (deleteExpense, openManage, onCreated, onUpdated), and modal/preview UI (ManageExpense dialog, AttachmentPreview Dialog/Drawer with token gate). ExpensesListView is the child sibling view that owns view-specific UI state (5 filter/sort refs, sessionStorage sort persistence, 4-state template) and emits semantic intent events (edit, delete, preview, request-add-expense) back up to the shell. Plan 26-03 will use the same pattern to add ExpensesReportsView as a second sibling view, with the sub-tab toggle living in the shell.
+- **Parent-shell + child-view SFC split established for Wallecx tabs.** ExpensesTab is now a thin parent shell that owns data (expenses ref, isLoading), CRUD operations (deleteExpense, openManage, onCreated, onUpdated), and modal/preview UI (ManageExpense dialog, AttachmentPreview Dialog/Drawer with token gate). ExpensesListView is the child sibling view that owns view-specific UI state (5 filter/sort refs, sessionStorage sort persistence, 4-state template) and emits semantic intent events (edit, delete, preview, request-add-expense) back up to the shell. Plan 26-03 will use the same pattern to add ExpensesReportsView as a second sibling view, with the sub-tab toggle living in the shell. **This same parent-shell + child-view pattern is what v5.0 Phase 38/41 apply to `MonthlyReport.vue`.**
 - **Props are unwrapped in setup — child uses `props.expenses` (no `.value`).** Confirmed via working type-check that categoryOptions and filteredSortedExpenses computeds dereference `props.expenses` directly, matching Vue 3 Composition API behavior where defineProps returns a reactive proxy whose property reads track reactively without `.value`.
 - **sessionStorage persistence belongs with the state owner.** Sort mode persistence (`wallecx:expense-sort` + VALID_SORT_MODES whitelist + read in onMounted + write in watch) moved entirely to ExpensesListView in this refactor. The shell does not touch sort state, simplifying Plan 26-03 (which will add period state, NOT sort state, to ExpensesReportsView).
 - **Receipt preview state stays in the shell, not the list view.** Even though preview is triggered by a list-row paperclip click, the showPreview/previewRecord/previewToken state and Dialog/Drawer rendering live in ExpensesTab. This avoids re-extraction when Plan 26-03 introduces ExpensesReportsView (which does NOT need receipt preview).
@@ -335,11 +345,21 @@ Items acknowledged and deferred at v4.1 milestone close on 2026-05-25:
 
 Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previously-deferred Phase 00/08/14 carry forward). Phase 30 resolved 80/82 in-scope scenarios from earlier milestones.
 
+Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
+
+| Category | Item | Status |
+|----------|------|--------|
+| smoke_gap | PT-SMOKE-01 — end-to-end browser smoke test of PayTime v1.0, never performed | Targeted for closure by v5.0 Phase 39 VERIFY-02 |
+| backlog | PT-RULE-01 — update-rule ownership-reassignment gap, client-mitigated only | Targeted for closure by v5.0 Phase 39 VERIFY-04 |
+| backlog | PT-AMOUNT-01, PT-FMT-01, PT-MSGR-01 | Not in v5.0 scope — see REQUIREMENTS.md Future Requirements |
+
 ## Session Continuity
 
-**Last session:** 2026-06-05T10:37:21.638Z
+**Last session:** 2026-08-04 (roadmap creation)
 
-**Stopped at:** Phase 38 context gathered
+**Stopped at:** v5.0 ROADMAP.md created (Phases 38–41: Boarder Roster Foundation, Payment Subject Rework, Admin-on-Behalf Logging, Admin Ledger & Tag Visibility); REQUIREMENTS.md traceability populated (32/32 mapped, 0 unmapped). Next: `/gsd-plan-phase 38`.
+
+**Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
 **Prior stopped-at:** Phase 36 Plan 36-03 COMPLETE. VaccinationsTab.vue: ManageVaccination lazy-loaded via defineAsyncComponent + Suspense + WallecxSkeleton vaccination-card fallback; mount-path getFullList wrapped in instrumentedGetFullList with requestKey: 'vaccinations-getFullList' (NFR-REQUESTKEY-UNIQUE closed); inline Card+Skeleton grid replaced by WallecxSkeleton v-if=isLoading. perfInstrument.ts RecordFullListOptions type fix. ManageVaccination 9.78 KB separate chunk; VaccinationsTab 14.59 KB. type-check 0, test:unit 59/59, build 70 precache, 0 exceeds. Next: Plan 36-04 (MembershipsTab async ManageMembership + skeleton).
 
@@ -359,12 +379,13 @@ Known deferred items at v4.1 close: 6 (3 new UAT + 3 verification gaps; previous
 
 **Earlier stopped-at:** Phase 33 planned — 3 plans, plan-checker VERIFICATION PASSED (0 blockers/warnings; 2 info advisories incorporated: M-6 synchronous-seed spec assertion + node -e portability for the visualizer verify). Plan map: 33-01 = Vue 3.5.34 + PrimeVue 4.5.5 lockstep bump + 6-surface manual smoke-test gate (wave 1, autonomous:false); 33-02 = useMobileEnv composable (5-key object, tri-state 639/1023, module-singleton installPromptEvent) + App.vue beforeinstallprompt capture + spec + @vueuse/core promotion (wave 2); 33-03 = ANALYZE-gated rollup-plugin-visualizer + cross-env + analyze script (wave 3). All 3 plans touch package.json → strictly sequential waves. Plans not yet committed.
 
-**Next session entry point:** Continue Phase 36 — execute Plan 36-02 (`.planning/phases/36-mobile-performance/36-02-PLAN.md`). Plan 36-01 complete. WallecxSkeleton.vue, perfInstrument.ts, compressToWebP.ts, and vite.config.ts groups all in place.
+**Next session entry point:** Run `/gsd-plan-phase 38` to plan Boarder Roster Foundation (v5.0's first phase).
 
 ---
 *State initialized: 2026-05-10 by roadmapper after `/gsd-new-project` orchestration*
 *Last updated: 2026-05-28 — Phase 36 Plan 36-01 complete. Foundation files created. WallecxApp chunk reduced from 64 KB → 32.81 KB gzip via codeSplitting groups.*
+*Updated: 2026-08-04 — v5.0 Admin Payment Ledger ROADMAP.md created by roadmapper (Phases 38–41, deliberately reusing the freed Phase 38 number after v4.3's cancellation). REQUIREMENTS.md traceability: 32/32 mapped, 0 unmapped.*
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd:new-milestone
+- Run `/gsd-plan-phase 38` to plan Boarder Roster Foundation.

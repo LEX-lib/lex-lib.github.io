@@ -97,48 +97,54 @@ Deferred. Tracked, not in this roadmap.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROSTER-01 | TBD | Pending |
-| ROSTER-02 | TBD | Pending |
-| ROSTER-03 | TBD | Pending |
-| ROSTER-04 | TBD | Pending |
-| ROSTER-05 | TBD | Pending |
-| ROSTER-06 | TBD | Pending |
-| ROSTER-07 | TBD | Pending |
-| SUBJ-01 | TBD | Pending |
-| SUBJ-02 | TBD | Pending |
-| SUBJ-03 | TBD | Pending |
-| SUBJ-04 | TBD | Pending |
-| SUBJ-05 | TBD | Pending |
-| SUBJ-06 | TBD | Pending |
-| SUBJ-07 | TBD | Pending |
-| BEHALF-01 | TBD | Pending |
-| BEHALF-02 | TBD | Pending |
-| BEHALF-03 | TBD | Pending |
-| BEHALF-04 | TBD | Pending |
-| LEDGER-01 | TBD | Pending |
-| LEDGER-02 | TBD | Pending |
-| LEDGER-03 | TBD | Pending |
-| LEDGER-04 | TBD | Pending |
-| LEDGER-05 | TBD | Pending |
-| LEDGER-06 | TBD | Pending |
-| LEDGER-07 | TBD | Pending |
-| TAG-01 | TBD | Pending |
-| TAG-02 | TBD | Pending |
-| VERIFY-01 | TBD | Pending |
-| VERIFY-02 | TBD | Pending |
-| VERIFY-03 | TBD | Pending |
-| VERIFY-04 | TBD | Pending |
-| VERIFY-05 | TBD | Pending |
+| ROSTER-01 | Phase 38 | Pending |
+| ROSTER-02 | Phase 38 | Pending |
+| ROSTER-03 | Phase 38 | Pending |
+| ROSTER-04 | Phase 38 | Pending |
+| ROSTER-05 | Phase 38 | Pending |
+| ROSTER-06 | Phase 38 | Pending |
+| ROSTER-07 | Phase 39 | Pending |
+| SUBJ-01 | Phase 39 | Pending |
+| SUBJ-02 | Phase 39 | Pending |
+| SUBJ-03 | Phase 39 | Pending |
+| SUBJ-04 | Phase 39 | Pending |
+| SUBJ-05 | Phase 39 | Pending |
+| SUBJ-06 | Phase 39 | Pending |
+| SUBJ-07 | Phase 39 | Pending |
+| BEHALF-01 | Phase 40 | Pending |
+| BEHALF-02 | Phase 40 | Pending |
+| BEHALF-03 | Phase 40 | Pending |
+| BEHALF-04 | Phase 40 | Pending |
+| LEDGER-01 | Phase 41 | Pending |
+| LEDGER-02 | Phase 41 | Pending |
+| LEDGER-03 | Phase 41 | Pending |
+| LEDGER-04 | Phase 41 | Pending |
+| LEDGER-05 | Phase 41 | Pending |
+| LEDGER-06 | Phase 41 | Pending |
+| LEDGER-07 | Phase 41 | Pending |
+| TAG-01 | Phase 38 | Pending |
+| TAG-02 | Phase 41 | Pending |
+| VERIFY-01 | Phase 39 | Pending |
+| VERIFY-02 | Phase 39 | Pending |
+| VERIFY-03 | Phase 38 | Pending |
+| VERIFY-04 | Phase 39 | Pending |
+| VERIFY-05 | Phase 39 | Pending |
 
 **Coverage:**
 - v5.0 requirements: 32 total
-- Mapped to phases: 0
-- Unmapped: 32 ⚠️ (roadmap not yet created)
+- Mapped to phases: 32
+- Unmapped: 0 ✓
+
+**Phase summary:**
+- Phase 38 (Boarder Roster Foundation): ROSTER-01..06, TAG-01, VERIFY-03 — 8 requirements
+- Phase 39 (Payment Subject Rework): SUBJ-01..07, ROSTER-07, VERIFY-01, VERIFY-02, VERIFY-04, VERIFY-05 — 12 requirements
+
+ROSTER-07 sits in Phase 39, not 38: `paytime_payments.boarder` does not exist until Phase 39, so in Phase 38 no payment can reference a boarder and the "refuse to delete a boarder with history" protection has nothing to protect. Verified there alongside VERIFY-05, which exercises the same relation configuration from the other direction.
+- Phase 40 (Admin-on-Behalf Logging): BEHALF-01..04 — 4 requirements
+- Phase 41 (Admin Ledger & Tag Visibility): LEDGER-01..07, TAG-02 — 8 requirements
 
 ---
 *Requirements defined: 2026-08-04*
-*Last updated: 2026-08-04 after initial definition*
+*Last updated: 2026-08-04 after roadmap creation — all 32 v5.0 requirements mapped to Phases 38–41 (100% coverage). Full phase detail in `.planning/ROADMAP.md`.*
