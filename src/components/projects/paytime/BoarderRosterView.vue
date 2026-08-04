@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useBoarderRoster } from "@/composables/useBoarderRoster";
+import { titleCaseTag } from "@/lib/paytime/boarderSchema";
 import ManageBoarder from "./ManageBoarder.vue";
 import type { PaytimeBoarder } from "@/types/paytime/boarders/types";
 
@@ -52,9 +53,8 @@ onMounted(async () => {
       No boarders yet. Add the first one to get started.
     </p>
 
-    <!-- Row card: verbatim PaymentLog.vue card classes (D-38-17). No tags
-         chips, account-link badge, or row actions yet — Plan 02/03 expand
-         this row; this task wires only the display-name path. -->
+    <!-- Row card: verbatim PaymentLog.vue card classes (D-38-17). Account-link
+         badge and row actions still pending — Plan 03 expands this row. -->
     <div
       v-for="boarder in sortedBoarders"
       :key="boarder.id"
@@ -62,6 +62,17 @@ onMounted(async () => {
     >
       <div class="flex flex-col gap-1 min-w-0 sm:flex-1">
         <span class="text-sm font-medium break-words">{{ boarder.name }}</span>
+        <!-- Zero tags is a valid steady state (D-38-02) — no chips, no
+             placeholder chip, no message. -->
+        <div v-if="boarder.tags.length" class="flex flex-wrap gap-2">
+          <Tag
+            v-for="tag in boarder.tags"
+            :key="tag"
+            severity="info"
+            :value="titleCaseTag(tag)"
+            :pt="{ label: { class: 'max-w-40 truncate' } }"
+          />
+        </div>
       </div>
     </div>
 

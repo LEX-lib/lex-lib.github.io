@@ -6,8 +6,23 @@ import {
   mapToCreateBoarder,
   mapToUpdateBoarder,
 } from "@/lib/pocketbase/paytimeBoarderMapper";
-import { boarderSchema, collectFieldErrors } from "@/lib/paytime/boarderSchema";
+import {
+  boarderSchema,
+  collectFieldErrors,
+  normalizeTag,
+  titleCaseTag,
+} from "@/lib/paytime/boarderSchema";
+import { useBoarderRoster } from "@/composables/useBoarderRoster";
 import type { PaytimeBoarder } from "@/types/paytime/boarders/types";
+
+interface TagSuggestion {
+  label: string;
+  value: string;
+  isCreate: boolean;
+}
+
+/** Past this many characters, the create-entry label truncates the typed value. */
+const MaxCreateLabelChars = 30;
 
 const visible = defineModel<boolean>("visible", { required: true });
 /** null opens the dialog in create mode. */
@@ -15,11 +30,32 @@ const record = defineModel<PaytimeBoarder | null>("record", { default: null });
 
 const emit = defineEmits<{ saved: [] }>();
 
+const { boarders } = useBoarderRoster();
+
 const name = ref("");
+const tags = ref<string[]>([]);
+const tagQuery = ref("");
+const tagSuggestions = ref<TagSuggestion[]>([]);
 const isSaving = ref(false);
 const fieldErrors = ref<Record<string, string>>({});
 
 const isEditing = computed(() => record.value !== null);
+
+/**
+ * The whole tag vocabulary mechanism (D-38-01/D-38-02): the de-duplicated,
+ * sorted union of tags already assigned across the roster. No seeded list —
+ * a seeded list would reintroduce the code-change-to-add-a-tag problem this
+ * decision exists to avoid. Starts empty and grows only from admin usage.
+ */
+const tagVocabulary = computed(() => {
+  const set = new Set<string>();
+  for (const boarder of boarders.value) {
+    for (const tag of boarder.tags) {
+      set.add(tag);
+    }
+  }
+  return [...set].sort();
+});
 
 /**
  * Seeds the form whenever the dialog opens, from the record in edit mode or
@@ -33,10 +69,59 @@ watch(
       return;
     }
     name.value = current?.name ?? "";
+    // Spread — never bind the cached roster row's own array by reference, or
+    // editing then cancelling would mutate it.
+    tags.value = [...(current?.tags ?? [])];
+    tagQuery.value = "";
+    tagSuggestions.value = [];
     fieldErrors.value = {};
   },
   { immediate: true },
 );
+
+/**
+ * Matching vocabulary entries first (in vocabulary order), then — only when
+ * the normalized query is non-empty, matches no vocabulary entry exactly,
+ * and isn't already assigned — one final "Create tag" sentinel. The
+ * sentinel is always last and never merged into a match row (D-38-03).
+ */
+const onTagComplete = (event: { query: string }) => {
+  const normalized = normalizeTag(event.query);
+  const suggestions: TagSuggestion[] = tagVocabulary.value
+    .filter((tag) => tag.includes(normalized) && !tags.value.includes(tag))
+    .map((tag) => ({ label: titleCaseTag(tag), value: tag, isCreate: false }));
+
+  const alreadyExists = tagVocabulary.value.includes(normalized);
+  if (normalized && !alreadyExists && !tags.value.includes(normalized)) {
+    const typedDisplay =
+      event.query.length > MaxCreateLabelChars
+        ? `${event.query.slice(0, MaxCreateLabelChars)}…`
+        : event.query;
+    suggestions.push({
+      label: `Create tag: "${typedDisplay}"`,
+      value: normalized,
+      isCreate: true,
+    });
+  }
+  tagSuggestions.value = suggestions;
+};
+
+/**
+ * Inventing a tag is a deliberate click on the create entry only — Enter,
+ * blur and comma are never add triggers (D-38-03).
+ */
+const onTagSelect = (event: { value: TagSuggestion }) => {
+  const selected = event.value.value;
+  if (!tags.value.includes(selected)) {
+    tags.value.push(selected);
+  }
+  tagQuery.value = "";
+  tagSuggestions.value = [];
+};
+
+const removeTag = (tag: string) => {
+  tags.value = tags.value.filter((existing) => existing !== tag);
+};
 
 /**
  * PocketBase returns per-field validation detail under response.data; the
@@ -63,11 +148,12 @@ const describeSaveError = (error: unknown): string => {
 const saveBoarder = async () => {
   const editing = record.value;
 
-  // tags/user/is_active have no UI on this path yet (Plan 02/03) — seed them
-  // from the record being edited, or schema defaults on create.
+  // user/is_active have no UI on this path yet (Plan 02/03 for user, Plan 03
+  // for is_active) — seed them from the record being edited, or schema
+  // defaults on create.
   const parsed = boarderSchema.safeParse({
     name: name.value,
-    tags: editing?.tags ?? [],
+    tags: tags.value,
     user: editing?.user ?? "",
     is_active: editing?.is_active ?? true,
   });
@@ -131,6 +217,51 @@ const saveBoarder = async () => {
         variant="simple"
       >
         {{ fieldErrors.name }}
+      </Message>
+    </div>
+
+    <div class="flex flex-col gap-1 mt-4">
+      <div v-if="tags.length" class="flex flex-wrap gap-2">
+        <div
+          v-for="tag in tags"
+          :key="tag"
+          class="inline-flex items-center gap-1"
+        >
+          <Tag
+            severity="info"
+            :value="titleCaseTag(tag)"
+            :pt="{ label: { class: 'max-w-40 truncate' } }"
+          />
+          <Button
+            icon="pi pi-times"
+            severity="secondary"
+            text
+            rounded
+            :aria-label="`Remove tag ${titleCaseTag(tag)}`"
+            class="!h-6 !w-6"
+            @click="removeTag(tag)"
+          />
+        </div>
+      </div>
+      <label class="text-sm font-medium" for="pt-boarder-tags">Tags</label>
+      <AutoComplete
+        v-model="tagQuery"
+        inputId="pt-boarder-tags"
+        :suggestions="tagSuggestions"
+        optionLabel="label"
+        placeholder="e.g. second floor"
+        emptySearchMessage="No tags yet — type to create one."
+        fluid
+        @complete="onTagComplete"
+        @option-select="onTagSelect"
+      />
+      <Message
+        v-if="fieldErrors.tags"
+        severity="error"
+        size="small"
+        variant="simple"
+      >
+        {{ fieldErrors.tags }}
       </Message>
     </div>
 
