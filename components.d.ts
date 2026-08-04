@@ -16,6 +16,7 @@ declare module 'vue' {
     AddMeeting: typeof import('./src/components/projects/lextrack/AddMeeting.vue')['default']
     ApiPlaygroundApp: typeof import('./src/components/projects/api-playground/ApiPlaygroundApp.vue')['default']
     AttachmentPreview: typeof import('./src/components/projects/wallecx/AttachmentPreview.vue')['default']
+    AutoComplete: typeof import('primevue/autocomplete')['default']
     Avatar: typeof import('primevue/avatar')['default']
     Badge: typeof import('primevue/badge')['default']
     BarcodeDisplay: typeof import('./src/components/projects/wallecx/BarcodeDisplay.vue')['default']
