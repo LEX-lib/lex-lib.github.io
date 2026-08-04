@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Admin Payment Ledger
 current_phase: 38
-current_phase_name: Boarder Roster Foundation
+current_phase_name: boarder-roster-foundation
 status: executing
-stopped_at: Phase 38 UI-SPEC approved
-last_updated: "2026-08-04T08:13:14.051Z"
+stopped_at: Completed 38-01-PLAN.md (Tasks 2-3; Task 1 done prior turn)
+last_updated: "2026-08-04T09:42:09.346Z"
 last_activity: 2026-08-04
-last_activity_desc: ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
+last_activity_desc: Phase 38 execution started
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -26,16 +26,16 @@ progress:
 **Project:** Lexarium — PayTime
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-08-04)
 **Core value:** Each authenticated user can record and retrieve their own data in whichever mini-app they use — without ever losing access to it — and PayTime's admin can maintain the boarding house's payment ledger on behalf of every boarder, whether or not that boarder has an account.
-**Current focus:** Phase 38 — Boarder Roster Foundation
+**Current focus:** Phase 38 — boarder-roster-foundation
 
 ## Current Position
 
-Phase: 38 of 41 (Boarder Roster Foundation)
-Plan: TBD — not yet planned
+Phase: 38 (boarder-roster-foundation) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-08-04 — ROADMAP.md v5.0 created (Phases 38–41); REQUIREMENTS.md traceability updated
+Last activity: 2026-08-04 — Phase 38 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Shipped Milestones Summary
 
@@ -360,11 +360,11 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ## Session Continuity
 
-**Resume file:** .planning/phases/38-boarder-roster-foundation/38-UI-SPEC.md
+**Resume file:** None
 
-**Last session:** 2026-08-04T07:30:17.011Z
+**Last session:** 2026-08-04T09:42:09.304Z
 
-**Stopped at:** Phase 38 UI-SPEC approved
+**Stopped at:** Completed 38-01-PLAN.md (Tasks 2-3; Task 1 done prior turn)
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
@@ -396,3 +396,18 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 ## Operator Next Steps
 
 - Run `/gsd-plan-phase 38` to plan Boarder Roster Foundation.
+
+## Performance Metrics
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 38 P01 | 55min | 2 tasks | 12 files |
+
+## Decisions
+
+- [Phase ?]: is_active default enforced in paytimeBoarderMapper (application code), not PocketBase — v0.23+ removed per-field bool defaults
+- [Phase ?]: Two-unlinked-boarders probe (A1) and manual admin-flow behaviour checks not verified live — no browser/admin credentials available to executor; recorded as open WINDOWS.md unrun-verify item
+
+### Blockers
+
+- 38-01 open verification: run the two-unlinked-boarders probe and the Admin > Boarders > Add Boarder click-through against a live dev server logged in as admin before treating Plan 01 as fully closed

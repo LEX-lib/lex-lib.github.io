@@ -7,12 +7,12 @@
 
 ### Boarder Roster
 
-- [ ] **ROSTER-01**: Admin can add a boarder to the roster with a display name
+- [x] **ROSTER-01**: Admin can add a boarder to the roster with a display name
 - [ ] **ROSTER-02**: Admin can assign one or more tags to a boarder
 - [ ] **ROSTER-03**: Admin can link a boarder to an existing user account, or leave the boarder unlinked
 - [ ] **ROSTER-04**: Admin can mark a boarder inactive, removing them from the boarder selector while keeping their payment history intact
 - [ ] **ROSTER-05**: Admin can edit a boarder's display name, tags, and account link
-- [ ] **ROSTER-06**: Any authenticated user can read the roster (the selector needs a source, and a boarder must be able to resolve their own record), but only an admin can change it
+- [x] **ROSTER-06**: Any authenticated user can read the roster (the selector needs a source, and a boarder must be able to resolve their own record), but only an admin can change it
 - [ ] **ROSTER-07**: Deleting a boarder who still has payment history is refused rather than cascading the payments away
 
 ### Payment Subject Rework
@@ -99,12 +99,12 @@ Deferred. Tracked, not in this roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ROSTER-01 | Phase 38 | Pending |
+| ROSTER-01 | Phase 38 | Complete |
 | ROSTER-02 | Phase 38 | Pending |
 | ROSTER-03 | Phase 38 | Pending |
 | ROSTER-04 | Phase 38 | Pending |
 | ROSTER-05 | Phase 38 | Pending |
-| ROSTER-06 | Phase 38 | Pending |
+| ROSTER-06 | Phase 38 | Complete |
 | ROSTER-07 | Phase 39 | Pending |
 | SUBJ-01 | Phase 39 | Pending |
 | SUBJ-02 | Phase 39 | Pending |
@@ -133,15 +133,18 @@ Deferred. Tracked, not in this roadmap.
 | VERIFY-05 | Phase 39 | Pending |
 
 **Coverage:**
+
 - v5.0 requirements: 32 total
 - Mapped to phases: 32
 - Unmapped: 0 ✓
 
 **Phase summary:**
+
 - Phase 38 (Boarder Roster Foundation): ROSTER-01..06, TAG-01, VERIFY-03 — 8 requirements
 - Phase 39 (Payment Subject Rework): SUBJ-01..07, ROSTER-07, VERIFY-01, VERIFY-02, VERIFY-04, VERIFY-05 — 12 requirements
 
 ROSTER-07 sits in Phase 39, not 38: `paytime_payments.boarder` does not exist until Phase 39, so in Phase 38 no payment can reference a boarder and the "refuse to delete a boarder with history" protection has nothing to protect. Verified there alongside VERIFY-05, which exercises the same relation configuration from the other direction.
+
 - Phase 40 (Admin-on-Behalf Logging): BEHALF-01..04 — 4 requirements
 - Phase 41 (Admin Ledger & Tag Visibility): LEDGER-01..07, TAG-02 — 8 requirements
 
