@@ -336,3 +336,24 @@ truth so verification abstains on this half rather than reporting a pass it did 
 **The authenticated re-read confirming the roster is still exactly 7 rows was not independently
 performed** (see Gap paragraph above) — carried forward to SUMMARY.md as a human-verification
 item alongside the Task 2 UNVERIFIED list.
+
+### Post-probe row-count confirmation (orchestrator)
+
+Plan 38-03's executor recorded, honestly, that it could not independently re-read the roster after
+its write probe — the prod PocketBase MCP tool was not in its tool set, so its "no row was
+persisted" claim rested on the non-2xx response alone.
+
+Closed here by the orchestrator, which does have `RecordRead`:
+
+`mcp__pocketbase__list_records(environment="prod", collection="paytime_boarders")` after the
+tokenless POST probe returns **`totalItems: 7`**, with the same seven ids recorded in the
+`## VERIFY-03 preconditions` table above — `utepdm32zytixsw`, `9xr58tcd7xcv2fh`,
+`iiad4pmfw0wwsdg`, `cs4mps8t9nlob91`, `yplk4mndawxk9h6`, `qr7a89ohair9s0d`, `yimsipxfd0julhx`.
+
+No row was added, none was removed, and no id changed. ROSTER-06's server half is therefore
+confirmed by **observed state**, not by the refusal status code alone: the tokenless create was
+refused *and* demonstrably wrote nothing.
+
+This does not extend to the authenticated-non-admin write path, which remains out of Phase 38
+scope (Phase 39 / VERIFY-02) and still rests on the rule text `@request.auth.is_admin = true`
+recorded verbatim under `## API rules` above.
