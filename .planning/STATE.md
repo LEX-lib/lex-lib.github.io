@@ -5,15 +5,15 @@ milestone_name: Admin Payment Ledger
 current_phase: 38
 current_phase_name: boarder-roster-foundation
 status: executing
-stopped_at: Completed 38-01-PLAN.md (Tasks 2-3; Task 1 done prior turn)
-last_updated: "2026-08-04T09:42:09.346Z"
+stopped_at: Completed 38-02-PLAN.md
+last_updated: "2026-08-04T10:04:45.558Z"
 last_activity: 2026-08-04
 last_activity_desc: Phase 38 execution started
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -31,11 +31,11 @@ progress:
 ## Current Position
 
 Phase: 38 (boarder-roster-foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-08-04 — Phase 38 execution started
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Shipped Milestones Summary
 
@@ -362,9 +362,9 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 **Resume file:** None
 
-**Last session:** 2026-08-04T09:42:09.304Z
+**Last session:** 2026-08-04T10:04:45.520Z
 
-**Stopped at:** Completed 38-01-PLAN.md (Tasks 2-3; Task 1 done prior turn)
+**Stopped at:** Completed 38-02-PLAN.md
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
@@ -402,11 +402,14 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 38 P01 | 55min | 2 tasks | 12 files |
+| Phase 38 P02 | ~35min | 2 tasks | 5 files |
 
 ## Decisions
 
 - [Phase ?]: is_active default enforced in paytimeBoarderMapper (application code), not PocketBase — v0.23+ removed per-field bool defaults
 - [Phase ?]: Two-unlinked-boarders probe (A1) and manual admin-flow behaviour checks not verified live — no browser/admin credentials available to executor; recorded as open WINDOWS.md unrun-verify item
+- [Phase ?]: Tag suggestion sentinel uses an explicit isCreate boolean, not label string-matching, so a real tag resembling 'Create tag: ...' is never confused with the create entry (D-38-03)
+- [Phase ?]: users-list fetch triggers off the seed-on-open watch's previous-value argument (rising-edge detection), not a second watch/mount hook
 
 ### Blockers
 

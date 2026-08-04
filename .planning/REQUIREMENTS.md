@@ -8,8 +8,8 @@
 ### Boarder Roster
 
 - [x] **ROSTER-01**: Admin can add a boarder to the roster with a display name
-- [ ] **ROSTER-02**: Admin can assign one or more tags to a boarder
-- [ ] **ROSTER-03**: Admin can link a boarder to an existing user account, or leave the boarder unlinked
+- [x] **ROSTER-02**: Admin can assign one or more tags to a boarder
+- [x] **ROSTER-03**: Admin can link a boarder to an existing user account, or leave the boarder unlinked
 - [ ] **ROSTER-04**: Admin can mark a boarder inactive, removing them from the boarder selector while keeping their payment history intact
 - [ ] **ROSTER-05**: Admin can edit a boarder's display name, tags, and account link
 - [x] **ROSTER-06**: Any authenticated user can read the roster (the selector needs a source, and a boarder must be able to resolve their own record), but only an admin can change it
@@ -44,7 +44,7 @@
 
 ### Tags
 
-- [ ] **TAG-01**: Admin can extend the tag vocabulary without a code change or deploy (documented Admin UI step, since tags are a `select` field)
+- [x] **TAG-01**: Admin can extend the tag vocabulary without a code change or deploy (documented Admin UI step, since tags are a `select` field)
 - [ ] **TAG-02**: A boarder's tags are visible wherever that boarder appears in the admin surfaces, not only on the roster screen
 
 ### Verification
@@ -100,8 +100,8 @@ Deferred. Tracked, not in this roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ROSTER-01 | Phase 38 | Complete |
-| ROSTER-02 | Phase 38 | Pending |
-| ROSTER-03 | Phase 38 | Pending |
+| ROSTER-02 | Phase 38 | Complete |
+| ROSTER-03 | Phase 38 | Complete |
 | ROSTER-04 | Phase 38 | Pending |
 | ROSTER-05 | Phase 38 | Pending |
 | ROSTER-06 | Phase 38 | Complete |
@@ -124,7 +124,7 @@ Deferred. Tracked, not in this roadmap.
 | LEDGER-05 | Phase 41 | Pending |
 | LEDGER-06 | Phase 41 | Pending |
 | LEDGER-07 | Phase 41 | Pending |
-| TAG-01 | Phase 38 | Pending |
+| TAG-01 | Phase 38 | Complete |
 | TAG-02 | Phase 41 | Pending |
 | VERIFY-01 | Phase 39 | Pending |
 | VERIFY-02 | Phase 39 | Pending |

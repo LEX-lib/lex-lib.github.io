@@ -65,7 +65,7 @@ Archived per-milestone in `.planning/milestones/`. See `.planning/MILESTONES.md`
   3. Admin can add a new tag to the vocabulary without a code change or deploy, and the new tag is immediately assignable to a boarder in the app.
 
 > **ROSTER-07 deliberately excluded from this phase.** Deleting-a-boarder-with-history cannot be meaningfully verified here: `paytime_payments.boarder` does not exist until Phase 39, so no payment can reference a boarder and there is no history to protect. A criterion asserting the refusal would pass vacuously while the protection went unexercised. It moves to Phase 39, next to VERIFY-05, which tests the same relation configuration from the other direction.
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -74,7 +74,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 38-02-PLAN.md — boarder identity: in-app tag vocabulary with Zod normalization (ROSTER-02/TAG-01) and the filtered account-link picker (ROSTER-03)
+- [x] 38-02-PLAN.md — boarder identity: in-app tag vocabulary with Zod normalization (ROSTER-02/TAG-01) and the filtered account-link picker (ROSTER-03)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -131,7 +131,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|-----------------|--------|-----------|
-| 38. Boarder Roster Foundation | 1/3 | In Progress|  |
+| 38. Boarder Roster Foundation | 2/3 | In Progress|  |
 | 39. Payment Subject Rework | 0/TBD | Not started | - |
 | 40. Admin-on-Behalf Logging | 0/TBD | Not started | - |
 | 41. Admin Ledger & Tag Visibility | 0/TBD | Not started | - |
