@@ -22,6 +22,16 @@ describe("mapToCreateBoarder", () => {
     expect(payload.is_active).toBe(true);
   });
 
+  it("returns exactly the four keys name, tags, user, is_active", () => {
+    const payload = mapToCreateBoarder(base);
+    expect(Object.keys(payload).sort()).toEqual([
+      "is_active",
+      "name",
+      "tags",
+      "user",
+    ]);
+  });
+
   it("maps name, tags and user unlinked", () => {
     const payload = mapToCreateBoarder(base);
     expect(payload.name).toBe("Probe A");
@@ -46,5 +56,15 @@ describe("mapToUpdateBoarder", () => {
     expect(payload.name).toBe("Probe A");
     expect(payload.tags).toEqual(["tenant"]);
     expect(payload.user).toBe("user123");
+  });
+
+  it("passes an empty-string user and an empty tags array through unchanged", () => {
+    const payload = mapToUpdateBoarder({
+      name: "Probe A",
+      tags: [],
+      user: "",
+    });
+    expect(payload.user).toBe("");
+    expect(payload.tags).toEqual([]);
   });
 });

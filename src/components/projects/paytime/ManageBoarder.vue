@@ -21,6 +21,11 @@ interface TagSuggestion {
   isCreate: boolean;
 }
 
+interface AccountOption {
+  id: string;
+  label: string;
+}
+
 /** Past this many characters, the create-entry label truncates the typed value. */
 const MaxCreateLabelChars = 30;
 
@@ -36,6 +41,10 @@ const name = ref("");
 const tags = ref<string[]>([]);
 const tagQuery = ref("");
 const tagSuggestions = ref<TagSuggestion[]>([]);
+/** Empty string is the "No account" value — matches PocketBase's representation of an unset single relation. */
+const linkedUser = ref("");
+const accounts = ref<AccountOption[]>([]);
+const isLoadingAccounts = ref(false);
 const isSaving = ref(false);
 const fieldErrors = ref<Record<string, string>>({});
 
@@ -58,13 +67,62 @@ const tagVocabulary = computed(() => {
 });
 
 /**
+ * "No account" first and always present, then one option per fetched user
+ * whose account isn't already held by another boarder — the record under
+ * edit is excluded from that check so re-opening a linked boarder still
+ * shows its own account (D-38-12). The unique index on
+ * `paytime_boarders.user` remains the real guard; this only stops the admin
+ * tripping it by accident.
+ */
+const accountOptions = computed<AccountOption[]>(() => {
+  const editingId = record.value?.id;
+  const heldByOther = new Set(
+    boarders.value
+      .filter((boarder) => boarder.user !== "" && boarder.id !== editingId)
+      .map((boarder) => boarder.user),
+  );
+  const available = accounts.value.filter(
+    (account) => !heldByOther.has(account.id),
+  );
+  return [{ id: "", label: "No account" }, ...available];
+});
+
+/**
+ * Lazy, on the dialog-open rising edge — not on component mount, since the
+ * dialog mounts alongside the roster view and a mount-time fetch would pull
+ * the whole `users` list for an admin who never opens it. Degrades to
+ * "No account" only on failure; the boarder still saves unlinked.
+ */
+const loadAccounts = async () => {
+  isLoadingAccounts.value = true;
+  try {
+    const users = await pb
+      .collection("users")
+      .getFullList<{ id: string; name?: string; email: string }>({
+        sort: "name",
+        requestKey: "paytime-users-list",
+      });
+    accounts.value = users.map((user) => ({
+      id: user.id,
+      label: user.name || user.email,
+    }));
+  } catch (error) {
+    toast.error("Failed to load accounts.");
+    console.warn("ManageBoarder: users getFullList failed", error);
+    accounts.value = [];
+  } finally {
+    isLoadingAccounts.value = false;
+  }
+};
+
+/**
  * Seeds the form whenever the dialog opens, from the record in edit mode or
  * from defaults in create mode. Keyed on `visible` too so reopening the same
  * record re-seeds rather than showing whatever was left behind.
  */
 watch(
   () => [visible.value, record.value] as const,
-  ([isVisible, current]) => {
+  ([isVisible, current], previous) => {
     if (!isVisible) {
       return;
     }
@@ -74,7 +132,13 @@ watch(
     tags.value = [...(current?.tags ?? [])];
     tagQuery.value = "";
     tagSuggestions.value = [];
+    linkedUser.value = current?.user ?? "";
     fieldErrors.value = {};
+
+    const wasVisible = previous?.[0] ?? false;
+    if (!wasVisible) {
+      void loadAccounts();
+    }
   },
   { immediate: true },
 );
@@ -148,13 +212,12 @@ const describeSaveError = (error: unknown): string => {
 const saveBoarder = async () => {
   const editing = record.value;
 
-  // user/is_active have no UI on this path yet (Plan 02/03 for user, Plan 03
-  // for is_active) — seed them from the record being edited, or schema
-  // defaults on create.
+  // is_active has no UI on this path yet (Plan 03) — seed it from the record
+  // being edited, or the schema default on create.
   const parsed = boarderSchema.safeParse({
     name: name.value,
     tags: tags.value,
-    user: editing?.user ?? "",
+    user: linkedUser.value,
     is_active: editing?.is_active ?? true,
   });
 
@@ -262,6 +325,32 @@ const saveBoarder = async () => {
         variant="simple"
       >
         {{ fieldErrors.tags }}
+      </Message>
+    </div>
+
+    <div class="flex flex-col gap-1 mt-4">
+      <label class="text-sm font-medium" for="pt-boarder-account"
+        >Linked account</label
+      >
+      <Select
+        v-model="linkedUser"
+        inputId="pt-boarder-account"
+        :options="accountOptions"
+        optionLabel="label"
+        optionValue="id"
+        filter
+        filterPlaceholder="Search by name or email"
+        :loading="isLoadingAccounts"
+        :invalid="!!fieldErrors.user"
+        fluid
+      />
+      <Message
+        v-if="fieldErrors.user"
+        severity="error"
+        size="small"
+        variant="simple"
+      >
+        {{ fieldErrors.user }}
       </Message>
     </div>
 
