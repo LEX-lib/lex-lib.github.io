@@ -116,3 +116,70 @@ superuser Admin UI shortcut:
 If two unlinked boarders do **not** both save in Task 2, stop — Plan 38-02's optional
 account-link design (ROSTER-03) rests on A1 and would need revisiting before Wave 2 builds
 on it.
+
+## VERIFY-03 preconditions
+
+Recorded for Plan 38-03 Task 2 (`checkpoint:human-verify`, gate `blocking-human`).
+
+The human seeded the roster in-app and replied `approved`. Per the D-13 invariant, "approved" is
+not itself evidence, so the state below was read back off the live instance with
+`mcp__pocketbase__list_records(environment="prod", collection="paytime_boarders")` rather than
+taken on report. Items the live data cannot speak to are marked **UNVERIFIED** — not passed.
+
+### Row count
+
+**7 rows** (`totalItems: 7`). Task 3's precondition (`>= 1`) is satisfied; its rule probes will
+run against a non-empty roster and cannot pass vacuously.
+
+| id | name | tags | user | is_active |
+|----|------|------|------|-----------|
+| `utepdm32zytixsw` | Yhen | `["main"]` | `""` | `true` |
+| `9xr58tcd7xcv2fh` | Bebeth | `["main"]` | `""` | `true` |
+| `iiad4pmfw0wwsdg` | CJ | `["main"]` | `""` | `true` |
+| `cs4mps8t9nlob91` | Razel | `["main"]` | `""` | `true` |
+| `yplk4mndawxk9h6` | Renzo | `["main"]` | `""` | `true` |
+| `qr7a89ohair9s0d` | Mhera | `["main"]` | `""` | `true` |
+| `yimsipxfd0julhx` | Room 2 | `["room-2"]` | `""` | `true` |
+
+### VERIFIED by live data
+
+- **Tags created in-app (TAG-01):** two distinct tags exist — `main` (6 rows) and `room-2` (1 row).
+  `tags` persists as a real json string array, so the D-38-01 decision to use `json` rather than a
+  superuser-only `select` field delivers as intended. The tag **round trip** is demonstrated by
+  `main` appearing on six separate boarders: it was created once and then reused, which is exactly
+  the assign-an-existing-tag path.
+- **A1 — two-unlinked-boarders probe: CLOSED, and then some.** Deferred here from Plan 38-01
+  Task 1 (never run in the Admin UI). **All 7 rows carry `user: ""`.** Seven accountless boarders
+  coexist, where the assumption needed only two. A plain `UNIQUE(user)` would have rejected rows
+  2–7 outright, because PocketBase stores an unset `maxSelect: 1` relation as `''` rather than
+  SQL `NULL`. The partial predicate `WHERE user != ''` is confirmed load-bearing and correct.
+  Exercised through the real `createRule` as an `is_admin` user, not via a superuser Admin UI
+  bypass — a stronger result than the probe originally specified.
+- **`is_active` deviation #1 fix confirmed in production.** Every row read back `is_active: true`
+  despite the live field having **no server default** (PocketBase v0.23+ removed per-field
+  defaults). This proves the client-side enforcement chain works end to end against the live
+  `createRule`: `boarderSchema`'s `.default(true)` → `mapToCreateBoarder` sending the key
+  explicitly. Had that chain been broken, these rows would all read `false`.
+
+### UNVERIFIED — carried forward as UAT items
+
+Not observable from record state, and not reported item by item. Recorded as outstanding rather
+than assumed to pass:
+
+- **Account linking (ROSTER-03) — NOT exercised.** Zero of the 7 rows has a `user` value, so no
+  boarder-to-account link was ever created. Two consequences:
+  1. The account-link picker's happy path is unwalked.
+  2. Its "exclude accounts already linked to another boarder" filter **cannot** have been
+     exercised, because there is nothing linked to exclude.
+  3. The unique index's **uniqueness** half is therefore still untested — only its permissive
+     half (many unlinked rows coexisting) is proven. D-38-10's actual one-boarder-per-account
+     guarantee has not been demonstrated against the live instance.
+- **Empty/whitespace-only name validation** (Task 2 item C, deferred from Plan 38-01) — no record.
+- **The seven 390px UI backstops** (Task 2 items E.1–E.7) — no record for any of the seven:
+  tag-chip wrapping, long display name in a row, long name in the dialog, tag picker with many
+  chips, long tag name truncation, long account name/email truncation, delete-confirmation
+  wrapping.
+- **Admin tab absent for a non-admin** (Task 2 item F) — no record. The requirement is *absent
+  entirely*, not present-and-empty or disabled.
+
+These belong in the phase UAT cycle (`/gsd-verify-work 38`), not in this file's verified set.
