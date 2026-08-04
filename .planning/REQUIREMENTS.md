@@ -10,8 +10,8 @@
 - [x] **ROSTER-01**: Admin can add a boarder to the roster with a display name
 - [x] **ROSTER-02**: Admin can assign one or more tags to a boarder
 - [x] **ROSTER-03**: Admin can link a boarder to an existing user account, or leave the boarder unlinked
-- [ ] **ROSTER-04**: Admin can mark a boarder inactive, removing them from the boarder selector while keeping their payment history intact
-- [ ] **ROSTER-05**: Admin can edit a boarder's display name, tags, and account link
+- [x] **ROSTER-04**: Admin can mark a boarder inactive, removing them from the boarder selector while keeping their payment history intact
+- [x] **ROSTER-05**: Admin can edit a boarder's display name, tags, and account link
 - [x] **ROSTER-06**: Any authenticated user can read the roster (the selector needs a source, and a boarder must be able to resolve their own record), but only an admin can change it
 - [ ] **ROSTER-07**: Deleting a boarder who still has payment history is refused rather than cascading the payments away
 
@@ -53,7 +53,7 @@ These exist because the milestone rewrites every access rule on a collection hol
 
 - [ ] **VERIFY-01**: The `createRule` relation-traversal form is proven against the live PocketBase instance before rule text is finalized; if it fails, the documented fallback is applied and the deviation recorded
 - [ ] **VERIFY-02**: All five rewritten payment rules are exercised end-to-end with both an admin and a non-admin token, including cross-boarder isolation in both directions (this also closes the long-open PT-SMOKE-01)
-- [ ] **VERIFY-03**: The roster list rule is confirmed to reject an unauthenticated read (an empty-string rule is *public* in PocketBase, not "unconfigured")
+- [x] **VERIFY-03**: The roster list rule is confirmed to reject an unauthenticated read (an empty-string rule is *public* in PocketBase, not "unconfigured")
 - [ ] **VERIFY-04**: The update rule is confirmed to reject reassigning a payment to a different boarder — closing PT-RULE-01 on the new field rather than reproducing it
 - [ ] **VERIFY-05**: `cascadeDelete` is confirmed `false` on both new relations, verified by attempting the deletions that would otherwise destroy history
 
@@ -102,8 +102,8 @@ Deferred. Tracked, not in this roadmap.
 | ROSTER-01 | Phase 38 | Complete |
 | ROSTER-02 | Phase 38 | Complete |
 | ROSTER-03 | Phase 38 | Complete |
-| ROSTER-04 | Phase 38 | Pending |
-| ROSTER-05 | Phase 38 | Pending |
+| ROSTER-04 | Phase 38 | Complete |
+| ROSTER-05 | Phase 38 | Complete |
 | ROSTER-06 | Phase 38 | Complete |
 | ROSTER-07 | Phase 39 | Pending |
 | SUBJ-01 | Phase 39 | Pending |
@@ -128,7 +128,7 @@ Deferred. Tracked, not in this roadmap.
 | TAG-02 | Phase 41 | Pending |
 | VERIFY-01 | Phase 39 | Pending |
 | VERIFY-02 | Phase 39 | Pending |
-| VERIFY-03 | Phase 38 | Pending |
+| VERIFY-03 | Phase 38 | Complete |
 | VERIFY-04 | Phase 39 | Pending |
 | VERIFY-05 | Phase 39 | Pending |
 

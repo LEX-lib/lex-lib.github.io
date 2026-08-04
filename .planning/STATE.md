@@ -4,17 +4,17 @@ milestone: v5.0
 milestone_name: Admin Payment Ledger
 current_phase: 38
 current_phase_name: boarder-roster-foundation
-status: executing
-stopped_at: Completed 38-02-PLAN.md
-last_updated: "2026-08-04T10:04:45.558Z"
+status: verifying
+stopped_at: Completed 38-03-PLAN.md (Task 3 continuation)
+last_updated: "2026-08-04T10:38:25.089Z"
 last_activity: 2026-08-04
 last_activity_desc: Phase 38 execution started
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State
@@ -32,10 +32,10 @@ progress:
 
 Phase: 38 (boarder-roster-foundation) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-04 — Phase 38 execution started
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Shipped Milestones Summary
 
@@ -362,9 +362,9 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 **Resume file:** None
 
-**Last session:** 2026-08-04T10:04:45.520Z
+**Last session:** 2026-08-04T10:38:25.063Z
 
-**Stopped at:** Completed 38-02-PLAN.md
+**Stopped at:** Completed 38-03-PLAN.md (Task 3 continuation)
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
@@ -403,6 +403,7 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 |------|----------|-------|-------|
 | Phase 38 P01 | 55min | 2 tasks | 12 files |
 | Phase 38 P02 | ~35min | 2 tasks | 5 files |
+| Phase 38 P03 | ~25min | 3 tasks | 4 files |
 
 ## Decisions
 
@@ -410,6 +411,9 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 - [Phase ?]: Two-unlinked-boarders probe (A1) and manual admin-flow behaviour checks not verified live — no browser/admin credentials available to executor; recorded as open WINDOWS.md unrun-verify item
 - [Phase ?]: Tag suggestion sentinel uses an explicit isCreate boolean, not label string-matching, so a real tag resembling 'Create tag: ...' is never confused with the create entry (D-38-03)
 - [Phase ?]: users-list fetch triggers off the seed-on-open watch's previous-value argument (rising-edge detection), not a second watch/mount hook
+- [Phase ?]: [Phase 38] is_active gets schema-level default(true) in boarderSchema.ts; edit dialog strips all is_active references, leaving the row action menu as the field's sole writer (D-38-18)
+- [Phase ?]: [Phase 38] VERIFY-03 proven live: tokenless GET returns HTTP 200 with parsed items.length=0/totalItems=0 against a 7-row roster; base URL resolved from committed dist/ build artifact since .env access was denied by executor sandbox policy
+- [Phase ?]: [Phase 38] ROSTER-06 server half proven by probe: tokenless POST refused (HTTP 400); authenticated non-admin write path deferred as plan backstop to Phase 39 VERIFY-02; authenticated re-read confirming roster count unchanged not independently performed (MCP tool unavailable to executor) — recorded as open gap
 
 ### Blockers
 
