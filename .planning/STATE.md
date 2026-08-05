@@ -5,8 +5,8 @@ milestone_name: Admin Payment Ledger
 current_phase: 39
 current_phase_name: Payment Subject Rework
 status: planning
-stopped_at: Completed 38-03-PLAN.md (Task 3 continuation)
-last_updated: "2026-08-04T13:21:52.694Z"
+stopped_at: Phase 39 context gathered
+last_updated: "2026-08-05T02:28:22.659Z"
 last_activity: 2026-08-04
 last_activity_desc: Phase 38 complete, transitioned to Phase 39
 progress:
@@ -360,11 +360,11 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ## Session Continuity
 
-**Resume file:** None
+**Resume file:** .planning/phases/39-payment-subject-rework/39-CONTEXT.md
 
-**Last session:** 2026-08-04T10:38:25.063Z
+**Last session:** 2026-08-05T02:28:22.632Z
 
-**Stopped at:** Phase 38 complete and verified, ready to plan Phase 39
+**Stopped at:** Phase 39 context gathered
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
