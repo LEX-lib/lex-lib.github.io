@@ -57,7 +57,46 @@ const removeBoarder = async (boarder: PaytimeBoarder) => {
   }
 };
 
-const deleteBoarder = (boarder: PaytimeBoarder) => {
+/**
+ * ROSTER-07 pre-check. This is a CLIENT-SIDE refusal, not server
+ * enforcement — PocketBase has only cascade-or-orphan for relations, never a
+ * RESTRICT mode, so with `cascadeDelete: false` on `payments.boarder` a
+ * delete would otherwise succeed and leave payments pointing at a dead id.
+ * An admin issuing a hand-crafted request can still orphan payments; that is
+ * an accepted threat recorded in 39-SECURITY.md, never described here (or
+ * anywhere) as the server having refused (D-39-13).
+ */
+const countBoarderPayments = async (boarderId: string): Promise<number> => {
+  const payments = await pb
+    .collection("paytime_payments")
+    .getFullList({
+      filter: `boarder = "${boarderId}"`,
+      // getFullList over getList's totalItems — D-31-B: the count path 400s
+      // on non-trivial listRule expressions. Own distinct key: never
+      // paytime-payments-list/-report-list/-boarders-list.
+      requestKey: "paytime-boarder-payment-count",
+    });
+  return payments.length;
+};
+
+const deleteBoarder = async (boarder: PaytimeBoarder) => {
+  const paymentCount = await countBoarderPayments(boarder.id);
+
+  if (paymentCount > 0) {
+    // Refuse — no delete request is issued at all. Deactivate (already
+    // implemented, ROSTER-04) is the offered alternative.
+    confirm.require({
+      header: "Can't delete this boarder",
+      message: `${boarder.name} has ${paymentCount} payment${paymentCount === 1 ? "" : "s"} on record. Delete would orphan that history — deactivate instead?`,
+      icon: "pi pi-exclamation-triangle",
+      rejectProps: { label: "Cancel", severity: "secondary", outlined: true },
+      acceptProps: { label: "Deactivate", severity: "danger" },
+      accept: () => toggleActive(boarder),
+    });
+    return;
+  }
+
+  // Zero payments — existing delete-confirm path, byte-unchanged (D-38-15).
   confirm.require({
     header: "Delete boarder",
     message: `Delete ${boarder.name}? This cannot be undone.`,
