@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 6
+open_count: 9
 waived_count: 0
 fixed_count: 0
-total_count: 6
-last_updated: 2026-08-04T10:37:21.720Z
+total_count: 9
+last_updated: 2026-08-05T05:37:43.597Z
 ---
 
 # Broken Windows Ledger
@@ -21,6 +21,9 @@ last_updated: 2026-08-04T10:37:21.720Z
 | 4 | 38 | deviation | .planning/phases/38-boarder-roster-foundation/38-COLLECTION.md |  | ROSTER-06 authenticated-non-admin write path not exercised (no non-admin credential exists); scoped as plan backstop to Phase 39 VERIFY-02 | open |  | 2026-08-04T10:37:19.079Z |  |
 | 5 | 38 | unrun-verify | .planning/phases/38-boarder-roster-foundation/38-COLLECTION.md |  | Account linking (ROSTER-03) unexercised live — zero of 7 seeded boarders has a user link; unique index's uniqueness half (vs its permissive many-unlinked half) undemonstrated | open |  | 2026-08-04T10:37:20.433Z |  |
 | 6 | 38 | unrun-verify | .planning/phases/38-boarder-roster-foundation/38-UI-SPEC.md |  | Seven 390px UI backstops (tag-chip wrapping, long name wrapping, tag picker overflow, truncation cases, delete-confirmation wrapping) and Admin-tab-absent-for-non-admin check not walked live | open |  | 2026-08-04T10:37:21.720Z |  |
+| 7 | 39 | unrun-verify | src/components/projects/paytime/MonthlyReport.vue |  | MonthlyReport boarder-grouping/label logic not exercised by an automated test with real boarder-shaped expand data (39-01) | open |  | 2026-08-05T05:37:40.437Z |  |
+| 8 | 39 | unrun-verify | src/components/projects/paytime/BoarderRosterView.vue |  | ROSTER-07 delete pre-check (both has-payments refusal and zero-payment pass-through branches) not exercised by an automated test (39-01) | open |  | 2026-08-05T05:37:42.082Z |  |
+| 9 | 39 | unrun-verify | src/components/projects/paytime/PaymentLog.vue |  | PaymentLog's null-myBoarder empty-state copy and v-if ordering not independently asserted by an automated test (39-01) | open |  | 2026-08-05T05:37:43.597Z |  |
 
 ````json
 [
@@ -94,6 +97,42 @@ last_updated: 2026-08-04T10:37:21.720Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-04T10:37:21.720Z",
+    "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "unrun-verify",
+    "phase": "39",
+    "file": "src/components/projects/paytime/MonthlyReport.vue",
+    "line": null,
+    "description": "MonthlyReport boarder-grouping/label logic not exercised by an automated test with real boarder-shaped expand data (39-01)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-05T05:37:40.437Z",
+    "resolved_at": null
+  },
+  {
+    "id": 8,
+    "kind": "unrun-verify",
+    "phase": "39",
+    "file": "src/components/projects/paytime/BoarderRosterView.vue",
+    "line": null,
+    "description": "ROSTER-07 delete pre-check (both has-payments refusal and zero-payment pass-through branches) not exercised by an automated test (39-01)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-05T05:37:42.082Z",
+    "resolved_at": null
+  },
+  {
+    "id": 9,
+    "kind": "unrun-verify",
+    "phase": "39",
+    "file": "src/components/projects/paytime/PaymentLog.vue",
+    "line": null,
+    "description": "PaymentLog's null-myBoarder empty-state copy and v-if ordering not independently asserted by an automated test (39-01)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-05T05:37:43.597Z",
     "resolved_at": null
   }
 ]

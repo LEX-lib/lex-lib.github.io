@@ -13,14 +13,14 @@
 - [x] **ROSTER-04**: Admin can mark a boarder inactive, removing them from the boarder selector while keeping their payment history intact
 - [x] **ROSTER-05**: Admin can edit a boarder's display name, tags, and account link
 - [x] **ROSTER-06**: Any authenticated user can read the roster (the selector needs a source, and a boarder must be able to resolve their own record), but only an admin can change it
-- [ ] **ROSTER-07**: Deleting a boarder who still has payment history is refused rather than cascading the payments away
+- [x] **ROSTER-07**: Deleting a boarder who still has payment history is refused rather than cascading the payments away
 
 ### Payment Subject Rework
 
-- [ ] **SUBJ-01**: Every payment record identifies the boarder it belongs to, rather than a user account
+- [x] **SUBJ-01**: Every payment record identifies the boarder it belongs to, rather than a user account
 - [ ] **SUBJ-02**: The one existing production payment record is backfilled to its boarder with no data loss
-- [ ] **SUBJ-03**: Every payment records who entered it, so an admin-entered payment is distinguishable from a self-entered one
-- [ ] **SUBJ-04**: A boarder with a linked account sees exactly their own payments — no more, no fewer — in My Payments
+- [x] **SUBJ-03**: Every payment records who entered it, so an admin-entered payment is distinguishable from a self-entered one
+- [x] **SUBJ-04**: A boarder with a linked account sees exactly their own payments — no more, no fewer — in My Payments
 - [ ] **SUBJ-05**: A non-admin cannot create, edit, or delete a payment belonging to another boarder, enforced server-side rather than by the UI
 - [ ] **SUBJ-06**: An admin can create, edit, and delete payments for any boarder
 - [ ] **SUBJ-07**: Deleting a user account never destroys payment history
@@ -105,11 +105,11 @@ Deferred. Tracked, not in this roadmap.
 | ROSTER-04 | Phase 38 | Complete |
 | ROSTER-05 | Phase 38 | Complete |
 | ROSTER-06 | Phase 38 | Complete |
-| ROSTER-07 | Phase 39 | Pending |
-| SUBJ-01 | Phase 39 | Pending |
+| ROSTER-07 | Phase 39 | Complete |
+| SUBJ-01 | Phase 39 | Complete |
 | SUBJ-02 | Phase 39 | Pending |
-| SUBJ-03 | Phase 39 | Pending |
-| SUBJ-04 | Phase 39 | Pending |
+| SUBJ-03 | Phase 39 | Complete |
+| SUBJ-04 | Phase 39 | Complete |
 | SUBJ-05 | Phase 39 | Pending |
 | SUBJ-06 | Phase 39 | Pending |
 | SUBJ-07 | Phase 39 | Pending |

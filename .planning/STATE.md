@@ -5,15 +5,15 @@ milestone_name: Admin Payment Ledger
 current_phase: 39
 current_phase_name: Payment Subject Rework
 status: executing
-stopped_at: Phase 39 context gathered
-last_updated: "2026-08-05T03:25:10.401Z"
-last_activity: 2026-08-04
-last_activity_desc: Phase 38 complete, transitioned to Phase 39
+stopped_at: Completed 39-01-PLAN.md
+last_updated: "2026-08-05T05:39:42.440Z"
+last_activity: 2026-08-05
+last_activity_desc: Phase 39 execution started
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 9
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 25
 ---
 
@@ -26,16 +26,16 @@ progress:
 **Project:** Lexarium — PayTime
 **Reference:** see `.planning/PROJECT.md` for full context, requirements, and constraints (updated 2026-08-04)
 **Core value:** Each authenticated user can record and retrieve their own data in whichever mini-app they use — without ever losing access to it — and PayTime's admin can maintain the boarding house's payment ledger on behalf of every boarder, whether or not that boarder has an account.
-**Current focus:** Phase 39 — payment-subject-rework
+**Current focus:** Phase 39 — Payment Subject Rework
 
 ## Current Position
 
-Phase: 39 — Payment Subject Rework
-Plan: Not started
+Phase: 39 (Payment Subject Rework) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-08-04 — Phase 38 complete, transitioned to Phase 39
+Last activity: 2026-08-05 — Phase 39 execution started
 
-Progress: Phase 38 plans [████████████████████] 3/3 (100%) · Milestone v5.0 [█████···············] 1/4 phases (25%)
+Progress: Phase 38 plans [████████████████████] 3/3 ([███████░░░] 67%) · Milestone v5.0 [█████···············] 1/4 phases (25%)
 
 ## Shipped Milestones Summary
 
@@ -86,7 +86,7 @@ Full detail: `.planning/ROADMAP.md` Phase Details section. Traceability: `.plann
 - **Tab shell, not sub-routes.** PrimeVue Tabs with string-typed `activeTab`; each tab owns its own state; no new Pinia store.
 - **Direct v-model refs for ManageMembership.vue.** PrimeVue ColorPicker issue #8135 — controlled system ignores initial value. This is the established pattern for membership write path.
 - **ConfirmDialog at WallecxApp.vue shell level only.** `useConfirm` broadcasts to single app-shell-level instance; not duplicated in tab components.
-- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a distinct key. **PayTime keys (separate namespace):** `'paytime-payments-list'`, `'paytime-report-list'`. v5.0 will add at least `'paytime-ledger-list'` and a distinct roster-select key (Phase 38/41) — register and paste back each new key as it's added.
+- **requestKey per collection.** All five locked mount-path keys must stay distinct to prevent PocketBase auto-cancel: `'vaccinations-getFullList'` (added in Phase 36-03 to close NFR-REQUESTKEY-UNIQUE gap), `'memberships-getFullList'`, `'expenses-getFullList'`, `'expense-budgets-getFullList'`, `'expense-categories-getFullList'`. Export-path keys (e.g. `'expenses-export'`) are independent and out of scope for the mount-path invariant. Any new mount-path fetch added in future phases MUST register a distinct key. **PayTime keys (separate namespace):** `'paytime-payments-list'`, `'paytime-report-list'`, `'paytime-boarders-list'` (Phase 38), `'paytime-boarder-payment-count'` (Phase 39-01, ROSTER-07 delete pre-check). v5.0 will add at least `'paytime-ledger-list'` (Phase 41) — register and paste back each new key as it's added.
 - **card_color stored without `#` prefix.** All CSS bindings prepend `#`. Zod validates `[0-9a-fA-F]{6}`.
 - **iOS fullscreen via viewport overlay.** `position:fixed;inset:0;z-index:9999` — not the Fullscreen API.
 - **JsBarcode always in try/catch.** Throws synchronously on invalid input. On catch, render `card_number` as large plain text.
@@ -360,11 +360,11 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 
 ## Session Continuity
 
-**Resume file:** .planning/phases/39-payment-subject-rework/39-CONTEXT.md
+**Resume file:** None
 
-**Last session:** 2026-08-05T02:28:22.632Z
+**Last session:** 2026-08-05T05:39:42.404Z
 
-**Stopped at:** Phase 39 context gathered
+**Stopped at:** Completed 39-01-PLAN.md
 
 **Prior stopped-at:** 2026-06-05T10:37:21.638Z — v4.3's (cancelled) Phase 38 "Mobile UAT Sweep" context-gathering, recorded before Wallecx migrated out the same day. Superseded and moot — v5.0's Phase 38 "Boarder Roster Foundation" is a different, unrelated phase that reuses the freed number; no continuity exists between them.
 
@@ -404,6 +404,7 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 | Phase 38 P01 | 55min | 2 tasks | 12 files |
 | Phase 38 P02 | ~35min | 2 tasks | 5 files |
 | Phase 38 P03 | ~25min | 3 tasks | 4 files |
+| Phase 39 P01 | ~50min | 3 tasks | 11 files |
 
 ## Decisions
 
@@ -414,6 +415,9 @@ Carried into v5.0 (from PayTime v1.0, shipped outside GSD 2026-08-04):
 - [Phase ?]: [Phase 38] is_active gets schema-level default(true) in boarderSchema.ts; edit dialog strips all is_active references, leaving the row action menu as the field's sole writer (D-38-18)
 - [Phase ?]: [Phase 38] VERIFY-03 proven live: tokenless GET returns HTTP 200 with parsed items.length=0/totalItems=0 against a 7-row roster; base URL resolved from committed dist/ build artifact since .env access was denied by executor sandbox policy
 - [Phase ?]: [Phase 38] ROSTER-06 server half proven by probe: tokenless POST refused (HTTP 400); authenticated non-admin write path deferred as plan backstop to Phase 39 VERIFY-02; authenticated re-read confirming roster count unchanged not independently performed (MCP tool unavailable to executor) — recorded as open gap
+- [Phase ?]: 39-01: Deliberate deviation from D-39-04 sequencing — client writes boarder+recorded_by before either exists server-side; mismatch window opens at Plan 39-02's rename, closes at the next deploy after it (plan's own instructed approach)
+- [Phase ?]: 39-01: New requestKey paytime-boarder-payment-count registered for BoarderRosterView's ROSTER-07 delete pre-check — distinct from paytime-payments-list, paytime-report-list, paytime-boarders-list
+- [Phase ?]: 39-01: paymentSchema.spec.ts (not in plan's files_modified) broken by Task 1's required boarder field — fixed as Rule 1 auto-fix
 
 ### Blockers
 

@@ -96,12 +96,12 @@ Plans:
   5. Deleting a user account never destroys payment history, and `cascadeDelete` is confirmed `false` on both `paytime_boarders.user` and `paytime_payments.boarder` by attempting the deletions that would otherwise destroy it.
   6. Attempting to delete a boarder who has payment history is refused rather than allowed or cascaded (ROSTER-07, moved here from Phase 38 — only testable once a payment can actually reference a boarder). Verify with a real payment row pointing at the boarder, not an empty roster entry.
 
-**Plans**: 6 plans
+**Plans**: 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 39-01-PLAN.md — tracer: `boarder` added optional + the one production record backfilled + the client writes and reads `boarder` end to end while still sending `user` (SUBJ-01/02)
+- [x] 39-01-PLAN.md — tracer: `boarder` added optional + the one production record backfilled + the client writes and reads `boarder` end to end while still sending `user` (SUBJ-01/02)
 
 **Wave 2** *(blocked on Wave 1 completion; the two run in parallel)*
 
@@ -154,7 +154,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|-----------------|--------|-----------|
 | 38. Boarder Roster Foundation | 3/3 | Complete    | 2026-08-04 |
-| 39. Payment Subject Rework | 0/6 | Planned | - |
+| 39. Payment Subject Rework | 1/3 | In Progress|  |
 | 40. Admin-on-Behalf Logging | 0/TBD | Not started | - |
 | 41. Admin Ledger & Tag Visibility | 0/TBD | Not started | - |
 
