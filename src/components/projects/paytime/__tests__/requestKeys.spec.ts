@@ -14,8 +14,19 @@ const record = {
   payment_date: "2026-07-28 00:00:00.000Z",
   screenshot: "whiteboard_q19696dkv2.png",
   updated: "2026-07-28 07:52:35.587Z",
+  boarder: "4ygxbt0zey088di",
+  recorded_by: "4ygxbt0zey088di",
+  expand: { boarder: { id: "4ygxbt0zey088di", name: "Cedrick Jhan Deferia" } },
+  // The `pb.collection()` mock below is generic across every collection, so
+  // this same array also stands in for the paytime_boarders response —
+  // useBoarderRoster's myBoarder computed looks for `boarder.user ===
+  // authId` (needs `user` matching authStore below), and BoarderRosterView
+  // renders every field a real PaytimeBoarder has (`name`, `tags`,
+  // `is_active`) since it's mounted unstubbed in this file.
   user: "4ygxbt0zey088di",
-  expand: { user: { id: "4ygxbt0zey088di", name: "Cedrick Jhan Deferia" } },
+  name: "Cedrick Jhan Deferia",
+  tags: [] as string[],
+  is_active: true,
 };
 
 const getFullList = vi.fn();
@@ -31,7 +42,11 @@ vi.mock("@/lib/pocketbase", () => ({
       getURL: () => "https://example.test/proof.png",
       getToken: async () => "tok",
     },
-    authStore: { isValid: true, onChange: () => {} },
+    authStore: {
+      isValid: true,
+      record: { id: "4ygxbt0zey088di" },
+      onChange: () => {},
+    },
   },
 }));
 

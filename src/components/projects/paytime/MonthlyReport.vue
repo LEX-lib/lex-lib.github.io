@@ -21,8 +21,8 @@ const FixedCategories = CategoryOptions.filter(
 );
 
 interface ReportRow {
-  userId: string;
-  userName: string;
+  boarderId: string;
+  boarderName: string;
   electricity?: PaytimePayment;
   internet?: PaytimePayment;
   boarding_fee?: PaytimePayment;
@@ -45,7 +45,7 @@ const loadReport = async () => {
       .collection("paytime_payments")
       .getFullList<PaytimePayment>({
         filter: `month = "${dayjs(month.value).format("YYYY-MM")}"`,
-        expand: "user",
+        expand: "boarder",
         sort: "payment_date",
         // Distinct from PaymentLog's key (see note there). Stable rather than
         // per-month on purpose: switching months should cancel the previous
@@ -53,17 +53,18 @@ const loadReport = async () => {
         requestKey: "paytime-report-list",
       });
 
-    const byUser = new Map<string, ReportRow>();
+    const byBoarder = new Map<string, ReportRow>();
     for (const payment of payments) {
-      const expandedUser = payment.expand?.user as
-        | { name?: string; email?: string }
+      // No `|| email` fallback — paytime_boarders.name is required, so the
+      // expanded boarder always has one (D-39-11).
+      const expandedBoarder = payment.expand?.boarder as
+        | { name?: string }
         | undefined;
-      const userName =
-        expandedUser?.name || expandedUser?.email || payment.user;
-      let row = byUser.get(payment.user);
+      const boarderName = expandedBoarder?.name ?? payment.boarder;
+      let row = byBoarder.get(payment.boarder);
       if (!row) {
-        row = { userId: payment.user, userName, others: [] };
-        byUser.set(payment.user, row);
+        row = { boarderId: payment.boarder, boarderName, others: [] };
+        byBoarder.set(payment.boarder, row);
       }
       if (payment.category === "others") {
         row.others.push(payment);
@@ -72,8 +73,8 @@ const loadReport = async () => {
       }
     }
 
-    rows.value = [...byUser.values()].sort((a, b) =>
-      a.userName.localeCompare(b.userName),
+    rows.value = [...byBoarder.values()].sort((a, b) =>
+      a.boarderName.localeCompare(b.boarderName),
     );
   } catch {
     toast.error("Failed to load report");
@@ -118,8 +119,8 @@ onMounted(loadReport);
           <div v-else class="flex flex-col gap-3">
             <Panel
               v-for="row in rows"
-              :key="row.userId"
-              :header="row.userName"
+              :key="row.boarderId"
+              :header="row.boarderName"
               toggleable
             >
               <div class="flex flex-col divide-y divide-surface-divider">
@@ -153,7 +154,7 @@ onMounted(loadReport);
                         :src="
                           screenshotThumbUrl(row[category.value]!, fileToken)
                         "
-                        :alt="`Proof of ${category.label} payment by ${row.userName}`"
+                        :alt="`Proof of ${category.label} payment by ${row.boarderName}`"
                         preview
                         imageClass="h-10 w-10 rounded object-cover border border-surface-divider"
                       >
@@ -162,7 +163,7 @@ onMounted(loadReport);
                             :src="
                               screenshotUrl(row[category.value]!, fileToken)
                             "
-                            :alt="`Proof of ${category.label} payment by ${row.userName}`"
+                            :alt="`Proof of ${category.label} payment by ${row.boarderName}`"
                             :class="slotProps.class"
                             :style="slotProps.style"
                             @click="slotProps.previewCallback?.()"
@@ -193,14 +194,14 @@ onMounted(loadReport);
                   <div v-if="other.screenshot" class="ml-auto shrink-0">
                     <Image
                       :src="screenshotThumbUrl(other, fileToken)"
-                      :alt="`Proof of other payment by ${row.userName}`"
+                      :alt="`Proof of other payment by ${row.boarderName}`"
                       preview
                       imageClass="h-10 w-10 rounded object-cover border border-surface-divider"
                     >
                       <template #original="slotProps">
                         <img
                           :src="screenshotUrl(other, fileToken)"
-                          :alt="`Proof of other payment by ${row.userName}`"
+                          :alt="`Proof of other payment by ${row.boarderName}`"
                           :class="slotProps.class"
                           :style="slotProps.style"
                           @click="slotProps.previewCallback?.()"

@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { pb } from "@/lib/pocketbase";
 import { useAuthStore } from "@/stores/auth";
+import { useBoarderRoster } from "@/composables/useBoarderRoster";
 import { useFileToken } from "@/composables/useFileToken";
 import {
   mapToCreatePayment,
@@ -31,6 +32,10 @@ const record = defineModel<PaytimePayment | null>("record", { default: null });
 const emit = defineEmits<{ saved: [] }>();
 
 const auth = useAuthStore();
+// Phase 39 always pins to the logged-in user's own boarder; a null
+// myBoarder gates the form below with Save disabled — this is the seam
+// Phase 40's admin boarder selector drops into (D-39-10).
+const { myBoarder } = useBoarderRoster();
 // The existing-proof link needs a file token — `screenshot` is protected.
 const { token: fileToken } = useFileToken();
 
@@ -149,10 +154,15 @@ const savePayment = async () => {
   if (!auth.user) {
     return;
   }
+  // Save is already disabled when myBoarder is null; this is defense-in-depth.
+  if (!myBoarder.value) {
+    return;
+  }
 
   // A cleared DatePicker leaves null, and dayjs(null) formats to "Invalid
   // Date" — pass undefined instead so the schema reports it as missing.
   const parsed = paymentSchema.safeParse({
+    boarder: myBoarder.value.id,
     category: category.value,
     month: month.value ? dayjs(month.value).format("YYYY-MM") : undefined,
     payment_date: paymentDate.value
@@ -183,7 +193,9 @@ const savePayment = async () => {
     } else {
       await pb
         .collection("paytime_payments")
-        .create(mapToCreatePayment({ user: auth.user.id, ...parsed.data }));
+        .create(
+          mapToCreatePayment({ recorded_by: auth.user.id, ...parsed.data }),
+        );
       toast.success("Payment logged");
     }
     emit("saved");
@@ -208,7 +220,14 @@ const savePayment = async () => {
     :style="{ width: '34rem' }"
     :breakpoints="{ '640px': '95vw' }"
   >
-    <div class="flex flex-col gap-4">
+    <!-- No boarder is linked to this account — the seam Phase 40's admin
+         boarder selector drops into (D-39-10). Shown in place of the form,
+         not instead of the whole dialog: "Log a Payment" itself stays
+         visible in the parent per D-39-10. -->
+    <p v-if="!myBoarder" class="text-sm opacity-70">
+      No boarder record is linked to your account yet — ask the admin to link you.
+    </p>
+    <div v-else class="flex flex-col gap-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
           <label class="text-sm font-medium" for="pt-category">Payment for</label>
@@ -340,7 +359,7 @@ const savePayment = async () => {
           :label="isEditing ? 'Update Payment' : 'Save Payment'"
           icon="pi pi-check"
           :loading="isSaving"
-          :disabled="isProcessingScreenshot"
+          :disabled="!myBoarder || isProcessingScreenshot"
           class="flex-1 sm:flex-none"
           @click="savePayment"
         />

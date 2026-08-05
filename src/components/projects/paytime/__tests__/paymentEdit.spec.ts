@@ -15,23 +15,36 @@ const record = {
   payment_date: "2026-07-28 00:00:00.000Z",
   screenshot: "whiteboard_q19696dkv2.png",
   updated: "2026-07-28 07:52:35.587Z",
-  user: "4ygxbt0zey088di",
+  boarder: "boarder123",
+  recorded_by: "4ygxbt0zey088di",
 } as unknown as PaytimePayment;
 
 const create = vi.fn();
 const update = vi.fn();
+const getFullList = vi.fn();
+
+// ManagePayment now resolves myBoarder via useBoarderRoster, which reads
+// paytime_boarders through this same generic getFullList mock — the boarder
+// row's `user` must match authStore.record.id below for myBoarder to
+// resolve non-null (see useBoarderRoster.ts's myBoarder computed).
+const boarder = { id: "boarder123", name: "Test Boarder", user: "4ygxbt0zey088di", is_active: true, tags: [] };
 
 vi.mock("@/lib/pocketbase", () => ({
   pb: {
     collection: () => ({
       create: (...args: unknown[]) => create(...args),
       update: (...args: unknown[]) => update(...args),
+      getFullList: (...args: unknown[]) => getFullList(...args),
     }),
     files: {
       getURL: () => "https://example.test/proof.png",
       getToken: async () => "tok",
     },
-    authStore: { isValid: true, onChange: () => {} },
+    authStore: {
+      isValid: true,
+      record: { id: "4ygxbt0zey088di" },
+      onChange: () => {},
+    },
   },
 }));
 
@@ -65,19 +78,30 @@ const mountOptions = (current: PaytimePayment | null) => ({
 const waitForText = (wrapper: ReturnType<typeof mount>, text: string) =>
   vi.waitFor(() => expect(wrapper.text()).toContain(text));
 
+const findButton = (wrapper: ReturnType<typeof mount>, text: string) =>
+  wrapper.findAll("button").find((c) => c.text().includes(text));
+
 const clickByText = async (
   wrapper: ReturnType<typeof mount>,
   text: string,
 ) => {
   await waitForText(wrapper, text);
-  const button = wrapper.findAll("button").find((c) => c.text().includes(text));
-  expect(button, `no button matching "${text}"`).toBeTruthy();
+  // The Save/Update button is disabled until myBoarder resolves (async, via
+  // useBoarderRoster) — wait for it to become clickable before triggering,
+  // or the click silently no-ops on a disabled native button.
+  await vi.waitFor(() => {
+    const button = findButton(wrapper, text);
+    expect(button, `no button matching "${text}"`).toBeTruthy();
+    expect(button!.attributes("disabled")).toBeUndefined();
+  });
+  const button = findButton(wrapper, text);
   await button!.trigger("click");
 };
 
 beforeEach(() => {
   create.mockReset().mockResolvedValue(record);
   update.mockReset().mockResolvedValue(record);
+  getFullList.mockReset().mockResolvedValue([boarder]);
 });
 
 describe("ManagePayment", () => {

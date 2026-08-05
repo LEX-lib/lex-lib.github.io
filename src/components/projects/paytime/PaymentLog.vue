@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { toast } from "vue-sonner";
 import { useConfirm } from "primevue/useconfirm"; // explicit — NOT auto-resolved by PrimeVueResolver
 import { pb } from "@/lib/pocketbase";
-import { useAuthStore } from "@/stores/auth";
+import { useBoarderRoster } from "@/composables/useBoarderRoster";
 import { useFileToken } from "@/composables/useFileToken";
 import { categoryLabel } from "@/lib/paytime/categories";
 import {
@@ -14,8 +14,8 @@ import {
 import ManagePayment from "./ManagePayment.vue";
 import type { PaytimePayment } from "@/types/paytime/payments/types";
 
-const auth = useAuthStore();
 const confirm = useConfirm();
+const { myBoarder, refresh: refreshRoster } = useBoarderRoster();
 // `screenshot` is a protected file field — URLs need a file token or they 403.
 const { token: fileToken } = useFileToken();
 
@@ -27,15 +27,15 @@ const isDialogVisible = ref(false);
 const dialogRecord = ref<PaytimePayment | null>(null);
 
 const loadPayments = async () => {
-  if (!auth.user) {
+  // No identity, not no payments (D-39-09) — never filter on an empty id.
+  if (!myBoarder.value) {
     return;
   }
-  isLoading.value = true;
   try {
     payments.value = await pb
       .collection("paytime_payments")
       .getFullList<PaytimePayment>({
-        filter: `user = "${auth.user.id}"`,
+        filter: `boarder = "${myBoarder.value.id}"`,
         sort: "-payment_date",
         // The SDK's default auto-cancel key is method+path and ignores the
         // query string, so this would collide with MonthlyReport's list call
@@ -45,8 +45,6 @@ const loadPayments = async () => {
       });
   } catch {
     toast.error("Failed to load payments");
-  } finally {
-    isLoading.value = false;
   }
 };
 
@@ -116,7 +114,20 @@ const deletePayment = (payment: PaytimePayment) => {
   });
 };
 
-onMounted(loadPayments);
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    // useBoarderRoster's own onMounted also calls refresh(), but it's
+    // idempotent (in-flight dedup) — awaiting it here lets this view's own
+    // loading state cover the async myBoarder resolution before deciding
+    // whether to fetch payments or show the no-boarder message (mirrors
+    // BoarderRosterView's onMounted, 38-PATTERNS.md).
+    await refreshRoster();
+    await loadPayments();
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>
 
 <template>
@@ -132,6 +143,9 @@ onMounted(loadPayments);
     </div>
 
     <p v-if="isLoading" class="text-sm opacity-70">Loading…</p>
+    <p v-else-if="!myBoarder" class="text-sm opacity-70">
+      No boarder record is linked to your account yet — ask the admin to link you.
+    </p>
     <p v-else-if="!payments.length" class="text-sm opacity-70">
       No payments logged yet.
     </p>
