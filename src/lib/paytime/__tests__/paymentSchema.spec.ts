@@ -6,6 +6,7 @@ import {
 } from "../paymentSchema";
 
 const valid = {
+  boarder: "boarder123",
   category: "electricity" as const,
   month: "2026-07",
   payment_date: "2026-07-28",
@@ -75,9 +76,16 @@ describe("paymentSchema", () => {
     const errors = errorsFor({ category: "nope", month: "bad", amount: -1 });
     expect(Object.keys(errors).sort()).toEqual([
       "amount",
+      "boarder",
       "category",
       "month",
       "payment_date",
     ]);
+  });
+
+  it("requires a boarder", () => {
+    expect(errorsFor({ ...valid, boarder: "" }).boarder).toBe(
+      "A boarder is required.",
+    );
   });
 });

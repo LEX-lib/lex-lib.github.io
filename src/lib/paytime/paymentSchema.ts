@@ -31,6 +31,10 @@ export const AcceptedScreenshotTypes = [
 ] as const;
 
 export const paymentSchema = z.object({
+  // `recorded_by` is deliberately NOT part of this schema — it's derived
+  // from the auth store at write time (mapToCreatePayment), never user
+  // input, so there's nothing here for Zod to validate.
+  boarder: z.string().min(1, "A boarder is required."),
   category: z.enum(["electricity", "internet", "boarding_fee", "others"], {
     error: "Select what the payment is for.",
   }),

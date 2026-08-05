@@ -7,7 +7,8 @@ import type { AddPaytimePayment } from "@/types/paytime/payments/types";
 
 describe("mapToCreatePayment", () => {
   const base: AddPaytimePayment = {
-    user: "user123",
+    boarder: "boarder123",
+    recorded_by: "user123",
     category: "electricity",
     month: "2026-07",
     payment_date: "2026-07-28",
@@ -15,7 +16,8 @@ describe("mapToCreatePayment", () => {
 
   it("maps required fields", () => {
     const formData = mapToCreatePayment(base);
-    expect(formData.get("user")).toBe("user123");
+    expect(formData.get("boarder")).toBe("boarder123");
+    expect(formData.get("recorded_by")).toBe("user123");
     expect(formData.get("category")).toBe("electricity");
     expect(formData.get("month")).toBe("2026-07");
     expect(formData.get("payment_date")).toBe("2026-07-28");
@@ -41,6 +43,22 @@ describe("mapToCreatePayment", () => {
     expect(formData.get("notes")).toBe("water bill");
     expect(formData.get("screenshot")).toBe(screenshot);
   });
+
+  // The mapper never branches on whether the boarder happens to have a
+  // linked account — an accountless boarder's payment maps through exactly
+  // the same fields as a linked boarder's; only the `boarder` id differs.
+  it("maps an accountless boarder's payment identically to a linked boarder's", () => {
+    const linked = mapToCreatePayment({ ...base, boarder: "boarder-linked" });
+    const accountless = mapToCreatePayment({
+      ...base,
+      boarder: "boarder-accountless",
+    });
+    expect(accountless.get("boarder")).toBe("boarder-accountless");
+    expect(accountless.get("recorded_by")).toBe(linked.get("recorded_by"));
+    expect(accountless.get("category")).toBe(linked.get("category"));
+    expect(accountless.get("month")).toBe(linked.get("month"));
+    expect(accountless.get("payment_date")).toBe(linked.get("payment_date"));
+  });
 });
 
 describe("mapToUpdatePayment", () => {
@@ -51,11 +69,12 @@ describe("mapToUpdatePayment", () => {
     amount: 5193.16,
   };
 
-  // Sending an owner field on update would let the update rule (which is
+  // Sending an owner-ish field on update would let the update rule (which is
   // evaluated against stored values) pass while reassigning the record.
-  it("never sends user", () => {
+  it("never sends boarder or recorded_by", () => {
     const formData = mapToUpdatePayment({ ...base, notes: "x" });
-    expect(formData.has("user")).toBe(false);
+    expect(formData.has("boarder")).toBe(false);
+    expect(formData.has("recorded_by")).toBe(false);
   });
 
   it("maps the editable fields", () => {
