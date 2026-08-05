@@ -99,26 +99,24 @@ Plans:
 **Plans**: 1/3 plans executed
 
 Plans:
+
+*Replanned 2026-08-05 — collapsed from 6 plans / 5 human gates to 3 plans / 1 human gate. The original
+additive two-step (`boarder` optional, then required) and the standalone rule-syntax spike protected a
+deployed-app window worth minutes for a single active user, at the cost of four extra blocking gates for
+one production row and five rule strings. All twelve requirements remain mapped. Original plans retained
+under `39-payment-subject-rework/superseded-6plan/`.*
+
 **Wave 1**
 
-- [x] 39-01-PLAN.md — tracer: `boarder` added optional + the one production record backfilled + the client writes and reads `boarder` end to end while still sending `user` (SUBJ-01/02)
+- [x] 39-01-PLAN.md — all code, no live dependency: types + Zod absorb the `user` → `boarder` + `recorded_by` split, mapper writes both on create and neither on update, `PaymentLog` boarder filter + no-boarder empty state, `ManagePayment` null-boarder guard, `MonthlyReport` boarder grouping, `BoarderRosterView` ROSTER-07 delete pre-check (SUBJ-01/03/04, ROSTER-07)
 
-**Wave 2** *(blocked on Wave 1 completion; the two run in parallel)*
+**Wave 2** *(blocked on Wave 1 completion — the phase's ONLY human gate)*
 
-- [ ] 39-02-PLAN.md — VERIFY-01/VERIFY-04 live spike of the createRule traversal and the `:isset` guard on the real collection, with a proven revert
-- [ ] 39-03-PLAN.md — read-path continuity: `MonthlyReport` boarder grouping, `PaymentLog`/`ManagePayment` null-boarder guards, the ROSTER-07 delete pre-check, and the assumption-delta invariant test
+- [ ] 39-02-PLAN.md — one Admin UI sitting: add `boarder`, backfill the production record, flip `boarder` required, rename `user` → `recorded_by` with both `cascadeDelete` flips, paste all five rules together; then probe the createRule traversal and the `:isset` guard live with a real non-admin token, resolving VERIFY-01 to one branch with the D-39-06 fallback applied in the same sitting (SUBJ-02/03/05/06/07, VERIFY-01, VERIFY-04)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 39-04-PLAN.md — the indivisible unit: rename `user` → `recorded_by`, both `cascadeDelete` flips, the `boarder` required flip, and all five rules together (SUBJ-03/05/06)
-
-**Wave 4** *(blocked on Wave 3 completion)*
-
-- [ ] 39-05-PLAN.md — VERIFY-02 two-token five-rule sweep with cross-boarder isolation both directions, closing PT-SMOKE-01 and ROSTER-06's open half
-
-**Wave 5** *(blocked on Wave 4 completion)*
-
-- [ ] 39-06-PLAN.md — VERIFY-05 destructive cascade proof on throwaway rows, the live ROSTER-07 refusal, cleanup, and the `39-SECURITY.md` seal (SUBJ-07)
+- [ ] 39-03-PLAN.md — seed the second linked boarder, two-token five-rule sweep with cross-boarder isolation both directions (closing PT-SMOKE-01 and ROSTER-06's open half), destructive cascade proof on throwaway rows, cleanup confirmed by count, and the `39-SECURITY.md` seal (VERIFY-02, VERIFY-05)
 
 ### Phase 40: Admin-on-Behalf Logging
 
