@@ -96,7 +96,29 @@ Plans:
   5. Deleting a user account never destroys payment history, and `cascadeDelete` is confirmed `false` on both `paytime_boarders.user` and `paytime_payments.boarder` by attempting the deletions that would otherwise destroy it.
   6. Attempting to delete a boarder who has payment history is refused rather than allowed or cascaded (ROSTER-07, moved here from Phase 38 — only testable once a payment can actually reference a boarder). Verify with a real payment row pointing at the boarder, not an empty roster entry.
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 39-01-PLAN.md — tracer: `boarder` added optional + the one production record backfilled + the client writes and reads `boarder` end to end while still sending `user` (SUBJ-01/02)
+
+**Wave 2** *(blocked on Wave 1 completion; the two run in parallel)*
+
+- [ ] 39-02-PLAN.md — VERIFY-01/VERIFY-04 live spike of the createRule traversal and the `:isset` guard on the real collection, with a proven revert
+- [ ] 39-03-PLAN.md — read-path continuity: `MonthlyReport` boarder grouping, `PaymentLog`/`ManagePayment` null-boarder guards, the ROSTER-07 delete pre-check, and the assumption-delta invariant test
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 39-04-PLAN.md — the indivisible unit: rename `user` → `recorded_by`, both `cascadeDelete` flips, the `boarder` required flip, and all five rules together (SUBJ-03/05/06)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 39-05-PLAN.md — VERIFY-02 two-token five-rule sweep with cross-boarder isolation both directions, closing PT-SMOKE-01 and ROSTER-06's open half
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 39-06-PLAN.md — VERIFY-05 destructive cascade proof on throwaway rows, the live ROSTER-07 refusal, cleanup, and the `39-SECURITY.md` seal (SUBJ-07)
 
 ### Phase 40: Admin-on-Behalf Logging
 
@@ -132,7 +154,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|-----------------|--------|-----------|
 | 38. Boarder Roster Foundation | 3/3 | Complete    | 2026-08-04 |
-| 39. Payment Subject Rework | 0/TBD | Not started | - |
+| 39. Payment Subject Rework | 0/6 | Planned | - |
 | 40. Admin-on-Behalf Logging | 0/TBD | Not started | - |
 | 41. Admin Ledger & Tag Visibility | 0/TBD | Not started | - |
 
