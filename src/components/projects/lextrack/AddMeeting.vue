@@ -25,9 +25,7 @@ const visible = defineModel("visible", {
   required: true,
 });
 
-const meetings = defineModel("meetings", {
-  type: Array<AddDsuMeeting>,
-  default: [] as AddDsuMeeting[],
+const meetings = defineModel<AddDsuMeeting[]>("meetings", {
   required: true,
 });
 
