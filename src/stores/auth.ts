@@ -4,12 +4,17 @@ import { pb } from "@/lib/pocketbase";
 import type { RecordModel } from "pocketbase";
 
 export const useAuthStore = defineStore("auth", () => {
-  const user = ref<RecordModel | null>(pb.authStore.record);
+  // Only treat the record as a logged-in user when the token is still valid.
+  // PocketBase keeps `record` populated after the JWT expires, so reading it
+  // directly would leave the navbar showing a name for a dead session.
+  const currentUser = () => (pb.authStore.isValid ? pb.authStore.record : null);
+
+  const user = ref<RecordModel | null>(currentUser());
 
   const isLoggedIn = computed(() => !!user.value);
 
   pb.authStore.onChange(() => {
-    user.value = pb.authStore.record;
+    user.value = currentUser();
 
     // SSO: mirror the token into a cookie scoped to .delveen.cc so the
     // sibling app picks up login/logout on its next load or navigation.

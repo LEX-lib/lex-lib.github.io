@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { syncAuthFromCookie } from "@/lib/pocketbase";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,8 +63,7 @@ const router = createRouter({
     {
       path: "/projects/wallecx",
       name: "wallecx",
-      component: () =>
-        import("@/components/projects/wallecx/WallecxApp.vue"),
+      component: () => import("@/components/projects/wallecx/WallecxApp.vue"),
       meta: { requiresAuth: true },
     },
     {
@@ -75,6 +75,10 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  // Re-sync from the shared cookie before every guard check so in-SPA
+  // navigation picks up a logout or login from the sibling app.
+  syncAuthFromCookie();
+
   const auth = useAuthStore();
   if (to.matched.some((record) => record.meta?.requiresAuth)) {
     if (!auth.isLoggedIn) {
