@@ -6,19 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev          # Start dev server with hot-reload
-npm run build        # Type-check + production build (copies dist/index.html → dist/404.html for GitHub Pages SPA routing)
+npm run build        # Type-check + production build
 npm run build-only   # Production build without type-check
 npm run preview      # Preview production build locally
 npm run type-check   # Vue TSC type checking
 npm run test:unit    # Run Vitest unit tests (jsdom environment)
 npm run lint         # Run oxlint + eslint with --fix in sequence
 npm run format       # Prettier format on src/
-npm run deploy       # Build + deploy to GitHub Pages via gh-pages
 ```
 
 ## Architecture
 
-**Lexarium** is a Vue 3 SPA portfolio/projects hub deployed to GitHub Pages. It hosts multiple mini-applications as sub-routes under `/projects/`.
+**Lexarium** is a Vue 3 SPA portfolio/projects hub deployed to Vercel (via GitHub push integration). It hosts multiple mini-applications as sub-routes under `/projects/`.
 
 ### Tech Stack
 
@@ -50,7 +49,7 @@ Defined in `env.d.ts` under `ImportMetaEnv`. Files loaded by Vite per mode: `.en
 
 Key variables:
 - `VITE_APP_NAME` — app title
-- `VITE_API_BASE_URL` — backend base URL
+- `VITE_API_BASE_URL` — backend base URL (`https://api.delveen.cc`; also set as a Vercel project env var for production, since `.env*` files are gitignored)
 
 ### Key Conventions
 

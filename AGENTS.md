@@ -13,12 +13,11 @@ npm run type-check   # vue-tsc --build
 npm run test:unit    # vitest (watch by default; use `vitest run` for CI/single pass)
 npm run lint         # run-s: oxlint first, then eslint (both --fix)
 npm run format       # prettier --write src/
-npm run deploy       # npm run build && gh-pages -d dist
 ```
 
 ## Non-obvious build facts
 
-- `npm run build` runs `type-check` and `build-only` **in parallel** (`run-p`), then copies `dist/index.html → dist/404.html`. The 404 copy is required for GitHub Pages SPA routing — do not skip it.
+- `npm run build` runs `type-check` and `build-only` **in parallel** (`run-p`). The app is deployed to **Vercel**; SPA fallback is handled by `vercel.json`'s catch-all rewrite, not a `404.html` copy.
 - Vite is aliased to `rolldown-vite` in devDependencies (Rolldown-powered fork), not standard Vite.
 - Manual chunks are defined: `leaflet`, `primevue`, `vendor` (Vue/Pinia/vue-router).
 
@@ -42,14 +41,14 @@ All `.env*` files are **gitignored** — recreate locally. Required files:
 | File               | Purpose                                                           |
 | ------------------ | ----------------------------------------------------------------- |
 | `.env`             | Shared placeholder (`VITE_APP_NAME`, `VITE_FEATURE_FLAG_EXAMPLE`) |
-| `.env.development` | `VITE_API_BASE_URL=https://lexarium-backend.fly.dev`              |
-| `.env.production`  | `VITE_API_BASE_URL=https://lexarium-backend.fly.dev`              |
+| `.env.development` | `VITE_API_BASE_URL=https://api.delveen.cc`              |
+| `.env.production`  | `VITE_API_BASE_URL=https://api.delveen.cc`              |
 
 `VITE_API_BASE_URL` drives the PocketBase client (`src/lib/pocketbase/index.ts`).
 
 ## Architecture
 
-**Lexarium** — Vue 3 SPA, GitHub Pages, multiple mini-apps under `/projects/`.
+**Lexarium** — Vue 3 SPA on Vercel, multiple mini-apps under `/projects/`.
 
 ### Path alias
 
@@ -58,6 +57,8 @@ All `.env*` files are **gitignored** — recreate locally. Required files:
 ### Routing & auth
 
 Only `/projects/lextrack` has `meta.requiresAuth: true`. The `beforeEach` guard redirects unauthenticated users to `{ name: 'login', query: { redirect: to.fullPath } }`.
+
+**Subdomain SSO:** `delveen.cc` and `kaheeta.delveen.cc` share one session through a JS-readable `pb_auth` cookie scoped to `.delveen.cc`. `syncAuthFromCookie()` (in `src/lib/pocketbase/index.ts`, called at module load and in `router.beforeEach`) treats that cookie as the source of truth on `*.delveen.cc` and is skipped elsewhere (localhost/previews). See `.opencode/plan/sso-implementation-plan-revised.md` for the full design.
 
 `src/constants/routes/` is **not** router config — it holds raw GPS stop arrays for Larga's PUV routes (route-3.ts = red, route-10.ts = blue).
 
