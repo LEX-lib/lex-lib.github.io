@@ -70,6 +70,14 @@ function clearSearchMarkers() {
   searchMarkers = [];
 }
 
+function fitToRoutes(routes: PuvRoute[]) {
+  if (!map || routes.length === 0) return;
+  map.fitBounds(
+    L.latLngBounds(routes.flatMap((r) => r.stops.map((s) => s.coords))),
+    { padding: [24, 24] },
+  );
+}
+
 function handleRouteClick(route: PuvRoute) {
   if (!map) return;
   // Toggle: clicking the active route again shows both routes.
@@ -79,11 +87,10 @@ function handleRouteClick(route: PuvRoute) {
 
   if (selectedRoute.value) {
     drawRoute(route);
-    map.fitBounds(L.latLngBounds(route.stops.map((s) => s.coords)), {
-      padding: [24, 24],
-    });
+    fitToRoutes([route]);
   } else {
     busRoutes.forEach(drawRoute);
+    fitToRoutes(busRoutes);
   }
 }
 
@@ -115,10 +122,7 @@ onMounted(async () => {
 
     // Plot every route, then frame the whole network.
     busRoutes.forEach(drawRoute);
-    map.fitBounds(
-      L.latLngBounds(busRoutes.flatMap((r) => r.stops.map((s) => s.coords))),
-      { padding: [24, 24] },
-    );
+    fitToRoutes(busRoutes);
 
     // Format: minLon,minLat,maxLon,maxLat — restricts results to Greater Iloilo.
     const bbox =

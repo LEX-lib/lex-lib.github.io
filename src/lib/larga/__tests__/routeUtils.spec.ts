@@ -34,6 +34,13 @@ describe("getDistance", () => {
     expect(d).toBeGreaterThan(111_000);
     expect(d).toBeLessThan(111_500);
   });
+
+  it("stays finite for antipodal points (h clamped to 1)", () => {
+    const d = getDistance([0, 0], [0, 180]);
+    expect(Number.isFinite(d)).toBe(true);
+    expect(d).toBeGreaterThan(20_000_000);
+    expect(d).toBeLessThan(20_100_000);
+  });
 });
 
 describe("dedupeConsecutiveStops", () => {

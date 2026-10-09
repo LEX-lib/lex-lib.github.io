@@ -21,9 +21,13 @@ export function getDistance(a: [number, number], b: [number, number]): number {
   const phi2 = toRad(lat2);
   const dPhi = toRad(lat2 - lat1);
   const dLambda = toRad(lon2 - lon1);
-  const h =
+  // Clamp guards against h > 1 from floating-point error on near-antipodal
+  // points (Math.sqrt of a negative would yield NaN).
+  const h = Math.min(
+    1,
     Math.sin(dPhi / 2) ** 2 +
-    Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2;
+      Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2,
+  );
   return 2 * EARTH_RADIUS_M * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
