@@ -7,10 +7,16 @@
       alt="Lexarium"
       class="w-24 h-24 opacity-60 dark:opacity-80"
     />
-    <h2 class="text-2xl font-bold" style="color: var(--color-typo-heading)">
+    <h2
+      class="text-2xl font-bold text-center"
+      style="color: var(--color-typo-heading)"
+    >
       Blog coming soon
     </h2>
-    <p style="color: var(--color-typo-muted)">
+    <p
+      class="max-w-md px-4 text-center text-pretty"
+      style="color: var(--color-typo-muted)"
+    >
       Working hard to bring you something awesome. Check back soon!
     </p>
   </main>
