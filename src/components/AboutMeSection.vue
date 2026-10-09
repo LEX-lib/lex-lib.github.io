@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import {Image, type Transformation} from "@imagekit/vue";
+import { Image, type Transformation } from "@imagekit/vue";
 
 const imagekit_url = import.meta.env.VITE_IMAGEKIT_URL as string;
 const aboutMePhoto = "/about-me-photo.png";
-const aboutMePhotoTransformation : Array<Transformation> = [{ format: "auto", width: 600, aspectRatio: '3-4', crop: 'maintain_ratio' }];
+const aboutMePhotoTransformation: Array<Transformation> = [
+  { format: "auto", width: 600, aspectRatio: "3-4", crop: "maintain_ratio" },
+];
 </script>
 
 <template>
   <div
-    class="bg-surface-card py-20 border-t border-surface-divider"
+    class="bg-surface-card py-20 border-t border-surface-divider overflow-x-clip"
     id="about-me-section"
   >
     <div class="container mx-auto px-6 lg:px-12">
@@ -148,17 +150,17 @@ const aboutMePhotoTransformation : Array<Transformation> = [{ format: "auto", wi
 
             <!-- Photo -->
             <Image
-                :url-endpoint="imagekit_url"
-                :src="aboutMePhoto"
-                class="relative rounded-xl w-full h-auto shadow-2xl z-10 grayscale hover:grayscale-0 transition-all duration-700"
-                alt="About Me"
-                loading="lazy"
-                :transformation="aboutMePhotoTransformation"
+              :url-endpoint="imagekit_url"
+              :src="aboutMePhoto"
+              class="relative rounded-xl w-full h-auto shadow-2xl z-10 grayscale hover:grayscale-0 transition-all duration-700"
+              alt="About Me"
+              loading="lazy"
+              :transformation="aboutMePhotoTransformation"
             />
 
             <!-- Corner accent -->
             <div
-              class="absolute -bottom-10 -right-10 w-24 h-24 rounded-full flex items-center justify-center shadow-lg z-20 about-corner-accent"
+              class="absolute -bottom-10 -right-4 lg:-right-10 w-24 h-24 rounded-full flex items-center justify-center shadow-lg z-20 about-corner-accent"
             >
               <iconify-icon
                 icon="mdi:code-braces"
