@@ -1,69 +1,98 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import type * as LeafletType from "leaflet";
+import type { PuvRoute } from "@/lib/larga/routeUtils";
+import { dedupeRoute, findRoutesNearPoint } from "@/lib/larga/routeUtils";
 import { route3, route10 } from "@/constants/routes";
 
+// Vite inlines Leaflet's default marker images as data URIs, which breaks
+// Icon.Default's CSS path detection (every marker would point at a bare
+// "marker-icon.png" → 404/HTML fallback). Point Leaflet at the bundled asset
+// URLs explicitly so markers actually render.
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet.css";
 import "leaflet-control-geocoder/dist/Control.Geocoder.css";
+
+// A stop is "nearby" when it is within this radius of the searched place.
+const NEARBY_THRESHOLD_M = 300;
+
+// Populated in onMounted via dynamic import (keeps Leaflet out of the initial bundle).
+let L!: typeof LeafletType;
+let geocoderFn!: (typeof import("leaflet-control-geocoder"))["geocoder"];
+
+let map: LeafletType.Map | undefined;
+// Route polylines / stop markers are drawn together and cleared together; search
+// markers are tracked separately so selecting a route never wipes a search result.
+let routePolylines: LeafletType.Polyline[] = [];
+let stopMarkers: LeafletType.Marker[] = [];
+let searchMarkers: LeafletType.Marker[] = [];
 
 const latitude = ref<number>(0);
 const longitude = ref<number>(0);
 const selectedRoute = ref<string | null>(null);
 const nearbyRoutes = ref<string[]>([]);
 
-// Populated in onMounted via dynamic import
-let L!: typeof LeafletType;
-let geocoderFn!: (typeof import("leaflet-control-geocoder"))["geocoder"];
+const busRoutes: PuvRoute[] = [dedupeRoute(route10), dedupeRoute(route3)];
 
-// Example bus routes (array of lat/lng pairs)
-const busRoutes = [route10, route3];
-
-// Fix: Use ASCII variable names in getDistance
-function getDistance(latlng1: [number, number], latlng2: [number, number]) {
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const [lat1, lon1] = latlng1;
-  const [lat2, lon2] = latlng2;
-  const R = 6371e3; // metres
-  const phi1 = toRad(lat1);
-  const phi2 = toRad(lat2);
-  const deltaPhi = toRad(lat2 - lat1);
-  const deltaLambda = toRad(lon2 - lon1);
-  const a =
-    Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-    Math.cos(phi1) *
-      Math.cos(phi2) *
-      Math.sin(deltaLambda / 2) *
-      Math.sin(deltaLambda / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function plotRoute(map: LeafletType.Map, route: (typeof busRoutes)[0]) {
-  // Remove existing polylines and markers
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Polyline || layer instanceof L.Marker) {
-      map.removeLayer(layer);
-    }
-  });
-  // Add tile layer back if removed
-  if (!map.hasLayer(tileLayer)) {
-    tileLayer.addTo(map);
-  }
-  // Plot selected route
+function drawRoute(route: PuvRoute) {
+  if (!map) return;
   const polyline = L.polyline(
-    route.stops.map((s) => s.coords as [number, number]),
-    { color: route.color },
+    route.stops.map((s) => s.coords),
+    {
+      color: route.color,
+    },
   ).addTo(map);
   polyline.bindPopup(`<b>${route.name}</b>`);
-  // route.stops.forEach((stop) => {
-  //   const marker = L.marker(stop.coords as [number, number]).addTo(map);
-  //   marker.bindPopup(`${route.name} - ${stop.name}`);
-  // });
+  routePolylines.push(polyline);
+
+  route.stops.forEach((stop) => {
+    const marker = L.marker(stop.coords)
+      .addTo(map!)
+      .bindPopup(`${route.name} - ${stop.name}`);
+    stopMarkers.push(marker);
+  });
 }
 
-let map!: LeafletType.Map;
-let tileLayer!: LeafletType.TileLayer;
+function clearRouteLayers() {
+  if (!map) return;
+  routePolylines.forEach((layer) => map!.removeLayer(layer));
+  stopMarkers.forEach((marker) => map!.removeLayer(marker));
+  routePolylines = [];
+  stopMarkers = [];
+}
+
+function clearSearchMarkers() {
+  if (!map) return;
+  searchMarkers.forEach((marker) => map!.removeLayer(marker));
+  searchMarkers = [];
+}
+
+function fitToRoutes(routes: PuvRoute[]) {
+  if (!map || routes.length === 0) return;
+  map.fitBounds(
+    L.latLngBounds(routes.flatMap((r) => r.stops.map((s) => s.coords))),
+    { padding: [24, 24] },
+  );
+}
+
+function handleRouteClick(route: PuvRoute) {
+  if (!map) return;
+  // Toggle: clicking the active route again shows both routes.
+  selectedRoute.value = selectedRoute.value === route.name ? null : route.name;
+
+  clearRouteLayers();
+
+  if (selectedRoute.value) {
+    drawRoute(route);
+    fitToRoutes([route]);
+  } else {
+    busRoutes.forEach(drawRoute);
+    fitToRoutes(busRoutes);
+  }
+}
 
 onMounted(async () => {
   const [leafletMod, geocoderMod] = await Promise.all([
@@ -73,61 +102,29 @@ onMounted(async () => {
   L = leafletMod;
   geocoderFn = geocoderMod.geocoder;
 
+  L.Icon.Default.mergeOptions({
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
+  });
+
   try {
-    //const position = await getCurrentLocation();
+    // TODO: swap the hardcoded point for real geolocation when ready.
     latitude.value = 10.73057393205643;
     longitude.value = 122.55983587687814;
-    //latitude.value = position.coords.latitude;
-    //longitude.value = position.coords.longitude;
 
     map = L.map("map").setView([latitude.value, longitude.value], 15);
-    // tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   maxZoom: 19,
-    //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    // }).addTo(map);
-    //tileLayer = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    tileLayer = L.tileLayer(
-      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors',
-      },
-    ).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
 
-    // Plot bus routes (initial)
-    busRoutes.forEach((route) => {
-      const polyline = L.polyline(
-        route.stops.map((s) => s.coords as [number, number]),
-        { color: route.color },
-      ).addTo(map);
-      polyline.bindPopup(`<b>${route.name}</b>`);
-      route.stops.forEach((stop) => {
-        const marker = L.marker(stop.coords as [number, number]).addTo(map);
-        marker.bindPopup(`${route.name} - ${stop.name}`);
-      });
-    });
+    // Plot every route, then frame the whole network.
+    busRoutes.forEach(drawRoute);
+    fitToRoutes(busRoutes);
 
-    // Fix: Use correct geocoder import and usage (L.Control cast needed for geocoder plugin)
-    // L.Control.geocoder({
-    //   defaultMarkGeocode: false,
-    //   //bounds : L.latLngBounds([10.680799927571027, 122.48585737549358], [10.794222130410443, 122.62574775929035])
-    // })
-    //     .on('markgeocode', function (e: any) {
-    //       const center = e.geocode.center;
-    //       L.marker([center.lat, center.lng]).addTo(map).bindPopup(e.geocode.name).openPopup();
-    //       // Find nearby routes
-    //       const foundRoutes: string[] = [];
-    //       busRoutes.forEach(route => {
-    //         if (route.stops.some(stop => getDistance(stop.coords as [number, number], [center.lat, center.lng]) < 300)) {
-    //           foundRoutes.push(route.name);
-    //         }
-    //       });
-    //       nearbyRoutes.value = foundRoutes;
-    //     })
-    //     .addTo(map);
-    // Format: minLon,minLat,maxLon,maxLat
-    //[10.680799927571027, 122.48585737549358], [10.794222130410443, 122.62574775929035]
+    // Format: minLon,minLat,maxLon,maxLat — restricts results to Greater Iloilo.
     const bbox =
       "122.48585737549358,10.680799927571027,122.62574775929035,10.794222130410443";
     geocoderFn({
@@ -140,41 +137,34 @@ onMounted(async () => {
       }),
     })
       .on("markgeocode", function (e: any) {
+        if (!map) return;
         const center = e.geocode.center;
-        L.marker([center.lat, center.lng])
+        clearSearchMarkers();
+        const marker = L.marker([center.lat, center.lng])
           .addTo(map)
           .bindPopup(e.geocode.name)
           .openPopup();
-        // Find nearby routes
-        const foundRoutes: string[] = [];
-        busRoutes.forEach((route) => {
-          if (
-            route.stops.some(
-              (stop) =>
-                getDistance(stop.coords as [number, number], [
-                  center.lat,
-                  center.lng,
-                ]) < 300,
-            )
-          ) {
-            foundRoutes.push(route.name);
-          }
-        });
-        nearbyRoutes.value = foundRoutes;
+        searchMarkers.push(marker);
+        nearbyRoutes.value = findRoutesNearPoint(
+          busRoutes,
+          [center.lat, center.lng],
+          NEARBY_THRESHOLD_M,
+        );
       })
       .addTo(map);
   } catch (error) {
-    console.error("Error getting location:", error);
+    console.error("Error initialising Larga map:", error);
   }
 });
 
-function handleRouteClick(routeName: string) {
-  selectedRoute.value = routeName;
-  const route = busRoutes.find((r) => r.name === routeName);
-  if (route && map) {
-    plotRoute(map, route);
-  }
-}
+onBeforeUnmount(() => {
+  // Leaflet attaches window/document listeners; drop them when leaving the route.
+  map?.remove();
+  map = undefined;
+  routePolylines = [];
+  stopMarkers = [];
+  searchMarkers = [];
+});
 </script>
 
 <template>
@@ -187,7 +177,7 @@ function handleRouteClick(routeName: string) {
           :key="route.name"
           :label="route.name"
           :class="{ 'p-button-outlined': selectedRoute !== route.name }"
-          @click="handleRouteClick(route.name)"
+          @click="handleRouteClick(route)"
           style="margin-right: 0.5rem"
         />
       </div>

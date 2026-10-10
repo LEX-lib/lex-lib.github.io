@@ -1,4 +1,6 @@
-export const route = {
+import type { PuvRoute } from "@/lib/larga/routeUtils";
+
+export const route: PuvRoute = {
   name: "Route 10",
   color: "blue",
   stops: [
