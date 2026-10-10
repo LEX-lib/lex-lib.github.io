@@ -40,7 +40,10 @@ onUnmounted(() => {
 
 <template>
   <OfflineBanner />
-  <CustomNavBar class="mb-1" :style="{ paddingTop: 'env(safe-area-inset-top)' }" />
+  <CustomNavBar
+    class="mb-1"
+    :style="{ paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0px))' }"
+  />
   <RouterView />
   <Toaster />
   <SpeedInsights v-if="isProd" />
