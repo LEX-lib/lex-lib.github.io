@@ -40,7 +40,6 @@ declare module 'vue' {
     ExpensesToolbar: typeof import('./src/components/projects/wallecx/ExpensesToolbar.vue')['default']
     FileUpload: typeof import('primevue/fileupload')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
-    GiftExchange: typeof import('./src/components/projects/gift-exchange/GiftExchange.vue')['default']
     GiftExchangeDraw: typeof import('./src/components/projects/gift-exchange/GiftExchangeDraw.vue')['default']
     GiftExchangeJoin: typeof import('./src/components/projects/gift-exchange/GiftExchangeJoin.vue')['default']
     GiftExchangeManage: typeof import('./src/components/projects/gift-exchange/GiftExchangeManage.vue')['default']
