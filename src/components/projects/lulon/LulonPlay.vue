@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useIntervalFn, useDocumentVisibility } from "@vueuse/core";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
 import {
@@ -28,12 +29,6 @@ const enrollTab = ref("register");
 const loading = ref(false);
 const enrolling = ref(false);
 const participantsCount = ref(0);
-
-const shareUrl = computed(() =>
-  lobbyCode.value && userCode.value
-    ? `${window.location.origin}/projects/lulon/play?lobby=${lobbyCode.value}&code=${userCode.value}`
-    : "",
-);
 
 const screen = computed(() => {
   if (!lobbyValidated.value) return "lobby";
@@ -206,15 +201,6 @@ const checkStatus = async () => {
   }
 };
 
-const copyShareUrl = async () => {
-  try {
-    await navigator.clipboard.writeText(shareUrl.value);
-    toast.success("Your reveal link is copied!");
-  } catch {
-    toast.error("Failed to copy link");
-  }
-};
-
 const resetParticipant = () => {
   isLoggedIn.value = false;
   drawnName.value = null;
@@ -246,8 +232,8 @@ const registerAnother = () => {
   });
 };
 
-// Silent status refresh — used by polling and focus/visibility handlers so the
-// waiting screen advances to the reveal without a manual click.
+// Silent status refresh — used by polling so the waiting screen advances to
+// the reveal on its own. Never toasts on failure.
 const refreshParticipant = async () => {
   if (!lobby.value || !userCode.value) return;
   try {
@@ -267,31 +253,29 @@ const refreshParticipant = async () => {
   }
 };
 
-let pollTimer: ReturnType<typeof setInterval> | undefined;
+// Poll only while the drawing hasn't started, and only while the tab is
+// visible. `useIntervalFn` owns the timer lifecycle (auto-clears on unmount).
+const { pause: pausePolling, resume: resumePolling } = useIntervalFn(
+  refreshParticipant,
+  30000,
+  { immediate: false, immediateCallback: false },
+);
 
-const stopPolling = () => {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = undefined;
-  }
-};
+const visibility = useDocumentVisibility();
 
-const startPolling = () => {
-  stopPolling();
-  pollTimer = setInterval(refreshParticipant, 12000);
-};
-
-watch(screen, (current) => {
-  if (current === "waiting") {
-    startPolling();
+watch([screen, visibility], ([current, state]) => {
+  if (current === "waiting" && state === "visible") {
+    resumePolling();
   } else {
-    stopPolling();
+    pausePolling();
   }
 });
 
-const onVisibilityChange = () => {
-  if (document.visibilityState === "visible") refreshParticipant();
-};
+// A quiet check the moment the tab regains focus, so returning users don't
+// wait a full interval.
+watch(visibility, (state) => {
+  if (state === "visible" && screen.value === "waiting") refreshParticipant();
+});
 
 onMounted(async () => {
   // `?lobby=` from the URL wins and is remembered for the session; `?code=` is
@@ -308,17 +292,6 @@ onMounted(async () => {
       await checkStatus();
     }
   }
-
-  // Returning to the tab re-checks immediately, so backgrounded users don't
-  // wait a full poll interval.
-  document.addEventListener("visibilitychange", onVisibilityChange);
-  window.addEventListener("focus", refreshParticipant);
-});
-
-onBeforeUnmount(() => {
-  stopPolling();
-  document.removeEventListener("visibilitychange", onVisibilityChange);
-  window.removeEventListener("focus", refreshParticipant);
 });
 </script>
 
@@ -512,22 +485,12 @@ onBeforeUnmount(() => {
                   Your code:
                   <span class="font-mono font-semibold">{{ userCode }}</span>
                 </p>
-                <Button
-                  label="Refresh status"
-                  :loading="loading"
-                  class="w-full"
-                  @click="checkStatus"
-                />
-                <Button
-                  v-if="shareUrl"
-                  label="Copy my reveal link"
-                  icon="pi pi-link"
-                  text
-                  class="w-full mt-2"
-                  @click="copyShareUrl"
-                />
+                <p class="text-sm text-gray-500 dark:text-typo-muted mb-6">
+                  <i class="pi pi-spin pi-spinner mr-2"></i>
+                  Checking for updates…
+                </p>
                 <button
-                  class="mt-6 text-sm text-gray-500 dark:text-typo-muted underline"
+                  class="text-sm text-gray-500 dark:text-typo-muted underline"
                   @click="resetParticipant"
                 >
                   Log out
