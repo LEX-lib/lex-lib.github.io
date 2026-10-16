@@ -3,6 +3,10 @@
 import { ref, watch, onMounted } from "vue";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
+import {
+  resolveLobbyCode,
+  saveLobbyCode,
+} from "@/lib/gift-exchange/lobbySession";
 
 const lobbyCode = ref("");
 const userCode = ref("");
@@ -37,6 +41,7 @@ const checkStatus = async () => {
     }
 
     lobby.value = lobbies[0];
+    saveLobbyCode(lobby.value.lobby_code);
 
     // Find participant in this lobby
     const record = await pb
@@ -79,13 +84,10 @@ watch([lobbyCode, userCode], () => {
 });
 
 onMounted(() => {
-  // Check for lobby code in URL query params
-  const urlParams = new URLSearchParams(window.location.search);
-  const lobbyParam = urlParams.get("lobby");
-
-  if (lobbyParam) {
-    lobbyCode.value = lobbyParam.toUpperCase();
-  }
+  // `?lobby=` from the URL wins and is remembered for the session; otherwise we
+  // restore the last known lobby so arriving from /join (or a reload) doesn't
+  // force a re-type.
+  lobbyCode.value = resolveLobbyCode();
 });
 </script>
 

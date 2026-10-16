@@ -3,6 +3,11 @@
 import { ref, onMounted, watch } from "vue";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
+import {
+  clearSavedLobbyCode,
+  resolveLobbyCode,
+  saveLobbyCode,
+} from "@/lib/gift-exchange/lobbySession";
 
 const lobbyCode = ref("");
 const name = ref("");
@@ -30,11 +35,13 @@ const validateLobby = async () => {
       toast.error("Invalid lobby code");
       lobby.value = null;
       lobbyValidated.value = false;
+      clearSavedLobbyCode();
       return;
     }
 
     lobby.value = records[0];
     lobbyValidated.value = true;
+    saveLobbyCode(lobby.value.lobby_code);
 
     // Check if enrollment is closed
     const now = new Date();
@@ -124,12 +131,10 @@ watch(lobbyCode, () => {
 });
 
 onMounted(async () => {
-  // Check for lobby code in URL query params
-  const urlParams = new URLSearchParams(window.location.search);
-  const lobbyParam = urlParams.get("lobby");
-
-  if (lobbyParam) {
-    lobbyCode.value = lobbyParam.toUpperCase();
+  // `?lobby=` from the URL wins and is remembered for the rest of the session;
+  // otherwise we restore the last known lobby so /join and /draw stay in sync.
+  lobbyCode.value = resolveLobbyCode();
+  if (lobbyCode.value) {
     await validateLobby();
   }
 });
