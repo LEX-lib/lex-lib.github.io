@@ -56,7 +56,7 @@ All `.env*` files are **gitignored** — recreate locally. Required files:
 
 ### Routing & auth
 
-Only `/projects/lextrack` has `meta.requiresAuth: true`. The `beforeEach` guard redirects unauthenticated users to `{ name: 'login', query: { redirect: to.fullPath } }`.
+`meta.requiresAuth: true` protects `/projects/lextrack`, `/projects/wallecx`, and `/projects/lulon/manage`; the `beforeEach` guard redirects unauthenticated users to `{ name: 'login', query: { redirect: to.fullPath } }`. `meta.requiresAdmin: true` (on `/projects/lulon/manage`) additionally requires `users.is_admin`, exposed as `useAuthStore().isAdmin`, and redirects non-admins to the Lulon landing.
 
 **Subdomain SSO:** `delveen.cc` and `kaheeta.delveen.cc` share one session through a JS-readable `pb_auth` cookie scoped to `.delveen.cc`. `syncAuthFromCookie()` (in `src/lib/pocketbase/index.ts`, called at module load and in `router.beforeEach`) treats that cookie as the source of truth on `*.delveen.cc` and is skipped elsewhere (localhost/previews). See `.opencode/plan/sso-implementation-plan-revised.md` for the full design.
 

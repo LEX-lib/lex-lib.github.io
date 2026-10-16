@@ -30,7 +30,7 @@ npm run format       # Prettier format on src/
 
 ### Routing & Auth Guard
 
-Routes live in `src/router/index.ts`. Protected routes use `meta.requiresAuth: true`; the `beforeEach` guard checks `useAuthStore().isLoggedIn` and redirects to `/login` if unauthenticated. Currently only `/projects/lextrack` requires auth.
+Routes live in `src/router/index.ts`. Protected routes use `meta.requiresAuth: true`; the `beforeEach` guard checks `useAuthStore().isLoggedIn` and redirects to `/login` if unauthenticated. Admin-only routes also set `meta.requiresAdmin: true`, gated on the `users.is_admin` column via `useAuthStore().isAdmin`. Currently `lextrack` and `wallecx` require auth; `lulon/manage` requires admin.
 
 ### Mini-Applications
 
@@ -40,7 +40,7 @@ Each sub-app lives under `src/components/projects/<app>/`:
 |-----|-------|-------|
 | **LexTrack** | `/projects/lextrack` | Task/meeting/support tracker; uses PocketBase collections (`dsu_tasks`, `dsu_meetings`, `dsu_supports`) with entity mappers in `src/lib/pocketbase/` |
 | **Larga** | `/projects/larga` | PUV transit helper; uses Leaflet + geocoder |
-| **Gift Exchange (MonitoX)** | `/projects/gift-exchange/*` | Secret Santa app with join/draw/manage sub-routes |
+| **Lulon (Gift Exchange)** | `/projects/lulon/*` | Secret Santa app; landing + adaptive join/reveal (`/play`) + admin dashboard (`/manage`) |
 | **API Playground** | `/projects/api-playground` | Postman-like API testing tool |
 
 ### Environment Variables
