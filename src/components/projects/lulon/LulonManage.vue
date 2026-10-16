@@ -469,14 +469,14 @@ onMounted(() => {
                   >
                   <code
                     class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
-                    >{{ baseUrl }}/projects/lulon/join?lobby={{
+                    >{{ baseUrl }}/projects/lulon/play?lobby={{
                       selectedLobby.lobby_code
                     }}</code
                   >
                   <button
                     @click="
                       copyToClipboard(
-                        `${baseUrl}/projects/lulon/join?lobby=${selectedLobby.lobby_code}`,
+                        `${baseUrl}/projects/lulon/play?lobby=${selectedLobby.lobby_code}`,
                       )
                     "
                     class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
@@ -491,14 +491,14 @@ onMounted(() => {
                   >
                   <code
                     class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
-                    >{{ baseUrl }}/projects/lulon/draw?lobby={{
+                    >{{ baseUrl }}/projects/lulon/play?lobby={{
                       selectedLobby.lobby_code
                     }}</code
                   >
                   <button
                     @click="
                       copyToClipboard(
-                        `${baseUrl}/projects/lulon/draw?lobby=${selectedLobby.lobby_code}`,
+                        `${baseUrl}/projects/lulon/play?lobby=${selectedLobby.lobby_code}`,
                       )
                     "
                     class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"

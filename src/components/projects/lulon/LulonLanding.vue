@@ -26,7 +26,7 @@ const authStore = useAuthStore();
 
             <Button
               as="router-link"
-              to="/projects/lulon/join"
+              to="/projects/lulon/play"
               label="Join an exchange"
               icon="pi pi-user-plus"
               class="w-full"

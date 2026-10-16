@@ -32,7 +32,7 @@ const items = ref([
     // {
     //   label: "Lulon",
     //   icon: "mdi:gift-open-outline",
-    //   command: () => router.push("/projects/lulon/join"),
+    //   command: () => router.push("/projects/lulon/play"),
     // },
     //],
   },

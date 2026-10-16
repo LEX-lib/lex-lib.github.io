@@ -38,14 +38,19 @@ const router = createRouter({
       component: () => import("@/components/projects/lulon/LulonLanding.vue"),
     },
     {
+      path: "/projects/lulon/play",
+      name: "lulon-play",
+      component: () => import("@/components/projects/lulon/LulonPlay.vue"),
+    },
+    // Enroll and reveal are now one adaptive route; keep the old split paths
+    // working, preserving ?lobby= / ?code=.
+    {
       path: "/projects/lulon/join",
-      name: "lulon-join",
-      component: () => import("@/components/projects/lulon/LulonJoin.vue"),
+      redirect: (to) => ({ path: "/projects/lulon/play", query: to.query }),
     },
     {
       path: "/projects/lulon/draw",
-      name: "lulon-draw",
-      component: () => import("@/components/projects/lulon/LulonDraw.vue"),
+      redirect: (to) => ({ path: "/projects/lulon/play", query: to.query }),
     },
     {
       path: "/projects/lulon/manage",
