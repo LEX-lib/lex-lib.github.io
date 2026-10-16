@@ -180,6 +180,7 @@ const checkStatus = async () => {
       .collection("gift_exchange_participants")
       .getFirstListItem<Participant>(
         `code="${normalizeLobbyCode(userCode.value)}" && lobby="${lobby.value.id}"`,
+        { $autoCancel: false },
       );
 
     userCode.value = record.code;
@@ -229,6 +230,7 @@ const refreshParticipant = async () => {
       .collection("gift_exchange_participants")
       .getFirstListItem<Participant>(
         `code="${normalizeLobbyCode(userCode.value)}" && lobby="${lobby.value.id}"`,
+        { $autoCancel: false },
       );
     if (record.drawn_name && !drawnName.value) {
       drawnName.value = record.drawn_name;

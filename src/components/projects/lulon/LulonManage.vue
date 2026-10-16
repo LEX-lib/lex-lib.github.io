@@ -54,27 +54,18 @@ const fetchLobbies = async () => {
   }
 };
 
-const fetchStats = async () => {
-  if (!selectedLobby.value) return;
-  try {
-    const result = await pb
-      .collection("gift_exchange_participants")
-      .getList(1, 1, { filter: `lobby="${selectedLobby.value.id}"` });
-    participantsCount.value = result.totalItems;
-  } catch (e) {
-    console.error("Error fetching stats", e);
-  }
-};
-
 const fetchParticipants = async () => {
   if (!isAdmin.value || !selectedLobby.value) return;
   try {
+    // `getFullList` pages through every record, so its length is the count —
+    // no separate stats request (which would trip auto-cancellation).
     participants.value = await pb
       .collection("gift_exchange_participants")
       .getFullList<Participant>({
         filter: `lobby="${selectedLobby.value.id}"`,
         sort: "-created",
       });
+    participantsCount.value = participants.value.length;
   } catch (e) {
     toast.error("Error fetching participants: " + (e as Error).message);
   }
@@ -84,7 +75,7 @@ const selectLobby = async (lobby: Lobby) => {
   selectingLobby.value = true;
   selectedLobby.value = lobby;
   try {
-    await Promise.all([fetchParticipants(), fetchStats()]);
+    await fetchParticipants();
   } finally {
     selectingLobby.value = false;
   }
@@ -266,7 +257,7 @@ const deleteParticipant = (p: Participant) => {
       try {
         await pb.collection("gift_exchange_participants").delete(p.id);
         toast.success(`${p.name} removed.`);
-        await Promise.all([fetchParticipants(), fetchStats()]);
+        await fetchParticipants();
       } catch (e) {
         toast.error("Error removing participant: " + (e as Error).message);
       } finally {
