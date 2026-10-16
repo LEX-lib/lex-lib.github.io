@@ -24,6 +24,7 @@ const isLoggedIn = ref(false);
 const drawnName = ref<string | null>(null);
 const isFlipped = ref(false);
 const justEnrolled = ref(false);
+const enrollTab = ref("register");
 const loading = ref(false);
 const enrolling = ref(false);
 const participantsCount = ref(0);
@@ -38,7 +39,6 @@ const screen = computed(() => {
   if (!lobbyValidated.value) return "lobby";
   if (justEnrolled.value && isLoggedIn.value) return "enrolled";
   if (isLoggedIn.value) return drawnName.value ? "reveal" : "waiting";
-  if (enrollmentClosed.value) return "closed";
   return "enroll";
 });
 
@@ -99,6 +99,8 @@ const validateLobby = async () => {
     enrollmentClosed.value = Boolean(
       lobby.value.drawing_started || (deadline && now > deadline),
     );
+    // Returning participants land on the Draw tab when registration is shut.
+    enrollTab.value = enrollmentClosed.value ? "draw" : "register";
 
     await fetchStats();
   } catch (e) {
@@ -348,31 +350,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
-              <!-- Enrollment closed -->
-              <div v-else-if="screen === 'closed'" key="closed" class="py-6">
-                <i
-                  class="pi pi-lock text-red-500 dark:text-red-300 text-5xl"
-                ></i>
-                <h3 class="text-2xl font-bold mt-4 mb-2">Enrollment Closed</h3>
-                <p class="text-gray-600 dark:text-typo-body mb-2">
-                  Enrollment has ended for
-                  <strong>{{ lobby?.lobby_name }}</strong
-                  >.
-                </p>
-                <p class="text-sm text-gray-500 dark:text-typo-muted mb-6">
-                  The drawing has already started or the deadline has passed.
-                </p>
-                <Button
-                  label="Enter my code"
-                  class="w-full"
-                  @click="
-                    lobbyValidated = false;
-                    lobbyCode = '';
-                  "
-                />
-              </div>
-
-              <!-- Enroll + already-have-a-code -->
+              <!-- Register / Draw (pre-login) -->
               <div v-else-if="screen === 'enroll'" key="enroll">
                 <div
                   class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 text-left"
@@ -391,52 +369,79 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
 
-                <div
-                  class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider text-left"
-                >
-                  <h3 class="font-bold text-lg mb-2">New participant?</h3>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Your Name</label
-                  >
-                  <InputText
-                    v-model="name"
-                    placeholder="Juan dela Cruz"
-                    class="w-full"
-                    @keyup.enter="enroll"
-                  />
-                  <Button
-                    label="Enroll & get code"
-                    :loading="enrolling"
-                    class="w-full mt-4"
-                    @click="enroll"
-                  />
-                </div>
+                <Tabs v-model:value="enrollTab">
+                  <TabList>
+                    <Tab value="register">Register</Tab>
+                    <Tab value="draw">Draw</Tab>
+                  </TabList>
+                  <TabPanels>
+                    <TabPanel value="register">
+                      <div v-if="enrollmentClosed" class="py-4">
+                        <i
+                          class="pi pi-lock text-red-500 dark:text-red-300 text-4xl"
+                        ></i>
+                        <h3 class="font-bold text-lg mt-3 mb-1">
+                          Enrollment closed
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-typo-body">
+                          The drawing has already started or the deadline has
+                          passed.
+                        </p>
+                      </div>
 
-                <Divider align="center" type="dashed">
-                  <span
-                    class="text-xs uppercase tracking-wider text-gray-400 dark:text-typo-muted"
-                    >or</span
-                  >
-                </Divider>
+                      <div
+                        v-else
+                        class="bg-gray-50 dark:bg-surface-page p-4 rounded-xl border border-gray-200 dark:border-surface-divider text-left"
+                      >
+                        <h3 class="font-bold text-lg mb-2">New participant?</h3>
+                        <label
+                          class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+                          >Your Name</label
+                        >
+                        <InputText
+                          v-model="name"
+                          placeholder="Juan dela Cruz"
+                          class="w-full"
+                          @keyup.enter="enroll"
+                        />
+                        <Button
+                          label="Enroll & get code"
+                          :loading="enrolling"
+                          class="w-full mt-4"
+                          @click="enroll"
+                        />
+                      </div>
+                    </TabPanel>
 
-                <div class="text-left">
-                  <h3 class="font-bold text-sm mb-2">Already have a code?</h3>
-                  <InputText
-                    v-model="userCode"
-                    placeholder="WXYZ"
-                    maxlength="4"
-                    class="w-full uppercase tracking-widest text-center font-mono"
-                    @keyup.enter="checkStatus"
-                  />
-                  <Button
-                    label="Reveal my partner"
-                    :loading="loading"
-                    outlined
-                    class="w-full mt-3"
-                    @click="checkStatus"
-                  />
-                </div>
+                    <TabPanel value="draw">
+                      <div class="text-left">
+                        <h3 class="font-bold text-lg mb-2">
+                          Already have a code?
+                        </h3>
+                        <p
+                          class="text-sm text-gray-600 dark:text-typo-body mb-3"
+                        >
+                          Enter the 4-character code you got when you
+                          registered.
+                        </p>
+                        <InputText
+                          v-model="userCode"
+                          placeholder="WXYZ"
+                          maxlength="4"
+                          class="w-full uppercase tracking-widest text-center font-mono"
+                          @keyup.enter="checkStatus"
+                        />
+                        <Button
+                          label="Reveal my partner"
+                          :loading="loading"
+                          outlined
+                          class="w-full mt-3"
+                          @click="checkStatus"
+                        />
+                      </div>
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
               </div>
 
               <!-- Just enrolled: show the code to save -->
