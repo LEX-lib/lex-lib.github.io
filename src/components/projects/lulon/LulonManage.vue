@@ -434,6 +434,8 @@ onMounted(() => {
               </div>
             </div>
 
+            <Divider v-if="selectedLobby" />
+
             <!-- Selected lobby -->
             <div v-if="selectedLobby" class="space-y-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
