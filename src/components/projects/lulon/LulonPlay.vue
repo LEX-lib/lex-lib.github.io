@@ -231,6 +231,21 @@ const continueToReveal = () => {
   justEnrolled.value = false;
 };
 
+// Let the next person on the same device register without leaving the lobby.
+const registerAnother = () => {
+  isLoggedIn.value = false;
+  drawnName.value = null;
+  isFlipped.value = false;
+  justEnrolled.value = false;
+  name.value = "";
+  userCode.value = "";
+  enrollTab.value = "register";
+  router.replace({
+    path: "/projects/lulon/play",
+    query: lobbyCode.value ? { lobby: lobbyCode.value } : {},
+  });
+};
+
 // Silent status refresh — used by polling and focus/visibility handlers so the
 // waiting screen advances to the reveal without a manual click.
 const refreshParticipant = async () => {
@@ -467,21 +482,20 @@ onBeforeUnmount(() => {
                 </div>
 
                 <Button
-                  label="Copy my reveal link"
-                  icon="pi pi-link"
+                  label="Register another participant"
+                  icon="pi pi-user-plus"
                   outlined
                   class="w-full mb-2"
-                  @click="copyShareUrl"
+                  @click="registerAnother"
                 />
                 <Button
-                  label="Continue"
-                  icon="pi pi-arrow-right"
-                  icon-pos="right"
+                  label="Reveal my partner"
+                  icon="pi pi-gift"
                   class="w-full"
                   @click="continueToReveal"
                 />
                 <p class="text-xs text-gray-400 dark:text-typo-muted mt-4">
-                  Waiting for the drawing event to start.
+                  Reveal works once the organizer starts the drawing.
                 </p>
               </div>
 
