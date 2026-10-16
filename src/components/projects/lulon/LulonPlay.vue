@@ -369,9 +369,11 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
 
-                <Tabs v-model:value="enrollTab">
+                <Tabs v-model:value="enrollTab" class="lulon-tabs">
                   <TabList>
-                    <Tab value="register">Register</Tab>
+                    <Tab value="register" :disabled="enrollmentClosed"
+                      >Register</Tab
+                    >
                     <Tab value="draw">Draw</Tab>
                   </TabList>
                   <TabPanels>
@@ -596,6 +598,15 @@ onBeforeUnmount(() => {
 .lulon-swap-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+/* Even 50/50 tab buttons that fill the width and centre their labels. */
+.lulon-tabs :deep(.p-tablist) {
+  display: flex;
+}
+.lulon-tabs :deep(.p-tab) {
+  flex: 1 1 0%;
+  justify-content: center;
 }
 
 .flip-card-inner {
