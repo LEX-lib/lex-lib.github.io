@@ -502,7 +502,7 @@ onMounted(async () => {
                 <div
                   class="flip-card w-full h-64 cursor-pointer"
                   :class="{ flipped: isFlipped }"
-                  @click="isFlipped = true"
+                  @click="isFlipped = !isFlipped"
                 >
                   <div
                     class="flip-card-inner relative w-full h-full text-center"
@@ -511,10 +511,9 @@ onMounted(async () => {
                       class="flip-card-front absolute w-full h-full bg-gradient-to-br from-red-600 to-red-800 text-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-6"
                     >
                       <i class="pi pi-gift text-6xl mb-4 animate-bounce"></i>
-                      <h3 class="text-2xl font-bold">Tap to open gift</h3>
-                      <p class="text-sm opacity-80 mt-2">
-                        Discover who you picked!
-                      </p>
+                      <h3 class="text-2xl font-bold">
+                        Tap to know who you picked
+                      </h3>
                     </div>
                     <div
                       class="flip-card-back absolute w-full h-full bg-white dark:bg-surface-card text-black dark:text-typo-heading rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-4 border-gold"
