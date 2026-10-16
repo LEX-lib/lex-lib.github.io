@@ -538,7 +538,7 @@ onMounted(async () => {
                   class="mt-8 text-sm text-gray-500 dark:text-typo-muted underline"
                   @click="resetParticipant"
                 >
-                  Log out / enter a different code
+                  Enter a different code
                 </button>
               </div>
             </Transition>
