@@ -34,20 +34,17 @@ const router = createRouter({
     {
       path: "/projects/gift-exchange/join",
       name: "gift-exchange-join",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeJoin.vue"),
+      component: () => import("@/components/projects/lulon/LulonJoin.vue"),
     },
     {
       path: "/projects/gift-exchange/draw",
       name: "gift-exchange-draw",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeDraw.vue"),
+      component: () => import("@/components/projects/lulon/LulonDraw.vue"),
     },
     {
       path: "/projects/gift-exchange/manage",
       name: "gift-exchange-manage",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeManage.vue"),
+      component: () => import("@/components/projects/lulon/LulonManage.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     // Redirect old route or root to join

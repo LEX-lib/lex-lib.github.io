@@ -32,9 +32,9 @@ const projects = ref<Project[]>([
     tags: ["Vue 3", "PocketBase", "Auth"],
   },
   {
-    title: "MonitoX",
+    title: "Lulon",
     description:
-      "A virtual gift-exchange app for Filipino-style Secret Santa. Create a group, shuffle assignments, and reveal your monito.",
+      "A virtual gift-exchange app for Filipino-style Secret Santa. Create a group, shuffle assignments, and reveal your monito. Unroll your secret partner.",
     link: "/projects/gift-exchange/join",
     status: "Active",
     icon: "mdi:gift-outline",

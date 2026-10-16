@@ -1,5 +1,5 @@
 /**
- * MonitoX lobby-code session memory.
+ * Lulon lobby-code session memory.
  *
  * The lobby code is a *shared* group code — every participant in the exchange
  * knows it — so remembering it for the browser session is safe and saves people
@@ -10,7 +10,7 @@
  * navigation and same-tab reloads, and is discarded when the tab closes.
  */
 
-const STORAGE_KEY = "monitox.lobby_code";
+const STORAGE_KEY = "lulon.lobby_code";
 
 /** Uppercase + trim so `abcd`, ` ABCD ` and `ABCD` all match one another. */
 export function normalizeLobbyCode(code: string | null | undefined): string {

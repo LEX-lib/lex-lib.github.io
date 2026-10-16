@@ -269,8 +269,10 @@ onMounted(() => {
     >
       <div class="p-8">
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-          <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body">Admin Management</h2>
+          <h1 class="text-4xl font-bold mb-2 tracking-tight">Lulon</h1>
+          <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body">
+            Admin Management
+          </h2>
         </div>
 
         <div v-if="!isAdmin" class="py-12 text-center">
@@ -290,7 +292,9 @@ onMounted(() => {
 
         <div v-else class="space-y-6">
           <!-- Lobby Selection -->
-          <div class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-6">
+          <div
+            class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-6"
+          >
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-bold">Select Lobby</h3>
               <button
@@ -309,7 +313,8 @@ onMounted(() => {
               <h4 class="font-bold mb-3">Create New Lobby</h4>
               <div class="space-y-3">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                     >Lobby Name</label
                   >
                   <input
@@ -320,7 +325,8 @@ onMounted(() => {
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                     >Lobby Code (Optional)</label
                   >
                   <input
@@ -335,7 +341,8 @@ onMounted(() => {
                   </p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+                  <label
+                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                     >Enrollment Deadline (Optional)</label
                   >
                   <input
@@ -370,11 +377,15 @@ onMounted(() => {
                   <div class="font-bold text-gray-800 dark:text-typo-heading">
                     {{ lobby.lobby_name }}
                   </div>
-                  <div class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1">
+                  <div
+                    class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1"
+                  >
                     Code: {{ lobby.lobby_code }}
                   </div>
                   <div class="text-xs text-gray-400 dark:text-typo-muted mt-2">
-                    <span v-if="lobby.drawing_started" class="text-green-600 dark:text-green-300"
+                    <span
+                      v-if="lobby.drawing_started"
+                      class="text-green-600 dark:text-green-300"
                       >✓ Drawing Started</span
                     >
                     <span v-else class="text-yellow-600 dark:text-yellow-300"
@@ -396,7 +407,9 @@ onMounted(() => {
                   v-if="loading && selectedLobby?.id === lobby.id"
                   class="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 bg-opacity-75 flex items-center justify-center rounded-lg"
                 >
-                  <i class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"></i>
+                  <i
+                    class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"
+                  ></i>
                 </div>
               </div>
 
@@ -440,13 +453,20 @@ onMounted(() => {
             </div>
 
             <!-- Shareable Links -->
-            <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 p-4 mb-4">
-              <h4 class="font-bold text-sm text-blue-900 dark:text-blue-300 mb-2">
+            <div
+              class="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 p-4 mb-4"
+            >
+              <h4
+                class="font-bold text-sm text-blue-900 dark:text-blue-300 mb-2"
+              >
                 📤 Share These Links
               </h4>
               <div class="space-y-2 text-sm">
                 <div class="flex items-center gap-2">
-                  <span class="text-blue-700 dark:text-blue-300 font-medium w-20">Join:</span>
+                  <span
+                    class="text-blue-700 dark:text-blue-300 font-medium w-20"
+                    >Join:</span
+                  >
                   <code
                     class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
                     >{{ baseUrl }}/projects/gift-exchange/join?lobby={{
@@ -465,7 +485,10 @@ onMounted(() => {
                   </button>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-blue-700 dark:text-blue-300 font-medium w-20">Draw:</span>
+                  <span
+                    class="text-blue-700 dark:text-blue-300 font-medium w-20"
+                    >Draw:</span
+                  >
                   <code
                     class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
                     >{{ baseUrl }}/projects/gift-exchange/draw?lobby={{
@@ -490,14 +513,22 @@ onMounted(() => {
               class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider overflow-hidden"
             >
               <table class="w-full text-left">
-                <thead class="bg-gray-100 dark:bg-surface-card border-b border-gray-200 dark:border-surface-divider">
+                <thead
+                  class="bg-gray-100 dark:bg-surface-card border-b border-gray-200 dark:border-surface-divider"
+                >
                   <tr>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">Name</th>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">Code</th>
+                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
+                      Name
+                    </th>
+                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
+                      Code
+                    </th>
                     <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
                       Target (Gift Receiver)
                     </th>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">Status</th>
+                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -507,14 +538,20 @@ onMounted(() => {
                     class="border-b border-gray-100 dark:border-surface-divider hover:bg-white dark:hover:bg-surface-card transition-colors"
                   >
                     <td class="p-4 font-medium">{{ p.name }}</td>
-                    <td class="p-4 font-mono text-gray-500 dark:text-typo-muted">{{ p.code }}</td>
+                    <td
+                      class="p-4 font-mono text-gray-500 dark:text-typo-muted"
+                    >
+                      {{ p.code }}
+                    </td>
                     <td class="p-4">
                       <span
                         v-if="p.drawn_name"
                         class="text-green-600 dark:text-green-300 font-medium"
                         >{{ p.drawn_name }}</span
                       >
-                      <span v-else class="text-gray-400 dark:text-typo-muted italic"
+                      <span
+                        v-else
+                        class="text-gray-400 dark:text-typo-muted italic"
                         >Not assigned</span
                       >
                     </td>
@@ -534,7 +571,10 @@ onMounted(() => {
                     </td>
                   </tr>
                   <tr v-if="participants.length === 0">
-                    <td colspan="4" class="p-8 text-center text-gray-500 dark:text-typo-muted">
+                    <td
+                      colspan="4"
+                      class="p-8 text-center text-gray-500 dark:text-typo-muted"
+                    >
                       No participants yet.
                     </td>
                   </tr>

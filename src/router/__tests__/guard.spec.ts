@@ -1,4 +1,11 @@
-import { describe, it, expect, vi, beforeEach, type MockedFunction } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type MockedFunction,
+} from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { defineComponent } from "vue";
 import { setActivePinia, createPinia } from "pinia";
@@ -14,6 +21,15 @@ vi.mock("@/lib/pocketbase", () => ({
 }));
 
 import { useAuthStore } from "@/stores/auth";
+
+type AuthStore = ReturnType<typeof useAuthStore>;
+
+/** Configure the mocked auth store with only the fields a guard case needs. */
+function mockAuth(state: Partial<AuthStore>) {
+  (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue(
+    state as AuthStore,
+  );
+}
 
 // Minimal stub component — guard tests do not need real component rendering
 const Stub = defineComponent({ template: "<div />" });
@@ -77,7 +93,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("redirects to /login when not authenticated", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
+    mockAuth({ isLoggedIn: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx");
@@ -86,16 +102,18 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("preserves query string in redirect when not authenticated", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
+    mockAuth({ isLoggedIn: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx?action=add-expense");
     expect(router.currentRoute.value.name).toBe("login");
-    expect(router.currentRoute.value.query.redirect).toBe("/projects/wallecx?action=add-expense");
+    expect(router.currentRoute.value.query.redirect).toBe(
+      "/projects/wallecx?action=add-expense",
+    );
   });
 
   it("allows navigation when authenticated", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: true } as any);
+    mockAuth({ isLoggedIn: true });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/wallecx");
@@ -103,7 +121,7 @@ describe("requiresAuth guard — /projects/wallecx", () => {
   });
 
   it("allows unauthenticated access to non-guarded routes", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({ isLoggedIn: false } as any);
+    mockAuth({ isLoggedIn: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/");
@@ -117,10 +135,7 @@ describe("requiresAdmin guard — /projects/manage", () => {
   });
 
   it("redirects a logged-in non-admin to /projects", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
-      isLoggedIn: true,
-      isAdmin: false,
-    } as any);
+    mockAuth({ isLoggedIn: true, isAdmin: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/manage");
@@ -128,10 +143,7 @@ describe("requiresAdmin guard — /projects/manage", () => {
   });
 
   it("redirects an unauthenticated visitor to /login", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
-      isLoggedIn: false,
-      isAdmin: false,
-    } as any);
+    mockAuth({ isLoggedIn: false, isAdmin: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/manage");
@@ -139,10 +151,7 @@ describe("requiresAdmin guard — /projects/manage", () => {
   });
 
   it("allows a logged-in admin", async () => {
-    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
-      isLoggedIn: true,
-      isAdmin: true,
-    } as any);
+    mockAuth({ isLoggedIn: true, isAdmin: true });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/manage");

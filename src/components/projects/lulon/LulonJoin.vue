@@ -7,7 +7,7 @@ import {
   clearSavedLobbyCode,
   resolveLobbyCode,
   saveLobbyCode,
-} from "@/lib/gift-exchange/lobbySession";
+} from "@/lib/lulon/lobbySession";
 
 const lobbyCode = ref("");
 const name = ref("");
@@ -148,8 +148,10 @@ onMounted(async () => {
       class="max-w-md w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
     >
       <div class="p-8 text-center">
-        <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-        <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6">
+        <h1 class="text-4xl font-bold mb-2 tracking-tight">Lulon</h1>
+        <h2
+          class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6"
+        >
           Join the Exchange
         </h2>
         <p class="text-gray-500 dark:text-typo-muted mb-8">
@@ -166,7 +168,8 @@ onMounted(async () => {
             Ask your organizer for the lobby code
           </p>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+            <label
+              class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
               >Lobby Code</label
             >
             <input
@@ -222,7 +225,9 @@ onMounted(async () => {
 
         <!-- Step 3: Enrollment Form -->
         <div v-else-if="!isEnrolled">
-          <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div
+            class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800"
+          >
             <p class="text-sm text-blue-800 dark:text-blue-300">
               <strong>Lobby:</strong> {{ lobby.lobby_name }}
             </p>
@@ -242,7 +247,8 @@ onMounted(async () => {
           >
             <h3 class="font-bold text-lg mb-2">New Participant?</h3>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Your Name</label
               >
               <input
@@ -299,7 +305,10 @@ onMounted(async () => {
           </RouterLink>
         </div>
 
-        <div v-if="lobbyValidated" class="mt-8 border-t dark:border-surface-divider pt-6">
+        <div
+          v-if="lobbyValidated"
+          class="mt-8 border-t dark:border-surface-divider pt-6"
+        >
           <p class="text-sm text-gray-500 dark:text-typo-muted">
             {{ participantsCount }} participants enrolled in this lobby
           </p>

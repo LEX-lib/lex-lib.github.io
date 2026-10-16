@@ -3,10 +3,7 @@
 import { ref, watch, onMounted } from "vue";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
-import {
-  resolveLobbyCode,
-  saveLobbyCode,
-} from "@/lib/gift-exchange/lobbySession";
+import { resolveLobbyCode, saveLobbyCode } from "@/lib/lulon/lobbySession";
 
 const lobbyCode = ref("");
 const userCode = ref("");
@@ -99,8 +96,12 @@ onMounted(() => {
       class="max-w-md w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
     >
       <div class="p-8 text-center">
-        <h1 class="text-4xl font-bold mb-2 tracking-tight">MonitoX</h1>
-        <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6">Draw Your Gift</h2>
+        <h1 class="text-4xl font-bold mb-2 tracking-tight">Lulon</h1>
+        <h2
+          class="text-xl font-semibold text-gray-600 dark:text-typo-body mb-6"
+        >
+          Draw Your Gift
+        </h2>
 
         <div v-if="!isLoggedIn">
           <div
@@ -109,7 +110,8 @@ onMounted(() => {
             <h3 class="font-bold text-lg mb-2">Already Enrolled?</h3>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Lobby Code</label
               >
               <input
@@ -122,7 +124,8 @@ onMounted(() => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
                 >Your Code</label
               >
               <input
@@ -154,7 +157,9 @@ onMounted(() => {
         </div>
 
         <div v-else>
-          <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div
+            class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800"
+          >
             <p class="text-sm text-blue-800 dark:text-blue-300">
               <strong>Lobby:</strong> {{ lobby.lobby_name }}
             </p>
@@ -210,7 +215,9 @@ onMounted(() => {
                   >
                     {{ drawnName }}
                   </div>
-                  <p class="text-xs text-gray-400 dark:text-typo-muted">Shh! Keep it a secret!</p>
+                  <p class="text-xs text-gray-400 dark:text-typo-muted">
+                    Shh! Keep it a secret!
+                  </p>
                 </div>
               </div>
             </div>

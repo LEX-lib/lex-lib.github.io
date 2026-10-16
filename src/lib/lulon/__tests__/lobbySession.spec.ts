@@ -5,7 +5,7 @@ import {
   normalizeLobbyCode,
   resolveLobbyCode,
   saveLobbyCode,
-} from "@/lib/gift-exchange/lobbySession";
+} from "@/lib/lulon/lobbySession";
 
 beforeEach(() => {
   sessionStorage.clear();
