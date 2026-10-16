@@ -6,7 +6,7 @@ import { toast } from "vue-sonner";
 import { useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
-const isSuperUser = computed(() => authStore.isLoggedIn);
+const isAdmin = computed(() => authStore.isAdmin);
 
 const loading = ref(false);
 const participants = ref<any[]>([]);
@@ -21,7 +21,7 @@ const newLobbyDeadline = ref("");
 const baseUrl = computed(() => window.location.origin);
 
 const fetchLobbies = async () => {
-  if (!isSuperUser.value) return;
+  if (!isAdmin.value) return;
   try {
     lobbies.value = await pb.collection("lobbies").getFullList({
       sort: "-created",
@@ -67,7 +67,7 @@ const fetchStats = async () => {
 };
 
 const fetchParticipants = async () => {
-  if (!isSuperUser.value || !selectedLobby.value) return;
+  if (!isAdmin.value || !selectedLobby.value) return;
   try {
     participants.value = await pb
       .collection("gift_exchange_participants")
@@ -254,7 +254,7 @@ const deleteLobby = async (lobby: any) => {
 };
 
 onMounted(() => {
-  if (isSuperUser.value) {
+  if (isAdmin.value) {
     fetchLobbies();
   }
 });
@@ -273,13 +273,13 @@ onMounted(() => {
           <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body">Admin Management</h2>
         </div>
 
-        <div v-if="!isSuperUser" class="py-12 text-center">
+        <div v-if="!isAdmin" class="py-12 text-center">
           <div class="text-red-500 dark:text-red-300 text-5xl mb-4">
             <i class="pi pi-lock"></i>
           </div>
           <h3 class="text-2xl font-bold mb-2">Access Denied</h3>
           <p class="text-gray-600 dark:text-typo-body">
-            You must be logged in as a superuser to access this page.
+            You must be logged in as an admin to access this page.
           </p>
           <RouterLink
             to="/login"

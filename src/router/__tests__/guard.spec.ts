@@ -30,11 +30,18 @@ function buildRouter() {
     routes: [
       { path: "/", name: "home", component: Stub },
       { path: "/login", name: "login", component: Stub },
+      { path: "/projects", name: "projects", component: Stub },
       {
         path: "/projects/wallecx",
         name: "wallecx",
         component: Stub,
         meta: { requiresAuth: true },
+      },
+      {
+        path: "/projects/manage",
+        name: "manage",
+        component: Stub,
+        meta: { requiresAuth: true, requiresAdmin: true },
       },
     ],
   });
@@ -51,6 +58,12 @@ function addGuard(router: ReturnType<typeof buildRouter>) {
     if (to.matched.some((r) => r.meta?.requiresAuth)) {
       if (!auth.isLoggedIn) {
         next({ name: "login", query: { redirect: to.fullPath } });
+        return;
+      }
+    }
+    if (to.matched.some((r) => r.meta?.requiresAdmin)) {
+      if (!auth.isAdmin) {
+        next({ name: "projects" });
         return;
       }
     }
@@ -95,5 +108,44 @@ describe("requiresAuth guard — /projects/wallecx", () => {
     addGuard(router);
     await router.push("/");
     expect(router.currentRoute.value.name).toBe("home");
+  });
+});
+
+describe("requiresAdmin guard — /projects/manage", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it("redirects a logged-in non-admin to /projects", async () => {
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
+      isLoggedIn: true,
+      isAdmin: false,
+    } as any);
+    const router = buildRouter();
+    addGuard(router);
+    await router.push("/projects/manage");
+    expect(router.currentRoute.value.name).toBe("projects");
+  });
+
+  it("redirects an unauthenticated visitor to /login", async () => {
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
+      isLoggedIn: false,
+      isAdmin: false,
+    } as any);
+    const router = buildRouter();
+    addGuard(router);
+    await router.push("/projects/manage");
+    expect(router.currentRoute.value.name).toBe("login");
+  });
+
+  it("allows a logged-in admin", async () => {
+    (useAuthStore as MockedFunction<typeof useAuthStore>).mockReturnValue({
+      isLoggedIn: true,
+      isAdmin: true,
+    } as any);
+    const router = buildRouter();
+    addGuard(router);
+    await router.push("/projects/manage");
+    expect(router.currentRoute.value.name).toBe("manage");
   });
 });

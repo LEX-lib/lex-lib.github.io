@@ -1,17 +1,20 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { pb } from "@/lib/pocketbase";
-import type { RecordModel } from "pocketbase";
+import type { Users } from "@/types/auth/types";
 
 export const useAuthStore = defineStore("auth", () => {
   // Only treat the record as a logged-in user when the token is still valid.
   // PocketBase keeps `record` populated after the JWT expires, so reading it
   // directly would leave the navbar showing a name for a dead session.
-  const currentUser = () => (pb.authStore.isValid ? pb.authStore.record : null);
+  const currentUser = (): Users | null =>
+    pb.authStore.isValid ? (pb.authStore.record as Users | null) : null;
 
-  const user = ref<RecordModel | null>(currentUser());
+  const user = ref<Users | null>(currentUser());
 
   const isLoggedIn = computed(() => !!user.value);
+  // `users.is_admin` is the canonical admin signal (shared SSO cookie included).
+  const isAdmin = computed(() => user.value?.is_admin === true);
 
   pb.authStore.onChange(() => {
     user.value = currentUser();
@@ -49,5 +52,5 @@ export const useAuthStore = defineStore("auth", () => {
     pb.authStore.clear();
   }
 
-  return { user, isLoggedIn, login, logout }; //, signup, logout
+  return { user, isAdmin, isLoggedIn, login, logout }; //, signup, logout
 });

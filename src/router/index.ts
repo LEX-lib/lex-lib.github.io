@@ -48,6 +48,7 @@ const router = createRouter({
       name: "gift-exchange-manage",
       component: () =>
         import("@/components/projects/gift-exchange/GiftExchangeManage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     // Redirect old route or root to join
     {
@@ -83,6 +84,12 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta?.requiresAuth)) {
     if (!auth.isLoggedIn) {
       next({ name: "login", query: { redirect: to.fullPath } });
+      return;
+    }
+  }
+  if (to.matched.some((record) => record.meta?.requiresAdmin)) {
+    if (!auth.isAdmin) {
+      next({ name: "projects" });
       return;
     }
   }

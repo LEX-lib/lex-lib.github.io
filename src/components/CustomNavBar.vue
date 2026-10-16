@@ -51,7 +51,7 @@ const logOut = () => {
 const avatarImage = computed(() => {
   return (
     "https://api.dicebear.com/9.x/identicon/svg?seed=" +
-      encodeURIComponent(auth.user?.name) || "guest"
+    encodeURIComponent(auth.user?.name ?? "guest")
   );
 });
 
