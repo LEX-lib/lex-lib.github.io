@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
@@ -220,6 +220,52 @@ const resetParticipant = () => {
   });
 };
 
+// Silent status refresh — used by polling and focus/visibility handlers so the
+// waiting screen advances to the reveal without a manual click.
+const refreshParticipant = async () => {
+  if (!lobby.value || !userCode.value) return;
+  try {
+    const record = await pb
+      .collection("gift_exchange_participants")
+      .getFirstListItem<Participant>(
+        `code="${normalizeLobbyCode(userCode.value)}" && lobby="${lobby.value.id}"`,
+      );
+    if (record.drawn_name && !drawnName.value) {
+      drawnName.value = record.drawn_name;
+      isFlipped.value = false;
+      toast.success("The drawing has started! Tap to reveal your partner.");
+    }
+  } catch {
+    // Transient failure — stay on the waiting screen and retry next tick.
+  }
+};
+
+let pollTimer: ReturnType<typeof setInterval> | undefined;
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = undefined;
+  }
+};
+
+const startPolling = () => {
+  stopPolling();
+  pollTimer = setInterval(refreshParticipant, 12000);
+};
+
+watch(screen, (current) => {
+  if (current === "waiting") {
+    startPolling();
+  } else {
+    stopPolling();
+  }
+});
+
+const onVisibilityChange = () => {
+  if (document.visibilityState === "visible") refreshParticipant();
+};
+
 onMounted(async () => {
   // `?lobby=` from the URL wins and is remembered for the session; `?code=` is
   // the participant's identity. Both together = one-tap reveal, zero typing.
@@ -235,6 +281,17 @@ onMounted(async () => {
       await checkStatus();
     }
   }
+
+  // Returning to the tab re-checks immediately, so backgrounded users don't
+  // wait a full poll interval.
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  window.addEventListener("focus", refreshParticipant);
+});
+
+onBeforeUnmount(() => {
+  stopPolling();
+  document.removeEventListener("visibilitychange", onVisibilityChange);
+  window.removeEventListener("focus", refreshParticipant);
 });
 </script>
 
