@@ -462,13 +462,15 @@ onMounted(() => {
               </div>
 
               <!-- Share link -->
-              <Message severity="info" :closable="false" class="lulon-share">
+              <div
+                class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 p-3 text-blue-900 dark:text-blue-300"
+              >
                 <div
-                  class="flex flex-col gap-2 w-full min-w-0 sm:flex-row sm:items-center"
+                  class="flex flex-col gap-2 min-w-0 sm:flex-row sm:items-center"
                 >
                   <span class="font-medium shrink-0">Share link:</span>
                   <code
-                    class="min-w-0 flex-1 truncate bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
+                    class="min-w-0 flex-1 truncate bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs text-gray-900 dark:text-typo-heading"
                     >{{ shareLink }}</code
                   >
                   <Button
@@ -479,7 +481,7 @@ onMounted(() => {
                     @click="copyToClipboard(shareLink)"
                   />
                 </div>
-              </Message>
+              </div>
 
               <!-- Desktop table -->
               <div
@@ -631,15 +633,3 @@ onMounted(() => {
     <ConfirmDialog />
   </div>
 </template>
-
-<style scoped>
-/* PrimeVue's message content doesn't shrink by default, so the slot's
-   min-content width (label + Copy button) can push past the card edge on
-   narrow screens. Force the text container to shrink and clip instead. */
-.lulon-share :deep(.p-message-content),
-.lulon-share :deep(.p-message-text) {
-  min-width: 0;
-  width: 100%;
-  overflow: hidden;
-}
-</style>
