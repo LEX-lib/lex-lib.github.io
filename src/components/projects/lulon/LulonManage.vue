@@ -1,65 +1,65 @@
-<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { pb } from "@/lib/pocketbase";
 import { toast } from "vue-sonner";
+import { useConfirm } from "primevue/useconfirm";
 import { useAuthStore } from "@/stores/auth";
+import { useIsMobile } from "@/composables/useIsMobile";
+import type { Lobby, Participant } from "@/types/lulon/types";
 
 const authStore = useAuthStore();
+const confirm = useConfirm();
+const isMobile = useIsMobile();
+
 const isAdmin = computed(() => authStore.isAdmin);
 
-const loading = ref(false);
-const participants = ref<any[]>([]);
+const lobbies = ref<Lobby[]>([]);
+const participants = ref<Participant[]>([]);
 const participantsCount = ref(0);
-const lobbies = ref<any[]>([]);
-const selectedLobby = ref<any>(null);
+const selectedLobby = ref<Lobby | null>(null);
+
+const loadingLobbies = ref(false);
+const selectingLobby = ref(false);
+const shuffling = ref(false);
+const creating = ref(false);
+const deletingLobbyId = ref<string | null>(null);
+const deletingParticipantId = ref<string | null>(null);
+
 const showCreateLobby = ref(false);
 const newLobbyName = ref("");
 const newLobbyCode = ref("");
 const newLobbyDeadline = ref("");
 
 const baseUrl = computed(() => window.location.origin);
+const shareLink = computed(() =>
+  selectedLobby.value
+    ? `${baseUrl.value}/projects/lulon/play?lobby=${selectedLobby.value.lobby_code}`
+    : "",
+);
+
+const personalLink = (p: Participant) =>
+  `${baseUrl.value}/projects/lulon/play?lobby=${selectedLobby.value?.lobby_code}&code=${p.code}`;
 
 const fetchLobbies = async () => {
   if (!isAdmin.value) return;
+  loadingLobbies.value = true;
   try {
-    lobbies.value = await pb.collection("lobbies").getFullList({
-      sort: "-created",
-    });
+    lobbies.value = await pb
+      .collection("lobbies")
+      .getFullList<Lobby>({ sort: "-created" });
   } catch (e) {
-    console.error("Error fetching lobbies", e);
+    toast.error("Error fetching lobbies: " + (e as Error).message);
+  } finally {
+    loadingLobbies.value = false;
   }
-};
-
-const selectLobby = async (lobby: any) => {
-  loading.value = true;
-  selectedLobby.value = lobby;
-  await fetchParticipants();
-  await fetchStats();
-  loading.value = false;
-
-  // Scroll to participants section
-  setTimeout(() => {
-    const participantsSection = document.getElementById("participants-section");
-    if (participantsSection) {
-      participantsSection.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }, 100);
 };
 
 const fetchStats = async () => {
   if (!selectedLobby.value) return;
-
   try {
     const result = await pb
       .collection("gift_exchange_participants")
-      .getList(1, 1, {
-        filter: `lobby="${selectedLobby.value.id}"`,
-        $autoCancel: false,
-      });
+      .getList(1, 1, { filter: `lobby="${selectedLobby.value.id}"` });
     participantsCount.value = result.totalItems;
   } catch (e) {
     console.error("Error fetching stats", e);
@@ -71,19 +71,29 @@ const fetchParticipants = async () => {
   try {
     participants.value = await pb
       .collection("gift_exchange_participants")
-      .getFullList({
+      .getFullList<Participant>({
         filter: `lobby="${selectedLobby.value.id}"`,
         sort: "-created",
       });
   } catch (e) {
-    console.error("Error fetching participants", e);
+    toast.error("Error fetching participants: " + (e as Error).message);
+  }
+};
+
+const selectLobby = async (lobby: Lobby) => {
+  selectingLobby.value = true;
+  selectedLobby.value = lobby;
+  try {
+    await Promise.all([fetchParticipants(), fetchStats()]);
+  } finally {
+    selectingLobby.value = false;
   }
 };
 
 const generateLobbyCode = () => {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let result = "";
-  const length = Math.floor(Math.random() * 5) + 6; // Random length between 6-10
+  const length = Math.floor(Math.random() * 5) + 6;
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -91,20 +101,19 @@ const generateLobbyCode = () => {
 };
 
 const createLobby = async () => {
-  if (!newLobbyName.value) {
+  if (!newLobbyName.value.trim()) {
     toast.error("Please enter a lobby name");
     return;
   }
 
-  loading.value = true;
+  creating.value = true;
   try {
-    // Use custom code if provided, otherwise generate one
     const lobbyCode = newLobbyCode.value.trim()
       ? newLobbyCode.value.toUpperCase()
       : generateLobbyCode();
 
-    const lobby = await pb.collection("lobbies").create({
-      lobby_name: newLobbyName.value,
+    const lobby = await pb.collection("lobbies").create<Lobby>({
+      lobby_name: newLobbyName.value.trim(),
       lobby_code: lobbyCode,
       enrollment_deadline: newLobbyDeadline.value || null,
       drawing_started: false,
@@ -117,12 +126,11 @@ const createLobby = async () => {
     showCreateLobby.value = false;
 
     await fetchLobbies();
-    selectedLobby.value = lobby;
-    await fetchParticipants();
-  } catch (e: any) {
-    toast.error("Error creating lobby: " + e.message);
+    await selectLobby(lobby);
+  } catch (e) {
+    toast.error("Error creating lobby: " + (e as Error).message);
   } finally {
-    loading.value = false;
+    creating.value = false;
   }
 };
 
@@ -132,11 +140,11 @@ const generatePairs = async () => {
     return;
   }
 
-  loading.value = true;
+  shuffling.value = true;
   try {
     const records = await pb
       .collection("gift_exchange_participants")
-      .getFullList({
+      .getFullList<Participant>({
         filter: `lobby="${selectedLobby.value.id}"`,
       });
 
@@ -148,7 +156,7 @@ const generatePairs = async () => {
     const shuffled = [...records];
     let isValid = false;
 
-    // Simple derangement shuffle
+    // Simple derangement shuffle — nobody may draw themselves.
     for (let i = 0; i < 100; i++) {
       for (let j = shuffled.length - 1; j > 0; j--) {
         const k = Math.floor(Math.random() * (j + 1));
@@ -167,35 +175,34 @@ const generatePairs = async () => {
 
     if (!isValid) {
       toast.error(
-        "Failed to generate valid pairs (Derangement failed). Try again.",
+        "Failed to generate valid pairs (derangement failed). Try again.",
       );
       return;
     }
 
-    // Update records
-    const promises = records.map((record, index) => {
-      return pb.collection("gift_exchange_participants").update(record.id, {
-        drawn_name: shuffled[index].name,
-      });
-    });
+    await Promise.all(
+      records.map((record, index) =>
+        pb.collection("gift_exchange_participants").update(record.id, {
+          drawn_name: shuffled[index].name,
+        }),
+      ),
+    );
 
-    await Promise.all(promises);
-
-    // Set drawing_started flag for this lobby
-    await pb.collection("lobbies").update(selectedLobby.value.id, {
-      drawing_started: true,
-    });
-
-    // Refresh lobby data
+    await pb
+      .collection("lobbies")
+      .update(selectedLobby.value.id, { drawing_started: true });
     selectedLobby.value.drawing_started = true;
 
-    toast.success("Drawing Event Started! Users can now draw.");
+    // Mirror the flag onto the list tile so it reflects the new state.
+    const tile = lobbies.value.find((l) => l.id === selectedLobby.value?.id);
+    if (tile) tile.drawing_started = true;
 
+    toast.success("Drawing started! Participants can reveal their partner.");
     await fetchParticipants();
-  } catch (e: any) {
-    toast.error("Error generating pairs: " + e.message);
+  } catch (e) {
+    toast.error("Error generating pairs: " + (e as Error).message);
   } finally {
-    loading.value = false;
+    shuffling.value = false;
   }
 };
 
@@ -208,55 +215,69 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-const deleteLobby = async (lobby: any) => {
-  if (
-    !confirm(
-      `Are you sure you want to delete "${lobby.lobby_name}"? This will also delete all participants in this lobby.`,
-    )
-  ) {
-    return;
-  }
+const deleteLobby = (lobby: Lobby) => {
+  confirm.require({
+    message: `Delete "${lobby.lobby_name}"? This also removes every participant in it.`,
+    header: "Delete lobby",
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: { label: "Keep lobby", severity: "secondary", outlined: true },
+    acceptProps: { label: "Delete", severity: "danger" },
+    accept: async () => {
+      deletingLobbyId.value = lobby.id;
+      try {
+        const toDelete = await pb
+          .collection("gift_exchange_participants")
+          .getFullList<Participant>({ filter: `lobby="${lobby.id}"` });
 
-  loading.value = true;
-  try {
-    // First, delete all participants in this lobby
-    const participantsToDelete = await pb
-      .collection("gift_exchange_participants")
-      .getFullList({
-        filter: `lobby="${lobby.id}"`,
-      });
+        await Promise.all(
+          toDelete.map((p) =>
+            pb.collection("gift_exchange_participants").delete(p.id),
+          ),
+        );
+        await pb.collection("lobbies").delete(lobby.id);
 
-    const deletePromises = participantsToDelete.map((p) =>
-      pb.collection("gift_exchange_participants").delete(p.id),
-    );
+        toast.success(`Lobby "${lobby.lobby_name}" deleted.`);
 
-    await Promise.all(deletePromises);
+        if (selectedLobby.value?.id === lobby.id) {
+          selectedLobby.value = null;
+          participants.value = [];
+          participantsCount.value = 0;
+        }
+        await fetchLobbies();
+      } catch (e) {
+        toast.error("Error deleting lobby: " + (e as Error).message);
+      } finally {
+        deletingLobbyId.value = null;
+      }
+    },
+  });
+};
 
-    // Then delete the lobby itself
-    await pb.collection("lobbies").delete(lobby.id);
-
-    toast.success(`Lobby "${lobby.lobby_name}" deleted successfully`);
-
-    // Clear selection if deleted lobby was selected
-    if (selectedLobby.value?.id === lobby.id) {
-      selectedLobby.value = null;
-      participants.value = [];
-      participantsCount.value = 0;
-    }
-
-    // Refresh lobby list
-    await fetchLobbies();
-  } catch (e: any) {
-    toast.error("Error deleting lobby: " + e.message);
-  } finally {
-    loading.value = false;
-  }
+const deleteParticipant = (p: Participant) => {
+  if (selectedLobby.value?.drawing_started) return;
+  confirm.require({
+    message: `Remove ${p.name} from this lobby?`,
+    header: "Remove participant",
+    icon: "pi pi-exclamation-triangle",
+    rejectProps: { label: "Keep", severity: "secondary", outlined: true },
+    acceptProps: { label: "Remove", severity: "danger" },
+    accept: async () => {
+      deletingParticipantId.value = p.id;
+      try {
+        await pb.collection("gift_exchange_participants").delete(p.id);
+        toast.success(`${p.name} removed.`);
+        await Promise.all([fetchParticipants(), fetchStats()]);
+      } catch (e) {
+        toast.error("Error removing participant: " + (e as Error).message);
+      } finally {
+        deletingParticipantId.value = null;
+      }
+    },
+  });
 };
 
 onMounted(() => {
-  if (isAdmin.value) {
-    fetchLobbies();
-  }
+  if (isAdmin.value) fetchLobbies();
 });
 </script>
 
@@ -264,326 +285,355 @@ onMounted(() => {
   <div
     class="min-h-screen bg-gray-50 dark:bg-surface-page flex flex-col items-center justify-center p-4 font-sans text-gray-900 dark:text-typo-heading"
   >
-    <div
-      class="max-w-6xl w-full bg-white dark:bg-surface-card rounded-2xl shadow-xl overflow-hidden relative z-10"
-    >
-      <div class="p-8">
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold mb-2 tracking-tight">Lulon</h1>
-          <h2 class="text-xl font-semibold text-gray-600 dark:text-typo-body">
-            Admin Management
-          </h2>
-        </div>
-
-        <div v-if="!isAdmin" class="py-12 text-center">
-          <div class="text-red-500 dark:text-red-300 text-5xl mb-4">
-            <i class="pi pi-lock"></i>
+    <div class="max-w-6xl w-full">
+      <Card>
+        <template #title>
+          <div class="text-center">
+            <h1 class="text-4xl font-bold tracking-tight">Lulon</h1>
+            <p class="text-lg text-gray-600 dark:text-typo-body">
+              Admin dashboard
+            </p>
           </div>
-          <h3 class="text-2xl font-bold mb-2">Access Denied</h3>
-          <p class="text-gray-600 dark:text-typo-body">
+        </template>
+        <template #content>
+          <Message v-if="!isAdmin" severity="error" :closable="false">
             You must be logged in as an admin to access this page.
-          </p>
-          <RouterLink
-            to="/login"
-            class="mt-4 inline-block text-blue-600 dark:text-blue-400 underline"
-            >Go to Login</RouterLink
-          >
-        </div>
-
-        <div v-else class="space-y-6">
-          <!-- Lobby Selection -->
-          <div
-            class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-6"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-bold">Select Lobby</h3>
-              <button
-                @click="showCreateLobby = !showCreateLobby"
-                class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-              >
-                {{ showCreateLobby ? "Cancel" : "+ Create New Lobby" }}
-              </button>
-            </div>
-
-            <!-- Create Lobby Form -->
-            <div
-              v-if="showCreateLobby"
-              class="mb-4 p-4 bg-white dark:bg-surface-card rounded-lg border border-blue-200 dark:border-blue-800"
+            <RouterLink to="/login" class="underline ml-1"
+              >Go to login</RouterLink
             >
-              <h4 class="font-bold mb-3">Create New Lobby</h4>
-              <div class="space-y-3">
+          </Message>
+
+          <div v-else class="space-y-6">
+            <!-- Lobby selection -->
+            <div
+              class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-6"
+            >
+              <div class="flex justify-between items-center mb-4 gap-3">
+                <h3 class="text-lg font-bold">Lobbies</h3>
+                <Button
+                  :label="showCreateLobby ? 'Cancel' : 'New lobby'"
+                  :icon="showCreateLobby ? 'pi pi-times' : 'pi pi-plus'"
+                  size="small"
+                  @click="showCreateLobby = !showCreateLobby"
+                />
+              </div>
+
+              <div
+                v-if="showCreateLobby"
+                class="mb-4 p-4 bg-white dark:bg-surface-card rounded-lg border border-blue-200 dark:border-blue-800 space-y-3"
+              >
+                <h4 class="font-bold">Create lobby</h4>
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Lobby Name</label
+                    >Lobby name</label
                   >
-                  <input
+                  <InputText
                     v-model="newLobbyName"
-                    type="text"
                     placeholder="Engineering Team 2024"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-blue-500 outline-none"
+                    class="w-full"
                   />
                 </div>
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Lobby Code (Optional)</label
+                    >Lobby code (optional)</label
                   >
-                  <input
+                  <InputText
                     v-model="newLobbyCode"
-                    type="text"
                     placeholder="Leave blank to auto-generate"
                     maxlength="10"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-blue-500 outline-none uppercase font-mono"
+                    class="w-full uppercase font-mono"
                   />
-                  <p class="text-xs text-gray-500 dark:text-typo-muted mt-1">
-                    Leave blank to auto-generate a random code
-                  </p>
                 </div>
                 <div>
                   <label
                     class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Enrollment Deadline (Optional)</label
+                    >Enrollment deadline (optional)</label
                   >
                   <input
                     v-model="newLobbyDeadline"
                     type="datetime-local"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider focus:ring-2 focus:ring-blue-500 outline-none"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider bg-transparent focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
-                <button
+                <Button
+                  label="Create lobby"
+                  :loading="creating"
+                  class="w-full"
                   @click="createLobby"
-                  :disabled="loading"
-                  class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {{ loading ? "Creating..." : "Create Lobby" }}
-                </button>
+                />
               </div>
-            </div>
 
-            <!-- Lobby List -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div
-                v-for="lobby in lobbies"
-                :key="lobby.id"
-                class="p-4 rounded-lg border-2 transition-all hover:shadow-md relative group"
-                :class="
-                  selectedLobby?.id === lobby.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-surface-divider hover:border-gray-300 dark:hover:border-surface-divider'
-                "
+                v-if="loadingLobbies"
+                class="flex justify-center py-8 text-gray-400"
               >
-                <div @click="selectLobby(lobby)" class="cursor-pointer">
-                  <div class="font-bold text-gray-800 dark:text-typo-heading">
-                    {{ lobby.lobby_name }}
-                  </div>
+                <i class="pi pi-spin pi-spinner text-2xl"></i>
+              </div>
+
+              <div
+                v-else
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+              >
+                <div
+                  v-for="lobby in lobbies"
+                  :key="lobby.id"
+                  class="p-4 rounded-lg border-2 transition-all hover:shadow-md relative group"
+                  :class="
+                    selectedLobby?.id === lobby.id
+                      ? 'border-primary bg-blue-50 dark:bg-blue-900/30'
+                      : 'border-gray-200 dark:border-surface-divider'
+                  "
+                >
                   <div
-                    class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1"
+                    class="cursor-pointer"
+                    role="button"
+                    tabindex="0"
+                    @click="selectLobby(lobby)"
+                    @keyup.enter="selectLobby(lobby)"
                   >
-                    Code: {{ lobby.lobby_code }}
+                    <div class="font-bold text-gray-800 dark:text-typo-heading">
+                      {{ lobby.lobby_name }}
+                    </div>
+                    <div
+                      class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1"
+                    >
+                      Code: {{ lobby.lobby_code }}
+                    </div>
+                    <Tag
+                      class="mt-2"
+                      :severity="lobby.drawing_started ? 'success' : 'warn'"
+                      :value="
+                        lobby.drawing_started
+                          ? 'Drawing started'
+                          : 'Enrollment open'
+                      "
+                    />
                   </div>
-                  <div class="text-xs text-gray-400 dark:text-typo-muted mt-2">
-                    <span
-                      v-if="lobby.drawing_started"
-                      class="text-green-600 dark:text-green-300"
-                      >✓ Drawing Started</span
-                    >
-                    <span v-else class="text-yellow-600 dark:text-yellow-300"
-                      >⏳ Enrollment Open</span
-                    >
+
+                  <Button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    text
+                    rounded
+                    size="small"
+                    aria-label="Delete lobby"
+                    class="!absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    :loading="deletingLobbyId === lobby.id"
+                    @click.stop="deleteLobby(lobby)"
+                  />
+
+                  <div
+                    v-if="selectingLobby && selectedLobby?.id === lobby.id"
+                    class="absolute inset-0 bg-blue-50/70 dark:bg-blue-900/40 flex items-center justify-center rounded-lg"
+                  >
+                    <i
+                      class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"
+                    ></i>
                   </div>
                 </div>
-
-                <!-- Delete Button -->
-                <button
-                  @click.stop="deleteLobby(lobby)"
-                  class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg"
-                  title="Delete lobby"
-                >
-                  <i class="pi pi-trash text-xs"></i>
-                </button>
 
                 <div
-                  v-if="loading && selectedLobby?.id === lobby.id"
-                  class="absolute inset-0 bg-blue-50 dark:bg-blue-900/30 bg-opacity-75 flex items-center justify-center rounded-lg"
+                  v-if="lobbies.length === 0"
+                  class="col-span-full text-center text-gray-500 dark:text-typo-muted py-8"
                 >
-                  <i
-                    class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"
-                  ></i>
+                  No lobbies yet. Create one to get started!
                 </div>
               </div>
+            </div>
 
+            <!-- Selected lobby -->
+            <div v-if="selectedLobby" class="space-y-4">
+              <div class="flex flex-wrap justify-between items-center gap-3">
+                <div>
+                  <h3 class="text-lg font-bold">
+                    {{ selectedLobby.lobby_name }}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-typo-muted">
+                    {{ participantsCount }} participants enrolled
+                  </p>
+                </div>
+                <Button
+                  :label="
+                    selectedLobby.drawing_started
+                      ? 'Drawing started'
+                      : 'Start drawing event'
+                  "
+                  icon="pi pi-shuffle"
+                  severity="danger"
+                  :loading="shuffling"
+                  :disabled="
+                    shuffling || selectingLobby || selectedLobby.drawing_started
+                  "
+                  @click="generatePairs"
+                />
+              </div>
+
+              <!-- Share link -->
+              <Message severity="info" :closable="false">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-medium">Share link:</span>
+                  <code
+                    class="flex-1 min-w-0 truncate bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
+                    >{{ shareLink }}</code
+                  >
+                  <Button
+                    label="Copy"
+                    size="small"
+                    icon="pi pi-copy"
+                    @click="copyToClipboard(shareLink)"
+                  />
+                </div>
+              </Message>
+
+              <!-- Desktop table -->
               <div
-                v-if="lobbies.length === 0"
-                class="col-span-full text-center text-gray-500 dark:text-typo-muted py-8"
+                v-if="!isMobile"
+                class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider overflow-hidden"
               >
-                No lobbies yet. Create one to get started!
-              </div>
-            </div>
-          </div>
-
-          <!-- Lobby Management -->
-          <div
-            v-if="selectedLobby"
-            id="participants-section"
-            class="scroll-mt-4"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <div>
-                <h3 class="text-lg font-bold">
-                  {{ selectedLobby.lobby_name }}
-                </h3>
-                <p class="text-sm text-gray-500 dark:text-typo-muted">
-                  {{ participantsCount }} participants enrolled
-                </p>
-              </div>
-              <button
-                @click="generatePairs"
-                :disabled="loading || selectedLobby.drawing_started"
-                class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{
-                  loading
-                    ? "Shuffling..."
-                    : selectedLobby.drawing_started
-                      ? "Drawing Started"
-                      : "Start Drawing Event"
-                }}
-              </button>
-            </div>
-
-            <!-- Shareable Links -->
-            <div
-              class="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 p-4 mb-4"
-            >
-              <h4
-                class="font-bold text-sm text-blue-900 dark:text-blue-300 mb-2"
-              >
-                📤 Share These Links
-              </h4>
-              <div class="space-y-2 text-sm">
-                <div class="flex items-center gap-2">
-                  <span
-                    class="text-blue-700 dark:text-blue-300 font-medium w-20"
-                    >Join:</span
-                  >
-                  <code
-                    class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
-                    >{{ baseUrl }}/projects/lulon/play?lobby={{
-                      selectedLobby.lobby_code
-                    }}</code
-                  >
-                  <button
-                    @click="
-                      copyToClipboard(
-                        `${baseUrl}/projects/lulon/play?lobby=${selectedLobby.lobby_code}`,
-                      )
-                    "
-                    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
-                  >
-                    Copy
-                  </button>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span
-                    class="text-blue-700 dark:text-blue-300 font-medium w-20"
-                    >Draw:</span
-                  >
-                  <code
-                    class="flex-1 bg-white dark:bg-surface-card px-2 py-1 rounded border border-blue-200 dark:border-blue-800 text-xs"
-                    >{{ baseUrl }}/projects/lulon/play?lobby={{
-                      selectedLobby.lobby_code
-                    }}</code
-                  >
-                  <button
-                    @click="
-                      copyToClipboard(
-                        `${baseUrl}/projects/lulon/play?lobby=${selectedLobby.lobby_code}`,
-                      )
-                    "
-                    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider overflow-hidden"
-            >
-              <table class="w-full text-left">
-                <thead
-                  class="bg-gray-100 dark:bg-surface-card border-b border-gray-200 dark:border-surface-divider"
+                <DataTable
+                  :value="participants"
+                  dataKey="id"
+                  responsiveLayout="scroll"
                 >
-                  <tr>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
-                      Name
-                    </th>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
-                      Code
-                    </th>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
-                      Target (Gift Receiver)
-                    </th>
-                    <th class="p-4 font-bold text-gray-600 dark:text-typo-body">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="p in participants"
-                    :key="p.id"
-                    class="border-b border-gray-100 dark:border-surface-divider hover:bg-white dark:hover:bg-surface-card transition-colors"
-                  >
-                    <td class="p-4 font-medium">{{ p.name }}</td>
-                    <td
-                      class="p-4 font-mono text-gray-500 dark:text-typo-muted"
-                    >
-                      {{ p.code }}
-                    </td>
-                    <td class="p-4">
+                  <Column field="name" header="Name" />
+                  <Column field="code" header="Code">
+                    <template #body="{ data }">
                       <span
-                        v-if="p.drawn_name"
+                        class="font-mono text-gray-500 dark:text-typo-muted"
+                        >{{ data.code }}</span
+                      >
+                    </template>
+                  </Column>
+                  <Column header="Target (gift receiver)">
+                    <template #body="{ data }">
+                      <span
+                        v-if="data.drawn_name"
                         class="text-green-600 dark:text-green-300 font-medium"
-                        >{{ p.drawn_name }}</span
+                        >{{ data.drawn_name }}</span
                       >
                       <span
                         v-else
                         class="text-gray-400 dark:text-typo-muted italic"
                         >Not assigned</span
                       >
-                    </td>
-                    <td class="p-4">
-                      <span
-                        v-if="p.drawn_name"
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                    </template>
+                  </Column>
+                  <Column header="Status">
+                    <template #body="{ data }">
+                      <Tag
+                        :severity="data.drawn_name ? 'success' : 'warn'"
+                        :value="data.drawn_name ? 'Ready' : 'Waiting'"
+                      />
+                    </template>
+                  </Column>
+                  <Column header="">
+                    <template #body="{ data }">
+                      <div class="flex gap-1 justify-end">
+                        <Button
+                          icon="pi pi-link"
+                          text
+                          rounded
+                          size="small"
+                          aria-label="Copy personal link"
+                          @click="copyToClipboard(personalLink(data))"
+                        />
+                        <Button
+                          icon="pi pi-trash"
+                          severity="danger"
+                          text
+                          rounded
+                          size="small"
+                          aria-label="Remove participant"
+                          :disabled="selectedLobby.drawing_started"
+                          :loading="deletingParticipantId === data.id"
+                          @click="deleteParticipant(data)"
+                        />
+                      </div>
+                    </template>
+                  </Column>
+                  <template #empty>No participants yet.</template>
+                </DataTable>
+              </div>
+
+              <!-- Mobile stacked cards -->
+              <div v-else class="space-y-3">
+                <div
+                  v-for="p in participants"
+                  :key="p.id"
+                  class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-4"
+                >
+                  <div class="flex justify-between items-start gap-2">
+                    <div class="min-w-0">
+                      <div class="font-bold truncate">{{ p.name }}</div>
+                      <div
+                        class="font-mono text-sm text-gray-500 dark:text-typo-muted"
                       >
-                        Ready
-                      </span>
-                      <span
-                        v-else
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
-                      >
-                        Waiting
-                      </span>
-                    </td>
-                  </tr>
-                  <tr v-if="participants.length === 0">
-                    <td
-                      colspan="4"
-                      class="p-8 text-center text-gray-500 dark:text-typo-muted"
+                        {{ p.code }}
+                      </div>
+                    </div>
+                    <Tag
+                      :severity="p.drawn_name ? 'success' : 'warn'"
+                      :value="p.drawn_name ? 'Ready' : 'Waiting'"
+                    />
+                  </div>
+                  <div class="mt-3 text-sm">
+                    <span class="text-gray-500 dark:text-typo-muted"
+                      >Target:</span
                     >
-                      No participants yet.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    <span
+                      v-if="p.drawn_name"
+                      class="font-medium text-green-600 dark:text-green-300"
+                      >{{ p.drawn_name }}</span
+                    >
+                    <span
+                      v-else
+                      class="italic text-gray-400 dark:text-typo-muted"
+                      >Not assigned</span
+                    >
+                  </div>
+                  <div class="mt-3 flex gap-2">
+                    <Button
+                      label="Copy link"
+                      icon="pi pi-link"
+                      size="small"
+                      outlined
+                      @click="copyToClipboard(personalLink(p))"
+                    />
+                    <Button
+                      label="Remove"
+                      icon="pi pi-trash"
+                      size="small"
+                      severity="danger"
+                      outlined
+                      :disabled="selectedLobby.drawing_started"
+                      :loading="deletingParticipantId === p.id"
+                      @click="deleteParticipant(p)"
+                    />
+                  </div>
+                </div>
+                <div
+                  v-if="participants.length === 0"
+                  class="text-center text-gray-500 dark:text-typo-muted py-8"
+                >
+                  No participants yet.
+                </div>
+              </div>
+
+              <p
+                v-if="selectedLobby.drawing_started"
+                class="text-xs text-gray-500 dark:text-typo-muted"
+              >
+                Participants can no longer be removed once the drawing has
+                started.
+              </p>
             </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
     </div>
+
+    <ConfirmDialog />
   </div>
 </template>
