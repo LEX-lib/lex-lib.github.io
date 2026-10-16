@@ -23,6 +23,7 @@ const enrollmentClosed = ref(false);
 const isLoggedIn = ref(false);
 const drawnName = ref<string | null>(null);
 const isFlipped = ref(false);
+const justEnrolled = ref(false);
 const loading = ref(false);
 const enrolling = ref(false);
 const participantsCount = ref(0);
@@ -35,6 +36,7 @@ const shareUrl = computed(() =>
 
 const screen = computed(() => {
   if (!lobbyValidated.value) return "lobby";
+  if (justEnrolled.value && isLoggedIn.value) return "enrolled";
   if (isLoggedIn.value) return drawnName.value ? "reveal" : "waiting";
   if (enrollmentClosed.value) return "closed";
   return "enroll";
@@ -133,6 +135,7 @@ const enroll = async () => {
     isLoggedIn.value = true;
     drawnName.value = null;
     isFlipped.value = false;
+    justEnrolled.value = true;
 
     // Turn the URL into the participant's personal identity link, in place.
     await router.replace({
@@ -140,7 +143,7 @@ const enroll = async () => {
       query: { lobby: lobby.value.lobby_code, code: newCode },
     });
 
-    toast.success("You're in! Waiting for the drawing to start.");
+    toast.success("You're in! Save your code below.");
     await fetchStats();
   } catch (e) {
     toast.error("Enrollment failed: " + (e as Error).message);
@@ -214,11 +217,16 @@ const resetParticipant = () => {
   isLoggedIn.value = false;
   drawnName.value = null;
   isFlipped.value = false;
+  justEnrolled.value = false;
   userCode.value = "";
   router.replace({
     path: "/projects/lulon/play",
     query: lobbyCode.value ? { lobby: lobbyCode.value } : {},
   });
+};
+
+const continueToReveal = () => {
+  justEnrolled.value = false;
 };
 
 // Silent status refresh — used by polling and focus/visibility handlers so the
@@ -431,14 +439,57 @@ onBeforeUnmount(() => {
                 </div>
               </div>
 
+              <!-- Just enrolled: show the code to save -->
+              <div
+                v-else-if="screen === 'enrolled'"
+                key="enrolled"
+                class="py-4"
+              >
+                <i
+                  class="pi pi-check-circle text-green-600 dark:text-green-300 text-5xl"
+                ></i>
+                <h3 class="text-2xl font-bold mt-4 mb-2">You're in!</h3>
+                <p class="text-gray-600 dark:text-typo-body mb-4">
+                  Save this code — you'll need it to reveal your partner.
+                </p>
+
+                <div
+                  class="text-5xl font-mono font-bold tracking-widest bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-xl border-2 border-yellow-300 dark:border-yellow-700 mb-6 select-all"
+                >
+                  {{ userCode }}
+                </div>
+
+                <Button
+                  label="Copy my reveal link"
+                  icon="pi pi-link"
+                  outlined
+                  class="w-full mb-2"
+                  @click="copyShareUrl"
+                />
+                <Button
+                  label="Continue"
+                  icon="pi pi-arrow-right"
+                  icon-pos="right"
+                  class="w-full"
+                  @click="continueToReveal"
+                />
+                <p class="text-xs text-gray-400 dark:text-typo-muted mt-4">
+                  Waiting for the drawing event to start.
+                </p>
+              </div>
+
               <!-- Waiting for the drawing -->
               <div v-else-if="screen === 'waiting'" key="waiting" class="py-6">
                 <i
                   class="pi pi-clock text-yellow-500 dark:text-yellow-300 text-5xl"
                 ></i>
                 <h3 class="text-2xl font-bold mt-4 mb-2">Hello, {{ name }}!</h3>
-                <p class="text-gray-600 dark:text-typo-body mb-6">
+                <p class="text-gray-600 dark:text-typo-body mb-2">
                   We are waiting for the organizer to start the drawing.
+                </p>
+                <p class="text-xs text-gray-500 dark:text-typo-muted mb-6">
+                  Your code:
+                  <span class="font-mono font-semibold">{{ userCode }}</span>
                 </p>
                 <Button
                   label="Refresh status"
