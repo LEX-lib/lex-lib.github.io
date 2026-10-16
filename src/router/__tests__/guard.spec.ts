@@ -46,7 +46,7 @@ function buildRouter() {
     routes: [
       { path: "/", name: "home", component: Stub },
       { path: "/login", name: "login", component: Stub },
-      { path: "/projects", name: "projects", component: Stub },
+      { path: "/projects/lulon", name: "lulon", component: Stub },
       {
         path: "/projects/wallecx",
         name: "wallecx",
@@ -79,7 +79,7 @@ function addGuard(router: ReturnType<typeof buildRouter>) {
     }
     if (to.matched.some((r) => r.meta?.requiresAdmin)) {
       if (!auth.isAdmin) {
-        next({ name: "projects" });
+        next({ name: "lulon" });
         return;
       }
     }
@@ -134,12 +134,12 @@ describe("requiresAdmin guard — /projects/manage", () => {
     setActivePinia(createPinia());
   });
 
-  it("redirects a logged-in non-admin to /projects", async () => {
+  it("redirects a logged-in non-admin to /projects/lulon", async () => {
     mockAuth({ isLoggedIn: true, isAdmin: false });
     const router = buildRouter();
     addGuard(router);
     await router.push("/projects/manage");
-    expect(router.currentRoute.value.name).toBe("projects");
+    expect(router.currentRoute.value.name).toBe("lulon");
   });
 
   it("redirects an unauthenticated visitor to /login", async () => {

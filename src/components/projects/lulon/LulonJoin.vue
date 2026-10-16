@@ -215,7 +215,7 @@ onMounted(async () => {
               Try Different Lobby
             </button>
             <RouterLink
-              to="/projects/gift-exchange/draw"
+              to="/projects/lulon/draw"
               class="flex-1 text-sm text-black dark:text-typo-heading font-semibold underline"
             >
               Draw Here
@@ -270,7 +270,7 @@ onMounted(async () => {
           <div class="mt-6 text-sm text-gray-500 dark:text-typo-muted">
             Already have a code?
             <RouterLink
-              to="/projects/gift-exchange/draw"
+              to="/projects/lulon/draw"
               class="underline text-black dark:text-typo-heading font-semibold"
               >Draw here</RouterLink
             >
@@ -298,7 +298,7 @@ onMounted(async () => {
           </p>
 
           <RouterLink
-            to="/projects/gift-exchange/draw"
+            to="/projects/lulon/draw"
             class="block w-full bg-black dark:bg-white text-white dark:text-black font-bold py-3 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm"
           >
             Go to Draw Page

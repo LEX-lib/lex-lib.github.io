@@ -58,6 +58,7 @@ declare module 'vue' {
     Login: typeof import('./src/components/Login.vue')['default']
     LulonDraw: typeof import('./src/components/projects/lulon/LulonDraw.vue')['default']
     LulonJoin: typeof import('./src/components/projects/lulon/LulonJoin.vue')['default']
+    LulonLanding: typeof import('./src/components/projects/lulon/LulonLanding.vue')['default']
     LulonManage: typeof import('./src/components/projects/lulon/LulonManage.vue')['default']
     ManageBudget: typeof import('./src/components/projects/wallecx/ManageBudget.vue')['default']
     ManageExpense: typeof import('./src/components/projects/wallecx/ManageExpense.vue')['default']

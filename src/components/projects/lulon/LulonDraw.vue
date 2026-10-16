@@ -149,7 +149,7 @@ onMounted(() => {
           <div class="mt-6 text-sm text-gray-500 dark:text-typo-muted">
             Don't have a code?
             <RouterLink
-              to="/projects/gift-exchange/join"
+              to="/projects/lulon/join"
               class="underline text-black dark:text-typo-heading font-semibold"
               >Join here</RouterLink
             >
