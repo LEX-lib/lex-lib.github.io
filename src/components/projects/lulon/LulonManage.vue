@@ -469,6 +469,12 @@ onMounted(() => {
                   :value="participants"
                   dataKey="id"
                   responsiveLayout="scroll"
+                  :loading="selectingLobby"
+                  paginator
+                  :rows="10"
+                  :rowsPerPageOptions="[10, 20, 50]"
+                  paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                  currentPageReportTemplate="{first}–{last} of {totalRecords}"
                 >
                   <Column field="name" header="Name" />
                   <Column field="code" header="Code">
@@ -533,7 +539,14 @@ onMounted(() => {
               <!-- Mobile stacked cards -->
               <div v-else class="space-y-3">
                 <div
+                  v-if="selectingLobby"
+                  class="flex justify-center py-8 text-gray-400"
+                >
+                  <i class="pi pi-spin pi-spinner text-2xl"></i>
+                </div>
+                <div
                   v-for="p in participants"
+                  v-show="!selectingLobby"
                   :key="p.id"
                   class="bg-gray-50 dark:bg-surface-page rounded-xl border border-gray-200 dark:border-surface-divider p-4"
                 >
@@ -587,7 +600,7 @@ onMounted(() => {
                   </div>
                 </div>
                 <div
-                  v-if="participants.length === 0"
+                  v-if="!selectingLobby && participants.length === 0"
                   class="text-center text-gray-500 dark:text-typo-muted py-8"
                 >
                   No participants yet.
