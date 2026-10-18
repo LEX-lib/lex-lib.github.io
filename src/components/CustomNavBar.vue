@@ -17,23 +17,23 @@ const items = ref([
   {
     label: "Projects",
     icon: "mdi:file-document-box",
-    command: () => router.push('/projects'),
+    command: () => router.push("/projects"),
     //items: [
-      // {
-      //   label: 'Larga',
-      //   icon: 'mdi:bus-marker',
-      //   command: () => router.push('/projects/larga')
-      // },
-      // {
-      //   label: 'LexTrack',
-      //   icon: 'mdi:notebook-edit-outline',
-      //   command: () => router.push('/projects/lextrack')
-      // },
-      // {
-      //   label: "MonitoX",
-      //   icon: "mdi:gift-open-outline",
-      //   command: () => router.push("/projects/gift-exchange/join"),
-      // },
+    // {
+    //   label: 'Larga',
+    //   icon: 'mdi:bus-marker',
+    //   command: () => router.push('/projects/larga')
+    // },
+    // {
+    //   label: 'LexTrack',
+    //   icon: 'mdi:notebook-edit-outline',
+    //   command: () => router.push('/projects/lextrack')
+    // },
+    // {
+    //   label: "Lulon",
+    //   icon: "mdi:gift-open-outline",
+    //   command: () => router.push("/projects/lulon/play"),
+    // },
     //],
   },
   {
@@ -51,7 +51,7 @@ const logOut = () => {
 const avatarImage = computed(() => {
   return (
     "https://api.dicebear.com/9.x/identicon/svg?seed=" +
-      encodeURIComponent(auth.user?.name) || "guest"
+    encodeURIComponent(auth.user?.name ?? "guest")
   );
 });
 
@@ -107,7 +107,9 @@ const toggle = (event: Event) => {
         <Button
           variant="text"
           type="button"
-          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          :aria-label="
+            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+          "
           @click="toggleTheme"
         >
           <iconify-icon

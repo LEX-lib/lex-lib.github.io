@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { syncAuthFromCookie } from "@/lib/pocketbase";
+import { legacyGiftExchangeRedirect } from "@/lib/lulon/routes";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,27 +33,36 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/projects/gift-exchange/join",
-      name: "gift-exchange-join",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeJoin.vue"),
+      path: "/projects/lulon",
+      name: "lulon",
+      component: () => import("@/components/projects/lulon/LulonLanding.vue"),
     },
     {
-      path: "/projects/gift-exchange/draw",
-      name: "gift-exchange-draw",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeDraw.vue"),
+      path: "/projects/lulon/play",
+      name: "lulon-play",
+      component: () => import("@/components/projects/lulon/LulonPlay.vue"),
+    },
+    // Enroll and reveal are now one adaptive route; keep the old split paths
+    // working, preserving ?lobby= / ?code=.
+    {
+      path: "/projects/lulon/join",
+      redirect: (to) => ({ path: "/projects/lulon/play", query: to.query }),
     },
     {
-      path: "/projects/gift-exchange/manage",
-      name: "gift-exchange-manage",
-      component: () =>
-        import("@/components/projects/gift-exchange/GiftExchangeManage.vue"),
+      path: "/projects/lulon/draw",
+      redirect: (to) => ({ path: "/projects/lulon/play", query: to.query }),
     },
-    // Redirect old route or root to join
     {
-      path: "/projects/gift-exchange",
-      redirect: "/projects/gift-exchange/join",
+      path: "/projects/lulon/manage",
+      name: "lulon-manage",
+      component: () => import("@/components/projects/lulon/LulonManage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    // Legacy MonitoX paths — preserve query (?lobby= / ?code=) so shared links
+    // keep working after the rebrand.
+    {
+      path: "/projects/gift-exchange/:pathMatch(.*)*",
+      redirect: legacyGiftExchangeRedirect,
     },
     {
       path: "/projects/api-playground",
@@ -83,6 +93,12 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta?.requiresAuth)) {
     if (!auth.isLoggedIn) {
       next({ name: "login", query: { redirect: to.fullPath } });
+      return;
+    }
+  }
+  if (to.matched.some((record) => record.meta?.requiresAdmin)) {
+    if (!auth.isAdmin) {
+      next({ name: "lulon" });
       return;
     }
   }
