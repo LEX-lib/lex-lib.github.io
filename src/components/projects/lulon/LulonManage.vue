@@ -40,6 +40,13 @@ const shareLink = computed(() =>
 const personalLink = (p: Participant) =>
   `${baseUrl.value}/projects/lulon/play?lobby=${selectedLobby.value?.lobby_code}&code=${p.code}`;
 
+// Show as many lobby slides as fit without leaving empty tracks: 3 on
+// desktop, 1 on mobile, never more than the number of lobbies.
+const lobbySlides = computed(() => {
+  const max = isMobile.value ? 1 : 3;
+  return Math.max(1, Math.min(max, lobbies.value.length || 1));
+});
+
 const fetchLobbies = async () => {
   if (!isAdmin.value) return;
   loadingLobbies.value = true;
@@ -364,74 +371,82 @@ onMounted(() => {
               </div>
 
               <div
-                v-else
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+                v-else-if="lobbies.length === 0"
+                class="text-center text-gray-500 dark:text-typo-muted py-8"
               >
-                <div
-                  v-for="lobby in lobbies"
-                  :key="lobby.id"
-                  class="p-4 rounded-lg border-2 transition-all hover:shadow-md relative group"
-                  :class="
-                    selectedLobby?.id === lobby.id
-                      ? 'border-primary bg-blue-50 dark:bg-blue-900/30'
-                      : 'border-gray-200 dark:border-surface-divider'
-                  "
-                >
-                  <div
-                    class="cursor-pointer"
-                    role="button"
-                    tabindex="0"
-                    @click="selectLobby(lobby)"
-                    @keyup.enter="selectLobby(lobby)"
-                  >
-                    <div class="font-bold text-gray-800 dark:text-typo-heading">
-                      {{ lobby.lobby_name }}
-                    </div>
-                    <div
-                      class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1"
-                    >
-                      Code: {{ lobby.lobby_code }}
-                    </div>
-                    <Tag
-                      class="mt-2"
-                      :severity="lobby.drawing_started ? 'success' : 'warn'"
-                      :value="
-                        lobby.drawing_started
-                          ? 'Drawing started'
-                          : 'Enrollment open'
-                      "
-                    />
-                  </div>
-
-                  <Button
-                    icon="pi pi-trash"
-                    severity="danger"
-                    text
-                    rounded
-                    size="small"
-                    aria-label="Delete lobby"
-                    class="!absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus:opacity-100"
-                    :loading="deletingLobbyId === lobby.id"
-                    @click.stop="deleteLobby(lobby)"
-                  />
-
-                  <div
-                    v-if="selectingLobby && selectedLobby?.id === lobby.id"
-                    class="absolute inset-0 bg-blue-50/70 dark:bg-blue-900/40 flex items-center justify-center rounded-lg"
-                  >
-                    <i
-                      class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"
-                    ></i>
-                  </div>
-                </div>
-
-                <div
-                  v-if="lobbies.length === 0"
-                  class="col-span-full text-center text-gray-500 dark:text-typo-muted py-8"
-                >
-                  No lobbies yet. Create one to get started!
-                </div>
+                No lobbies yet. Create one to get started!
               </div>
+
+              <Carousel
+                v-else
+                :value="lobbies"
+                :num-visible="lobbySlides"
+                :num-scroll="1"
+                :show-indicators="lobbies.length > lobbySlides"
+                :circular="false"
+              >
+                <template #item="{ data }">
+                  <div class="p-1">
+                    <div
+                      class="p-4 rounded-lg border-2 transition-all hover:shadow-md relative group h-full"
+                      :class="
+                        selectedLobby?.id === data.id
+                          ? 'border-primary bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-gray-200 dark:border-surface-divider'
+                      "
+                    >
+                      <div
+                        class="cursor-pointer"
+                        role="button"
+                        tabindex="0"
+                        @click="selectLobby(data)"
+                        @keyup.enter="selectLobby(data)"
+                      >
+                        <div
+                          class="font-bold text-gray-800 dark:text-typo-heading pr-6"
+                        >
+                          {{ data.lobby_name }}
+                        </div>
+                        <div
+                          class="text-sm text-gray-500 dark:text-typo-muted font-mono mt-1"
+                        >
+                          Code: {{ data.lobby_code }}
+                        </div>
+                        <Tag
+                          class="mt-2"
+                          :severity="data.drawing_started ? 'success' : 'warn'"
+                          :value="
+                            data.drawing_started
+                              ? 'Drawing started'
+                              : 'Enrollment open'
+                          "
+                        />
+                      </div>
+
+                      <Button
+                        icon="pi pi-trash"
+                        severity="danger"
+                        text
+                        rounded
+                        size="small"
+                        aria-label="Delete lobby"
+                        class="!absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                        :loading="deletingLobbyId === data.id"
+                        @click.stop="deleteLobby(data)"
+                      />
+
+                      <div
+                        v-if="selectingLobby && selectedLobby?.id === data.id"
+                        class="absolute inset-0 bg-blue-50/70 dark:bg-blue-900/40 flex items-center justify-center rounded-lg"
+                      >
+                        <i
+                          class="pi pi-spin pi-spinner text-blue-600 dark:text-blue-400 text-2xl"
+                        ></i>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </Carousel>
             </div>
 
             <Divider v-if="selectedLobby" />

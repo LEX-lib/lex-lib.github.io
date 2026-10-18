@@ -22,6 +22,7 @@ declare module 'vue' {
     BaseMobileDialog: typeof import('./src/components/projects/wallecx/BaseMobileDialog.vue')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
+    Carousel: typeof import('primevue/carousel')['default']
     Chart: typeof import('primevue/chart')['default']
     Checkbox: typeof import('primevue/checkbox')['default']
     ColorPicker: typeof import('primevue/colorpicker')['default']
