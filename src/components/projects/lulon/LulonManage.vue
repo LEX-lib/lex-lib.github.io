@@ -98,6 +98,13 @@ const generateLobbyCode = () => {
   return result;
 };
 
+const openCreateLobby = () => {
+  newLobbyName.value = "";
+  newLobbyCode.value = "";
+  newLobbyDeadline.value = "";
+  showCreateLobby.value = true;
+};
+
 const createLobby = async () => {
   if (!newLobbyName.value.trim()) {
     toast.error("Please enter a lobby name");
@@ -309,57 +316,10 @@ onMounted(() => {
               <div class="flex justify-between items-center mb-4 gap-3">
                 <h3 class="text-lg font-bold">Lobbies</h3>
                 <Button
-                  :label="showCreateLobby ? 'Cancel' : 'New lobby'"
-                  :icon="showCreateLobby ? 'pi pi-times' : 'pi pi-plus'"
+                  label="New lobby"
+                  icon="pi pi-plus"
                   size="small"
-                  @click="showCreateLobby = !showCreateLobby"
-                />
-              </div>
-
-              <div
-                v-if="showCreateLobby"
-                class="mb-4 p-4 bg-white dark:bg-surface-card rounded-lg border border-blue-200 dark:border-blue-800 space-y-3"
-              >
-                <h4 class="font-bold">Create lobby</h4>
-                <div>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Lobby name</label
-                  >
-                  <InputText
-                    v-model="newLobbyName"
-                    placeholder="Engineering Team 2024"
-                    class="w-full"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Lobby code (optional)</label
-                  >
-                  <InputText
-                    v-model="newLobbyCode"
-                    placeholder="Leave blank to auto-generate"
-                    maxlength="10"
-                    class="w-full uppercase font-mono"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
-                    >Enrollment deadline (optional)</label
-                  >
-                  <input
-                    v-model="newLobbyDeadline"
-                    type="datetime-local"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider bg-transparent focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
-                <Button
-                  label="Create lobby"
-                  :loading="creating"
-                  class="w-full"
-                  @click="createLobby"
+                  @click="openCreateLobby"
                 />
               </div>
 
@@ -646,6 +606,60 @@ onMounted(() => {
         </template>
       </Card>
     </div>
+
+    <Dialog
+      v-model:visible="showCreateLobby"
+      modal
+      header="Create lobby"
+      :style="{ width: '90vw', maxWidth: '28rem' }"
+    >
+      <div class="space-y-3">
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+            >Lobby name</label
+          >
+          <InputText
+            v-model="newLobbyName"
+            placeholder="Engineering Team 2024"
+            class="w-full"
+            @keyup.enter="createLobby"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+            >Lobby code (optional)</label
+          >
+          <InputText
+            v-model="newLobbyCode"
+            placeholder="Leave blank to auto-generate"
+            maxlength="10"
+            class="w-full uppercase font-mono"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-typo-body mb-1"
+            >Enrollment deadline (optional)</label
+          >
+          <input
+            v-model="newLobbyDeadline"
+            type="datetime-local"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-surface-divider bg-transparent focus:ring-2 focus:ring-primary outline-none"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          severity="secondary"
+          outlined
+          @click="showCreateLobby = false"
+        />
+        <Button label="Create lobby" :loading="creating" @click="createLobby" />
+      </template>
+    </Dialog>
 
     <ConfirmDialog />
   </div>
